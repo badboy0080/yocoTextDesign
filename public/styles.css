@@ -69,6 +69,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .preset-row label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
 .preset-row select { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); font-size: 13px; }
 .style-parameters { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
+.style-parameters-mount { min-width: 0; }
+.parameters-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.parameters-heading > span { color: var(--muted); font-size: 10px; }
 .control-group { padding: 20px 0; border-bottom: 1px solid var(--line); }
 .control-group:last-child { border-bottom: 0; }
 .group-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; font-size: 12px; font-weight: 800; }

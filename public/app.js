@@ -70,6 +70,7 @@ const structureList = document.querySelector("#structureList");
 const blockCount = document.querySelector("#blockCount");
 const inferTitleToggle = document.querySelector("#inferTitleToggle");
 const stylePane = document.querySelector("#stylePane");
+const styleMount = document.querySelector("#styleMount");
 const styleChoices = [...document.querySelectorAll("[data-preset]")];
 let articleSource = localStorage.getItem("yooco-article-source") || "";
 let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
@@ -83,7 +84,8 @@ try {
   blockTypeOverrides = {};
 }
 
-// 参数留在左侧独立滚动区；右侧只保留固定的风格选择，方便随时切换。
+// 参数面板放在右栏，跟随右栏独立滚动；风格选择卡保持在右栏顶部。
+if (stylePane && styleMount) styleMount.appendChild(stylePane);
 if (stylePane) stylePane.hidden = false;
 
 const sampleContent = [

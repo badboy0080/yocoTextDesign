@@ -70,7 +70,7 @@ const structureList = document.querySelector("#structureList");
 const blockCount = document.querySelector("#blockCount");
 const inferTitleToggle = document.querySelector("#inferTitleToggle");
 const stylePane = document.querySelector("#stylePane");
-const styleMount = document.querySelector("#styleMount");
+const styleChoices = [...document.querySelectorAll("[data-preset]")];
 let articleSource = localStorage.getItem("yooco-article-source") || "";
 let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
@@ -83,11 +83,8 @@ try {
   blockTypeOverrides = {};
 }
 
-// 参数仍在右栏，内容编辑和结构调整固定留在左栏，方便左右对比。
-if (stylePane && styleMount) {
-  stylePane.hidden = false;
-  styleMount.append(stylePane);
-}
+// 参数留在左侧独立滚动区；右侧只保留固定的风格选择，方便随时切换。
+if (stylePane) stylePane.hidden = false;
 
 const sampleContent = [
   { type: "lead", text: "公众号排版不是把颜色堆在一起，而是把阅读节奏安排清楚：读者先看到什么、在哪里停一下、下一步愿意继续读什么。" },
@@ -104,8 +101,16 @@ const sampleContent = [
 function applyPreset(name) {
   if (!PRESETS[name]) return;
   Object.assign(state, PRESETS[name]);
+  presetSelect.value = name;
   syncControls();
+  syncStyleChoices();
   render();
+}
+
+function syncStyleChoices() {
+  styleChoices.forEach((choice) => {
+    choice.classList.toggle("is-active", choice.dataset.preset === presetSelect.value);
+  });
 }
 
 function syncControls() {
@@ -658,6 +663,7 @@ function applyAiNormalization(data) {
   state.titleColor = state.textColor;
   state.borderColor = "#dedfd8";
   presetSelect.value = "";
+  syncStyleChoices();
   articleTitleOverride = "";
   titleInput.value = "";
   blockTypeOverrides = {};
@@ -814,6 +820,7 @@ function importConfig(file) {
       const normalized = normalizeTemplateParams(incoming);
       allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
       presetSelect.value = "";
+      syncStyleChoices();
       syncControls();
       render();
       copyFeedback.textContent = "配置已导入。";
@@ -938,6 +945,7 @@ controls.forEach((control) => {
     if (key === "readingDensity" && state.readingDensity !== "custom") applyReadingDensity(state.readingDensity);
     else if (["fontSize", "lineHeight", "paragraphSpacing"].includes(key)) state.readingDensity = "custom";
     presetSelect.value = "";
+    syncStyleChoices();
     syncControls();
     render();
   };
@@ -947,6 +955,12 @@ controls.forEach((control) => {
 presetSelect.addEventListener("change", () => {
   if (articleInput.value.trim() && articleInput.value.trim() !== articleSource) applyArticleSource(false);
   applyPreset(presetSelect.value);
+});
+styleChoices.forEach((choice) => {
+  choice.addEventListener("click", () => {
+    if (articleInput.value.trim() && articleInput.value.trim() !== articleSource) applyArticleSource(false);
+    applyPreset(choice.dataset.preset);
+  });
 });
 document.querySelector("#resetButton").addEventListener("click", () => { presetSelect.value = DEFAULT_PRESET; applyPreset(DEFAULT_PRESET); });
 document.querySelector("#copyButton").addEventListener("click", copyRichText);
@@ -991,6 +1005,7 @@ if (saved) {
     Object.assign(state, stored);
     Object.assign(state, normalizeTemplateParams(stored, state));
     presetSelect.value = "";
+    syncStyleChoices();
   } catch { /* ignore stale local config */ }
 }
 articleInput.value = articleSource;
@@ -998,4 +1013,5 @@ titleInput.value = articleTitleOverride;
 inferTitleToggle.checked = inferFirstLineTitle;
 if (articleSource) articleStatus.textContent = `已载入上次文章：${parseArticle(articleSource).blocks.length} 个内容块`;
 syncControls();
+syncStyleChoices();
 render();

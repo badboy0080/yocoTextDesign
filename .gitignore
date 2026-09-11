@@ -37,6 +37,8 @@ yarn-error.log*
 # typescript
 next-env.d.ts
 /dist/
+/package-stage/
+/yooco-sites.tgz
 /.wrangler/
 /.sites-runtime/
 /.agents/

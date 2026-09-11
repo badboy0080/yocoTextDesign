@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f1e8" />
     <title>Yooco · 公众号排版实验室</title>
-    <link rel="stylesheet" href="./styles.css?v=universal-v3" />
+    <link rel="stylesheet" href="./styles.css?v=universal-v4" />
   </head>
   <body>
     <header class="topbar">
@@ -65,7 +65,7 @@
             </div>
           </section>
 
-          <section class="workspace-pane" id="stylePane" hidden>
+          <section class="workspace-pane style-parameters" id="stylePane" aria-label="模板参数">
             <div class="preset-row">
               <label for="presetSelect">选择排版风格</label>
               <select id="presetSelect">
@@ -177,8 +177,30 @@
         </section>
 
         <aside class="insight-panel">
-          <div class="panel-kicker"><span>03</span>模板参数</div>
-          <div id="styleMount"></div>
+          <div class="style-choice-dock" aria-label="选择网页风格">
+            <div class="style-dock-heading">
+              <div class="panel-kicker"><span>03</span>网页风格</div>
+              <span class="dock-pin">固定选择</span>
+            </div>
+            <p class="style-dock-tip">先选一个视觉方向，左侧参数可继续微调。</p>
+            <div class="style-choice-grid">
+              <button class="style-choice is-active" type="button" data-preset="clean-tech">
+                <span class="style-swatch swatch-tech"></span><span><strong>清爽科技</strong><small>明亮 · 轻量 · 易读</small></span>
+              </button>
+              <button class="style-choice" type="button" data-preset="editorial">
+                <span class="style-swatch swatch-editorial"></span><span><strong>编辑部海报</strong><small>鲜明 · 有标题感</small></span>
+              </button>
+              <button class="style-choice" type="button" data-preset="soft-magazine">
+                <span class="style-swatch swatch-soft"></span><span><strong>温柔杂志</strong><small>柔和 · 松弛 · 有呼吸</small></span>
+              </button>
+              <button class="style-choice" type="button" data-preset="minimal">
+                <span class="style-swatch swatch-minimal"></span><span><strong>极简留白</strong><small>克制 · 清楚 · 内容优先</small></span>
+              </button>
+              <button class="style-choice" type="button" data-preset="deep-night">
+                <span class="style-swatch swatch-night"></span><span><strong>深夜科技杂志</strong><small>深色 · 蓝灰 · 荧光重点</small></span>
+              </button>
+            </div>
+          </div>
           <div class="insight-divider parameter-divider"></div>
           <div class="insight-heading">识别逻辑</div>
           <div class="algorithm-card">
@@ -209,6 +231,6 @@
     </main>
 
     <footer class="site-footer"><span>Yooco · 好排版的参考起点</span><span>借鉴结构，不复制内容</span></footer>
-    <script src="./app.js?v=universal-v3"></script>
+    <script src="./app.js?v=universal-v4"></script>
   </body>
 </html>

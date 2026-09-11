@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1e8" />
+    <title>Yooco · 公众号排版实验室</title>
+    <link rel="stylesheet" href="./styles.css?v=universal-v3" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Yooco 首页">
+        <span class="brand-mark">Y</span>
+        <span><strong>Yooco</strong><small>WECHAT STYLE LAB</small></span>
+      </a>
+      <div class="topbar-actions">
+        <button class="ghost-button" id="resetButton" type="button">恢复默认</button>
+        <button class="accent-button" id="exportButton" type="button">导出配置</button>
+        <label class="ghost-button file-button">导入配置<input id="importInput" type="file" accept="application/json,.json" /></label>
+      </div>
+    </header>
+
+    <main id="top" class="app-shell">
+      <section class="intro">
+        <div>
+          <span class="eyebrow">把排版变成可调参数</span>
+          <h1>一边读懂排版，<em>一边做出自己的模板。</em></h1>
+          <p>这个实验室把开源项目的识别逻辑翻译成滑杆和预设。你可以先调出舒服的文章骨架，等提供优秀范文后，再把它们沉淀成可复用模板。</p>
+        </div>
+        <div class="intro-note">
+          <span class="note-dot"></span>
+          <div><strong>当前版本</strong><br />本地可用 · 参数实时预览</div>
+        </div>
+      </section>
+
+      <section class="lab-grid" aria-label="排版实验室">
+        <aside class="controls-panel">
+          <div class="panel-kicker"><span>01</span>内容编辑</div>
+
+          <section class="workspace-pane" id="contentPane">
+            <div class="editor-heading">
+              <strong>Markdown 文章</strong>
+              <span>输入即预览</span>
+            </div>
+            <label class="editor-label" for="titleInput">文章主标题 <small>可选</small></label>
+            <input id="titleInput" class="title-input" type="text" placeholder="留空则读取 Markdown 的 # 标题" />
+            <label class="editor-label" for="articleInput">正文内容</label>
+            <textarea id="articleInput" class="markdown-editor" rows="15" spellcheck="false" placeholder="# 我的文章标题&#10;&#10;第一段正文。用空行代表分段。&#10;&#10;## 第一部分&#10;&#10;> 这是一句重点引用&#10;&#10;- 列表内容&#10;- 另一项"></textarea>
+            <p class="markdown-tip">支持 Markdown，也可直接从网页或微信复制富文本：标题、段落、列表和图片会转换成可编辑的 Markdown。</p>
+            <div class="editor-actions">
+              <button class="ai-button" id="aiNormalizeButton" type="button">DeepSeek 生成结构 JSON</button>
+              <button class="accent-button" id="autoSegmentButton" type="button">智能分段</button>
+              <button class="ghost-button" id="clearArticleButton" type="button">清空文章</button>
+              <span id="articleStatus" role="status">当前使用示例文章</span>
+            </div>
+            <p class="ai-tip">AI 只在你点击时调用：它会输出段落结构、重点标记和右栏参数；不补写事实、不虚构图片或链接。</p>
+            <label class="toggle-control editor-toggle"><span>自动识别第一行标题</span><input id="inferTitleToggle" type="checkbox" checked /><i></i></label>
+
+            <div class="structure-editor" aria-labelledby="structureEditorTitle">
+              <div class="structure-heading">
+                <div><strong id="structureEditorTitle">段落结构</strong><span id="blockCount">示例文章</span></div>
+                <span>可逐段改类型</span>
+              </div>
+              <div id="structureList" class="structure-list" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <section class="workspace-pane" id="stylePane" hidden>
+            <div class="preset-row">
+              <label for="presetSelect">选择排版风格</label>
+              <select id="presetSelect">
+                <option value="clean-tech">清爽科技</option>
+                <option value="editorial">编辑部海报</option>
+                <option value="soft-magazine">温柔杂志</option>
+                <option value="minimal">极简留白</option>
+                <option value="deep-night">深夜科技杂志</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>颜色</span><span class="group-hint">视觉性格</span></div>
+              <label class="color-control">正文色 <input data-key="textColor" type="color" /></label>
+              <label class="color-control">强调色 <input data-key="accentColor" type="color" /></label>
+              <label class="color-control">重点底色 <input data-key="highlightColor" type="color" /></label>
+              <label class="color-control">重点文字色 <input data-key="highlightTextColor" type="color" /></label>
+              <label class="color-control">卡片底色 <input data-key="cardColor" type="color" /></label>
+              <label class="color-control">引用底色 <input data-key="quoteColor" type="color" /></label>
+              <label class="color-control">卡片标题色 <input data-key="cardTitleColor" type="color" /></label>
+              <label class="color-control">链接色 <input data-key="linkColor" type="color" /></label>
+              <label class="color-control">代码底色 <input data-key="codeBackground" type="color" /></label>
+              <label class="color-control">代码文字色 <input data-key="codeColor" type="color" /></label>
+              <label class="color-control">分隔线色 <input data-key="dividerColor" type="color" /></label>
+              <label class="color-control">页面底色 <input data-key="pageColor" type="color" /></label>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>文字</span><span class="group-hint">阅读节奏</span></div>
+              <label class="select-control"><span>正文字体</span><select data-key="bodyFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
+              <label class="select-control"><span>标题字体</span><select data-key="headingFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
+              <label class="select-control"><span>阅读密度</span><select data-key="readingDensity"><option value="compact">紧凑</option><option value="standard">标准</option><option value="comfortable">舒适</option><option value="custom">自定义</option></select></label>
+              <label class="range-control"><span>正文字号 <output data-output="fontSize"></output></span><input data-key="fontSize" type="range" min="14" max="22" step="1" /></label>
+              <label class="range-control"><span>正文行高 <output data-output="lineHeight"></output></span><input data-key="lineHeight" type="range" min="1.35" max="2.2" step="0.05" /></label>
+              <label class="range-control"><span>字距 <output data-output="letterSpacing"></output></span><input data-key="letterSpacing" type="range" min="-0.5" max="2" step="0.1" /></label>
+              <label class="range-control"><span>段落间距 <output data-output="paragraphSpacing"></output></span><input data-key="paragraphSpacing" type="range" min="4" max="40" step="2" /></label>
+              <label class="range-control"><span>内容宽度 <output data-output="contentWidth"></output></span><input data-key="contentWidth" type="range" min="280" max="680" step="10" /></label>
+              <label class="select-control"><span>正文对齐</span><select data-key="textAlign"><option value="left">左对齐</option><option value="justify">两端对齐</option></select></label>
+              <label class="range-control"><span>首行缩进 <output data-output="textIndent"></output></span><input data-key="textIndent" type="range" min="0" max="2" step="0.25" /></label>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>标题层级</span><span class="group-hint">H1 至 H4+</span></div>
+              <label class="range-control"><span>主标题字号 <output data-output="titleSize"></output></span><input data-key="titleSize" type="range" min="22" max="36" step="1" /></label>
+              <label class="range-control"><span>标题字号 <output data-output="headingSize"></output></span><input data-key="headingSize" type="range" min="20" max="34" step="1" /></label>
+              <label class="range-control"><span>三级标题 <output data-output="subheadingSize"></output></span><input data-key="subheadingSize" type="range" min="18" max="30" step="1" /></label>
+              <label class="range-control"><span>四级及以下 <output data-output="minorHeadingSize"></output></span><input data-key="minorHeadingSize" type="range" min="16" max="26" step="1" /></label>
+              <label class="range-control"><span>标题字重 <output data-output="headingWeight"></output></span><input data-key="headingWeight" type="range" min="500" max="900" step="100" /></label>
+              <label class="range-control"><span>标题行高 <output data-output="headingLineHeight"></output></span><input data-key="headingLineHeight" type="range" min="1.1" max="1.7" step="0.05" /></label>
+              <label class="range-control"><span>标题上间距 <output data-output="headingSpacingBefore"></output></span><input data-key="headingSpacingBefore" type="range" min="8" max="48" step="2" /></label>
+              <label class="range-control"><span>标题下间距 <output data-output="headingSpacingAfter"></output></span><input data-key="headingSpacingAfter" type="range" min="4" max="32" step="2" /></label>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>重点与链接</span><span class="group-hint">可由 AI 输出或手动覆盖</span></div>
+              <label class="select-control"><span>重点样式</span><select data-key="highlightStyle"><option value="background">底色高亮</option><option value="marker">荧光笔</option><option value="underline">底部标记</option><option value="bold">仅加粗</option></select></label>
+              <label class="range-control"><span>重点圆角 <output data-output="highlightRadius"></output></span><input data-key="highlightRadius" type="range" min="0" max="12" step="1" /></label>
+              <label class="range-control"><span>重点左右留白 <output data-output="highlightPadding"></output></span><input data-key="highlightPadding" type="range" min="0" max="8" step="1" /></label>
+              <label class="toggle-control"><span>链接显示下划线</span><input data-key="linkUnderline" type="checkbox" /><i></i></label>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>列表、引用与卡片</span><span class="group-hint">信息块节奏</span></div>
+              <label class="range-control"><span>列表缩进 <output data-output="listIndent"></output></span><input data-key="listIndent" type="range" min="1" max="3" step="0.25" /></label>
+              <label class="range-control"><span>列表项间距 <output data-output="listItemSpacing"></output></span><input data-key="listItemSpacing" type="range" min="0" max="20" step="1" /></label>
+              <label class="range-control"><span>引用标题字号 <output data-output="quoteTitleSize"></output></span><input data-key="quoteTitleSize" type="range" min="10" max="18" step="1" /></label>
+              <label class="range-control"><span>卡片标题字号 <output data-output="cardTitleSize"></output></span><input data-key="cardTitleSize" type="range" min="10" max="18" step="1" /></label>
+              <label class="range-control"><span>卡片边框粗细 <output data-output="cardBorderWidth"></output></span><input data-key="cardBorderWidth" type="range" min="0" max="4" step="1" /></label>
+              <label class="range-control"><span>卡片圆角 <output data-output="cardRadius"></output></span><input data-key="cardRadius" type="range" min="0" max="24" step="1" /></label>
+              <label class="range-control"><span>卡片内边距 <output data-output="cardPadding"></output></span><input data-key="cardPadding" type="range" min="12" max="32" step="2" /></label>
+            </div>
+
+            <div class="control-group">
+              <div class="group-title"><span>分隔线、代码与图片</span><span class="group-hint">细节</span></div>
+              <label class="range-control"><span>分隔线粗细 <output data-output="dividerThickness"></output></span><input data-key="dividerThickness" type="range" min="1" max="4" step="1" /></label>
+              <label class="range-control"><span>分隔线上下留白 <output data-output="dividerMargin"></output></span><input data-key="dividerMargin" type="range" min="8" max="48" step="2" /></label>
+              <label class="range-control"><span>代码字号 <output data-output="codeFontSize"></output></span><input data-key="codeFontSize" type="range" min="11" max="18" step="1" /></label>
+              <label class="range-control"><span>代码行高 <output data-output="codeLineHeight"></output></span><input data-key="codeLineHeight" type="range" min="1.2" max="2" step="0.1" /></label>
+              <label class="range-control"><span>图片说明字号 <output data-output="captionSize"></output></span><input data-key="captionSize" type="range" min="9" max="16" step="1" /></label>
+              <label class="range-control"><span>图片圆角 <output data-output="imageRadius"></output></span><input data-key="imageRadius" type="range" min="0" max="24" step="1" /></label>
+              <label class="toggle-control"><span>显示引用卡片</span><input data-key="showQuote" type="checkbox" /><i></i></label>
+              <label class="toggle-control"><span>显示内容分隔线</span><input data-key="showDivider" type="checkbox" /><i></i></label>
+              <label class="toggle-control"><span>显示配图占位</span><input data-key="showImage" type="checkbox" /><i></i></label>
+            </div>
+          </section>
+        </aside>
+
+        <section class="preview-panel">
+          <div class="preview-header">
+            <div class="panel-kicker"><span>02</span>最终预览</div>
+            <div class="preview-meta"><span class="live-dot"></span>编辑后实时更新</div>
+          </div>
+          <div class="preview-stage" id="previewStage">
+            <article class="phone-frame" aria-label="公众号文章预览">
+              <div class="phone-top"><span>9:41</span><span class="phone-signal">● ● ●</span></div>
+              <div class="article-page" id="articlePage">
+                <div class="article-meta">Yooco · 排版预览</div>
+                <h2 id="articleTitle">把一篇好文章，排成读者愿意读完的样子</h2>
+                <p class="article-subtitle" id="articleSubtitle">参数可调、结构可解释、复制可继续编辑</p>
+                <div id="articleBody" class="article-content"></div>
+              </div>
+            </article>
+          </div>
+          <div class="preview-footer">
+            <span id="previewSummary">正文 16px · 行高 1.75 · 段距 18px</span>
+            <button class="copy-button" id="copyButton" type="button">复制排版 <span>↗</span></button>
+          </div>
+          <p class="copy-feedback" id="copyFeedback" role="status"></p>
+        </section>
+
+        <aside class="insight-panel">
+          <div class="panel-kicker"><span>03</span>模板参数</div>
+          <div id="styleMount"></div>
+          <div class="insight-divider parameter-divider"></div>
+          <div class="insight-heading">识别逻辑</div>
+          <div class="algorithm-card">
+            <span class="algorithm-step">A</span>
+            <div><strong>先把样式写回元素</strong><p>项目先用 juice 把 class 和 style 规则内联，避免复制后样式丢失。</p></div>
+          </div>
+          <div class="algorithm-card">
+            <span class="algorithm-step">B</span>
+            <div><strong>按文本长度加权统计</strong><p>颜色、字号和行高出现得越多、承载文字越长，越可能成为主样式。</p></div>
+          </div>
+          <div class="algorithm-card">
+            <span class="algorithm-step">C</span>
+            <div><strong>用结构判断组件</strong><p>标题、引用、卡片、分隔线和图片按 DOM 规则计数，不靠单一颜色猜测。</p></div>
+          </div>
+          <div class="insight-divider"></div>
+          <div class="token-preview">
+            <div class="token-heading"><span>当前模板令牌</span><span>JSON</span></div>
+            <pre id="tokenPreview"></pre>
+          </div>
+          <a class="doc-link" href="./docs/wechat-style-extractor-analysis.md" target="_blank" rel="noreferrer">查看完整分析文档 <span>↗</span></a>
+        </aside>
+      </section>
+
+      <section class="template-strip">
+        <div><span class="eyebrow">待接入你的参考文章</span><h2>预设只是起点，范文会让它变成你的排版资产。</h2></div>
+        <p>提供文章链接、截图或 HTML 后，可以逐篇记录颜色、字号、行高、间距和组件规则，再保存为真正的模板预设。</p>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>Yooco · 好排版的参考起点</span><span>借鉴结构，不复制内容</span></footer>
+    <script src="./app.js?v=universal-v3"></script>
+  </body>
+</html>

@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Yooco · 公众号排版实验室",
   description: "将普通文本、Markdown 或网页富文本整理成可配置的公众号文章排版。",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

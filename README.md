@@ -20,17 +20,7 @@
 | 一键复制 | 生成尽量贴合微信编辑器的 HTML，带基础合规提醒 |
 | 配置导入导出 | 把一套参数存成 JSON，换机器也能接着用 |
 
-<p align="center">
-  <img src="./assets/readme/proof-overview.png" width="820" alt="Yooco 工作室总览：原文输入、优化排版、最终预览">
-</p>
 
-<p align="center">
-  <img src="./assets/readme/proof-ai-optimized.png" width="820" alt="AI 优化排版后的预览与可贴状态提醒">
-</p>
-
-<p align="center">
-  <img src="./assets/readme/proof-theme.png" width="820" alt="切换气质与主题后的排版预览">
-</p>
 
 ---
 

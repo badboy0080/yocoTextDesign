@@ -1,0 +1,12 @@
+{
+  "name": "yooco",
+  "buildCommand": "npm run build:edgeone",
+  "installCommand": "npm install",
+  "nodeVersion": "22.11.0",
+  "cloudFunctions": {
+    "regions": {
+      "mainland": ["ap-guangzhou"]
+    },
+    "maxDuration": 60
+  }
+}

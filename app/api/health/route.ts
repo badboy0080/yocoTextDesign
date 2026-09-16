@@ -1,8 +1,8 @@
-import { env } from "cloudflare:workers";
+import { getDeepseekApiKey } from "../../../lib/runtime-env";
 
 export function GET() {
   return Response.json(
-    { ok: true, deepseekConfigured: Boolean(env.DEEPSEEK_API_KEY) },
+    { ok: true, deepseekConfigured: Boolean(getDeepseekApiKey()) },
     { headers: { "cache-control": "no-store" } },
   );
 }

@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yooco",
+  "account_id": "f6bd27ac91786f029edaf90aadfd1bd4",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "vinext/server/fetch-handler",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "DEEPSEEK_MODEL": "deepseek-flash"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

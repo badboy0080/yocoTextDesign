@@ -134,6 +134,8 @@ const copyFeedback = document.querySelector("#copyFeedback");
 const moodGrid = document.querySelector("#moodGrid");
 const skinRow = document.querySelector("#skinRow");
 const moodPicker = document.querySelector("#moodPicker");
+const moodPickerGroup = document.querySelector("#moodPickerGroup");
+const skinCurrent = document.querySelector("#skinCurrent");
 const themeGrid = document.querySelector("#themeGrid");
 const articleInput = document.querySelector("#articleInput");
 const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
@@ -166,6 +168,32 @@ try {
 // 参数面板放在右栏，跟随右栏独立滚动。
 if (stylePane && styleMount) styleMount.appendChild(stylePane);
 if (stylePane) stylePane.hidden = false;
+
+function initParameterAccordion() {
+  if (!stylePane) return;
+  const groups = Array.from(stylePane.querySelectorAll("[data-accordion]"));
+  groups.forEach((group) => {
+    const body = group.querySelector(".group-body");
+    if (body && !body.querySelector(":scope > .group-body-inner")) {
+      const inner = document.createElement("div");
+      inner.className = "group-body-inner";
+      while (body.firstChild) inner.appendChild(body.firstChild);
+      body.appendChild(inner);
+    }
+    const toggle = group.querySelector(".group-toggle");
+    if (!toggle) return;
+    toggle.addEventListener("click", () => {
+      const willOpen = !group.classList.contains("is-open");
+      groups.forEach((other) => {
+        const open = other === group && willOpen;
+        other.classList.toggle("is-open", open);
+        const btn = other.querySelector(".group-toggle");
+        if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  });
+}
+initParameterAccordion();
 
 const sampleContent = [
   { type: "lead", text: "公众号排版不是把颜色堆在一起，而是把阅读节奏安排清楚：读者先看到什么、在哪里停一下、下一步愿意继续读什么。" },
@@ -226,11 +254,18 @@ function syncMoodUI() {
   themeGrid?.querySelectorAll("[data-theme]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.theme === state.theme);
   });
-  // 精选主题激活时收起旧的方向/皮肤网格，避免两套选择器并存造成困惑。
+  // 精选主题激活时收起旧的气质/皮肤分组，避免两套选择器并存造成困惑。
   if (moodPicker) moodPicker.hidden = isTheme();
-  const skinName = skinRow?.querySelector(".skin-current");
-  if (skinName) {
-    skinName.textContent = isTheme()
+  if (moodPickerGroup) {
+    moodPickerGroup.hidden = isTheme();
+    if (isTheme() && moodPickerGroup.classList.contains("is-open")) {
+      moodPickerGroup.classList.remove("is-open");
+      const btn = moodPickerGroup.querySelector(".group-toggle");
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    }
+  }
+  if (skinCurrent) {
+    skinCurrent.textContent = isTheme()
       ? `精选主题 · ${THEMES[state.theme].label}`
       : `${MOODS[currentMood].label} · ${SKINS[currentSkin].label}`;
   }
@@ -238,10 +273,10 @@ function syncMoodUI() {
 
 function renderMoodUI() {
   if (themeGrid) {
-    const classicButton = `<button type="button" class="theme-chip is-classic" data-theme="classic" title="4 方向 × 11 皮肤的通用体系"><b>经典</b><span>4 方向 · 11 皮肤</span></button>`;
+    const classicButton = `<button type="button" class="theme-chip is-classic" data-theme="classic" title="4 方向 × 11 皮肤的通用体系"><b>经典</b></button>`;
     const themeButtons = THEME_ORDER.map((id) => {
       const theme = THEMES[id];
-      return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b><span>${theme.fit}</span></button>`;
+      return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
     }).join("");
     themeGrid.innerHTML = classicButton + themeButtons;
     themeGrid.querySelectorAll("[data-theme]").forEach((button) => {
@@ -527,7 +562,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
     textAlign: ["left", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold"],
-    headingStyle: ["bar", "line", "index", "block"],
+    headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval"],
     cardStyle: ["border", "outline", "soft", "band"],
     listStyle: ["dot", "circle", "ghost", "check"],
     theme: THEME_IDS,
@@ -610,6 +645,12 @@ function htmlToMarkdown(html) {
 }
 
 function insertMarkdownAtCursor(markdown) {
+  if (!articleInput) {
+    articleSource = articleSource ? `${articleSource.trim()}\n\n${markdown}` : markdown;
+    persistArticleSource();
+    render();
+    return;
+  }
   const start = articleInput.selectionStart;
   const end = articleInput.selectionEnd;
   articleInput.setRangeText(markdown, start, end, "end");
@@ -766,15 +807,21 @@ const STRUCTURE_TYPE_OPTIONS = [
 
 function applyStructureOverrides(parsed) {
   const blocks = parsed.blocks.map((block, index) => {
-    const requestedType = blockTypeOverrides[index];
-    if (!requestedType || requestedType === block.type) return block;
-    if (!STRUCTURE_TYPE_OPTIONS.some(([type]) => type === requestedType)) return block;
-    if (requestedType === "divider") return { type: "divider" };
-    if (!["paragraph", "lead", "heading", "quote", "card"].includes(block.type)) return block;
-    if (requestedType === "heading") return { ...block, type: "heading", level: 2 };
-    if (requestedType === "quote") return { ...block, type: "quote", title: "重点提示" };
-    if (requestedType === "card") return { ...block, type: "card", title: "重点提示" };
-    return { ...block, type: requestedType };
+    const requestedType = blockTypeOverrides[index] ?? blockTypeOverrides[String(index)];
+    let next = block;
+    if (requestedType && requestedType !== block.type) {
+      if (STRUCTURE_TYPE_OPTIONS.some(([type]) => type === requestedType)) {
+        if (requestedType === "divider") {
+          next = { type: "divider" };
+        } else if (["paragraph", "lead", "heading", "quote", "card"].includes(block.type)) {
+          if (requestedType === "heading") next = { ...block, type: "heading", level: 2 };
+          else if (requestedType === "quote") next = { ...block, type: "quote", title: block.title || "重点提示" };
+          else if (requestedType === "card") next = { ...block, type: "card", title: block.title || "重点提示" };
+          else next = { ...block, type: requestedType };
+        }
+      }
+    }
+    return { ...next, sourceIndex: index };
   });
   return { ...parsed, blocks };
 }
@@ -834,7 +881,12 @@ function renderStructureEditor() {
 
 function getArticleModel() {
   if (!articleSource.trim()) {
-    return { title: "把一篇好文章，排成读者愿意读完的样子", subtitle: "参数可调、结构可解释、复制可继续编辑", blocks: sampleContent, isSample: true };
+    return {
+      title: "把一篇好文章，排成读者愿意读完的样子",
+      subtitle: "参数可调、结构可解释、复制可继续编辑",
+      blocks: applyStructureOverrides({ blocks: sampleContent }).blocks,
+      isSample: true,
+    };
   }
   const parsed = applyStructureOverrides(parseArticle(articleSource));
   const inferred = articleTitleOverride.trim()
@@ -850,42 +902,85 @@ function getArticleModel() {
   };
 }
 
+function blockIndexAttr(item, index) {
+  const sourceIndex = item.sourceIndex ?? index;
+  return `data-block-index="${sourceIndex}"`;
+}
+
+/** 标题可写成「中文 | ENGLISH」，供叠号双语 / 序号黑卡使用 */
+function splitHeadingCaption(text) {
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  const paired = raw.match(/^(.+?)\s*[|｜/／]\s*([A-Za-z][A-Za-z0-9 ._-]{1,40})$/);
+  if (paired) {
+    return {
+      title: paired[1].replace(/#+\s*$/, "").trim(),
+      sub: paired[2].trim().toUpperCase(),
+    };
+  }
+  return {
+    title: raw.replace(/#+\s*$/, "").trim(),
+    sub: "",
+  };
+}
+
+function renderHeadingBlock(item, index, editable) {
+  const level = Math.min(6, Math.max(2, Number(item.level) || 2));
+  const idx = blockIndexAttr(item, index);
+  const kind = state.headingStyle || "bar";
+  const parts = splitHeadingCaption(item.text);
+  const sub = parts.sub || "SECTION";
+  const subAttr = ` data-sub="${escapeHtml(sub)}"`;
+
+  if (level === 2 && kind === "poster") {
+    const shown = `${parts.title}${parts.title.endsWith("#") ? "" : "#"}`;
+    return `<h3 class="section-title level-2" data-type="heading" data-level="2" ${idx}${subAttr} contenteditable="${editable}">${inlineMarkdown(shown)}</h3>`;
+  }
+  if (level === 2 && kind === "panel") {
+    return `<h3 class="section-title level-2 heading-panel" data-type="heading" data-level="2" ${idx}${subAttr} contenteditable="false"><span class="heading-panel-body"><span class="heading-panel-main" contenteditable="${editable}">${inlineMarkdown(parts.title)}</span><span class="heading-panel-sub" contenteditable="${editable}">${escapeHtml(sub)}</span></span></h3>`;
+  }
+  if (level === 2 && kind === "oval") {
+    return `<h3 class="section-title level-2 heading-oval" data-type="heading" data-level="2" ${idx} contenteditable="false"><span class="heading-oval-badge" aria-hidden="true"><span class="heading-oval-num"></span></span><span class="heading-oval-text" contenteditable="${editable}">${inlineMarkdown(parts.title)}</span></h3>`;
+  }
+  return `<h3 class="section-title level-${level}" data-type="heading" data-level="${level}" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</h3>`;
+}
+
 function renderBody() {
   const model = getArticleModel();
   const editable = "true";
-  const parts = model.blocks.map((item) => {
-    if (item.type === "lead") return `<p class="lead" data-type="lead" contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
-    if (item.type === "highlight" && state.styleVariant === "deep-night") return `<p class="highlight-line" data-type="highlight" contenteditable="${editable}"><mark>${item.text}</mark></p>`;
-    if (item.type === "heading") return `<h3 class="section-title level-${Math.min(6, Math.max(2, Number(item.level) || 2))}" data-type="heading" data-level="${Math.min(6, Math.max(2, Number(item.level) || 2))}" contenteditable="${editable}">${inlineMarkdown(item.text)}</h3>`;
+  const parts = model.blocks.map((item, index) => {
+    const idx = blockIndexAttr(item, index);
+    if (item.type === "lead") return `<p class="lead" data-type="lead" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
+    if (item.type === "highlight" && state.styleVariant === "deep-night") return `<p class="highlight-line" data-type="highlight" ${idx} contenteditable="${editable}"><mark>${item.text}</mark></p>`;
+    if (item.type === "heading") return renderHeadingBlock(item, index, editable);
     if (item.type === "quote") {
-      if (state.showQuote) return `<aside class="quote-card" data-type="quote" contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${inlineMarkdown(item.text)}</aside>`;
-      return `<p class="plain-quote" data-type="quote" contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
+      if (state.showQuote) return `<aside class="quote-card" data-type="quote" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${inlineMarkdown(item.text)}</aside>`;
+      return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<aside class="content-card" data-type="card" contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${inlineMarkdown(item.text)}</aside>`;
+    if (item.type === "card") return `<aside class="content-card" data-type="card" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${inlineMarkdown(item.text)}</aside>`;
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
-      const rows = (item.items || []).map((entry, index) =>
-        `<p class="steps-item" data-step="${index + 1}" contenteditable="${editable}"><span class="steps-index" contenteditable="false">${String(index + 1).padStart(2, "0")}</span><span class="steps-text">${inlineMarkdown(entry)}</span></p>`).join("");
-      return `<section class="steps-block" data-type="steps"><strong contenteditable="${editable}">${title}</strong><div class="steps-items">${rows}</div></section>`;
+      const rows = (item.items || []).map((entry, stepIndex) =>
+        `<p class="steps-item" data-step="${stepIndex + 1}" contenteditable="${editable}"><span class="steps-index" contenteditable="false">${String(stepIndex + 1).padStart(2, "0")}</span><span class="steps-text">${inlineMarkdown(entry)}</span></p>`).join("");
+      return `<section class="steps-block" data-type="steps" ${idx}><strong contenteditable="${editable}">${title}</strong><div class="steps-items">${rows}</div></section>`;
     }
     if (item.type === "stat") {
       const title = escapeHtml(item.title || "关键数据");
       const cells = (item.items || []).map((entry) =>
         `<div class="stat-item"><b contenteditable="${editable}">${escapeHtml(entry.value || "")}</b><span contenteditable="${editable}">${escapeHtml(entry.label || "")}</span></div>`).join("");
-      return `<section class="stat-block" data-type="stat"><strong contenteditable="${editable}">${title}</strong><div class="stat-grid">${cells}</div></section>`;
+      return `<section class="stat-block" data-type="stat" ${idx}><strong contenteditable="${editable}">${title}</strong><div class="stat-grid">${cells}</div></section>`;
     }
-    if (item.type === "divider" && state.showDivider) return `<hr class="article-divider" data-type="divider" />`;
+    if (item.type === "divider" && state.showDivider) return `<hr class="article-divider" data-type="divider" ${idx} />`;
     if (item.type === "image") {
-      if (item.url) return `<figure class="article-image" data-type="image" data-url="${escapeHtml(item.url)}"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}" loading="lazy" /><figcaption contenteditable="${editable}">${escapeHtml(item.alt || "文章配图")}</figcaption></figure>`;
-      if (state.showImage) return `<div class="fake-image" data-type="image" role="img" aria-label="文章配图占位" contenteditable="${editable}">${escapeHtml(item.alt || "文章配图占位")}</div>`;
-      return `<p class="image-note" data-type="image" contenteditable="${editable}">[图片：${escapeHtml(item.alt || "文章配图")}]</p>`;
+      if (item.url) return `<figure class="article-image" data-type="image" data-url="${escapeHtml(item.url)}" ${idx}><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}" loading="lazy" /><figcaption contenteditable="${editable}">${escapeHtml(item.alt || "文章配图")}</figcaption></figure>`;
+      if (state.showImage) return `<div class="fake-image" data-type="image" role="img" aria-label="文章配图占位" ${idx} contenteditable="${editable}">${escapeHtml(item.alt || "文章配图占位")}</div>`;
+      return `<p class="image-note" data-type="image" ${idx} contenteditable="${editable}">[图片：${escapeHtml(item.alt || "文章配图")}]</p>`;
     }
     if (item.type === "list") {
       const listTag = item.ordered ? "ol" : "ul";
-      return `<${listTag} class="article-list" data-type="list" data-ordered="${item.ordered ? "true" : "false"}">${item.items.map((entry) => `<li contenteditable="${editable}">${inlineMarkdown(entry)}</li>`).join("")}</${listTag}>`;
+      return `<${listTag} class="article-list" data-type="list" data-ordered="${item.ordered ? "true" : "false"}" ${idx}>${item.items.map((entry) => `<li contenteditable="${editable}">${inlineMarkdown(entry)}</li>`).join("")}</${listTag}>`;
     }
-    if (item.type === "code") return `<pre class="article-code" data-type="code" data-language="${escapeHtml(item.language || "code")}"><code contenteditable="${editable}">${escapeHtml(item.text)}</code></pre>`;
-    if (item.type === "paragraph") return `<p data-type="paragraph" contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
+    if (item.type === "code") return `<pre class="article-code" data-type="code" data-language="${escapeHtml(item.language || "code")}" ${idx}><code contenteditable="${editable}">${escapeHtml(item.text)}</code></pre>`;
+    if (item.type === "paragraph") return `<p data-type="paragraph" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     return "";
   });
   // 精选主题：自动目录（取前 3 个二级标题，纯导航，不写回原文）。
@@ -894,8 +989,8 @@ function renderBody() {
       .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
       .slice(0, 3);
     if (tocItems.length >= 2) {
-      const tocHtml = `<section class="toc-card" data-type="toc" contenteditable="false"><p class="toc-title">本文脉络</p><div class="toc-list">${tocItems.map((block, index) =>
-        `<p><b>${String(index + 1).padStart(2, "0")}</b><span>${escapeHtml(block.text)}</span></p>`).join("")}</div></section>`;
+      const tocHtml = `<section class="toc-card" data-type="toc" contenteditable="false"><p class="toc-title">本文脉络</p><div class="toc-list">${tocItems.map((block, tocIndex) =>
+        `<p><b>${String(tocIndex + 1).padStart(2, "0")}</b><span>${escapeHtml(block.text)}</span></p>`).join("")}</div></section>`;
       const leadIndex = parts.findIndex((html) => html.startsWith('<p class="lead"'));
       parts.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtml);
     }
@@ -927,7 +1022,21 @@ function serializePreviewToMarkdown() {
     if (type === "toc" || type === "signature") return;
     if (type === "heading") {
       const level = Math.min(6, Math.max(2, Number(el.dataset.level) || 2));
-      parts.push(`${"#".repeat(level)} ${htmlToMd(el)}`);
+      const main = el.querySelector(".heading-panel-main, .heading-oval-text");
+      const sub = el.querySelector(".heading-panel-sub");
+      let text;
+      if (main) {
+        text = htmlToMd(main);
+        const subText = (sub ? htmlToMd(sub) : "").trim();
+        if (subText) text = `${text} | ${subText}`;
+      } else {
+        text = htmlToMd(el).replace(/#+\s*$/, "").trim();
+        const dataSub = (el.getAttribute("data-sub") || "").trim();
+        if (dataSub && dataSub !== "SECTION" && state.headingStyle === "poster") {
+          text = `${text} | ${dataSub}`;
+        }
+      }
+      parts.push(`${"#".repeat(level)} ${text}`);
       return;
     }
     if (type === "quote") {
@@ -1187,7 +1296,8 @@ function applyAiNormalization(data) {
   articleTitleOverride = "";
   blockTypeOverrides = {};
   lastAiResult = data;
-  articleInput.value = markdown;
+  if (articleInput) articleInput.value = markdown;
+  else articleSource = markdown;
   syncControls();
   applyArticleSource(false);
   const blockCountFromAi = data.document.blocks.length;
@@ -1200,16 +1310,23 @@ function applyAiNormalization(data) {
 }
 
 async function normalizeWithDeepSeek() {
-  const source = articleInput.value.trim();
+  const source = (articleInput ? articleInput.value : articleSource).trim();
   if (!source) {
-    setFeedback("请先在上方粘贴或输入文章。");
+    setFeedback("请先从首页粘贴文章，或在预览里编辑文字。");
     return;
   }
-  const originalLabel = aiNormalizeButton.textContent;
-  aiNormalizeButton.disabled = true;
-  aiNormalizeButton.textContent = "优化中…";
+  const originalLabel = aiNormalizeButton ? aiNormalizeButton.textContent : "";
+  if (aiNormalizeButton) {
+    aiNormalizeButton.disabled = true;
+    aiNormalizeButton.textContent = "优化中…";
+  }
   setStatus("正在优化排版…");
-  applyArticleSource(false);
+  if (articleInput) applyArticleSource(false);
+  else {
+    trimInvalidOverrides();
+    persistArticleSource();
+    render();
+  }
   try {
     const response = await fetch("/api/normalize", {
       method: "POST",
@@ -1217,14 +1334,24 @@ async function normalizeWithDeepSeek() {
       body: JSON.stringify({ source }),
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload?.ok) throw new Error(payload?.error?.message || "暂时无法完成优化，请稍后重试。");
+    if (!response.ok || !payload?.ok) {
+      const message = payload?.error?.message || "暂时无法完成优化，请稍后重试。";
+      if (response.status === 429) {
+        setStatus("本次未调用 AI。");
+        setFeedback(message);
+        return;
+      }
+      throw new Error(message);
+    }
     applyAiNormalization(payload.data);
   } catch (error) {
     setStatus("已套用本地排版。优化未完成，仍可在预览里改字。");
     setFeedback(error instanceof Error ? error.message : "暂时无法完成优化，请稍后重试。");
   } finally {
-    aiNormalizeButton.disabled = false;
-    aiNormalizeButton.textContent = originalLabel;
+    if (aiNormalizeButton) {
+      aiNormalizeButton.disabled = false;
+      aiNormalizeButton.textContent = originalLabel;
+    }
   }
 }
 
@@ -1269,12 +1396,28 @@ function buildCopyHtml() {
     if (headingKind === "line") return `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
     if (headingKind === "block" && level === 2) return `${base}display:inline-block;padding:6px 14px;border-radius:8px;background-color:${state.accentColor};color:${state.pageColor};`;
     if (headingKind === "index" && level === 2) return `${base}`;
+    if (headingKind === "poster" && level === 2) return `${base}padding:0;border:0;`;
+    if (headingKind === "panel" && level === 2) return `${base}padding:0;border:0;`;
+    if (headingKind === "oval" && level === 2) return `${base}padding:0;border:0;text-align:center;`;
     return `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
   };
   const headingPrefix = (level) => {
-    if (headingKind === "index" && level === 2) {
+    if (level !== 2) return "";
+    if (headingKind === "index" || headingKind === "poster" || headingKind === "panel" || headingKind === "oval") {
       sectionCounter += 1;
-      return `<span style="display:inline-block;margin-right:12px;color:${softAccent};font-size:1.35em;font-weight:${state.headingWeight};">${String(sectionCounter).padStart(2, "0")}</span>`;
+      const num = String(sectionCounter).padStart(2, "0");
+      if (headingKind === "index") {
+        return `<span style="display:inline-block;margin-right:12px;color:${softAccent};font-size:1.35em;font-weight:${state.headingWeight};">${num}</span>`;
+      }
+      if (headingKind === "poster") {
+        return `<span style="display:block;margin:0 0 6px;color:${state.textColor};font-size:1.75em;font-weight:800;line-height:1;letter-spacing:0;">${num}</span>`;
+      }
+      if (headingKind === "panel") {
+        return `<span style="display:inline-block;margin-right:14px;color:${state.textColor};font-size:2.2em;font-weight:900;line-height:1;vertical-align:middle;">${num}</span>`;
+      }
+      if (headingKind === "oval") {
+        return `<span style="display:inline-block;margin:0 auto 10px;padding:10px 18px;border-radius:999px;background-color:#ffe566;box-shadow:3px 2px 0 ${state.textColor};color:${state.textColor};font-size:1.45em;font-weight:900;line-height:1;transform:rotate(-12deg);">${num}</span><br/>`;
+      }
     }
     return "";
   };
@@ -1338,6 +1481,20 @@ function buildCopyHtml() {
     if (item.type === "highlight" && isDeepNight) return `<p style="${textStyle}"><span style="${highlightCss}">${copyInlineMarkdown(item.text)}</span></p>`;
     if (item.type === "heading") {
       const level = Number(item.level) || 2;
+      const parts = splitHeadingCaption(item.text);
+      const sub = parts.sub || "SECTION";
+      if (level === 2 && headingKind === "poster") {
+        const prefix = headingPrefix(level);
+        const title = `${parts.title}${parts.title.endsWith("#") ? "" : "#"}`;
+        return `<h3 style="${headingStyle(level)}">${prefix}<span style="display:block;margin:0 0 4px;">${copyInlineMarkdown(title)}</span><span style="display:block;color:${state.textColor};font-size:${Math.max(12, Math.round(getHeadingSize(2) * 0.42))}px;font-weight:700;letter-spacing:.12em;">${escapeHtml(sub)}</span></h3>`;
+      }
+      if (level === 2 && headingKind === "panel") {
+        const prefix = headingPrefix(level);
+        return `<h3 style="${headingStyle(level)}">${prefix}<span style="display:inline-block;vertical-align:middle;"><span style="display:inline-block;padding:6px 12px;background-color:${state.textColor};color:${state.pageColor};font-size:${Math.max(14, Math.round(getHeadingSize(2) * 0.72))}px;font-weight:800;line-height:1.25;">${copyInlineMarkdown(parts.title)}</span><br/><span style="display:inline-block;margin-top:6px;color:${state.textColor};font-size:${Math.max(11, Math.round(getHeadingSize(2) * 0.38))}px;font-weight:700;letter-spacing:.14em;">${escapeHtml(sub)}</span></span></h3>`;
+      }
+      if (level === 2 && headingKind === "oval") {
+        return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}<span style="display:block;">${copyInlineMarkdown(parts.title)}</span></h3>`;
+      }
       return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}${copyInlineMarkdown(item.text)}</h3>`;
     }
     if (item.type === "paragraph") return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
@@ -1544,7 +1701,7 @@ function trimInvalidOverrides() {
 }
 
 function applyArticleSource(showStatus = true) {
-  articleSource = articleInput.value.trim();
+  if (articleInput) articleSource = articleInput.value.trim();
   trimInvalidOverrides();
   persistArticleSource();
   if (articleSource) {
@@ -1558,7 +1715,7 @@ function applyArticleSource(showStatus = true) {
 }
 
 function clearArticleSource() {
-  articleInput.value = "";
+  if (articleInput) articleInput.value = "";
   articleSource = "";
   articleTitleOverride = "";
   blockTypeOverrides = {};
@@ -1601,12 +1758,13 @@ function splitLongTextLine(line) {
 }
 
 function autoSegmentArticle() {
-  if (!articleInput.value.trim()) {
+  const raw = (articleInput ? articleInput.value : articleSource).trim();
+  if (!raw) {
     copyFeedback.textContent = "请先粘贴文章，再使用智能分段。";
     return;
   }
   let inCode = false;
-  const structured = articleInput.value.replace(/\r\n?/g, "\n").split("\n").map((line) => {
+  const structured = raw.replace(/\r\n?/g, "\n").split("\n").map((line) => {
     const trimmed = line.trim();
     if (trimmed.startsWith("```")) {
       inCode = !inCode;
@@ -1616,11 +1774,12 @@ function autoSegmentArticle() {
     if (inCode || isMarkdownBlock || line.length < 96) return line;
     return splitLongTextLine(line);
   }).join("\n");
-  articleInput.value = structured;
+  if (articleInput) articleInput.value = structured;
+  else articleSource = structured;
   blockTypeOverrides = {};
   lastAiResult = null;
   applyArticleSource(false);
-  copyFeedback.textContent = "已按中文句段智能分段，可继续在左侧逐段调整。";
+  copyFeedback.textContent = "已按中文句段智能分段，可继续在预览里调整。";
 }
 
 function handleRichTextPaste(event) {
@@ -1670,8 +1829,8 @@ lockBrandColor?.addEventListener("change", () => {
   updateCompliancePanel();
 });
 if (lockBrandColor) lockBrandColor.checked = localStorage.getItem("yooco-lock-brand-color") === "1";
-aiNormalizeButton.addEventListener("click", normalizeWithDeepSeek);
-articleInput.addEventListener("paste", handleRichTextPaste);
+aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
+articleInput?.addEventListener("paste", handleRichTextPaste);
 articleTitle.addEventListener("keydown", (event) => {
   if (event.key === "Enter") event.preventDefault();
 });
@@ -1683,6 +1842,93 @@ articleBody.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(syncPreviewEdits, 200);
 });
+
+const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
+let blockTypeMenu = null;
+let blockTypeMenuIndex = null;
+
+function ensureBlockTypeMenu() {
+  if (blockTypeMenu) return blockTypeMenu;
+  const menu = document.createElement("div");
+  menu.id = "blockTypeMenu";
+  menu.className = "block-type-menu";
+  menu.hidden = true;
+  menu.setAttribute("role", "menu");
+  menu.innerHTML = [
+    `<p class="block-type-menu-label">改为</p>`,
+    ...STRUCTURE_TYPE_OPTIONS.map(([type, label]) =>
+      `<button type="button" class="block-type-menu-item" role="menuitem" data-type="${type}">${label}</button>`),
+  ].join("");
+  document.body.appendChild(menu);
+  menu.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-type]");
+    if (!button || blockTypeMenuIndex == null) return;
+    applyBlockTypeFromMenu(blockTypeMenuIndex, button.dataset.type);
+  });
+  blockTypeMenu = menu;
+  return menu;
+}
+
+function hideBlockTypeMenu() {
+  if (!blockTypeMenu) return;
+  blockTypeMenu.hidden = true;
+  blockTypeMenuIndex = null;
+  articleBody?.querySelector(".is-block-menu-target")?.classList.remove("is-block-menu-target");
+}
+
+function showBlockTypeMenu(clientX, clientY, blockEl) {
+  const menu = ensureBlockTypeMenu();
+  const currentType = blockEl.dataset.type || "";
+  blockTypeMenuIndex = Number(blockEl.dataset.blockIndex);
+  articleBody.querySelectorAll(".is-block-menu-target").forEach((el) => el.classList.remove("is-block-menu-target"));
+  blockEl.classList.add("is-block-menu-target");
+  menu.querySelectorAll(".block-type-menu-item").forEach((button) => {
+    const active = button.dataset.type === currentType;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-current", active ? "true" : "false");
+  });
+  menu.hidden = false;
+  const pad = 8;
+  const rect = menu.getBoundingClientRect();
+  const left = Math.min(clientX, window.innerWidth - rect.width - pad);
+  const top = Math.min(clientY, window.innerHeight - rect.height - pad);
+  menu.style.left = `${Math.max(pad, left)}px`;
+  menu.style.top = `${Math.max(pad, top)}px`;
+}
+
+function applyBlockTypeFromMenu(sourceIndex, type) {
+  hideBlockTypeMenu();
+  if (!STRUCTURE_TYPE_OPTIONS.some(([option]) => option === type)) return;
+  const label = STRUCTURE_TYPE_OPTIONS.find(([option]) => option === type)?.[1] || type;
+  blockTypeOverrides[sourceIndex] = type;
+  persistArticleSource();
+  render();
+  syncPreviewEdits();
+  blockTypeOverrides = {};
+  persistArticleSource();
+  setStatus(`已改为「${label}」`);
+}
+
+articleBody.addEventListener("contextmenu", (event) => {
+  const blockEl = event.target.closest("[data-block-index][data-type]");
+  if (!blockEl || !articleBody.contains(blockEl)) return;
+  if (!STRUCTURE_MENU_TYPES.has(blockEl.dataset.type)) return;
+  event.preventDefault();
+  showBlockTypeMenu(event.clientX, event.clientY, blockEl);
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (!blockTypeMenu || blockTypeMenu.hidden) return;
+  if (blockTypeMenu.contains(event.target)) return;
+  hideBlockTypeMenu();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideBlockTypeMenu();
+});
+
+previewStage?.addEventListener("scroll", hideBlockTypeMenu, { passive: true });
+window.addEventListener("resize", hideBlockTypeMenu);
 
 const saved = localStorage.getItem("wechat-style-lab-config");
 if (saved) {
@@ -1723,8 +1969,19 @@ if (saved) {
     syncMoodUI();
   } catch { /* ignore stale local config */ }
 }
-articleInput.value = articleSource;
+if (articleInput) articleInput.value = articleSource;
 if (articleSource) setStatus(`已载入上次文章：${parseArticle(articleSource).blocks.length} 个内容块`);
 renderMoodUI();
 syncControls();
 render();
+
+try {
+  if (localStorage.getItem("yooco-auto-optimize") === "1") {
+    localStorage.removeItem("yooco-auto-optimize");
+    if (articleSource.trim()) {
+      queueMicrotask(() => {
+        normalizeWithDeepSeek();
+      });
+    }
+  }
+} catch { /* ignore */ }

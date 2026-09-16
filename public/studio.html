@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f4f1e8" />
+    <meta name="theme-color" content="#3B82F6" />
     <title>Yooco · 公众号排版实验室</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=themes-v19" />
+    <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v10" />
+    <link rel="stylesheet" href="./styles.css?v=dimensional-v10" />
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="#top" aria-label="Yooco 首页">
-        <span class="brand-mark">Y</span>
-        <span><strong>Yooco</strong><small>WECHAT STYLE LAB</small></span>
+      <a class="brand" href="/" aria-label="Yooco 首页">
+        Yooco<span class="brand-dot">.</span>
       </a>
       <div class="topbar-actions">
         <button class="ghost-button" id="resetButton" type="button">恢复默认</button>
@@ -22,32 +22,21 @@
     </header>
 
     <main id="top" class="app-shell">
-      <section class="composer-hero" aria-label="输入文章并优化">
-        <label class="composer-field">
-          <span class="composer-label">文章原文</span>
-          <textarea id="articleInput" rows="3" spellcheck="false" placeholder="在这里粘贴或输入文章，点右侧「优化排版」后，下方预览会套上当前排版。也可以直接在预览里改字。"></textarea>
-        </label>
-        <div class="composer-side">
-          <button class="optimize-button" id="aiNormalizeButton" type="button">优化排版</button>
-        </div>
-        <span id="articleStatus" class="composer-status" role="status">在上方输入文章后点击优化</span>
-      </section>
+      <div hidden>
+        <textarea id="articleInput" rows="1" spellcheck="false"></textarea>
+        <button id="aiNormalizeButton" type="button">优化排版</button>
+        <span id="articleStatus" role="status"></span>
+      </div>
 
+      <div class="lab-shell">
       <section class="lab-grid" aria-label="排版实验室">
         <section class="preview-panel">
           <div class="preview-header">
-            <div class="panel-kicker"><span>01</span>最终预览</div>
+            <div class="panel-kicker">最终预览</div>
             <div class="preview-header-actions">
               <p class="copy-feedback" id="copyFeedback" role="status"></p>
               <button class="copy-button" id="copyButton" type="button">一键复制排版</button>
             </div>
-          </div>
-          <div class="compliance-panel" id="compliancePanel" hidden>
-            <div class="compliance-head">
-              <p class="compliance-level" id="complianceLevel">合规检查</p>
-              <label class="preview-tool-toggle"><input id="lockBrandColor" type="checkbox" />复制时尽量锁定品牌色</label>
-            </div>
-            <ul class="compliance-list" id="complianceList"></ul>
           </div>
           <div class="preview-stage" id="previewStage">
             <article class="web-preview" aria-label="公众号文章预览">
@@ -70,116 +59,198 @@
         <aside class="insight-panel">
           <div id="styleMount" class="style-parameters-mount">
             <section class="workspace-pane style-parameters" id="stylePane" aria-label="模板参数">
-              <div class="control-group theme-group">
-                <div class="group-title"><span>精选主题</span><span class="group-hint">AI 按题材自动选，可手动更换</span></div>
-                <div class="theme-grid" id="themeGrid"></div>
-              </div>
-            <div class="mood-picker" id="moodPicker">
-              <div class="parameters-heading">
-                <div class="panel-kicker"><span>02</span>模板参数</div>
-                <span class="skin-current">克制高级 · 墨黑米白</span>
-              </div>
-              <div class="mood-grid" id="moodGrid"></div>
-              <div class="skin-row" id="skinRow">
-                <div class="skin-chips"></div>
-              </div>
-            </div>
-
-              <div class="control-group">
-                <div class="group-title"><span>文章类型</span><span class="group-hint">影响排版配方</span></div>
-                <label class="select-control"><span>文章类型</span><select data-key="articleType"><option value="auto">自动（跟随 AI 判断）</option><option value="tutorial">教程 / 操作指南</option><option value="checklist">盘点 / 工具清单</option><option value="opinion">观点 / 深度分析</option><option value="interview">访谈 / 人物特稿</option><option value="dataReport">数据复盘 / 报告</option><option value="lifestyle">生活 / 情感随笔</option><option value="caseStudy">案例实战 / 复盘</option></select></label>
-                <label class="toggle-control"><span>结尾签名区（仅精选主题）</span><input data-key="showSignature" type="checkbox" /><i></i></label>
+              <div class="control-group is-open" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="true">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></span>
+                  <span class="group-label">精选主题</span>
+                  <span class="group-hint">AI 可自动选，也可手改</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <div class="theme-grid" id="themeGrid"></div>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>造型</span><span class="group-hint">标题 / 卡片 / 列表</span></div>
-                <label class="select-control"><span>标题样式</span><select data-key="headingStyle"><option value="bar">左竖条</option><option value="line">底部细线</option><option value="index">序号大字</option><option value="block">色块标签</option></select></label>
-                <label class="select-control"><span>卡片样式</span><select data-key="cardStyle"><option value="border">左边框</option><option value="outline">描边圆角</option><option value="soft">柔和底色</option><option value="band">标题栏卡片</option></select></label>
-                <label class="select-control"><span>列表样式</span><select data-key="listStyle"><option value="dot">普通圆点</option><option value="circle">圆形实心序号</option><option value="ghost">大号半透明数字</option><option value="check">对勾箭头</option></select></label>
+              <div class="control-group" id="moodPickerGroup" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.2"/><path d="M5.5 8.2c.7 1.2 1.6 1.8 2.5 1.8s1.8-.6 2.5-1.8"/></svg></span>
+                  <span class="group-label">气质与皮肤</span>
+                  <span class="group-hint skin-current" id="skinCurrent">克制高级 · 墨黑米白</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <div class="mood-picker" id="moodPicker">
+                    <div class="mood-grid" id="moodGrid"></div>
+                    <div class="skin-row" id="skinRow">
+                      <div class="skin-chips"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>颜色</span><span class="group-hint">视觉性格</span></div>
-                <label class="color-control">正文色 <input data-key="textColor" type="color" /></label>
-                <label class="color-control">强调色 <input data-key="accentColor" type="color" /></label>
-                <label class="color-control">重点底色 <input data-key="highlightColor" type="color" /></label>
-                <label class="color-control">重点文字色 <input data-key="highlightTextColor" type="color" /></label>
-                <label class="color-control">卡片底色 <input data-key="cardColor" type="color" /></label>
-                <label class="color-control">引用底色 <input data-key="quoteColor" type="color" /></label>
-                <label class="color-control">卡片标题色 <input data-key="cardTitleColor" type="color" /></label>
-                <label class="color-control">链接色 <input data-key="linkColor" type="color" /></label>
-                <label class="color-control">代码底色 <input data-key="codeBackground" type="color" /></label>
-                <label class="color-control">代码文字色 <input data-key="codeColor" type="color" /></label>
-                <label class="color-control">分隔线色 <input data-key="dividerColor" type="color" /></label>
-                <label class="color-control">页面底色 <input data-key="pageColor" type="color" /></label>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h9v9h-9z"/><path d="M5.5 6.5h5M5.5 9.5h3.5"/></svg></span>
+                  <span class="group-label">文章类型</span>
+                  <span class="group-hint">影响排版配方</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="select-control"><span>文章类型</span><select data-key="articleType"><option value="auto">自动（跟随 AI 判断）</option><option value="tutorial">教程 / 操作指南</option><option value="checklist">盘点 / 工具清单</option><option value="opinion">观点 / 深度分析</option><option value="interview">访谈 / 人物特稿</option><option value="dataReport">数据复盘 / 报告</option><option value="lifestyle">生活 / 情感随笔</option><option value="caseStudy">案例实战 / 复盘</option></select></label>
+                  <label class="toggle-control"><span>结尾签名区（仅精选主题）</span><input data-key="showSignature" type="checkbox" /><i></i></label>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>文字</span><span class="group-hint">阅读节奏</span></div>
-                <label class="select-control"><span>正文字体</span><select data-key="bodyFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
-                <label class="select-control"><span>标题字体</span><select data-key="headingFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
-                <label class="select-control"><span>阅读密度</span><select data-key="readingDensity"><option value="compact">紧凑</option><option value="standard">标准</option><option value="comfortable">舒适</option><option value="custom">自定义</option></select></label>
-                <label class="range-control"><span>正文字号 <output data-output="fontSize"></output></span><input data-key="fontSize" type="range" min="14" max="22" step="1" /></label>
-                <label class="range-control"><span>正文行高 <output data-output="lineHeight"></output></span><input data-key="lineHeight" type="range" min="1.35" max="2.2" step="0.05" /></label>
-                <label class="range-control"><span>字距 <output data-output="letterSpacing"></output></span><input data-key="letterSpacing" type="range" min="-0.5" max="2" step="0.1" /></label>
-                <label class="range-control"><span>段落间距 <output data-output="paragraphSpacing"></output></span><input data-key="paragraphSpacing" type="range" min="4" max="40" step="2" /></label>
-                <label class="range-control"><span>内容宽度 <output data-output="contentWidth"></output></span><input data-key="contentWidth" type="range" min="280" max="680" step="10" /></label>
-                <label class="select-control"><span>正文对齐</span><select data-key="textAlign"><option value="left">左对齐</option><option value="justify">两端对齐</option></select></label>
-                <label class="range-control"><span>首行缩进 <output data-output="textIndent"></output></span><input data-key="textIndent" type="range" min="0" max="2" step="0.25" /></label>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5 8 3.5l5 9"/><path d="M5.2 9.5h5.6"/></svg></span>
+                  <span class="group-label">造型</span>
+                  <span class="group-hint">标题 / 卡片 / 列表</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="select-control"><span>标题样式</span><select data-key="headingStyle"><option value="bar">左竖条</option><option value="line">底部细线</option><option value="index">序号大字</option><option value="block">色块标签</option>
+                    <option value="poster">叠号双语</option>
+                    <option value="panel">序号黑卡</option>
+                    <option value="oval">黄圈序号</option></select></label>
+                  <label class="select-control"><span>卡片样式</span><select data-key="cardStyle"><option value="border">左边框</option><option value="outline">描边圆角</option><option value="soft">柔和底色</option><option value="band">标题栏卡片</option></select></label>
+                  <label class="select-control"><span>列表样式</span><select data-key="listStyle"><option value="dot">普通圆点</option><option value="circle">圆形实心序号</option><option value="ghost">大号半透明数字</option><option value="check">对勾箭头</option></select></label>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>标题层级</span><span class="group-hint">H1 至 H4+</span></div>
-                <label class="range-control"><span>主标题字号 <output data-output="titleSize"></output></span><input data-key="titleSize" type="range" min="22" max="36" step="1" /></label>
-                <label class="range-control"><span>标题字号 <output data-output="headingSize"></output></span><input data-key="headingSize" type="range" min="20" max="34" step="1" /></label>
-                <label class="range-control"><span>三级标题 <output data-output="subheadingSize"></output></span><input data-key="subheadingSize" type="range" min="18" max="30" step="1" /></label>
-                <label class="range-control"><span>四级及以下 <output data-output="minorHeadingSize"></output></span><input data-key="minorHeadingSize" type="range" min="16" max="26" step="1" /></label>
-                <label class="range-control"><span>标题字重 <output data-output="headingWeight"></output></span><input data-key="headingWeight" type="range" min="500" max="900" step="100" /></label>
-                <label class="range-control"><span>标题行高 <output data-output="headingLineHeight"></output></span><input data-key="headingLineHeight" type="range" min="1.1" max="1.7" step="0.05" /></label>
-                <label class="range-control"><span>标题上间距 <output data-output="headingSpacingBefore"></output></span><input data-key="headingSpacingBefore" type="range" min="8" max="48" step="2" /></label>
-                <label class="range-control"><span>标题下间距 <output data-output="headingSpacingAfter"></output></span><input data-key="headingSpacingAfter" type="range" min="4" max="32" step="2" /></label>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2.2"/><circle cx="10" cy="7" r="2.2"/><circle cx="8" cy="10.2" r="2.2"/></svg></span>
+                  <span class="group-label">颜色</span>
+                  <span class="group-hint">视觉性格</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="color-control">正文色 <input data-key="textColor" type="color" /></label>
+                  <label class="color-control">强调色 <input data-key="accentColor" type="color" /></label>
+                  <label class="color-control">重点底色 <input data-key="highlightColor" type="color" /></label>
+                  <label class="color-control">重点文字色 <input data-key="highlightTextColor" type="color" /></label>
+                  <label class="color-control">卡片底色 <input data-key="cardColor" type="color" /></label>
+                  <label class="color-control">引用底色 <input data-key="quoteColor" type="color" /></label>
+                  <label class="color-control">卡片标题色 <input data-key="cardTitleColor" type="color" /></label>
+                  <label class="color-control">链接色 <input data-key="linkColor" type="color" /></label>
+                  <label class="color-control">代码底色 <input data-key="codeBackground" type="color" /></label>
+                  <label class="color-control">代码文字色 <input data-key="codeColor" type="color" /></label>
+                  <label class="color-control">分隔线色 <input data-key="dividerColor" type="color" /></label>
+                  <label class="color-control">页面底色 <input data-key="pageColor" type="color" /></label>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>重点与链接</span><span class="group-hint">可由 AI 输出或手动覆盖</span></div>
-                <label class="select-control"><span>重点样式</span><select data-key="highlightStyle"><option value="background">底色高亮</option><option value="marker">荧光笔（纯色）</option><option value="underline">底部标记</option><option value="bold">仅加粗</option></select></label>
-                <label class="range-control"><span>重点圆角 <output data-output="highlightRadius"></output></span><input data-key="highlightRadius" type="range" min="0" max="12" step="1" /></label>
-                <label class="range-control"><span>重点左右留白 <output data-output="highlightPadding"></output></span><input data-key="highlightPadding" type="range" min="0" max="8" step="1" /></label>
-                <label class="toggle-control"><span>链接显示下划线</span><input data-key="linkUnderline" type="checkbox" /><i></i></label>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h9"/><path d="M8 4.5v7"/><path d="M5.5 11.5h5"/></svg></span>
+                  <span class="group-label">文字</span>
+                  <span class="group-hint">阅读节奏</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="select-control"><span>正文字体</span><select data-key="bodyFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
+                  <label class="select-control"><span>标题字体</span><select data-key="headingFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
+                  <label class="select-control"><span>阅读密度</span><select data-key="readingDensity"><option value="compact">紧凑</option><option value="standard">标准</option><option value="comfortable">舒适</option><option value="custom">自定义</option></select></label>
+                  <label class="range-control"><span>正文字号 <output data-output="fontSize"></output></span><input data-key="fontSize" type="range" min="14" max="22" step="1" /></label>
+                  <label class="range-control"><span>正文行高 <output data-output="lineHeight"></output></span><input data-key="lineHeight" type="range" min="1.35" max="2.2" step="0.05" /></label>
+                  <label class="range-control"><span>字距 <output data-output="letterSpacing"></output></span><input data-key="letterSpacing" type="range" min="-0.5" max="2" step="0.1" /></label>
+                  <label class="range-control"><span>段落间距 <output data-output="paragraphSpacing"></output></span><input data-key="paragraphSpacing" type="range" min="4" max="40" step="2" /></label>
+                  <label class="range-control"><span>内容宽度 <output data-output="contentWidth"></output></span><input data-key="contentWidth" type="range" min="280" max="680" step="10" /></label>
+                  <label class="select-control"><span>正文对齐</span><select data-key="textAlign"><option value="left">左对齐</option><option value="justify">两端对齐</option></select></label>
+                  <label class="range-control"><span>首行缩进 <output data-output="textIndent"></output></span><input data-key="textIndent" type="range" min="0" max="2" step="0.25" /></label>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>列表、引用与卡片</span><span class="group-hint">信息块节奏</span></div>
-                <label class="range-control"><span>列表缩进 <output data-output="listIndent"></output></span><input data-key="listIndent" type="range" min="1" max="3" step="0.25" /></label>
-                <label class="range-control"><span>列表项间距 <output data-output="listItemSpacing"></output></span><input data-key="listItemSpacing" type="range" min="0" max="20" step="1" /></label>
-                <label class="range-control"><span>引用标题字号 <output data-output="quoteTitleSize"></output></span><input data-key="quoteTitleSize" type="range" min="10" max="18" step="1" /></label>
-                <label class="range-control"><span>卡片标题字号 <output data-output="cardTitleSize"></output></span><input data-key="cardTitleSize" type="range" min="10" max="18" step="1" /></label>
-                <label class="range-control"><span>卡片边框粗细 <output data-output="cardBorderWidth"></output></span><input data-key="cardBorderWidth" type="range" min="0" max="4" step="1" /></label>
-                <label class="range-control"><span>卡片圆角 <output data-output="cardRadius"></output></span><input data-key="cardRadius" type="range" min="0" max="24" step="1" /></label>
-                <label class="range-control"><span>卡片内边距 <output data-output="cardPadding"></output></span><input data-key="cardPadding" type="range" min="12" max="32" step="2" /></label>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5v9"/><path d="M8.5 3.5v9"/><path d="M3.5 8h5"/><path d="M11 6.5v6"/><path d="M11 6.5h2"/></svg></span>
+                  <span class="group-label">标题层级</span>
+                  <span class="group-hint">H1 至 H4+</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="range-control"><span>主标题字号 <output data-output="titleSize"></output></span><input data-key="titleSize" type="range" min="22" max="36" step="1" /></label>
+                  <label class="range-control"><span>标题字号 <output data-output="headingSize"></output></span><input data-key="headingSize" type="range" min="20" max="34" step="1" /></label>
+                  <label class="range-control"><span>三级标题 <output data-output="subheadingSize"></output></span><input data-key="subheadingSize" type="range" min="18" max="30" step="1" /></label>
+                  <label class="range-control"><span>四级及以下 <output data-output="minorHeadingSize"></output></span><input data-key="minorHeadingSize" type="range" min="16" max="26" step="1" /></label>
+                  <label class="range-control"><span>标题字重 <output data-output="headingWeight"></output></span><input data-key="headingWeight" type="range" min="500" max="900" step="100" /></label>
+                  <label class="range-control"><span>标题行高 <output data-output="headingLineHeight"></output></span><input data-key="headingLineHeight" type="range" min="1.1" max="1.7" step="0.05" /></label>
+                  <label class="range-control"><span>标题上间距 <output data-output="headingSpacingBefore"></output></span><input data-key="headingSpacingBefore" type="range" min="8" max="48" step="2" /></label>
+                  <label class="range-control"><span>标题下间距 <output data-output="headingSpacingAfter"></output></span><input data-key="headingSpacingAfter" type="range" min="4" max="32" step="2" /></label>
+                </div>
               </div>
 
-              <div class="control-group">
-                <div class="group-title"><span>分隔线、代码与图片</span><span class="group-hint">细节</span></div>
-                <label class="range-control"><span>分隔线粗细 <output data-output="dividerThickness"></output></span><input data-key="dividerThickness" type="range" min="1" max="4" step="1" /></label>
-                <label class="range-control"><span>分隔线上下留白 <output data-output="dividerMargin"></output></span><input data-key="dividerMargin" type="range" min="8" max="48" step="2" /></label>
-                <label class="range-control"><span>代码字号 <output data-output="codeFontSize"></output></span><input data-key="codeFontSize" type="range" min="11" max="18" step="1" /></label>
-                <label class="range-control"><span>代码行高 <output data-output="codeLineHeight"></output></span><input data-key="codeLineHeight" type="range" min="1.2" max="2" step="0.1" /></label>
-                <label class="range-control"><span>图片说明字号 <output data-output="captionSize"></output></span><input data-key="captionSize" type="range" min="9" max="16" step="1" /></label>
-                <label class="range-control"><span>图片圆角 <output data-output="imageRadius"></output></span><input data-key="imageRadius" type="range" min="0" max="24" step="1" /></label>
-                <label class="toggle-control"><span>显示引用卡片</span><input data-key="showQuote" type="checkbox" /><i></i></label>
-                <label class="toggle-control"><span>显示内容分隔线</span><input data-key="showDivider" type="checkbox" /><i></i></label>
-                <label class="toggle-control"><span>显示配图占位</span><input data-key="showImage" type="checkbox" /><i></i></label>
-                <p class="markdown-tip" style="margin:0;">可用语法：<code>:::card 标题</code>、<code>:::steps 操作步骤</code>、<code>:::stat 关键数据</code>（每行 <code>99% | 完读率</code>）。复制时列表/步骤用段落模拟；图片优先素材库；代码过长建议截图。</p>
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 9.8 9.8 6.2"/><path d="M7.2 4.8a2.2 2.2 0 0 1 3.1 3.1"/><path d="M8.8 11.2a2.2 2.2 0 0 1-3.1-3.1"/></svg></span>
+                  <span class="group-label">重点与链接</span>
+                  <span class="group-hint">AI 或手动</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="select-control"><span>重点样式</span><select data-key="highlightStyle"><option value="background">底色高亮</option><option value="marker">荧光笔（纯色）</option><option value="underline">底部标记</option><option value="bold">仅加粗</option></select></label>
+                  <label class="range-control"><span>重点圆角 <output data-output="highlightRadius"></output></span><input data-key="highlightRadius" type="range" min="0" max="12" step="1" /></label>
+                  <label class="range-control"><span>重点左右留白 <output data-output="highlightPadding"></output></span><input data-key="highlightPadding" type="range" min="0" max="8" step="1" /></label>
+                  <label class="toggle-control"><span>链接显示下划线</span><input data-key="linkUnderline" type="checkbox" /><i></i></label>
+                </div>
+              </div>
+
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h9"/><path d="M3.5 8h9"/><path d="M3.5 11.5h6"/></svg></span>
+                  <span class="group-label">列表、引用与卡片</span>
+                  <span class="group-hint">信息块节奏</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="range-control"><span>列表缩进 <output data-output="listIndent"></output></span><input data-key="listIndent" type="range" min="1" max="3" step="0.25" /></label>
+                  <label class="range-control"><span>列表项间距 <output data-output="listItemSpacing"></output></span><input data-key="listItemSpacing" type="range" min="0" max="20" step="1" /></label>
+                  <label class="range-control"><span>引用标题字号 <output data-output="quoteTitleSize"></output></span><input data-key="quoteTitleSize" type="range" min="10" max="18" step="1" /></label>
+                  <label class="range-control"><span>卡片标题字号 <output data-output="cardTitleSize"></output></span><input data-key="cardTitleSize" type="range" min="10" max="18" step="1" /></label>
+                  <label class="range-control"><span>卡片边框粗细 <output data-output="cardBorderWidth"></output></span><input data-key="cardBorderWidth" type="range" min="0" max="4" step="1" /></label>
+                  <label class="range-control"><span>卡片圆角 <output data-output="cardRadius"></output></span><input data-key="cardRadius" type="range" min="0" max="24" step="1" /></label>
+                  <label class="range-control"><span>卡片内边距 <output data-output="cardPadding"></output></span><input data-key="cardPadding" type="range" min="12" max="32" step="2" /></label>
+                </div>
+              </div>
+
+              <div class="control-group" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="10" height="9" rx="1.5"/><path d="M5.5 9.5 7.2 7.8l1.6 1.6 1.7-2.2 1.5 2.3"/></svg></span>
+                  <span class="group-label">分隔线、代码与图片</span>
+                  <span class="group-hint">细节</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <label class="range-control"><span>分隔线粗细 <output data-output="dividerThickness"></output></span><input data-key="dividerThickness" type="range" min="1" max="4" step="1" /></label>
+                  <label class="range-control"><span>分隔线上下留白 <output data-output="dividerMargin"></output></span><input data-key="dividerMargin" type="range" min="8" max="48" step="2" /></label>
+                  <label class="range-control"><span>代码字号 <output data-output="codeFontSize"></output></span><input data-key="codeFontSize" type="range" min="11" max="18" step="1" /></label>
+                  <label class="range-control"><span>代码行高 <output data-output="codeLineHeight"></output></span><input data-key="codeLineHeight" type="range" min="1.2" max="2" step="0.1" /></label>
+                  <label class="range-control"><span>图片说明字号 <output data-output="captionSize"></output></span><input data-key="captionSize" type="range" min="9" max="16" step="1" /></label>
+                  <label class="range-control"><span>图片圆角 <output data-output="imageRadius"></output></span><input data-key="imageRadius" type="range" min="0" max="24" step="1" /></label>
+                  <label class="toggle-control"><span>显示引用卡片</span><input data-key="showQuote" type="checkbox" /><i></i></label>
+                  <label class="toggle-control"><span>显示内容分隔线</span><input data-key="showDivider" type="checkbox" /><i></i></label>
+                  <label class="toggle-control"><span>显示配图占位</span><input data-key="showImage" type="checkbox" /><i></i></label>
+                  <p class="markdown-tip" style="margin:0;">可用语法：<code>:::card 标题</code>、<code>:::steps 操作步骤</code>、<code>:::stat 关键数据</code>（每行 <code>99% | 完读率</code>）。复制时列表/步骤用段落模拟；图片优先素材库；代码过长建议截图。</p>
+                </div>
               </div>
             </section>
           </div>
         </aside>
       </section>
+      </div>
+
+      <div class="compliance-panel compliance-panel--page" id="compliancePanel" hidden>
+        <div class="compliance-head">
+          <p class="compliance-level" id="complianceLevel">合规检查</p>
+          <label class="preview-tool-toggle"><input id="lockBrandColor" type="checkbox" />复制时尽量锁定品牌色</label>
+        </div>
+        <ul class="compliance-list" id="complianceList"></ul>
+      </div>
     </main>
 
     <footer class="site-footer"><span>Yooco · 好排版的参考起点</span><span>借鉴结构，不复制内容</span></footer>
-    <script src="./themes.js?v=themes-v19"></script>
-    <script src="./app.js?v=themes-v19"></script>
+    <script src="./themes.js?v=dimensional-v10"></script>
+    <script src="./app.js?v=dimensional-v10"></script>
   </body>
 </html>

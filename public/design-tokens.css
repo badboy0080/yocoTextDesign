@@ -1,0 +1,161 @@
+/* Dimensional Interface Schema — shared tokens for Yooco chrome */
+:root {
+  --di-primary: #3b82f6;
+  --di-secondary: #60a5fa;
+  --di-tertiary: #c084fc;
+  --di-neutral: #71717a;
+  --di-bg: #ffffff;
+  --di-surface: #18181b;
+  --di-text: #71717a;
+  --di-ink: #18181b;
+  --di-border: #e4e4e7;
+  --di-border-zinc: #3f3f46;
+  --di-border-soft: #f4f4f5;
+
+  --di-radius-xs: 2px;
+  --di-radius-sm: 16px;
+  --di-radius-md: 24px;
+  --di-radius-lg: 40px;
+  --di-radius-xl: 64px;
+  --di-radius-full: 9999px;
+
+  --di-space-1: 4px;
+  --di-space-2: 8px;
+  --di-space-3: 12px;
+  --di-space-4: 16px;
+  --di-space-5: 20px;
+  --di-space-6: 24px;
+  --di-space-8: 32px;
+  --di-space-10: 40px;
+
+  --di-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  --di-display-size: clamp(40px, 7vw, 72px);
+  --di-display-weight: 500;
+  --di-display-lh: 1;
+  --di-display-tracking: -0.025em;
+  --di-body-size: 16px;
+  --di-body-lh: 26px;
+  --di-label-size: 14px;
+  --di-label-lh: 20px;
+  --di-label-weight: 500;
+
+  --di-blur-sm: 4px;
+  --di-blur-md: 12px;
+  --di-blur-lg: 40px;
+
+  --di-shadow-sm: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --di-shadow-inset: 0 0 0 0 transparent, 0 0 0 0 transparent, inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --di-shadow-soft: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 100px 100px -50px rgba(0, 0, 0, 0.05);
+  --di-shadow-glass: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 30px 60px -15px rgba(0, 0, 0, 0.1);
+  --di-shadow-dark: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+  --di-shadow-white-card: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 25px 50px -12px rgba(228, 228, 231, 0.4);
+
+  --di-page-gradient: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.9),
+    rgba(250, 250, 250, 0.95)
+  );
+  --di-shell-gradient: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.9),
+    rgba(250, 250, 250, 0.95)
+  );
+
+  --di-duration-fast: 150ms;
+  --di-duration: 500ms;
+  --di-ease: ease;
+
+  /* Studio chrome aliases (legacy selector names) */
+  --ink: var(--di-ink);
+  --muted: var(--di-text);
+  --line: var(--di-border);
+  --paper: #fafafa;
+  --panel: var(--di-bg);
+  --accent: var(--di-primary);
+  --surface: var(--di-surface);
+  --radius: var(--di-radius-md);
+  --shadow: var(--di-shadow-glass);
+  /* Retire lime: map chrome accents to dimensional primary / white */
+  --lime: #ffffff;
+  --lime-dark: var(--di-primary);
+}
+
+.di-shell {
+  padding: 1px;
+  border-radius: var(--di-radius-md);
+  background: var(--di-shell-gradient);
+  box-shadow: var(--di-shadow-sm);
+}
+
+.di-shell > .di-shell-inner {
+  border-radius: calc(var(--di-radius-md) - 1px);
+  overflow: hidden;
+}
+
+.di-card-glass {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--di-radius-md);
+  padding: var(--di-space-5);
+  box-shadow: var(--di-shadow-glass);
+  backdrop-filter: blur(var(--di-blur-lg));
+  -webkit-backdrop-filter: blur(var(--di-blur-lg));
+}
+
+.di-card-white {
+  background: var(--di-bg);
+  border: 1px solid rgba(228, 228, 231, 0.8);
+  border-radius: var(--di-radius-lg);
+  box-shadow: var(--di-shadow-white-card);
+}
+
+.di-btn-primary {
+  border: 0 solid rgb(229, 231, 235);
+  border-radius: var(--di-radius-full);
+  padding: 8px 16px;
+  background: var(--di-surface);
+  color: var(--di-bg);
+  font-family: var(--di-font);
+  font-size: var(--di-label-size);
+  font-weight: var(--di-label-weight);
+  line-height: var(--di-label-lh);
+  cursor: pointer;
+  transition: color var(--di-duration-fast) var(--di-ease), opacity var(--di-duration-fast) var(--di-ease),
+    background var(--di-duration-fast) var(--di-ease);
+}
+
+.di-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.di-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.di-btn-primary:focus-visible {
+  outline: 2px solid var(--di-primary);
+  outline-offset: 3px;
+}
+
+.di-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--di-neutral);
+  font-family: var(--di-font);
+  font-size: var(--di-label-size);
+  font-weight: var(--di-label-weight);
+  line-height: var(--di-label-lh);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--di-duration-fast) var(--di-ease);
+}
+
+.di-link:hover {
+  color: var(--di-primary);
+}

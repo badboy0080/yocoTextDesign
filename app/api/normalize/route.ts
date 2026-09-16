@@ -1,5 +1,6 @@
-import { env } from "cloudflare:workers";
 import { AppError, normalizeWithDeepSeek, validateRequest } from "../../../lib/deepseek-normalizer";
+import { consumeNormalizeQuota, RateLimitError } from "../../../lib/edgeone-rate-limit";
+import { getDeepseekApiKey, getDeepseekModel } from "../../../lib/runtime-env";
 
 const MAX_BODY_BYTES = 512 * 1024;
 
@@ -11,13 +12,18 @@ export async function POST(request: Request) {
     }
     const body = await request.json();
     const source = validateRequest(body);
-    const data = await normalizeWithDeepSeek(source, env.DEEPSEEK_API_KEY, env.DEEPSEEK_MODEL || "deepseek-flash");
+    await consumeNormalizeQuota(request);
+    const data = await normalizeWithDeepSeek(source, getDeepseekApiKey(), getDeepseekModel());
     return Response.json({ ok: true, data }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
     const known = error instanceof AppError;
     const status = known ? error.status : 500;
     const code = known ? error.code : "INTERNAL_ERROR";
     const message = known ? error.message : "服务出现意外错误，请稍后重试。";
-    return Response.json({ ok: false, error: { code, message } }, { status, headers: { "cache-control": "no-store" } });
+    const headers: Record<string, string> = { "cache-control": "no-store" };
+    if (error instanceof RateLimitError) {
+      headers["retry-after"] = String(error.retryAfter);
+    }
+    return Response.json({ ok: false, error: { code, message } }, { status, headers });
   }
 }

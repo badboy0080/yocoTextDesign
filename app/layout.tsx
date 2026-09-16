@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Yooco · 公众号排版实验室",
-  description: "将普通文本、Markdown 或网页富文本整理成可配置的公众号文章排版。",
+  title: "Yooco · 让用户第一眼爱上你的文字",
+  description: "粘贴公众号原文，一键优化排版，复制进微信编辑器。",
   icons: {
     icon: "/favicon.svg",
   },

@@ -195,7 +195,7 @@ export function HomeLanding() {
     <div className="yooco-home">
       <Script src="/analytics.js" strategy="afterInteractive" />
 
-      <header className="sticky top-0 z-20 border-b border-border/80 bg-background/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-20 border-b border-border/80 bg-background">
         <div className="yooco-shell flex h-16 items-center justify-between">
           <a
             href="/"

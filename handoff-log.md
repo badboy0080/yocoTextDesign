@@ -17,8 +17,8 @@
 
 - 想做什么：增长/内容反馈纯英文 H1 不利于公众号作者第一眼理解，主句改回中文。
 - 做成了什么：H1 改为「把一篇好文章，排成读者愿意读完的样子」；hero 不再放英文；字体用站点已有中文友好衬线栈，不用 Playfair italic。绿色试用 CTA、三档价、退款小字、visit/trial_click 未动。
-- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/layout.tsx`、`handoff-log.md`。
-- 如何验证：打开 `/` 主句为中文；点「免费试用 10 次」仍进工作室；构建通过。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/layout.tsx`、`docs/pr-preview/homepage_hero_desktop.webp`、`docs/pr-preview/homepage_hero_mobile.webp`、`handoff-log.md`。
+- 如何验证：打开 `/` 主句为中文；点「免费试用 10 次」仍进工作室；`npm run build` 与 `npm run build:edgeone` 通过。
 - 待办/风险：无。
 
 ### 2026-09-18 主句改英文 Playfair italic

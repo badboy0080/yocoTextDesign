@@ -2,14 +2,23 @@
 
 ## 当前接手摘要
 
-产品：Yooco 双轨上线。
+产品：Yooco 双轨上线。增长首页文案已定稿，试用 10 次 CTA 进工作室。
 
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
-- **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。
-- **本地**：`npm run dev` → http://localhost:5173/。
-- **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。EdgeOne 限流已于 2026-09-16 重新部署（deployment `dpb2qme52j7s`）。
+- **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
+- **本地**：`npm run dev` → http://localhost:5173/ ；CTA 走 `/studio`（开发中间件改写到 `studio.html`）。
+- **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
+- **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。增长文案 PR 待合并后重新部署。
 
 ## 最近 5 次工作记录
+
+### 2026-09-18 增长首页文案 + 试用 10 次
+
+- 想做什么：首页换成锁定增长文案；主按钮「免费试用 10 次」进工作室；AI 优化上限 10 次并显示剩余。
+- 做成了什么：品牌统一 Yooco；主标题/副文案/价格/退款开票说明落地；`/studio` 在本地、Next、Workers 都能打开；normalize 用尽返回升级提示；工作室顶栏显示剩余次数。未做真实支付。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/layout.tsx`、`app/api/normalize/route.ts`、`lib/edgeone-rate-limit.ts`、`public/studio.html`、`public/app.js`、`public/styles.css`、`next.config.ts`、`vite.config.ts`、`wrangler.jsonc`、`handoff-log.md`。
+- 如何验证：`npm run build` / `npm run build:edgeone`；本地打开 `/` 点「免费试用 10 次」应到工作室；工作室可见「试用剩余 n 次」。
+- 待办/风险：未接支付；次数按 IP 每天 10 次，清 localStorage 不能绕过线上配额。
 
 ### 2026-09-16 首页方案 C：shadcn 产品页重做
 

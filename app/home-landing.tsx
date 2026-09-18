@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 import "./home.css";
 
-const STUDIO_URL = "/studio.html";
+const STUDIO_URL = "/studio";
 const ACCEPT_FILES =
   ".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -55,9 +55,15 @@ async function readArticleFile(file: File): Promise<string> {
 }
 
 const STEPS = [
-  { n: "01", title: "粘贴原文", desc: "把公众号草稿贴进来，或上传 txt / docx。" },
-  { n: "02", title: "优化排版", desc: "AI 理清结构，并给出一套可读的样式基调。" },
-  { n: "03", title: "复制发布", desc: "一键复制到微信编辑器，再微调即可发出。" },
+  { n: "01", title: "Markdown 进来", desc: "粘贴原文或上传 txt / docx，也可以直接进工作室。" },
+  { n: "02", title: "公众号预览", desc: "AI 理清结构，立刻看到接近发表时的样子。" },
+  { n: "03", title: "一键复制，还能继续改", desc: "复制进微信编辑器，标题和正文仍可微调。" },
+] as const;
+
+const PLANS = [
+  { name: "试用", price: "免费", note: "限 10 次" },
+  { name: "专业版", price: "¥9.9", note: "每月" },
+  { name: "专业版年付", price: "¥59.9", note: "每年" },
 ] as const;
 
 export function HomeLanding() {
@@ -67,6 +73,19 @@ export function HomeLanding() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  function goStudio(autoOptimize: boolean) {
+    startTransition(() => {
+      try {
+        const text = source.trim();
+        if (text) localStorage.setItem("yooco-article-source", text);
+        if (autoOptimize && text) localStorage.setItem("yooco-auto-optimize", "1");
+      } catch {
+        /* ignore quota / private mode */
+      }
+      window.location.assign(STUDIO_URL);
+    });
+  }
+
   function goOptimize() {
     const text = source.trim();
     if (!text) {
@@ -74,15 +93,7 @@ export function HomeLanding() {
       return;
     }
     setHint("");
-    startTransition(() => {
-      try {
-        localStorage.setItem("yooco-article-source", text);
-        localStorage.setItem("yooco-auto-optimize", "1");
-      } catch {
-        /* ignore quota / private mode */
-      }
-      window.location.assign(STUDIO_URL);
-    });
+    goStudio(true);
   }
 
   function openFilePicker() {
@@ -134,16 +145,28 @@ export function HomeLanding() {
 
       <main className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-16 pt-10 sm:px-6 sm:pt-16">
         <section className="flex flex-col gap-8">
-          <div className="space-y-4 text-center sm:text-left">
+          <div className="space-y-5 text-center sm:text-left">
             <p className="text-sm font-medium tracking-wide text-muted-foreground">
-              公众号排版实验室
-            </p>
-            <h1 className="font-[family-name:var(--yooco-display)] text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">
               Yooco
+            </p>
+            <h1 className="font-[family-name:var(--yooco-display)] text-3xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15]">
+              把一篇好文章，排成读者愿意读完的样子
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
-              粘贴原文，一键优化排版，复制进微信编辑器。
+              Markdown 进 → 公众号预览 → 一键复制，还能继续改
             </p>
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <Button
+                asChild
+                size="lg"
+                className="bg-[var(--yooco-accent)] text-white hover:bg-[var(--yooco-accent-hover)]"
+              >
+                <a href={STUDIO_URL}>
+                  免费试用 10 次
+                  <ArrowRight />
+                </a>
+              </Button>
+            </div>
           </div>
 
           <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">
@@ -217,7 +240,7 @@ export function HomeLanding() {
                 size="lg"
                 disabled={pending || importing}
                 onClick={goOptimize}
-                className="bg-[var(--yooco-accent)] text-white hover:bg-[var(--yooco-accent-hover)]"
+                variant="outline"
               >
                 {pending ? "正在打开…" : "优化排版"}
                 {!pending ? <ArrowRight /> : null}
@@ -253,6 +276,36 @@ export function HomeLanding() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <Separator className="my-12 bg-border/70" />
+
+        <section className="space-y-6" aria-labelledby="yooco-pricing-heading">
+          <div className="space-y-2">
+            <h2
+              id="yooco-pricing-heading"
+              className="font-[family-name:var(--yooco-display)] text-2xl font-semibold tracking-tight"
+            >
+              价格
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              试用免费限 10 次 / 专业版 ¥9.9/月 / ¥59.9/年
+            </p>
+          </div>
+          <ul className="yooco-pricing-grid">
+            {PLANS.map((plan) => (
+              <li key={plan.name} className="yooco-pricing-card">
+                <p className="text-sm text-muted-foreground">{plan.name}</p>
+                <p className="mt-2 font-[family-name:var(--yooco-display)] text-2xl font-semibold tracking-tight">
+                  {plan.price}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">{plan.note}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            符合条件可申请退款 · 付费可开电子普票
+          </p>
         </section>
       </main>
     </div>

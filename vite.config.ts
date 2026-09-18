@@ -1,5 +1,5 @@
 import vinext from "vinext";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type ViteDevServer } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./scripts/sites-vite-plugin";
 
@@ -56,6 +56,18 @@ export default defineConfig(async ({ mode }) => {
       : undefined,
     plugins: [
       vinext(),
+      {
+        name: "yooco-studio-alias",
+        configureServer(server: ViteDevServer) {
+          server.middlewares.use((request, _response, next) => {
+            const [pathname, search = ""] = (request.url ?? "/").split("?");
+            if (pathname === "/studio" || pathname === "/studio/") {
+              request.url = `/studio.html${search ? `?${search}` : ""}`;
+            }
+            next();
+          });
+        },
+      },
       sites(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },

@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#3B82F6" />
     <title>Yooco · 公众号排版实验室</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v10" />
-    <link rel="stylesheet" href="./styles.css?v=dimensional-v10" />
+    <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
+    <link rel="stylesheet" href="./styles.css?v=dimensional-v11" />
   </head>
   <body>
     <header class="topbar">
@@ -15,16 +15,20 @@
         Yooco<span class="brand-dot">.</span>
       </a>
       <div class="topbar-actions">
+        <span class="trial-meter" id="trialMeter" aria-live="polite">试用剩余 10 次</span>
+        <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
         <button class="ghost-button" id="resetButton" type="button">恢复默认</button>
         <button class="accent-button" id="exportButton" type="button">导出配置</button>
         <label class="ghost-button file-button">导入配置<input id="importInput" type="file" accept="application/json,.json" /></label>
       </div>
     </header>
+    <div class="trial-banner" id="trialBanner" hidden role="status">
+      免费试用次数已用完。升级专业版：¥9.9/月 或 ¥59.9/年。
+    </div>
 
     <main id="top" class="app-shell">
       <div hidden>
         <textarea id="articleInput" rows="1" spellcheck="false"></textarea>
-        <button id="aiNormalizeButton" type="button">优化排版</button>
         <span id="articleStatus" role="status"></span>
       </div>
 
@@ -250,7 +254,7 @@
     </main>
 
     <footer class="site-footer"><span>Yooco · 好排版的参考起点</span><span>借鉴结构，不复制内容</span></footer>
-    <script src="./themes.js?v=dimensional-v10"></script>
-    <script src="./app.js?v=dimensional-v10"></script>
+    <script src="./themes.js?v=dimensional-v11"></script>
+    <script src="./app.js?v=dimensional-v11"></script>
   </body>
 </html>

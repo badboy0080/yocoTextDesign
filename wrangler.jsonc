@@ -10,6 +10,7 @@
   "assets": {
     "directory": "dist/client",
     "not_found_handling": "none",
+    "html_handling": "auto-trailing-slash",
     "binding": "ASSETS"
   },
   "vars": {

@@ -6,6 +6,7 @@ import {
   useTransition,
   type ChangeEvent,
 } from "react";
+import Image from "next/image";
 import { AlertCircle, ArrowRight, FilePlus2, Sparkles } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -168,6 +169,42 @@ export function HomeLanding() {
               </Button>
             </div>
           </div>
+
+          <section className="yooco-compare" aria-labelledby="yooco-compare-heading">
+            <div className="space-y-2 text-center sm:text-left">
+              <h2
+                id="yooco-compare-heading"
+                className="font-[family-name:var(--yooco-display)] text-2xl font-semibold tracking-tight"
+              >
+                原稿 vs 清氧绿排版
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                同一篇文章：左边是墨黑米白原稿，右边加上本文脉络。
+              </p>
+            </div>
+            <div className="yooco-compare-grid">
+              <figure className="yooco-compare-card">
+                <figcaption>原稿</figcaption>
+                <Image
+                  src="/cases/wechat-before-after-01/06-live-before.png"
+                  alt="墨黑米白原稿：标题和正文挤在一起"
+                  width={800}
+                  height={656}
+                  unoptimized
+                />
+              </figure>
+              <figure className="yooco-compare-card">
+                <figcaption>清氧绿 + 本文脉络</figcaption>
+                <Image
+                  src="/cases/wechat-before-after-01/07-live-after.png"
+                  alt="清氧绿排版：带本文脉络和重点句高亮"
+                  width={800}
+                  height={656}
+                  unoptimized
+                />
+              </figure>
+            </div>
+          </section>
 
           <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">
             <CardHeader className="border-b border-border/60 px-4 py-3 sm:px-5">

@@ -1453,6 +1453,11 @@ async function normalizeWithDeepSeek() {
       renderTrialMeter();
     }
     applyAiNormalization(payload.data);
+    try {
+      if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
+    } catch {
+      /* analytics must never break typesetting */
+    }
   } catch (error) {
     setStatus("已套用本地排版。优化未完成，仍可在预览里改字。");
     setFeedback(error instanceof Error ? error.message : "暂时无法完成优化，请稍后重试。");

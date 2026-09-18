@@ -9,3 +9,7 @@ export function getDeepseekApiKey(): string {
 export function getDeepseekModel(): string {
   return (process.env.DEEPSEEK_MODEL || "deepseek-flash").trim() || "deepseek-flash";
 }
+
+export function getAnalyticsToken(): string {
+  return (process.env.ANALYTICS_TOKEN || "").trim();
+}

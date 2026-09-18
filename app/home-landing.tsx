@@ -7,6 +7,7 @@ import {
   type ChangeEvent,
 } from "react";
 import Image from "next/image";
+import Script from "next/script";
 import { AlertCircle, ArrowRight, FilePlus2, Sparkles } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -66,6 +67,30 @@ const PLANS = [
   { name: "专业版", price: "¥9.9", note: "每月" },
   { name: "专业版年付", price: "¥59.9", note: "每年" },
 ] as const;
+
+function trackTrialClick() {
+  try {
+    const track = (window as Window & { yoocoTrack?: (event: string) => void }).yoocoTrack;
+    if (typeof track === "function") {
+      track("trial_click");
+      return;
+    }
+    let deviceId = "";
+    try {
+      deviceId = window.localStorage.getItem("yooco-device-id") || "";
+    } catch {
+      /* ignore */
+    }
+    void fetch("/api/track", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event: "trial_click", deviceId }),
+      keepalive: true,
+    });
+  } catch {
+    /* never block navigation */
+  }
+}
 
 export function HomeLanding() {
   const [source, setSource] = useState("");
@@ -130,6 +155,7 @@ export function HomeLanding() {
 
   return (
     <div className="yooco-home">
+      <Script src="/analytics.js" strategy="afterInteractive" />
       <div className="yooco-home-wash" aria-hidden="true" />
 
       <header className="relative z-10 flex h-14 items-center justify-between border-b border-border/80 bg-background/80 px-4 backdrop-blur-sm sm:px-8">
@@ -162,7 +188,7 @@ export function HomeLanding() {
                 size="lg"
                 className="bg-[var(--yooco-accent)] text-white hover:bg-[var(--yooco-accent-hover)]"
               >
-                <a href={STUDIO_URL}>
+                <a href={STUDIO_URL} onClick={trackTrialClick}>
                   免费试用 10 次
                   <ArrowRight />
                 </a>

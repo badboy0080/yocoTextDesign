@@ -1,4 +1,4 @@
-/* Yooco home — product entry (shadcn + light editorial) */
+/* Yooco home — clean SaaS landing */
 
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&display=swap");
 
@@ -20,91 +20,78 @@
   --primary-foreground: #fafafa;
   --destructive: #c62828;
   color-scheme: light;
-  position: relative;
-  isolation: isolate;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #f7f8f6;
+  background: #ffffff;
   color: var(--foreground);
-  overflow-x: clip;
 }
 
-.yooco-home-wash {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(10, 157, 117, 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 20%, rgba(232, 240, 236, 0.9), transparent 50%),
-    linear-gradient(180deg, #fbfcfb 0%, #f3f5f2 45%, #eef1ee 100%);
-}
-
-.yooco-home-wash::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  background-image:
-    linear-gradient(rgba(24, 24, 27, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(24, 24, 27, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 72%);
-}
-
-.yooco-compare {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.yooco-compare-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.yooco-compare-card {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.yooco-compare-card figcaption {
-  padding: 10px 14px 8px;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: var(--muted-foreground);
-}
-
-.yooco-compare-card img {
-  display: block;
+.yooco-shell {
   width: 100%;
-  height: auto;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .yooco-shell {
+    padding-inline: 2rem;
+  }
+}
+
+.yooco-hero {
+  padding-block: 4.5rem 5rem;
+}
+
+@media (min-width: 640px) {
+  .yooco-hero {
+    padding-block: 6.5rem 7rem;
+  }
+}
+
+.yooco-section {
+  padding-block: 4.5rem;
+}
+
+.yooco-band {
+  padding-block: 4.5rem;
+  background: #f7f8f6;
+}
+
+.yooco-step-icon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--yooco-accent);
 }
 
 .yooco-pricing-grid {
   display: grid;
-  gap: 12px;
+  gap: 1rem;
 }
 
 .yooco-pricing-card {
-  padding: 16px 18px;
+  padding: 1.75rem 1.5rem;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.yooco-pricing-card.is-featured {
+  border-color: color-mix(in srgb, var(--yooco-accent) 45%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--yooco-accent) 18%, transparent);
 }
 
 @media (min-width: 640px) {
-  .yooco-compare-grid {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-
   .yooco-pricing-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
   }
 }
 

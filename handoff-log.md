@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-产品：Yooco 双轨上线。增长首页文案已定稿，试用 10 次 CTA 进工作室；首页 CTA 下方有原稿/清氧绿前后对比。已接最小漏斗：访问 → 试用点击 → 排版成功。
+产品：Yooco 双轨上线。增长首页改为干净 SaaS 落地页（大留白、少装饰）；主 CTA「免费试用 10 次」进工作室；价格三档与退款小字保留。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。
 
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
@@ -12,6 +12,14 @@
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-09-18 首页改干净 SaaS 落地页
+
+- 想做什么：对比图观感差，先拿掉；首页改成 Nextly 式大留白落地页，增长 CTA/价格/漏斗埋点不动。
+- 做成了什么：去掉前后对比；hero + 三步 + 粘贴入口 + 价格 + 底部同一试用按钮；继续挂 analytics.js 和 trial_click。未改定价、未接支付、未加评价墙。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、删 `public/cases/wechat-before-after-01/*.png`、`handoff-log.md`。
+- 如何验证：打开 `/` 应无对比图；可见绿色「免费试用 10 次」、价格三档、退款小字；点 CTA 进 `/studio`。
+- 待办/风险：对比图以后有更好版本再加；粘贴框仍保留在主 CTA 下方较远位置，避免抢主按钮。
 
 ### 2026-09-18 最小漏斗统计
 

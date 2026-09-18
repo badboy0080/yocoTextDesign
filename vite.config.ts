@@ -56,6 +56,18 @@ export default defineConfig(async ({ mode }) => {
       : undefined,
     plugins: [
       vinext(),
+      {
+        name: "yooco-studio-alias",
+        configureServer(server) {
+          server.middlewares.use((request, _response, next) => {
+            const [pathname, search = ""] = (request.url ?? "/").split("?");
+            if (pathname === "/studio" || pathname === "/studio/") {
+              request.url = `/studio.html${search ? `?${search}` : ""}`;
+            }
+            next();
+          });
+        },
+      },
       sites(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },

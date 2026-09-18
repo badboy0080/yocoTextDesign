@@ -140,6 +140,13 @@ const themeGrid = document.querySelector("#themeGrid");
 const articleInput = document.querySelector("#articleInput");
 const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
 const articleStatus = document.querySelector("#articleStatus");
+const trialMeter = document.querySelector("#trialMeter");
+const trialBanner = document.querySelector("#trialBanner");
+const TRIAL_LIMIT = 10;
+const TRIAL_STORAGE_KEY = "yooco-trial";
+const UPGRADE_PROMPT = "免费试用次数已用完（每天 10 次）。升级专业版：¥9.9/月 或 ¥59.9/年。";
+let serverTrialRemaining = null;
+let serverTrialEnforced = false;
 const articleTitle = document.querySelector("#articleTitle");
 const articleSubtitle = document.querySelector("#articleSubtitle");
 const stylePane = document.querySelector("#stylePane");
@@ -157,6 +164,88 @@ function setStatus(message) {
 
 function setFeedback(message) {
   if (copyFeedback) copyFeedback.textContent = message;
+}
+
+function beijingDateKey(now = Date.now()) {
+  return new Date(now + 8 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+function readLocalTrialUsed() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(TRIAL_STORAGE_KEY) || "null");
+    if (raw?.date === beijingDateKey()) {
+      const used = Number(raw.used);
+      return Number.isFinite(used) && used > 0 ? Math.min(TRIAL_LIMIT, used) : 0;
+    }
+  } catch {
+    /* ignore quota / private mode */
+  }
+  return 0;
+}
+
+function writeLocalTrialUsed(used) {
+  try {
+    localStorage.setItem(TRIAL_STORAGE_KEY, JSON.stringify({
+      date: beijingDateKey(),
+      used: Math.max(0, Math.min(TRIAL_LIMIT, used)),
+    }));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function remainingTrialCount() {
+  if (serverTrialRemaining !== null) return Math.max(0, serverTrialRemaining);
+  return Math.max(0, TRIAL_LIMIT - readLocalTrialUsed());
+}
+
+function renderTrialMeter() {
+  const remaining = remainingTrialCount();
+  if (trialMeter) {
+    trialMeter.textContent = remaining > 0 ? `试用剩余 ${remaining} 次` : "试用已用完";
+    trialMeter.classList.toggle("is-empty", remaining <= 0);
+  }
+  if (trialBanner) trialBanner.hidden = remaining > 0;
+  if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
+    aiNormalizeButton.disabled = remaining <= 0;
+  }
+}
+
+function applyTrialFromServer(trial) {
+  if (!trial || typeof trial !== "object") return;
+  if (typeof trial.enforced === "boolean") serverTrialEnforced = trial.enforced;
+  if (typeof trial.remaining === "number" && Number.isFinite(trial.remaining)) {
+    serverTrialRemaining = Math.max(0, trial.remaining);
+    writeLocalTrialUsed(TRIAL_LIMIT - serverTrialRemaining);
+  }
+  renderTrialMeter();
+}
+
+function showUpgradePrompt(message) {
+  const text = message || UPGRADE_PROMPT;
+  setStatus("本次未调用 AI。");
+  setFeedback(text);
+  if (trialBanner) {
+    trialBanner.hidden = false;
+    trialBanner.textContent = text;
+  }
+  renderTrialMeter();
+}
+
+async function refreshTrialFromServer() {
+  try {
+    const response = await fetch("/api/normalize", {
+      method: "GET",
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok && payload?.ok) applyTrialFromServer(payload.trial);
+  } catch {
+    /* keep local remaining */
+  } finally {
+    renderTrialMeter();
+  }
 }
 
 try {
@@ -1315,8 +1404,13 @@ async function normalizeWithDeepSeek() {
     setFeedback("请先从首页粘贴文章，或在预览里编辑文字。");
     return;
   }
+  if (remainingTrialCount() <= 0) {
+    showUpgradePrompt(UPGRADE_PROMPT);
+    return;
+  }
   const originalLabel = aiNormalizeButton ? aiNormalizeButton.textContent : "";
   if (aiNormalizeButton) {
+    aiNormalizeButton.dataset.busy = "1";
     aiNormalizeButton.disabled = true;
     aiNormalizeButton.textContent = "优化中…";
   }
@@ -1336,12 +1430,27 @@ async function normalizeWithDeepSeek() {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
       const message = payload?.error?.message || "暂时无法完成优化，请稍后重试。";
+      if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
+        serverTrialRemaining = 0;
+        writeLocalTrialUsed(TRIAL_LIMIT);
+        showUpgradePrompt(message);
+        return;
+      }
       if (response.status === 429) {
+        if (typeof payload?.error?.remaining === "number") {
+          serverTrialRemaining = payload.error.remaining;
+          renderTrialMeter();
+        }
         setStatus("本次未调用 AI。");
         setFeedback(message);
         return;
       }
       throw new Error(message);
+    }
+    if (payload.trial) applyTrialFromServer(payload.trial);
+    else if (!serverTrialEnforced) {
+      writeLocalTrialUsed(readLocalTrialUsed() + 1);
+      renderTrialMeter();
     }
     applyAiNormalization(payload.data);
   } catch (error) {
@@ -1349,8 +1458,9 @@ async function normalizeWithDeepSeek() {
     setFeedback(error instanceof Error ? error.message : "暂时无法完成优化，请稍后重试。");
   } finally {
     if (aiNormalizeButton) {
-      aiNormalizeButton.disabled = false;
+      delete aiNormalizeButton.dataset.busy;
       aiNormalizeButton.textContent = originalLabel;
+      renderTrialMeter();
     }
   }
 }
@@ -1985,3 +2095,6 @@ try {
     }
   }
 } catch { /* ignore */ }
+
+renderTrialMeter();
+refreshTrialFromServer();

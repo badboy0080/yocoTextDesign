@@ -6,6 +6,7 @@ import {
   useTransition,
   type ChangeEvent,
 } from "react";
+import Image from "next/image";
 import { AlertCircle, ArrowRight, FilePlus2, Sparkles } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -184,22 +185,22 @@ export function HomeLanding() {
             <div className="yooco-compare-grid">
               <figure className="yooco-compare-card">
                 <figcaption>原稿</figcaption>
-                <img
+                <Image
                   src="/cases/wechat-before-after-01/06-live-before.png"
                   alt="墨黑米白原稿：标题和正文挤在一起"
                   width={800}
                   height={656}
-                  decoding="async"
+                  unoptimized
                 />
               </figure>
               <figure className="yooco-compare-card">
                 <figcaption>清氧绿 + 本文脉络</figcaption>
-                <img
+                <Image
                   src="/cases/wechat-before-after-01/07-live-after.png"
                   alt="清氧绿排版：带本文脉络和重点句高亮"
                   width={800}
                   height={656}
-                  decoding="async"
+                  unoptimized
                 />
               </figure>
             </div>

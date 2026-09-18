@@ -2,15 +2,23 @@
 
 ## 当前接手摘要
 
-产品：Yooco 双轨上线。增长首页文案已定稿，试用 10 次 CTA 进工作室。
+产品：Yooco 双轨上线。增长首页文案已定稿，试用 10 次 CTA 进工作室；首页 CTA 下方有原稿/清氧绿前后对比。
 
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
 - **本地**：`npm run dev` → http://localhost:5173/ ；CTA 走 `/studio`（开发中间件改写到 `studio.html`）。
 - **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
-- **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。增长文案 PR 待合并后重新部署。
+- **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。合并本对比图改动后需重新部署。
 
 ## 最近 5 次工作记录
+
+### 2026-09-18 首页嵌入前后对比图
+
+- 想做什么：首页主句/试用 CTA 下方、价格区之前加原稿 vs 清氧绿对照。
+- 做成了什么：左右并排（窄屏上下叠）；未遮挡「免费试用 10 次」；未接支付。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`public/cases/wechat-before-after-01/`、`handoff-log.md`。
+- 如何验证：打开 `/`，CTA 下方应看到左原稿、右清氧绿+本文脉络；再往下才是价格区。
+- 待办/风险：无。
 
 ### 2026-09-18 增长首页文案 + 试用 10 次
 

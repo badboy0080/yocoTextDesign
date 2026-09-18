@@ -53,6 +53,38 @@
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 72%);
 }
 
+.yooco-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.yooco-compare-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.yooco-compare-card {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.yooco-compare-card figcaption {
+  padding: 10px 14px 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.yooco-compare-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .yooco-pricing-grid {
   display: grid;
   gap: 12px;
@@ -66,6 +98,11 @@
 }
 
 @media (min-width: 640px) {
+  .yooco-compare-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
   .yooco-pricing-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

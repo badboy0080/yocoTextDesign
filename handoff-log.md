@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-产品：Yooco 双轨上线。增长首页改为干净 SaaS 落地页（大留白、少装饰）；主 CTA「免费试用 10 次」进工作室；价格三档与退款小字保留。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。
+产品：Yooco 双轨上线。增长首页为干净 SaaS 落地页；主句英文 italic serif（Playfair Display）；主 CTA「免费试用 10 次」进工作室；价格三档与退款小字保留。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。
 
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
@@ -12,6 +12,14 @@
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-09-18 主句改英文 Playfair italic
+
+- 想做什么：主句贴近用户给的 John Doe 字体气质；中文没有合适连笔钢笔体，所以主句改英文。
+- 做成了什么：H1 改为 “Make a good article worth finishing.”，Playfair Display italic；绿色试用 CTA、三档价、退款小字、visit/trial_click 未动。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/layout.tsx`、`docs/pr-preview/`、`handoff-log.md`。
+- 如何验证：打开 `/` 主句为英文斜体衬线；点「免费试用 10 次」仍进工作室。
+- 待办/风险：中文用户要靠副句理解产品；未改工作室示例标题。
 
 ### 2026-09-18 首页改干净 SaaS 落地页
 

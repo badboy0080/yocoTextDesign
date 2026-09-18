@@ -223,8 +223,11 @@ export function HomeLanding() {
             <p className="text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
               Yooco
             </p>
-            <h1 className="mt-5 font-[family-name:var(--yooco-display)] text-4xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15] lg:text-6xl">
-              把一篇好文章，排成读者愿意读完的样子
+            <h1
+              lang="en"
+              className="yooco-hero-title mt-5 text-[2.35rem] text-foreground sm:text-5xl lg:text-6xl"
+            >
+              Make a good article worth finishing.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
               Markdown 进 → 公众号预览 → 一键复制，还能继续改

@@ -102,7 +102,7 @@ function cacheRequest(key: string): Request {
 }
 
 function openCacheStore(): CounterStore {
-  const cache = (globalThis as { caches: { default: Cache } }).caches.default;
+  const cache = (globalThis as unknown as { caches: { default: Cache } }).caches.default;
   return {
     async read(key) {
       const hit = await cache.match(cacheRequest(key));

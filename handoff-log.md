@@ -4,7 +4,7 @@
 
 产品：Yooco 双轨上线。增长首页为干净 SaaS 落地页；主句中文「把一篇好文章，排成读者愿意读完的样子」（Fraunces + 宋体衬线，无 Playfair italic）。输入框在第一屏主句下方；「三步发出去」在输入框之后。价格板块先隐藏（`SHOW_PRICING`）。首页已去掉「免费试用 10 次」按钮。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。首页试用按钮已去掉，`trial_click` 暂时不会从首页发出。
 
-- **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
+- **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-8cjhosfqcnmc`），加速区 global（含大陆）。2026-09-22 部署 `dpbhekkirxkc`。预览：`https://yooco-gxrxaiig.edgeone.cool`（国内常需控制台「预览」带 `eo_token` 的链接，有时效）。DeepSeek 已配生产环境变量。构建部署：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
 - **本地**：`npm run dev` → http://localhost:5173/ ；CTA 走 `/studio`（开发中间件改写到 `studio.html`）。密钥在 `.dev.vars`（已忽略，不入库）。`nodejs_compat` 只留在 `wrangler.jsonc`，不要再写进 `vite.config.ts`，否则本地 Workers 起不来。
 - **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
@@ -12,6 +12,14 @@
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-09-22 提交并部署 EdgeOne
+
+- 想做什么：提交首页改动，部署到 EdgeOne。
+- 做成了什么：提交 `a1ea53b`。生产部署成功，部署号 `dpbhekkirxkc`，项目 ID 现为 `makers-8cjhosfqcnmc`。预览页已是新首页：有输入框和「三步发出去」，没有「免费试用 10 次」和价格板块。
+- 改了哪些文件：`handoff-log.md`（部署记录）。代码提交见上一则。
+- 如何验证：预览页 HTML 含「开始一篇」「优化排版」，不含「免费试用 10 次」。
+- 待办/风险：未推送到 GitHub。预览链接带时效 token。
 
 ### 2026-09-22 首页输入框上到第一屏
 

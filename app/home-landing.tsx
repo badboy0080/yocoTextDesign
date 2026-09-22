@@ -82,53 +82,13 @@ const STEPS = [
   },
 ] as const;
 
+const SHOW_PRICING = false;
+
 const PLANS = [
   { name: "试用", price: "免费", note: "限 10 次", featured: true },
   { name: "专业版", price: "¥9.9", note: "每月", featured: false },
   { name: "专业版年付", price: "¥59.9", note: "每年", featured: false },
 ] as const;
-
-function trackTrialClick() {
-  try {
-    const track = (window as Window & { yoocoTrack?: (event: string) => void }).yoocoTrack;
-    if (typeof track === "function") {
-      track("trial_click");
-      return;
-    }
-    let deviceId = "";
-    try {
-      deviceId = window.localStorage.getItem("yooco-device-id") || "";
-    } catch {
-      /* ignore */
-    }
-    void fetch("/api/track", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ event: "trial_click", deviceId }),
-      keepalive: true,
-    });
-  } catch {
-    /* never block navigation */
-  }
-}
-
-function TrialCta({ className }: { className?: string }) {
-  return (
-    <Button
-      asChild
-      size="lg"
-      className={cn(
-        "h-12 rounded-md bg-[var(--yooco-accent)] px-7 text-base text-white hover:bg-[var(--yooco-accent-hover)]",
-        className,
-      )}
-    >
-      <a href={STUDIO_URL} onClick={trackTrialClick}>
-        免费试用 10 次
-        <ArrowRight />
-      </a>
-    </Button>
-  );
-}
 
 export function HomeLanding() {
   const [source, setSource] = useState("");
@@ -207,9 +167,11 @@ export function HomeLanding() {
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <a href="#yooco-flow">三步发出去</a>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <a href="#yooco-pricing">价格</a>
-            </Button>
+            {SHOW_PRICING ? (
+              <Button asChild variant="ghost" size="sm">
+                <a href="#yooco-pricing">价格</a>
+              </Button>
+            ) : null}
             <Button asChild variant="ghost" size="sm">
               <a href={STUDIO_URL}>工作室</a>
             </Button>
@@ -223,18 +185,94 @@ export function HomeLanding() {
             <p className="text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
               Yooco
             </p>
-            <h1 className="mt-5 font-[family-name:var(--yooco-display)] text-4xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15] lg:text-6xl">
+            <h1 className="mt-4 font-[family-name:var(--yooco-display)] text-4xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15]">
               把一篇好文章，排成读者愿意读完的样子
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
+            <p className="mt-4 max-w-xl text-lg text-muted-foreground">
               Markdown 进 → 公众号预览 → 一键复制，还能继续改
             </p>
-            <div className="mt-10">
-              <TrialCta />
+            <div className="mt-8 w-full text-left">
+              <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-none">
+                <CardHeader className="border-b border-border/60 px-4 py-4 sm:px-5">
+                  <CardTitle
+                    id="yooco-start-heading"
+                    className="text-sm font-medium text-muted-foreground"
+                  >
+                    开始一篇
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0 pt-0">
+                  <label className="sr-only" htmlFor="home-article-input">
+                    文章原文
+                  </label>
+                  <Textarea
+                    id="home-article-input"
+                    rows={5}
+                    spellCheck={false}
+                    placeholder="粘贴公众号原文，点「优化排版」开始"
+                    value={source}
+                    aria-invalid={Boolean(hint) || undefined}
+                    className={cn(
+                      "min-h-32 resize-y rounded-none border-0 bg-transparent px-4 py-4 text-base shadow-none focus-visible:ring-0 sm:px-5",
+                      "placeholder:text-muted-foreground/70",
+                    )}
+                    onChange={(event) => {
+                      setSource(event.target.value);
+                      if (hint) setHint("");
+                    }}
+                    onKeyDown={(event) => {
+                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                        event.preventDefault();
+                        goOptimize();
+                      }
+                    }}
+                  />
+                </CardContent>
+                <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border/60 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
+                  <input
+                    ref={fileInputRef}
+                    className="sr-only"
+                    type="file"
+                    accept={ACCEPT_FILES}
+                    tabIndex={-1}
+                    onChange={onFilePicked}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={importing || pending}
+                    onClick={openFilePicker}
+                    className="justify-start sm:w-auto"
+                  >
+                    <FilePlus2 />
+                    {importing ? "读取中…" : "上传 txt / docx"}
+                  </Button>
+                  <div className="min-w-0 flex-1">
+                    {hint ? (
+                      <Alert variant="destructive" className="border-destructive/30 py-2">
+                        <AlertCircle />
+                        <AlertDescription>{hint}</AlertDescription>
+                      </Alert>
+                    ) : (
+                      <p className="hidden text-xs text-muted-foreground sm:block">
+                        Ctrl / ⌘ + Enter 也可提交
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={pending || importing}
+                    onClick={goOptimize}
+                    variant="outline"
+                  >
+                    {pending ? "正在打开…" : "优化排版"}
+                    {!pending ? <ArrowRight /> : null}
+                  </Button>
+                </CardFooter>
+              </Card>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
-              无需注册，试用免费限 10 次
-            </p>
           </div>
         </section>
 
@@ -277,91 +315,7 @@ export function HomeLanding() {
           </div>
         </section>
 
-        <section className="yooco-section" aria-labelledby="yooco-start-heading">
-          <div className="yooco-shell mx-auto max-w-3xl">
-            <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-none">
-              <CardHeader className="border-b border-border/60 px-4 py-4 sm:px-5">
-                <CardTitle
-                  id="yooco-start-heading"
-                  className="text-sm font-medium text-muted-foreground"
-                >
-                  开始一篇
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-0 pt-0">
-                <label className="sr-only" htmlFor="home-article-input">
-                  文章原文
-                </label>
-                <Textarea
-                  id="home-article-input"
-                  rows={8}
-                  spellCheck={false}
-                  placeholder="粘贴公众号原文，点「优化排版」开始"
-                  value={source}
-                  aria-invalid={Boolean(hint) || undefined}
-                  className={cn(
-                    "min-h-44 resize-y rounded-none border-0 bg-transparent px-4 py-4 text-base shadow-none focus-visible:ring-0 sm:px-5",
-                    "placeholder:text-muted-foreground/70",
-                  )}
-                  onChange={(event) => {
-                    setSource(event.target.value);
-                    if (hint) setHint("");
-                  }}
-                  onKeyDown={(event) => {
-                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                      event.preventDefault();
-                      goOptimize();
-                    }
-                  }}
-                />
-              </CardContent>
-              <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border/60 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
-                <input
-                  ref={fileInputRef}
-                  className="sr-only"
-                  type="file"
-                  accept={ACCEPT_FILES}
-                  tabIndex={-1}
-                  onChange={onFilePicked}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={importing || pending}
-                  onClick={openFilePicker}
-                  className="justify-start sm:w-auto"
-                >
-                  <FilePlus2 />
-                  {importing ? "读取中…" : "上传 txt / docx"}
-                </Button>
-                <div className="min-w-0 flex-1">
-                  {hint ? (
-                    <Alert variant="destructive" className="border-destructive/30 py-2">
-                      <AlertCircle />
-                      <AlertDescription>{hint}</AlertDescription>
-                    </Alert>
-                  ) : (
-                    <p className="hidden text-xs text-muted-foreground sm:block">
-                      Ctrl / ⌘ + Enter 也可提交
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  size="lg"
-                  disabled={pending || importing}
-                  onClick={goOptimize}
-                  variant="outline"
-                >
-                  {pending ? "正在打开…" : "优化排版"}
-                  {!pending ? <ArrowRight /> : null}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </section>
-
+        {SHOW_PRICING ? (
         <section
           className="yooco-band"
           aria-labelledby="yooco-pricing-heading"
@@ -398,20 +352,7 @@ export function HomeLanding() {
             </p>
           </div>
         </section>
-
-        <section className="yooco-section">
-          <div className="yooco-shell mx-auto flex max-w-2xl flex-col items-center text-center">
-            <h2 className="font-[family-name:var(--yooco-display)] text-3xl font-semibold tracking-tight">
-              现在就排一版看看
-            </h2>
-            <p className="mt-3 text-base text-muted-foreground">
-              进工作室即可试用，不改你的意思。
-            </p>
-            <div className="mt-8">
-              <TrialCta />
-            </div>
-          </div>
-        </section>
+        ) : null}
       </main>
 
       <footer className="border-t border-border/80">

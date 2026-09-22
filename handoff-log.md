@@ -2,16 +2,32 @@
 
 ## 当前接手摘要
 
-产品：Yooco 双轨上线。增长首页为干净 SaaS 落地页；主句中文「把一篇好文章，排成读者愿意读完的样子」（Fraunces + 宋体衬线，无 Playfair italic）；主 CTA「免费试用 10 次」进工作室；价格三档与退款小字保留。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。
+产品：Yooco 双轨上线。增长首页为干净 SaaS 落地页；主句中文「把一篇好文章，排成读者愿意读完的样子」（Fraunces + 宋体衬线，无 Playfair italic）。输入框在第一屏主句下方；「三步发出去」在输入框之后。价格板块先隐藏（`SHOW_PRICING`）。首页已去掉「免费试用 10 次」按钮。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。首页试用按钮已去掉，`trial_click` 暂时不会从首页发出。
 
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-x0xzxwaxcyxb`），加速区 global（含大陆）。预览域名形如 `https://yooco-ovsjwmib.edgeone.cool`，国内访问常需控制台「预览」带 `eo_token` 的链接（有时效）。DeepSeek 已配生产环境变量。构建：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
-- **本地**：`npm run dev` → http://localhost:5173/ ；CTA 走 `/studio`（开发中间件改写到 `studio.html`）。
+- **本地**：`npm run dev` → http://localhost:5173/ ；CTA 走 `/studio`（开发中间件改写到 `studio.html`）。密钥在 `.dev.vars`（已忽略，不入库）。`nodejs_compat` 只留在 `wrangler.jsonc`，不要再写进 `vite.config.ts`，否则本地 Workers 起不来。
 - **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
 - **漏斗**：`visit` / `trial_click` / `optimize_ok` 写入 EdgeOne Blob（失败不影响使用）。看数：`/metrics?token=`，口令为环境变量 `ANALYTICS_TOKEN`。
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-09-22 首页输入框上到第一屏
+
+- 想做什么：输入框放到第一屏；「三步发出去」往下；先藏价格；去掉「免费试用 10 次」按钮。
+- 做成了什么：输入框跟在主句下面；三步模块在输入框之后；价格板块和顶栏价格入口用开关藏起；两个试用按钮和底部「现在就排一版看看」去掉。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`handoff-log.md`。
+- 如何验证：桌面和窄屏第一屏都能看到输入框；页面上没有「免费试用 10 次」和「价格」；空着点「优化排版」会提示先输入。
+- 待办/风险：价格文案还在代码里，`SHOW_PRICING` 改成 `true` 可恢复。页脚仍有「符合条件可申请退款」。
+
+### 2026-09-22 启动本机开发服务
+
+- 想做什么：切到本机后启动本地版本。
+- 做成了什么：去掉 `vite.config.ts` 里重复的 `nodejs_compat`（`wrangler.jsonc` 已有）。`npm run dev` 已在 http://localhost:5173/ 跑起来，并读到 `.dev.vars`。
+- 改了哪些文件：`vite.config.ts`、`handoff-log.md`。
+- 如何验证：`/api/health` 为 `deepseekConfigured:true`；首页和工作室都是 200。
+- 待办/风险：未在浏览器里点「优化排版」走完整请求；启动日志仍有代理环境变量警告。
 
 ### 2026-09-18 首页主句改回中文
 

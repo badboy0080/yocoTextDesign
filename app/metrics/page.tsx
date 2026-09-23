@@ -119,7 +119,7 @@ function MetricsView() {
         />
         <button
           type="submit"
-          className="h-10 rounded-md bg-zinc-900 px-4 font-medium text-white"
+          className="h-10 rounded-md bg-[linear-gradient(90deg,#A9FD83,#98F68D)] px-4 font-medium text-[#17331b] hover:brightness-95"
           disabled={loading}
         >
           {loading ? "读取中…" : "查看"}

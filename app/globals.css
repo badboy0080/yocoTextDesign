@@ -19,6 +19,8 @@
 }
 
 :root {
+  --yooco-button-gradient: linear-gradient(90deg, #A9FD83, #98F68D);
+  --yooco-button-ink: #17331b;
   --background: #ffffff;
   --foreground: #171717;
   --card: #ffffff;
@@ -52,6 +54,11 @@
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a1a1a1;
 }
+
+.yooco-brand { display:inline-flex; align-items:center; gap:.58rem; color:#20251f; font-family:"Fraunces","Songti SC",Georgia,serif; font-size:1.48rem; font-weight:650; letter-spacing:-.045em; line-height:1; white-space:nowrap; }
+.yooco-brand img { display:block; width:2rem; height:2rem; flex:none; }
+.yooco-brand--compact { font-size:1.1rem; }
+.yooco-brand--compact img { width:1.4rem; height:1.4rem; }
 
 @theme inline {
   --color-background: var(--background);

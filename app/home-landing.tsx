@@ -10,24 +10,24 @@ import Script from "next/script";
 import {
   AlertCircle,
   ArrowRight,
-  Copy,
-  Eye,
   FilePlus2,
-  FileText,
 } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
+import Link from "next/link";
 import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+import { HomeDotField } from "@/components/home-dot-field";
+import { HeroTypeMorph } from "./hero-type-morph";
+import { WorksRail } from "@/components/works-rail";
 import "./home.css";
 
 const STUDIO_URL = "/studio";
@@ -60,27 +60,6 @@ async function readArticleFile(file: File): Promise<string> {
   }
   throw new Error("unsupported");
 }
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Markdown 进来",
-    desc: "粘贴原文或上传 txt / docx，也可以直接进工作室。",
-    icon: FileText,
-  },
-  {
-    n: "02",
-    title: "公众号预览",
-    desc: "AI 理清结构，立刻看到接近发表时的样子。",
-    icon: Eye,
-  },
-  {
-    n: "03",
-    title: "一键复制，还能继续改",
-    desc: "复制进微信编辑器，标题和正文仍可微调。",
-    icon: Copy,
-  },
-] as const;
 
 const SHOW_PRICING = false;
 
@@ -152,20 +131,21 @@ export function HomeLanding() {
   }
 
   return (
-    <div className="yooco-home">
+    <div className="yooco-home relative">
+      <HomeDotField />
       <Script src="/analytics.js" strategy="afterInteractive" />
 
       <header className="sticky top-0 z-20 border-b border-border/80 bg-background">
         <div className="yooco-shell flex h-16 items-center justify-between">
-          <a
+          <Link
             href="/"
             className="font-[family-name:var(--yooco-display)] text-xl font-semibold tracking-tight text-foreground"
           >
-            Yooco
-          </a>
+            <BrandLogo />
+          </Link>
           <nav className="flex items-center gap-1 sm:gap-2">
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <a href="#yooco-flow">三步发出去</a>
+              <a href="#works-heading">作品</a>
             </Button>
             {SHOW_PRICING ? (
               <Button asChild variant="ghost" size="sm">
@@ -179,28 +159,15 @@ export function HomeLanding() {
         </div>
       </header>
 
-      <main>
+      <main className="relative z-10">
         <section className="yooco-hero">
           <div className="yooco-shell mx-auto flex max-w-3xl flex-col items-center text-center">
             <p className="text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
               Yooco
             </p>
-            <h1 className="mt-4 font-[family-name:var(--yooco-display)] text-4xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15]">
-              把一篇好文章，排成读者愿意读完的样子
-            </h1>
-            <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-              Markdown 进 → 公众号预览 → 一键复制，还能继续改
-            </p>
+            <HeroTypeMorph />
             <div className="mt-8 w-full text-left">
               <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-none">
-                <CardHeader className="border-b border-border/60 px-4 py-4 sm:px-5">
-                  <CardTitle
-                    id="yooco-start-heading"
-                    className="text-sm font-medium text-muted-foreground"
-                  >
-                    开始一篇
-                  </CardTitle>
-                </CardHeader>
                 <CardContent className="px-0 pt-0">
                   <label className="sr-only" htmlFor="home-article-input">
                     文章原文
@@ -265,7 +232,7 @@ export function HomeLanding() {
                     size="lg"
                     disabled={pending || importing}
                     onClick={goOptimize}
-                    variant="outline"
+                    className="border-0 bg-[linear-gradient(90deg,#A9FD83,#98F68D)] text-[#17331b] shadow-none hover:brightness-95"
                   >
                     {pending ? "正在打开…" : "优化排版"}
                     {!pending ? <ArrowRight /> : null}
@@ -276,44 +243,7 @@ export function HomeLanding() {
           </div>
         </section>
 
-        <section
-          className="yooco-band"
-          aria-labelledby="yooco-flow-heading"
-          id="yooco-flow"
-        >
-          <div className="yooco-shell">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2
-                id="yooco-flow-heading"
-                className="font-[family-name:var(--yooco-display)] text-3xl font-semibold tracking-tight"
-              >
-                三步发出去
-              </h2>
-              <p className="mt-3 text-base text-muted-foreground">
-                不改你的意思，只把结构和版式整理到能直接发。
-              </p>
-            </div>
-            <ol className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
-              {STEPS.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <li key={step.n} className="text-center sm:text-left">
-                    <div className="yooco-step-icon" aria-hidden>
-                      <Icon className="size-5" />
-                    </div>
-                    <p className="mt-5 font-mono text-xs tracking-widest text-[var(--yooco-accent)]">
-                      {step.n}
-                    </p>
-                    <p className="mt-2 text-lg font-medium text-foreground">{step.title}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {step.desc}
-                    </p>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        </section>
+        <WorksRail />
 
         {SHOW_PRICING ? (
         <section
@@ -348,17 +278,17 @@ export function HomeLanding() {
               ))}
             </ul>
             <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
-              符合条件可申请退款 · 付费可开电子普票
+              付费可开电子普票
             </p>
           </div>
         </section>
         ) : null}
       </main>
 
-      <footer className="border-t border-border/80">
+      <footer className="relative z-10 border-t border-border/80 bg-background">
         <div className="yooco-shell flex flex-col items-center justify-between gap-3 py-8 text-sm text-muted-foreground sm:flex-row">
-          <span>Yooco</span>
-          <span>符合条件可申请退款</span>
+          <BrandLogo compact />
+          <span>你的最佳排版助理</span>
         </div>
       </footer>
     </div>

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Yooco · 把一篇好文章，排成读者愿意读完的样子",
-  description: "Markdown 进 → 公众号预览 → 一键复制，还能继续改。试用免费限 10 次。",
+  description: "粘贴文章，优化排版。",
   icons: {
     icon: "/favicon.svg",
   },

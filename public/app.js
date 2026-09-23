@@ -1089,6 +1089,7 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
+  articleTitle.textContent = model.title;
   articleTitle.contentEditable = "true";
   if (articleSubtitle) articleSubtitle.textContent = model.subtitle;
 }

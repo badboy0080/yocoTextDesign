@@ -74,10 +74,54 @@
 .auth-panel-bottom p a { margin-left: 5px; color: #19684b; font-weight: 700; text-decoration: none; }
 .auth-panel-bottom p a:hover { text-decoration: underline; }
 
+.subscribe-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .55fr); gap: 50px; align-items: end; min-height: 500px; padding: 65px 0 68px; }
+.subscribe-hero-main h1 { margin: 28px 0 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(72px, 8.5vw, 138px); font-weight: 600; line-height: 1.05; letter-spacing: -.075em; }
+.subscribe-hero-main h1 em { color: #3f7b59; font-style: normal; }
+.subscribe-period { color: #85c96c; }
+.subscribe-hero-side { display: grid; gap: 30px; padding: 0 0 12px; }
+.subscribe-hero-side p { max-width: 340px; margin: 0; color: #536155; font-size: 15px; line-height: 1.9; }
+.subscribe-issue { display: flex; align-items: baseline; gap: 5px; font-family: "Fraunces", Georgia, serif; font-size: 56px; font-weight: 600; letter-spacing: -.08em; line-height: 1; }
+.subscribe-issue > span { color: #559768; font-size: 25px; }
+.subscribe-issue small { align-self: end; margin-left: 11px; color: #69776a; font-family: "DM Sans", Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+.subscribe-plans { padding: 39px 0 75px; border-top: 1px solid var(--account-line); }
+.subscribe-section-top { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+.subscribe-section-top h2 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(28px, 3vw, 42px); font-weight: 600; letter-spacing: -.04em; }
+.subscribe-section-top > span { color: #718073; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
+.subscribe-billing { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 38px 0 23px; color: #68766a; font-size: 13px; }
+.subscribe-billing-controls { display: inline-flex; gap: 5px; padding: 5px; border: 1px solid #d8ded4; border-radius: 10px; background: #edf0ec; }
+.subscribe-billing-controls button { min-height: 37px; padding: 0 15px; border: 0; border-radius: 7px; background: transparent; color: #677168; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+.subscribe-billing-controls button.is-active { background: #fff; color: #1f3625; box-shadow: 0 1px 5px #20392312; }
+.subscribe-billing-controls button span { margin-left: 4px; color: #257a4a; font-size: 11px; }
+.subscribe-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.subscribe-card { display: flex; flex-direction: column; min-height: 580px; padding: clamp(26px, 3vw, 45px); border: 1px solid #d9dfd6; border-radius: 16px; background: #fff; }
+.subscribe-card-pro { border-color: #8fac88; background: #e5f1dd; }
+.subscribe-card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 70px; color: #53745e; font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.subscribe-card-symbol { color: #6d9f70; font-family: Georgia, serif; font-size: 37px; line-height: .6; }
+.subscribe-card h3 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(31px, 3vw, 46px); font-weight: 600; letter-spacing: -.05em; }
+.subscribe-card-description { min-height: 48px; margin: 8px 0 0; color: #66746a; font-size: 14px; line-height: 1.7; }
+.subscribe-price { display: flex; align-items: baseline; gap: 7px; margin: 24px 0 25px; }
+.subscribe-price strong { font-family: "Fraunces", Georgia, serif; font-size: clamp(47px, 5.2vw, 75px); font-weight: 600; letter-spacing: -.075em; line-height: 1; }
+.subscribe-price span { color: #69786b; font-size: 13px; }
+.subscribe-features { display: grid; gap: 13px; min-height: 110px; margin: 0 0 32px; padding: 23px 0 0; border-top: 1px solid #cdd8cb; list-style: none; }
+.subscribe-features li { display: flex; align-items: flex-start; gap: 10px; color: #47584c; font-size: 13px; line-height: 1.5; }
+.subscribe-features svg { flex: none; margin-top: 2px; color: #2a8d51; }
+.subscribe-card > .account-secondary-button, .subscribe-card > .account-primary-button { width: 100%; margin-top: auto; }
+.subscribe-card > .account-primary-button:disabled { opacity: .72; cursor: not-allowed; transform: none; filter: none; }
+.subscribe-disclosure { max-width: 750px; margin: 22px 0 0; color: #6b766b; font-size: 12px; line-height: 1.75; }
+.subscribe-bottom { display: grid; grid-template-columns: minmax(140px, .35fr) minmax(0, 1fr) minmax(230px, .55fr); gap: 35px; align-items: end; min-height: 370px; padding: 65px 0 75px; border-top: 1px solid var(--account-line); }
+.subscribe-bottom-label { align-self: start; color: #66806a; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
+.subscribe-bottom h2 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(44px, 4.8vw, 75px); font-weight: 600; line-height: 1.14; letter-spacing: -.065em; }
+.subscribe-bottom-details { display: grid; gap: 30px; }
+.subscribe-bottom-details p { margin: 0; color: #627065; font-size: 14px; line-height: 1.9; }
+.subscribe-bottom-details a { width: max-content; display: inline-flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #588868; color: #246547; font-size: 14px; font-weight: 700; text-decoration: none; }
+
 @media (max-width: 920px) {
   .auth-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .auth-editorial { min-height: 640px; }
   .auth-panel { padding-inline: 30px; }
+  .subscribe-hero { gap: 25px; }
+  .subscribe-bottom { grid-template-columns: 1fr 1fr; }
+  .subscribe-bottom-label { grid-column: 1 / -1; }
 }
 @media (max-width: 740px) {
   .account-container { width: min(100% - 36px, 600px); }
@@ -94,6 +138,18 @@
   .auth-panel { width: 100%; padding: 45px 0 55px; }
   .account-footer-inner { flex-wrap: wrap; padding-block: 20px; }
   .account-footer-inner span:nth-child(2) { display: none; }
+  .subscribe-hero { grid-template-columns: 1fr; gap: 35px; min-height: 0; padding: 65px 0 55px; }
+  .subscribe-hero-main h1 { font-size: clamp(58px, 11vw, 85px); }
+  .subscribe-hero-side { grid-template-columns: auto 1fr; align-items: end; gap: 20px; }
+  .subscribe-issue { font-size: 40px; }
+  .subscribe-issue small { display: none; }
+  .subscribe-hero-side p { font-size: 13px; }
+  .subscribe-card-grid { grid-template-columns: 1fr; }
+  .subscribe-card { min-height: 0; }
+  .subscribe-card-top { margin-bottom: 40px; }
+  .subscribe-bottom { grid-template-columns: 1fr; gap: 20px; min-height: 0; padding: 55px 0; }
+  .subscribe-bottom-label { grid-column: auto; }
+  .subscribe-bottom-details { max-width: 450px; }
 }
 @media (max-width: 430px) {
   .account-container { width: min(100% - 28px, 600px); }
@@ -103,6 +159,11 @@
   .auth-editorial { min-height: 335px; }
   .auth-editorial h1 { font-size: 47px; }
   .account-tail { font-size: 9px; letter-spacing: .04em; }
+  .subscribe-hero-main h1 { font-size: 49px; }
+  .subscribe-hero-side { grid-template-columns: 1fr; gap: 10px; }
+  .subscribe-billing { align-items: flex-start; flex-direction: column; }
+  .subscribe-card { padding: 25px; }
+  .subscribe-section-top > span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .account-app *, .account-app *::before, .account-app *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

@@ -48,7 +48,7 @@ export function HomeDotField() {
   }, []);
 
   return (
-    <div ref={rootRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+    <div ref={rootRef} className="yooco-dot-field pointer-events-none absolute inset-0 z-0" aria-hidden>
       <DotPattern width={18} height={18} cr={1.35} className="fill-neutral-400/40" />
       <div
         ref={blueRef}
@@ -58,7 +58,7 @@ export function HomeDotField() {
           WebkitMaskImage: SPOT_GONE,
         }}
       >
-        <DotPattern width={18} height={18} cr={1.485} className="fill-blue-600" />
+        <DotPattern width={18} height={18} cr={1.485} className="fill-[#355D27]/35" />
       </div>
     </div>
   );

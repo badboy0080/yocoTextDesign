@@ -117,13 +117,14 @@ function buildSkinState(skinId) {
 const state = { ...buildSkinState(DEFAULT_SKIN) };
 let currentMood = DEFAULT_MOOD;
 let currentSkin = DEFAULT_SKIN;
-// 用户是否已手动调过样式（选方向/选皮肤/拖滑杆）；调过后 AI 只重排文字、不再覆盖样式，直到点「恢复默认」。
+// 用户是否已手动调过样式。调过后只重拆文字、不换主题，直到点「恢复默认」。
 let styleTouched = false;
+// 还没有按文章选过主题，或刚恢复默认。下一次优化按文章选题，而不是随机。
+let awaitingContentPick = true;
 const controls = [...document.querySelectorAll("[data-key]")];
 const articlePage = document.querySelector("#articlePage");
 const articleBody = document.querySelector("#articleBody");
 const tokenPreview = document.querySelector("#tokenPreview");
-const previewSummary = document.querySelector("#previewSummary");
 const previewStage = document.querySelector("#previewStage");
 const compliancePanel = document.querySelector("#compliancePanel");
 const complianceLevel = document.querySelector("#complianceLevel");
@@ -142,21 +143,34 @@ const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
 const articleStatus = document.querySelector("#articleStatus");
 const trialMeter = document.querySelector("#trialMeter");
 const trialBanner = document.querySelector("#trialBanner");
+const trialBannerText = document.querySelector("#trialBannerText");
 const TRIAL_LIMIT = 10;
 const TRIAL_STORAGE_KEY = "yooco-trial";
-const UPGRADE_PROMPT = "免费试用次数已用完（每天 10 次）。升级专业版：¥9.9/月 或 ¥59.9/年。";
+const UPGRADE_PROMPT = "今日试用已用完，订阅暂未开放。";
 let serverTrialRemaining = null;
 let serverTrialEnforced = false;
 const articleTitle = document.querySelector("#articleTitle");
-const articleSubtitle = document.querySelector("#articleSubtitle");
 const stylePane = document.querySelector("#stylePane");
 const styleMount = document.querySelector("#styleMount");
+const componentKit = window.YoocoContentComponents;
+const componentGallery = document.querySelector("#componentGallery");
+const componentSelection = document.querySelector("#componentSelection");
+const componentEdit = document.querySelector("#componentEdit");
 let articleSource = localStorage.getItem("yooco-article-source") || "";
 let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
 let blockTypeOverrides = {};
 let lastAiResult = null;
 let previewSyncTimer = 0;
+let selectedComponentRange = null;
+let componentFilter = "all";
+let componentAssignments = [];
+try {
+  const savedComponents = JSON.parse(localStorage.getItem("yooco-content-components") || "null");
+  if (savedComponents?.articleSource === articleSource && Array.isArray(savedComponents.assignments)) {
+    componentAssignments = savedComponents.assignments;
+  }
+} catch { /* ignore stale component data */ }
 
 function setStatus(message) {
   if (articleStatus) articleStatus.textContent = message;
@@ -202,7 +216,7 @@ function remainingTrialCount() {
 function renderTrialMeter() {
   const remaining = remainingTrialCount();
   if (trialMeter) {
-    trialMeter.textContent = remaining > 0 ? `试用剩余 ${remaining} 次` : "试用已用完";
+    trialMeter.textContent = remaining > 0 ? `剩余 ${remaining} 次` : "试用已用完";
     trialMeter.classList.toggle("is-empty", remaining <= 0);
   }
   if (trialBanner) trialBanner.hidden = remaining > 0;
@@ -223,11 +237,11 @@ function applyTrialFromServer(trial) {
 
 function showUpgradePrompt(message) {
   const text = message || UPGRADE_PROMPT;
-  setStatus("本次未调用 AI。");
-  setFeedback(text);
+  setStatus(text);
+  setFeedback("");
   if (trialBanner) {
     trialBanner.hidden = false;
-    trialBanner.textContent = text;
+    if (trialBannerText) trialBannerText.textContent = text;
   }
   renderTrialMeter();
 }
@@ -285,15 +299,14 @@ function initParameterAccordion() {
 initParameterAccordion();
 
 const sampleContent = [
-  { type: "lead", text: "公众号排版不是把颜色堆在一起，而是把阅读节奏安排清楚：读者先看到什么、在哪里停一下、下一步愿意继续读什么。" },
-  { type: "highlight", text: "高亮关键词 · 证据标签 · 可复用组件" },
-  { type: "heading", text: "先确定一套能复用的骨架" },
-  { type: "paragraph", text: "开源提取器的思路很实用：把文章里的样式还原到元素上，再观察颜色、字号、行高和间距的高频组合。这样得到的不是一句“这篇文章很好看”，而是一组可以调整、比较和保存的参数。" },
-  { type: "quote", title: "设计提醒", text: "预设描述的是排版语言，不是对原文内容、图片或品牌素材的复制。" },
+  { type: "lead", text: "下午四点，雨停了。路边的树还在滴水，我从家里出发，沿着熟悉的街走向河边。" },
+  { type: "highlight", text: "雨后的空气，带着一点青草味。" },
+  { type: "heading", text: "先走过老街" },
+  { type: "paragraph", text: "转角的面包店刚把招牌灯点亮，玻璃上蒙着一层薄雾。平时赶路很少注意到的细节，在放慢脚步后一个个出现。" },
+  { type: "quote", title: "片刻", text: "城市没有变安静，只是我终于有时间听见它。" },
   { type: "divider" },
-  { type: "image", text: "IMAGE / 文章配图占位" },
-  { type: "heading", text: "把识别结果交给人工判断" },
-  { type: "paragraph", text: "自动统计适合找到起点，最后仍要回到阅读体验：手机上是否舒服，标题是否能被扫到，卡片是否抢走正文注意力。你提供的优秀文章，下一步就会在这里沉淀成真正的模板预设。" },
+  { type: "heading", text: "回来的路" },
+  { type: "paragraph", text: "天色暗下来时，河面映着两岸的灯。我没有拍几张照片，只记住了风吹过水面的声音。散步没有目的地，走完以后却像把一天重新整理了一遍。" },
 ];
 
 function applySkin(skinId, { fromUser = true } = {}) {
@@ -312,7 +325,7 @@ function isTheme() {
   return Boolean(state.theme && state.theme !== "classic" && THEMES[state.theme]);
 }
 
-// 切换精选主题（6 套之一）或回到 classic（旧的 4 方向 11 皮肤）。
+// 切换精选主题（5 套之一）或回到 classic（旧的 4 方向 11 皮肤）。
 function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   if (themeId !== "classic" && !THEMES[themeId]) return;
   const previousArticleType = state.articleType;
@@ -551,11 +564,7 @@ function getComplianceReport() {
       rule: "P0/P1",
     });
   }
-  const label = level === "ok"
-    ? "可贴：基础项已对齐规范"
-    : level === "warn"
-      ? "可复制，有提醒项"
-      : "建议先调整再复制";
+  const label = level === "ok" ? "检查通过" : level === "warn" ? "发布前检查" : "需要调整";
   return { level, label, items };
 }
 
@@ -565,8 +574,8 @@ function updateCompliancePanel() {
   compliancePanel.hidden = false;
   complianceLevel.dataset.level = report.level;
   complianceLevel.textContent = report.label;
-  complianceList.innerHTML = report.items.map((item) =>
-    `<li><strong>${escapeHtml(item.title)}</strong> — ${escapeHtml(item.tip)} <span class="rule">${escapeHtml(item.rule)}</span></li>`).join("");
+  complianceList.innerHTML = report.level === "ok" ? "" : report.items.map((item, index) =>
+    `<li><strong>${escapeHtml(item.title)}</strong><span class="rule">${escapeHtml(item.rule)}</span><button type="button" class="compliance-help" aria-label="处理建议：${escapeHtml(item.tip)}" aria-describedby="compliance-tip-${index}">ⓘ</button><span class="compliance-tooltip" role="tooltip" id="compliance-tip-${index}">${escapeHtml(item.tip)}</span></li>`).join("");
 }
 
 /** 给带样式的节点加上 data-no-dark，减轻夜间模式改色（仅当前节点生效） */
@@ -651,7 +660,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
     textAlign: ["left", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold"],
-    headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval"],
+    headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
     cardStyle: ["border", "outline", "soft", "band"],
     listStyle: ["dot", "circle", "ghost", "check"],
     theme: THEME_IDS,
@@ -665,7 +674,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   };
   Object.entries(ranges).forEach(([key, [min, max, step]]) => { if (input?.[key] !== undefined) next[key] = clampClientNumber(input[key], min, max, step, next[key]); });
   ["linkUnderline", "showQuote", "showDivider", "showImage", "showSignature"].forEach((key) => { if (typeof input?.[key] === "boolean") next[key] = input[key]; });
-  ["headingStyle", "cardStyle", "listStyle"].forEach((key) => { if (typeof input?.[key] === "string") next[key] = input[key]; });
+  ["cardStyle", "listStyle"].forEach((key) => { if (typeof input?.[key] === "string") next[key] = input[key]; });
   if (typeof input?.mood === "string") next.mood = input.mood;
   if (typeof input?.skin === "string") next.skin = input.skin;
   return next;
@@ -971,8 +980,7 @@ function renderStructureEditor() {
 function getArticleModel() {
   if (!articleSource.trim()) {
     return {
-      title: "把一篇好文章，排成读者愿意读完的样子",
-      subtitle: "参数可调、结构可解释、复制可继续编辑",
+      title: "雨停以后，去散步",
       blocks: applyStructureOverrides({ blocks: sampleContent }).blocks,
       isSample: true,
     };
@@ -981,11 +989,9 @@ function getArticleModel() {
   const inferred = articleTitleOverride.trim()
     ? { title: "", blocks: parsed.blocks, inferred: false }
     : inferTitleFromFirstBlock(parsed);
-  const selectedLabel = `${MOODS[currentMood].label} · ${SKINS[currentSkin].label}`;
   return {
     ...parsed,
     title: articleTitleOverride.trim() || parsed.title || inferred.title || "你的文章预览",
-    subtitle: `Yooco · ${selectedLabel}${inferred.inferred ? " · 已识别首行标题" : ""}`,
     blocks: inferred.blocks,
     isSample: false,
   };
@@ -1012,6 +1018,160 @@ function splitHeadingCaption(text) {
   };
 }
 
+function componentBlockSignature(block) {
+  return JSON.stringify([block.type, block.text || "", block.title || "", block.url || "", block.alt || "", block.items || [], block.level || 0]);
+}
+
+function saveComponentAssignments() {
+  localStorage.setItem("yooco-content-components", JSON.stringify({ articleSource, assignments: componentAssignments }));
+}
+
+function reconcileComponentAssignments(blocks) {
+  const signatures = blocks.map(componentBlockSignature);
+  const occupied = new Set();
+  const next = [];
+  componentAssignments.forEach((assignment) => {
+    if (!assignment || typeof assignment !== "object") return;
+    if (!componentKit?.items.some((item) => item.id === assignment.id)) return;
+    const saved = assignment.signatures;
+    if (!Array.isArray(saved) || !saved.length || saved.length > 4) return;
+    const matches = (start) => start >= 0 && saved.every((signature, offset) => signatures[start + offset] === signature);
+    let start = Number(assignment.startIndex);
+    if (!matches(start)) {
+      const candidates = signatures.map((_, index) => index).filter(matches);
+      if (candidates.length !== 1) return;
+      start = candidates[0];
+    }
+    if (saved.some((_, offset) => occupied.has(start + offset))) return;
+    const group = blocks.slice(start, start + saved.length);
+    if (componentKit.compatibility(assignment.id, group)) return;
+    saved.forEach((_, offset) => occupied.add(start + offset));
+    next.push({ id: assignment.id, startIndex: start, signatures: saved, meta: {
+      label: componentKit.clean(assignment.meta?.label), note: componentKit.clean(assignment.meta?.note),
+    } });
+  });
+  if (JSON.stringify(next) !== JSON.stringify(componentAssignments)) {
+    componentAssignments = next;
+    saveComponentAssignments();
+  }
+  return componentAssignments;
+}
+
+function assignedRangeForSelection() {
+  if (!selectedComponentRange) return null;
+  const [start, end] = selectedComponentRange;
+  return componentAssignments.find((item) => item.startIndex === start && item.signatures.length === end - start + 1) || null;
+}
+
+function componentContentSummary(blocks) {
+  return blocks.map((block) => block.text || block.alt || block.title || (block.items || []).map((item) => typeof item === "string" ? item : item.label || item.value).join("、"))
+    .filter(Boolean).join(" · ").slice(0, 90);
+}
+
+function componentPickerPreview(blocks, id) {
+  if (!blocks.length) return "";
+  const parts = blocks.map((block) => {
+    if (block.type === "image") return `<figure class="article-image"><img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.alt || "文章配图")}" loading="lazy" /><figcaption>${escapeHtml(block.alt || "文章配图")}</figcaption></figure>`;
+    if (block.type === "steps") return `<section class="steps-block"><strong>${escapeHtml(block.title || "操作步骤")}</strong>${(block.items || []).map((step) => `<p>${escapeHtml(step)}</p>`).join("")}</section>`;
+    return `<p>${escapeHtml(block.text || block.title || "")}</p>`;
+  });
+  return componentKit.render(id, parts, blocks, {}, state, "preview");
+}
+
+function componentSuggestionScore(id, blocks, start) {
+  const chars = blocks.map((block) => block.text || "").join("").length;
+  const types = new Set(blocks.map((block) => block.type));
+  const articleType = state.articleType !== "auto" ? state.articleType : lastAiResult?.template?.params?.articleType || "auto";
+  if (id === "qa") return /[？?]$/.test(String(blocks[0]?.text || "")) || articleType === "interview" ? 100 : 0;
+  if (id === "steps") return types.has("steps") ? 100 : 0;
+  if (id === "compare") return blocks.filter((block) => block.type === "image").length === 2 ? 100 : 0;
+  if (id === "hero") return types.has("image") && start === 0 ? 85 : 45;
+  if (id === "side-by-side") return types.has("image") && chars < 280 ? 75 : 25;
+  if (id === "book") return start === 0 ? 80 : 20;
+  if (id === "viewpoint") return types.has("quote") || types.has("card") || articleType === "opinion" ? 75 : 35;
+  if (id === "sidenote") return chars > 160 ? 70 : 25;
+  return 0;
+}
+
+function renderComponentPicker() {
+  if (!componentGallery || !componentKit) return;
+  const model = getArticleModel();
+  reconcileComponentAssignments(model.blocks);
+  if (selectedComponentRange && selectedComponentRange[1] >= model.blocks.length) selectedComponentRange = null;
+  const [start, end] = selectedComponentRange || [-1, -1];
+  const selected = !model.isSample && start >= 0 ? model.blocks.slice(start, end + 1) : [];
+  if (componentSelection) componentSelection.textContent = selected.length
+    ? `已选 ${selected.length} 个内容块 · ${componentContentSummary(selected) || "请改选有文字的内容"}`
+    : "请先选择文章中的内容块";
+  const beforeButton = document.querySelector("#componentExtendBefore");
+  const afterButton = document.querySelector("#componentExtendAfter");
+  if (beforeButton) beforeButton.disabled = !selected.length || start <= 0 || selected.length >= 4;
+  if (afterButton) afterButton.disabled = !selected.length || end >= model.blocks.length - 1 || selected.length >= 4;
+  const active = assignedRangeForSelection();
+  const ranked = componentKit.items.filter((item) => componentFilter === "all" || item.category === componentFilter)
+    .map((item) => ({ item, reason: componentKit.compatibility(item.id, selected), score: componentSuggestionScore(item.id, selected, start) }))
+    .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)) || b.score - a.score);
+  const firstAvailable = ranked.find(({ reason }) => !reason)?.item.id;
+  const selectedLength = selected.map((block) => block.text || (block.items || []).join("")).join("").length;
+  componentGallery.innerHTML = ranked.map(({ item, reason }) => {
+    const chosen = active?.id === item.id;
+    const suggestion = lastAiResult && firstAvailable === item.id && !reason ? " · 推荐" : "";
+    const excerpt = selected.length ? componentContentSummary(selected) : "选中内容后预览自己的文字";
+    const lengthHint = !reason && selectedLength > item.softMax ? " · 内容较长，建议拆段" : "";
+    return `<div class="component-option-card"><button type="button" class="component-option${chosen ? " is-active" : ""}" data-component-choice="${item.id}" ${reason ? "disabled" : ""} aria-pressed="${chosen ? "true" : "false"}">
+      <span class="component-option-head"><strong>${item.label}${suggestion}</strong><small>${item.category === "text" ? "纯文字" : "图文"}</small></span>
+      <span class="component-option-hint">${reason || item.hint}${lengthHint}</span>
+      <span class="component-option-excerpt">${componentKit.escape(excerpt)}</span>
+    </button>${reason ? "" : `<div class="component-option-preview" aria-hidden="true">${componentPickerPreview(selected, item.id)}</div>`}</div>`;
+  }).join("");
+  if (componentEdit) {
+    componentEdit.hidden = !active;
+    if (active) {
+      componentEdit.querySelector("#componentLabel").value = active.meta?.label || "";
+      componentEdit.querySelector("#componentNote").value = active.meta?.note || "";
+    }
+  }
+}
+
+function wrapComponentParts(parts, blocks, mode) {
+  if (!componentKit || !componentAssignments.length) return parts;
+  const starts = new Map(reconcileComponentAssignments(blocks).map((item) => [item.startIndex, item]));
+  const result = [];
+  for (let index = 0; index < parts.length;) {
+    const assignment = starts.get(index);
+    if (!assignment) { result.push(parts[index]); index += 1; continue; }
+    const count = assignment.signatures.length;
+    result.push(componentKit.render(assignment.id, parts.slice(index, index + count), blocks.slice(index, index + count), assignment.meta, state, mode));
+    index += count;
+  }
+  return result;
+}
+
+const ATLAS_HEADING_STYLES = ["atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"];
+
+function splitAtlasHeadingLines(text) {
+  const raw = String(text || "");
+  if (/[*_`\[\]]/.test(raw)) return [raw, ""];
+  const punctuation = raw.match(/^(.+?[，,：:；;！？!?])\s*(.+)$/);
+  if (punctuation) return [punctuation[1], punctuation[2]];
+  const chars = Array.from(raw);
+  if (chars.length < 4) return [raw, ""];
+  const middle = Math.ceil(chars.length / 2);
+  return [chars.slice(0, middle).join(""), chars.slice(middle).join("")];
+}
+
+function renderAtlasHeading(item, idx, editable, kind, parts) {
+  const [first, second] = ["atlas-marker", "atlas-weight"].includes(kind)
+    ? splitAtlasHeadingLines(parts.title) : [parts.title, ""];
+  const main = `<span class="heading-atlas-main" contenteditable="${editable}"><span class="heading-atlas-first">${inlineMarkdown(first)}</span>${second ? `<span class="heading-atlas-second">${inlineMarkdown(second)}</span>` : ""}</span>`;
+  const subText = parts.sub || ({ "atlas-editorial": "章节 / SECTION", "atlas-quote": "观点 / QUOTE", "atlas-pill": "专栏 / COLUMN", "atlas-vertical": "FIELD NOTES", "atlas-ticket": "A STORY WORTH READING" }[kind] || "");
+  const sub = subText ? `<span class="heading-atlas-label${parts.sub ? " heading-atlas-sub" : ""}" contenteditable="${parts.sub ? editable : "false"}">${escapeHtml(subText)}</span>` : "";
+  const number = `<span class="heading-atlas-number" aria-hidden="true" contenteditable="false"></span>`;
+  const after = kind === "atlas-ticket" ? `<span class="heading-atlas-ticket-foot" aria-hidden="true" contenteditable="false">ADMIT ONE<span>VOL. 01</span></span>` : "";
+  const before = kind === "atlas-index" ? `${number}` : kind === "atlas-quote" ? `<span class="heading-atlas-quote-mark" aria-hidden="true" contenteditable="false">“</span>` : "";
+  return `<h3 class="section-title level-2 heading-atlas ${kind}" data-type="heading" data-level="2" ${idx} contenteditable="false">${before}${sub}${main}${after}</h3>`;
+}
+
 function renderHeadingBlock(item, index, editable) {
   const level = Math.min(6, Math.max(2, Number(item.level) || 2));
   const idx = blockIndexAttr(item, index);
@@ -1019,6 +1179,8 @@ function renderHeadingBlock(item, index, editable) {
   const parts = splitHeadingCaption(item.text);
   const sub = parts.sub || "SECTION";
   const subAttr = ` data-sub="${escapeHtml(sub)}"`;
+
+  if (level === 2 && ATLAS_HEADING_STYLES.includes(kind)) return renderAtlasHeading(item, idx, editable, kind, parts);
 
   if (level === 2 && kind === "poster") {
     const shown = `${parts.title}${parts.title.endsWith("#") ? "" : "#"}`;
@@ -1036,7 +1198,7 @@ function renderHeadingBlock(item, index, editable) {
 function renderBody() {
   const model = getArticleModel();
   const editable = "true";
-  const parts = model.blocks.map((item, index) => {
+  let parts = model.blocks.map((item, index) => {
     const idx = blockIndexAttr(item, index);
     if (item.type === "lead") return `<p class="lead" data-type="lead" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     if (item.type === "highlight" && state.styleVariant === "deep-night") return `<p class="highlight-line" data-type="highlight" ${idx} contenteditable="${editable}"><mark>${item.text}</mark></p>`;
@@ -1072,6 +1234,7 @@ function renderBody() {
     if (item.type === "paragraph") return `<p data-type="paragraph" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     return "";
   });
+  if (!model.isSample) parts = wrapComponentParts(parts, model.blocks, "preview");
   // 精选主题：自动目录（取前 3 个二级标题，纯导航，不写回原文）。
   if (isTheme()) {
     const tocItems = model.blocks
@@ -1080,18 +1243,23 @@ function renderBody() {
     if (tocItems.length >= 2) {
       const tocHtml = `<section class="toc-card" data-type="toc" contenteditable="false"><p class="toc-title">本文脉络</p><div class="toc-list">${tocItems.map((block, tocIndex) =>
         `<p><b>${String(tocIndex + 1).padStart(2, "0")}</b><span>${escapeHtml(block.text)}</span></p>`).join("")}</div></section>`;
-      const leadIndex = parts.findIndex((html) => html.startsWith('<p class="lead"'));
+      const leadIndex = parts.findIndex((html) => html.includes('<p class="lead"'));
       parts.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtml);
     }
     // 可选结尾签名区（默认关；内容可编辑，但不写回原文）。
     if (state.showSignature) {
-      parts.push(`<section class="signature-card" data-type="signature" contenteditable="true"><p class="signature-name">—— {{作者名}}（替换为你的署名）</p><p>如果今天这篇有收获，欢迎点赞、在看、转发，我们下篇见。</p></section>`);
+      parts.push(`<section class="signature-card" data-type="signature" contenteditable="true"><p class="signature-name">—— {{作者名}}</p></section>`);
     }
   }
   articleBody.innerHTML = parts.join("");
+  if (selectedComponentRange) {
+    articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
+      const index = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
+      node.classList.toggle("is-component-selected", index >= selectedComponentRange[0] && index <= selectedComponentRange[1]);
+    });
+  }
   articleTitle.textContent = model.title;
   articleTitle.contentEditable = "true";
-  if (articleSubtitle) articleSubtitle.textContent = model.subtitle;
 }
 
 function serializePreviewToMarkdown() {
@@ -1106,14 +1274,15 @@ function serializePreviewToMarkdown() {
     return (clone.textContent || "").replace(/\u00a0/g, " ").trim();
   };
   const parts = [];
-  [...articleBody.children].forEach((el) => {
+  [...articleBody.children].flatMap((el) => el.dataset.component
+    ? [...(el.querySelector(":scope > .cc-content")?.children || [])] : [el]).forEach((el) => {
     const type = el.dataset.type || "";
     // 目录与签名是精选主题的派生装饰，不写回原文。
     if (type === "toc" || type === "signature") return;
     if (type === "heading") {
       const level = Math.min(6, Math.max(2, Number(el.dataset.level) || 2));
-      const main = el.querySelector(".heading-panel-main, .heading-oval-text");
-      const sub = el.querySelector(".heading-panel-sub");
+      const main = el.querySelector(".heading-panel-main, .heading-oval-text, .heading-atlas-main");
+      const sub = el.querySelector(".heading-panel-sub, .heading-atlas-sub");
       let text;
       if (main) {
         text = htmlToMd(main);
@@ -1190,12 +1359,39 @@ function serializePreviewToMarkdown() {
 }
 
 function syncPreviewEdits() {
+  const before = getArticleModel().blocks;
   articleTitleOverride = (articleTitle?.innerText || "").trim();
   const markdown = serializePreviewToMarkdown();
   articleSource = markdown;
+  const after = getArticleModel().blocks;
+  if (before.length === after.length) {
+    const oldSignatures = before.map(componentBlockSignature);
+    const newSignatures = after.map(componentBlockSignature);
+    componentAssignments.forEach((assignment) => {
+      const start = assignment.startIndex;
+      const count = assignment.signatures.length;
+      const oldGroup = before.slice(start, start + count);
+      const newGroup = after.slice(start, start + count);
+      const stillExists = newSignatures.some((_, candidate) => assignment.signatures.every((signature, offset) => newSignatures[candidate + offset] === signature));
+      if (stillExists || oldGroup.length !== count || newGroup.length !== count) return;
+      const outsideUnchanged = oldSignatures.every((signature, index) => index >= start && index < start + count || signature === newSignatures[index]);
+      if (!outsideUnchanged || oldGroup.some((block, index) => block.type !== newGroup[index].type)) return;
+      if (componentKit.compatibility(assignment.id, newGroup)) return;
+      assignment.signatures = newGroup.map(componentBlockSignature);
+    });
+  }
+  reconcileComponentAssignments(after);
   if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
   persistArticleSource();
+  renderComponentPicker();
   setStatus("已在预览中修改文字");
+}
+
+function flushPendingPreviewEdits() {
+  if (!previewSyncTimer) return;
+  window.clearTimeout(previewSyncTimer);
+  previewSyncTimer = 0;
+  syncPreviewEdits();
 }
 
 function applyStyleVars() {
@@ -1255,9 +1451,9 @@ function applyStyleVars() {
   if (isTheme()) articlePage.dataset.theme = state.theme;
   else delete articlePage.dataset.theme;
   articlePage.style.backgroundColor = state.pageColor;
+  previewStage?.style.setProperty("--preview-page-color", state.pageColor);
   articleBody.style.maxWidth = `${state.contentWidth}px`;
   updateOutputs();
-  if (previewSummary) previewSummary.textContent = `正文 ${state.fontSize}px · 行高 ${Number(state.lineHeight).toFixed(2)} · 段距 ${state.paragraphSpacing}px`;
   updateCompliancePanel();
   const currentTemplate = { type: "universal", name: isTheme()
     ? `精选主题 · ${THEMES[state.theme].label}`
@@ -1273,6 +1469,7 @@ function render(options = {}) {
     renderBody();
     renderStructureEditor();
   }
+  renderComponentPicker();
 }
 
 function applyMarksToMarkdown(text, marks) {
@@ -1349,40 +1546,54 @@ function structuredDocumentToMarkdown(document) {
   return lines.join("\n\n").trim();
 }
 
-const AI_PARAMETER_KEYS = Object.keys(TEMPLATE_DEFAULTS);
+function nextNormalizeAssignment() {
+  if (styleTouched) {
+    const theme = THEMES[state.theme] ? state.theme : "classic";
+    if (theme === "classic") return { mode: "fixed", theme, mood: currentMood, skin: currentSkin };
+    return { mode: "fixed", theme };
+  }
+  if (awaitingContentPick) return { mode: "choose" };
+  const pool = typeof THEME_IDS !== "undefined"
+    ? THEME_IDS
+    : ["fresh", "mono", "serene", "stub", "editorial", "classic"];
+  const theme = pool[Math.floor(Math.random() * pool.length)];
+  return { mode: "fixed", theme };
+}
 
-function applyAiNormalization(data) {
+function applyAiLook(aiParams, assignment) {
+  if (styleTouched) return;
+  const requested = assignment?.mode === "fixed" ? assignment.theme : "";
+  const aiTheme = THEMES[aiParams.theme] ? aiParams.theme : "";
+  const theme = requested && requested !== "classic" ? requested : (!requested ? aiTheme : "");
+  if (theme) {
+    Object.assign(state, buildThemeState(theme));
+    if (aiParams.articleType && aiParams.articleType !== "auto") state.articleType = aiParams.articleType;
+    return;
+  }
+  state.theme = "classic";
+  const lockedSkin = assignment?.skin && SKINS[assignment.skin] ? assignment.skin : "";
+  const aiSkin = lockedSkin || (SKINS[aiParams.skin] ? aiParams.skin : "");
+  const aiMood = MOODS[assignment?.mood] ? assignment.mood : (MOODS[aiParams.mood] ? aiParams.mood : "");
+  const skin = aiSkin || (aiMood ? MOODS[aiMood].skins[0] : "");
+  if (skin) {
+    currentSkin = skin;
+    currentMood = skinMood(skin);
+    Object.assign(state, buildSkinState(skin));
+  }
+  if (aiParams.articleType && aiParams.articleType !== "auto") state.articleType = aiParams.articleType;
+  state.theme = "classic";
+  state.styleVariant = SKINS[currentSkin]?.styleVariant || "standard";
+  state.mutedColor = SKINS[currentSkin]?.mutedColor || state.mutedColor;
+  state.titleColor = SKINS[currentSkin]?.titleColor || state.textColor;
+  state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
+}
+
+function applyAiNormalization(data, assignment) {
   const markdown = structuredDocumentToMarkdown(data?.document);
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
   const aiParams = normalizeTemplateParams(data?.template?.params || data?.params || {});
-  // 用户手动调过样式后，AI 只重排文字结构，不再覆盖基调。
-  if (!styleTouched) {
-    const aiTheme = THEMES[aiParams.theme] ? aiParams.theme : "";
-    if (aiTheme) {
-      // 精选主题：以注册表的整套设计变量为准，AI 只决定主题与文章类型。
-      Object.assign(state, buildThemeState(aiTheme));
-      if (aiParams.articleType && aiParams.articleType !== "auto") state.articleType = aiParams.articleType;
-    } else {
-      state.theme = "classic";
-      const aiMood = MOODS[aiParams.mood] ? aiParams.mood : "";
-      const aiSkin = SKINS[aiParams.skin] ? aiParams.skin : (aiMood ? MOODS[aiMood].skins[0] : "");
-      if (aiSkin) {
-        currentSkin = aiSkin;
-        currentMood = skinMood(aiSkin);
-        Object.assign(state, buildSkinState(aiSkin));
-      }
-      AI_PARAMETER_KEYS.forEach((key) => {
-        if (aiParams[key] !== undefined) state[key] = aiParams[key];
-      });
-      state.theme = "classic";
-      // 深色皮肤需要 styleVariant 切换（深底浅字的一整套 CSS 覆盖）。
-      state.styleVariant = SKINS[currentSkin]?.styleVariant || "standard";
-      state.mutedColor = SKINS[currentSkin]?.mutedColor || state.mutedColor;
-      state.titleColor = SKINS[currentSkin]?.titleColor || state.textColor;
-      state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
-    }
-    syncMoodUI();
-  }
+  applyAiLook(aiParams, assignment);
+  syncMoodUI();
   articleTitleOverride = "";
   blockTypeOverrides = {};
   lastAiResult = data;
@@ -1391,18 +1602,14 @@ function applyAiNormalization(data) {
   syncControls();
   applyArticleSource(false);
   const blockCountFromAi = data.document.blocks.length;
-  setStatus(styleTouched
-    ? `已优化：${blockCountFromAi} 个内容块（保留你调过的样式），可在预览里直接改字`
-    : isTheme()
-      ? `已优化：${blockCountFromAi} 个内容块，主题为「${THEMES[state.theme].label}」，可在预览里直接改字`
-      : `已优化：${blockCountFromAi} 个内容块，基调为「${MOODS[currentMood].label}」，可在预览里直接改字`);
-  setFeedback(styleTouched ? "文字已重新排版，样式保持你的手动调整。" : "下方预览已更新为优化后的排版。");
+  setStatus(`已优化 ${blockCountFromAi} 个内容块`);
+  setFeedback("排版已更新");
 }
 
 async function normalizeWithDeepSeek() {
   const source = (articleInput ? articleInput.value : articleSource).trim();
   if (!source) {
-    setFeedback("请先从首页粘贴文章，或在预览里编辑文字。");
+    setFeedback("请先添加文章内容");
     return;
   }
   if (remainingTrialCount() <= 0) {
@@ -1423,10 +1630,11 @@ async function normalizeWithDeepSeek() {
     render();
   }
   try {
+    const assignment = nextNormalizeAssignment();
     const response = await fetch("/api/normalize", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ source }),
+      body: JSON.stringify({ source, assignment }),
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
@@ -1434,7 +1642,7 @@ async function normalizeWithDeepSeek() {
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
         serverTrialRemaining = 0;
         writeLocalTrialUsed(TRIAL_LIMIT);
-        showUpgradePrompt(message);
+        showUpgradePrompt();
         return;
       }
       if (response.status === 429) {
@@ -1453,14 +1661,15 @@ async function normalizeWithDeepSeek() {
       writeLocalTrialUsed(readLocalTrialUsed() + 1);
       renderTrialMeter();
     }
-    applyAiNormalization(payload.data);
+    applyAiNormalization(payload.data, assignment);
+    awaitingContentPick = false;
     try {
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
     } catch {
       /* analytics must never break typesetting */
     }
   } catch (error) {
-    setStatus("已套用本地排版。优化未完成，仍可在预览里改字。");
+    setStatus("已套用本地排版");
     setFeedback(error instanceof Error ? error.message : "暂时无法完成优化，请稍后重试。");
   } finally {
     if (aiNormalizeButton) {
@@ -1515,6 +1724,7 @@ function buildCopyHtml() {
     if (headingKind === "poster" && level === 2) return `${base}padding:0;border:0;`;
     if (headingKind === "panel" && level === 2) return `${base}padding:0;border:0;`;
     if (headingKind === "oval" && level === 2) return `${base}padding:0;border:0;text-align:center;`;
+    if (ATLAS_HEADING_STYLES.includes(headingKind) && level === 2) return `${base}padding:0;border:0;overflow-wrap:anywhere;`;
     return `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
   };
   const headingPrefix = (level) => {
@@ -1536,6 +1746,27 @@ function buildCopyHtml() {
       }
     }
     return "";
+  };
+  const atlasCopyHeading = (item) => {
+    sectionCounter += 1;
+    const number = String(sectionCounter).padStart(2, "0");
+    const parts = splitHeadingCaption(item.text);
+    const [first, second] = ["atlas-marker", "atlas-weight"].includes(headingKind)
+      ? splitAtlasHeadingLines(parts.title) : [parts.title, ""];
+    const main = copyInlineMarkdown(parts.title);
+    const sub = parts.sub || ({ "atlas-editorial": "章节 / SECTION", "atlas-pill": "专栏 / COLUMN", "atlas-vertical": "FIELD NOTES", "atlas-ticket": "A STORY WORTH READING" }[headingKind] || "");
+    const label = escapeHtml(sub);
+    const base = headingStyle(2);
+    const quiet = `color:${mutedColor};font-size:11px;font-weight:600;line-height:1.6;letter-spacing:.1em;`;
+    if (headingKind === "atlas-editorial") return `<h3 style="${base}font-weight:500;letter-spacing:.04em;line-height:1.48;"><span style="display:block;margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid ${state.dividerColor};${quiet}">${label}</span><span style="display:block;">${main}</span></h3>`;
+    if (headingKind === "atlas-index") return `<h3 style="${base}"><span style="display:inline-block;position:relative;z-index:1;margin:0 0 -8px 14px;padding:0 8px;background-color:${state.pageColor};color:${state.textColor};font-size:11px;font-weight:600;letter-spacing:.06em;">INDEX / ${number}</span><span style="display:block;padding:18px 18px 15px;border:1px solid ${state.textColor};">${main}</span>${sub ? `<span style="display:block;margin-top:8px;${quiet}">${label}</span>` : ""}</h3>`;
+    if (headingKind === "atlas-quote") return `<h3 style="${base}font-weight:500;line-height:1.5;"><span style="display:block;height:46px;color:${state.accentColor};font-size:72px;line-height:.8;">“</span><span style="display:block;">${main}</span><span style="display:block;margin-top:15px;padding-top:9px;border-top:1px solid ${state.dividerColor};${quiet}">${label || "观点 / QUOTE"}</span></h3>`;
+    if (headingKind === "atlas-pill") return `<h3 style="${base}"><span style="display:inline-block;margin-bottom:14px;padding:4px 12px;border-radius:999px;background-color:${state.accentColor};color:${state.textColor};font-size:10px;font-weight:700;line-height:1.6;letter-spacing:.04em;">${label}</span><span style="display:block;">${main}</span></h3>`;
+    if (headingKind === "atlas-vertical") return `<h3 style="${base}font-weight:500;"><span style="display:table;width:100%;table-layout:fixed;"><span style="display:table-cell;width:28px;vertical-align:top;writing-mode:vertical-rl;padding-right:8px;border-right:1px solid ${state.dividerColor};${quiet}">${label}</span><span style="display:table-cell;vertical-align:top;padding-left:18px;">${main}</span></span></h3>`;
+    if (headingKind === "atlas-ticket") return `<h3 style="${base}padding:17px 18px;border:0;background-color:${state.textColor};color:${state.pageColor};font-weight:500;"><span style="display:block;margin-bottom:12px;color:${state.pageColor};font-size:10px;line-height:1.6;letter-spacing:.1em;">${label}</span><span style="display:block;">${main}</span><span style="display:block;margin-top:24px;padding-top:9px;border-top:1px dashed ${state.pageColor};color:${state.pageColor};font-size:10px;line-height:1.4;letter-spacing:.06em;">ADMIT ONE &nbsp;&nbsp; VOL. 01</span></h3>`;
+    if (headingKind === "atlas-marker") return `<h3 style="${base}"><span style="display:block;">${copyInlineMarkdown(first)}</span>${second ? `<span style="display:table;padding:0 3px;background:linear-gradient(transparent 55%, ${highlightColor} 55%);">${copyInlineMarkdown(second)}</span>` : ""}${sub ? `<span style="display:block;margin-top:12px;${quiet}">${label}</span>` : ""}</h3>`;
+    if (headingKind === "atlas-shadow") return `<h3 style="${base}font-weight:900;"><span style="display:block;padding:0 5px 5px 0;text-shadow:2px 2px 0 ${state.pageColor},4px 4px 0 ${ghostAccent};">${main}</span>${sub ? `<span style="display:block;margin-top:12px;${quiet}">${label}</span>` : ""}</h3>`;
+    return `<h3 style="${base}"><span style="display:block;font-weight:900;">${copyInlineMarkdown(first)}</span>${second ? `<span style="display:block;font-weight:300;letter-spacing:.1em;">${copyInlineMarkdown(second)}</span>` : ""}${sub ? `<span style="display:block;margin-top:12px;${quiet}">${label}</span>` : ""}</h3>`;
   };
   const cardBoxStyle = (kind, bgColor) => {
     const base = `margin:18px 0 22px;color:${state.textColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};`;
@@ -1559,7 +1790,6 @@ function buildCopyHtml() {
   const codeStyle = `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;`;
   const listPad = `${Math.max(1, Number(state.listIndent) || 1.5)}em`;
   // 精选主题复制版：自动目录（取前 3 个二级标题，纯派生）。
-  let tocInjected = false;
   const tocHeadings = model.blocks
     .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
     .slice(0, 3);
@@ -1568,14 +1798,13 @@ function buildCopyHtml() {
       `<p style="margin:0 0 8px;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
     : "";
   const signatureHtmlBlock = isTheme() && state.showSignature
-    ? `<section style="margin:28px 0 0;padding:20px 0 0;border-top:1px solid ${state.dividerColor};text-align:right;"><p style="margin:0 0 8px;color:${titleColor};font-size:14px;font-weight:700;">—— {{作者名}}（替换为你的署名）</p><p style="margin:0;color:${mutedColor};font-size:12px;line-height:1.8;">如果今天这篇有收获，欢迎点赞、在看、转发，我们下篇见。</p></section>`
+    ? `<section style="margin:28px 0 0;padding:20px 0 0;border-top:1px solid ${state.dividerColor};text-align:right;"><p style="margin:0;color:${titleColor};font-size:14px;font-weight:700;">—— {{作者名}}</p></section>`
     : "";
   // 精选主题的引导段（引言卡）内联版，与 styles.css 的 data-theme 盖层保持一致。
   const themeLeadStyle = (baseTextStyle) => {
     const t = isTheme() ? state.theme : "classic";
     const base = `${baseTextStyle}text-indent:0;`;
     if (t === "fresh") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${colorWithAlpha(state.accentColor, 0.18)};border-radius:16px;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
-    if (t === "vermilion") return `${base}padding:24px 24px 20px;margin-bottom:28px;border:1px solid ${colorWithAlpha(state.accentColor, 0.12)};border-radius:12px;background-color:${state.pageColor};box-shadow:0 4px 24px -4px ${colorWithAlpha(state.accentColor, 0.22)};color:${titleColor};font-weight:750;`;
     if (t === "mono") return `${base}padding:0 0 18px;margin-bottom:24px;border-bottom:1px solid ${state.dividerColor};color:${titleColor};font-weight:600;`;
     if (t === "serene") return `${base}padding:34px 16px;margin:8px 0 44px;border-top:1px solid ${state.dividerColor};border-bottom:1px solid ${state.dividerColor};text-align:center;color:${titleColor};font-size:${Math.round(state.headingSize * 0.72)}px;font-weight:600;line-height:1.85;`;
     if (t === "stub") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${state.accentColor};border-radius:12px;background-color:${state.pageColor};box-shadow:0 6px 18px -8px ${colorWithAlpha(state.accentColor, 0.55)};color:${titleColor};font-weight:700;`;
@@ -1589,16 +1818,16 @@ function buildCopyHtml() {
     if (t === "serene") return `<section style="margin:56px 0;border-top:1px solid ${state.dividerColor};"></section>`;
     return `<section style="margin:${state.dividerMargin}px 0;border-top:${state.dividerThickness}px solid ${state.dividerColor};"></section>`;
   };
-  const body = model.blocks.map((item) => {
+  let body = model.blocks.map((item) => {
     if (item.type === "lead") {
-      const toc = (!tocInjected && tocHtmlBlock) ? (tocInjected = true, tocHtmlBlock) : "";
-      return `<p style="${themeLeadStyle(textStyle)}">${copyInlineMarkdown(item.text)}</p>${toc}`;
+      return `<p data-yooco-lead="1" style="${themeLeadStyle(textStyle)}">${copyInlineMarkdown(item.text)}</p>`;
     }
     if (item.type === "highlight" && isDeepNight) return `<p style="${textStyle}"><span style="${highlightCss}">${copyInlineMarkdown(item.text)}</span></p>`;
     if (item.type === "heading") {
       const level = Number(item.level) || 2;
       const parts = splitHeadingCaption(item.text);
       const sub = parts.sub || "SECTION";
+      if (level === 2 && ATLAS_HEADING_STYLES.includes(headingKind)) return atlasCopyHeading(item);
       if (level === 2 && headingKind === "poster") {
         const prefix = headingPrefix(level);
         const title = `${parts.title}${parts.title.endsWith("#") ? "" : "#"}`;
@@ -1644,15 +1873,12 @@ function buildCopyHtml() {
         const dataAttrs = meta
           ? ` data-w="${meta.width}"${meta.ratio ? ` data-ratio="${meta.ratio}"` : ""}`
           : "";
-        const tip = isWechatHostedImage(item.url)
-          ? ""
-          : `<p style="margin:6px 0 0;color:${mutedColor};font-size:${Math.max(10, state.captionSize - 1)}px;line-height:1.5;">提示：外链图可能被公众号拦截，建议先上传到素材库再替换链接。</p>`;
-        return `<section style="margin:22px 0 26px;text-align:center;"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}"${dataAttrs} style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:${state.imageRadius}px;" /><p style="margin:7px 0 0;color:${mutedColor};font-size:${state.captionSize}px;line-height:1.6;">${escapeHtml(item.alt || "文章配图")}</p>${tip}</section>`;
+        return `<section style="margin:22px 0 26px;text-align:center;"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}"${dataAttrs} style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:${state.imageRadius}px;" /><p style="margin:7px 0 0;color:${mutedColor};font-size:${state.captionSize}px;line-height:1.6;">${escapeHtml(item.alt || "文章配图")}</p></section>`;
       }
       if (state.showImage) {
-        return `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;">${escapeHtml(item.alt || "文章配图占位")}</p><p style="margin:10px 0 0;color:inherit;font-size:10px;font-weight:600;letter-spacing:.04em;">请在公众号素材库上传后替换为真实图片</p></section>`;
+        return `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;">${escapeHtml(item.alt || "图片待补")}</p></section>`;
       }
-      return `<p style="${textStyle}color:${mutedColor};">[图片：${escapeHtml(item.alt || "文章配图")} · 请在公众号里插入素材]</p>`;
+      return `<p style="${textStyle}color:${mutedColor};">[图片：${escapeHtml(item.alt || "待补")}]</p>`;
     }
     if (item.type === "list") {
       const marker = (index) => {
@@ -1674,12 +1900,16 @@ function buildCopyHtml() {
       return `<section style="margin:0 0 ${state.paragraphSpacing}px;">${itemsHtml}</section>`;
     }
     if (item.type === "code") {
-      const note = `<p style="margin:0 0 8px;color:${mutedColor};font-size:${Math.max(10, state.captionSize - 1)}px;line-height:1.5;">代码块：粘贴后请核对换行；过长建议改用截图。</p>`;
-      return `<section style="${codeStyle}">${note}<p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};">${formatCodeForWechat(item.text)}</p></section>`;
+      return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};">${formatCodeForWechat(item.text)}</p></section>`;
     }
     return "";
   });
-  if (!tocInjected && tocHtmlBlock) body.unshift(tocHtmlBlock);
+  if (!model.isSample) body = wrapComponentParts(body, model.blocks, "copy");
+  if (tocHtmlBlock) {
+    const leadIndex = body.findIndex((part) => part.includes('data-yooco-lead="1"'));
+    body.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtmlBlock);
+  }
+  body = body.map((part) => part.replace(' data-yooco-lead="1"', ""));
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
   const titleHtml = model.title ? `<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>` : "";
@@ -1689,15 +1919,22 @@ function buildCopyHtml() {
 
 function buildCopyPlain(html) {
   const model = getArticleModel();
-  const blocks = model.blocks.map((item) => {
-    if (item.type === "list") return (item.items || []).join("\n");
-    if (item.type === "steps") return (item.items || []).join("\n");
-    if (item.type === "stat") {
-      return (item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`).join("\n");
-    }
-    if (item.type === "divider") return "——";
-    if (item.type === "image") return item.alt || item.url || "";
-    return item.text || "";
+  const assignments = reconcileComponentAssignments(model.blocks);
+  const starts = new Map(assignments.map((item) => [item.startIndex, item]));
+  const ends = new Map(assignments.map((item) => [item.startIndex + item.signatures.length - 1, item]));
+  const blocks = model.blocks.map((item, index) => {
+    const assignment = starts.get(index);
+    const label = assignment?.meta?.label || "";
+    const note = ends.get(index)?.meta?.note || "";
+    let content = "";
+    if (item.type === "list") content = (item.items || []).join("\n");
+    else if (item.type === "steps") content = [item.title, ...(item.items || [])].filter(Boolean).join("\n");
+    else if (item.type === "stat") content = [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
+    else if (item.type === "divider") content = "——";
+    else if (item.type === "image") content = [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
+    else if (["quote", "card"].includes(item.type)) content = [item.title, item.text].filter(Boolean).join("：");
+    else content = item.text || "";
+    return [label, content, note].filter(Boolean).join("\n");
   }).filter(Boolean);
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -1721,6 +1958,7 @@ function copyHtmlWithExecCommand(html) {
 }
 
 async function copyRichText() {
+  flushPendingPreviewEdits();
   updateCompliancePanel();
   const report = getComplianceReport();
   const html = buildCopyHtml();
@@ -1735,30 +1973,29 @@ async function copyRichText() {
       if (!window.ClipboardItem || !navigator.clipboard?.write) throw new Error("copy-unsupported");
       await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
     }
-    const lockNote = lockBrandColor?.checked ? "已尽量锁定品牌色。" : "";
-    copyFeedback.textContent = tips.length
-      ? `已复制。${lockNote}${tips.join("；")}。`
-      : `已复制文章。${lockNote}打开公众号后台粘贴即可。`;
+    copyFeedback.textContent = tips.length ? "已复制 · 发布前请检查提醒" : "已复制";
     setStatus("文章已复制，可粘贴到公众号发布页。");
   } catch {
-    copyFeedback.textContent = "浏览器未允许自动复制。请再点一次，或允许本页使用剪贴板。";
+    copyFeedback.textContent = "复制失败，请检查剪贴板权限";
   }
   window.setTimeout(() => { copyFeedback.textContent = ""; }, tips.length ? 8000 : 5000);
 }
 
 function exportConfig() {
+  flushPendingPreviewEdits();
   const payload = {
-    version: 2,
+    version: 3,
     updatedAt: new Date().toISOString(),
     template: { type: "universal", name: isTheme()
       ? `精选主题 · ${THEMES[state.theme].label}`
       : `${MOODS[currentMood].label} · ${SKINS[currentSkin].label}`, params: { ...getTemplateParams(), mood: currentMood, skin: currentSkin } },
+    article: { source: articleSource, title: articleTitleOverride, components: reconcileComponentAssignments(getArticleModel().blocks) },
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "wechat-style-template.json";
+  anchor.download = articleSource ? "yooco-article-layout.json" : "wechat-style-template.json";
   anchor.click();
   URL.revokeObjectURL(url);
 }
@@ -1773,7 +2010,12 @@ function importConfig(file) {
       const allowed = Object.keys(TEMPLATE_DEFAULTS);
       const normalized = normalizeTemplateParams(incoming);
       const importedTheme = THEMES[normalized.theme] ? normalized.theme : "";
-      if (importedTheme) {
+      const retiredTheme = incoming.theme && incoming.theme !== "classic" && !THEMES[incoming.theme];
+      if (retiredTheme) {
+        currentSkin = DEFAULT_SKIN;
+        currentMood = DEFAULT_MOOD;
+        Object.assign(state, buildSkinState(DEFAULT_SKIN));
+      } else if (importedTheme) {
         Object.assign(state, buildThemeState(importedTheme));
         allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
         state.theme = importedTheme;
@@ -1788,11 +2030,20 @@ function importConfig(file) {
         state.theme = "classic";
         allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
       }
+      if (typeof payload.article?.source === "string") {
+        articleSource = payload.article.source;
+        articleTitleOverride = typeof payload.article.title === "string" ? payload.article.title : "";
+        blockTypeOverrides = {};
+        componentAssignments = Array.isArray(payload.article.components) ? payload.article.components : [];
+        if (articleInput) articleInput.value = articleSource;
+        reconcileComponentAssignments(getArticleModel().blocks);
+        persistArticleSource();
+      }
       styleTouched = true;
       syncMoodUI();
       syncControls();
       render();
-    copyFeedback.textContent = "配置已导入。";
+    copyFeedback.textContent = retiredTheme ? "原主题已移除，已切换为经典主题。" : "配置已导入。";
     } catch {
       copyFeedback.textContent = "配置文件无法读取，请检查 JSON 格式。";
     }
@@ -1807,6 +2058,7 @@ function persistArticleSource() {
   else localStorage.removeItem("yooco-article-title");
   localStorage.setItem("yooco-infer-first-line-title", String(inferFirstLineTitle));
   localStorage.setItem("yooco-block-type-overrides", JSON.stringify(blockTypeOverrides));
+  saveComponentAssignments();
 }
 
 function trimInvalidOverrides() {
@@ -1817,16 +2069,20 @@ function trimInvalidOverrides() {
 }
 
 function applyArticleSource(showStatus = true) {
-  if (articleInput) articleSource = articleInput.value.trim();
+  if (articleInput) {
+    const incoming = articleInput.value.trim();
+    if (incoming !== articleSource) selectedComponentRange = null;
+    articleSource = incoming;
+  }
   trimInvalidOverrides();
   persistArticleSource();
   if (articleSource) {
     const model = parseArticle(articleSource);
-    setStatus(`预览已更新：${model.blocks.length} 个内容块，可直接改字`);
+    setStatus(`已更新 ${model.blocks.length} 个内容块`);
   } else {
-    setStatus("尚未输入文章，下方展示示例");
+    setStatus("当前为示例文章");
   }
-  if (showStatus) setFeedback(articleSource ? "下方预览已更新。" : "已恢复示例文章。");
+  if (showStatus) setFeedback(articleSource ? "预览已更新" : "已恢复示例");
   render();
 }
 
@@ -1835,10 +2091,12 @@ function clearArticleSource() {
   articleSource = "";
   articleTitleOverride = "";
   blockTypeOverrides = {};
+  componentAssignments = [];
+  selectedComponentRange = null;
   lastAiResult = null;
   persistArticleSource();
-  setStatus("尚未输入文章，下方展示示例");
-  setFeedback("已清空文章，恢复示例内容。");
+  setStatus("当前为示例文章");
+  setFeedback("已恢复示例");
   render();
 }
 
@@ -1895,7 +2153,7 @@ function autoSegmentArticle() {
   blockTypeOverrides = {};
   lastAiResult = null;
   applyArticleSource(false);
-  copyFeedback.textContent = "已按中文句段智能分段，可继续在预览里调整。";
+  copyFeedback.textContent = "已分段";
 }
 
 function handleRichTextPaste(event) {
@@ -1905,7 +2163,7 @@ function handleRichTextPaste(event) {
   if (!markdown) return;
   event.preventDefault();
   insertMarkdownAtCursor(markdown);
-  copyFeedback.textContent = "已将富文本转换为 Markdown，可继续编辑并实时预览。";
+  copyFeedback.textContent = "已转换";
 }
 
 controls.forEach((control) => {
@@ -1928,10 +2186,11 @@ document.querySelector("#resetButton").addEventListener("click", () => {
   currentMood = DEFAULT_MOOD;
   currentSkin = DEFAULT_SKIN;
   styleTouched = false;
+  awaitingContentPick = true;
   syncMoodUI();
   syncControls();
   render();
-  setFeedback("已恢复默认风格，下一次优化将由 AI 重新定基调。");
+  setFeedback("已恢复默认");
 });
 document.querySelector("#copyButton").addEventListener("click", copyRichText);
 document.querySelector("#exportButton").addEventListener("click", exportConfig);
@@ -1947,16 +2206,136 @@ lockBrandColor?.addEventListener("change", () => {
 if (lockBrandColor) lockBrandColor.checked = localStorage.getItem("yooco-lock-brand-color") === "1";
 aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
 articleInput?.addEventListener("paste", handleRichTextPaste);
+articleInput?.addEventListener("input", () => {
+  articleTitleOverride = "";
+  applyArticleSource(false);
+});
+
+const editorViewTabs = [document.querySelector("#resultViewTab"), document.querySelector("#sourceViewTab")];
+function selectEditorView(index) {
+  flushPendingPreviewEdits();
+  const showSource = index === 1;
+  if (showSource && articleInput) articleInput.value = articleSource;
+  document.querySelector("#sourcePanel").hidden = !showSource;
+  previewStage.hidden = showSource;
+  editorViewTabs.forEach((tab, tabIndex) => {
+    tab.setAttribute("aria-selected", String(tabIndex === index));
+    tab.tabIndex = tabIndex === index ? 0 : -1;
+  });
+}
+editorViewTabs.forEach((tab, index) => {
+  tab?.addEventListener("click", () => selectEditorView(index));
+  tab?.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
+    selectEditorView(next);
+    editorViewTabs[next].focus();
+  });
+});
 articleTitle.addEventListener("keydown", (event) => {
   if (event.key === "Enter") event.preventDefault();
 });
 articleTitle.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
-  previewSyncTimer = window.setTimeout(syncPreviewEdits, 200);
+  previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
 });
 articleBody.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
-  previewSyncTimer = window.setTimeout(syncPreviewEdits, 200);
+  previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
+});
+articleBody.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-block-index][data-type]");
+  if (!target || !articleBody.contains(target)) return;
+  const model = getArticleModel();
+  if (model.isSample) return;
+  const sourceIndex = Number(target.dataset.blockIndex);
+  const index = model.blocks.findIndex((block) => block.sourceIndex === sourceIndex);
+  if (index < 0) return;
+  if (event.shiftKey && selectedComponentRange) {
+    selectedComponentRange = [Math.min(selectedComponentRange[0], index), Math.max(selectedComponentRange[0], index)];
+  } else {
+    const assigned = reconcileComponentAssignments(model.blocks).find((entry) =>
+      index >= entry.startIndex && index < entry.startIndex + entry.signatures.length);
+    selectedComponentRange = assigned
+      ? [assigned.startIndex, assigned.startIndex + assigned.signatures.length - 1] : [index, index];
+  }
+  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
+    const blockIndex = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
+    node.classList.toggle("is-component-selected", blockIndex >= selectedComponentRange[0] && blockIndex <= selectedComponentRange[1]);
+  });
+  renderComponentPicker();
+});
+articleBody.addEventListener("keydown", (event) => {
+  if (!event.altKey || event.key !== "Enter") return;
+  const target = event.target.closest("[data-block-index][data-type]");
+  if (!target || !articleBody.contains(target)) return;
+  const model = getArticleModel();
+  if (model.isSample) return;
+  const index = model.blocks.findIndex((block) => block.sourceIndex === Number(target.dataset.blockIndex));
+  if (index < 0) return;
+  event.preventDefault();
+  selectedComponentRange = [index, index];
+  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
+    node.classList.toggle("is-component-selected", node === target);
+  });
+  renderComponentPicker();
+});
+document.querySelector("#componentExtendBefore")?.addEventListener("click", () => {
+  if (!selectedComponentRange) return;
+  flushPendingPreviewEdits();
+  selectedComponentRange = [Math.max(0, selectedComponentRange[0] - 1), selectedComponentRange[1]];
+  render();
+});
+document.querySelector("#componentExtendAfter")?.addEventListener("click", () => {
+  if (!selectedComponentRange) return;
+  flushPendingPreviewEdits();
+  const last = getArticleModel().blocks.length - 1;
+  selectedComponentRange = [selectedComponentRange[0], Math.min(last, selectedComponentRange[1] + 1)];
+  render();
+});
+
+document.querySelectorAll("[data-component-filter]").forEach((button) => button.addEventListener("click", () => {
+  componentFilter = button.dataset.componentFilter;
+  document.querySelectorAll("[data-component-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+  renderComponentPicker();
+}));
+componentGallery?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-component-choice]");
+  if (!button || button.disabled || !selectedComponentRange) return;
+  flushPendingPreviewEdits();
+  const model = getArticleModel();
+  if (model.isSample) return;
+  const [start, end] = selectedComponentRange;
+  const group = model.blocks.slice(start, end + 1);
+  const id = button.dataset.componentChoice;
+  if (componentKit.compatibility(id, group)) return;
+  const old = assignedRangeForSelection();
+  componentAssignments = componentAssignments.filter((assignment) =>
+    assignment.startIndex + assignment.signatures.length - 1 < start || assignment.startIndex > end);
+  componentAssignments.push({ id, startIndex: start, signatures: group.map(componentBlockSignature), meta: old?.meta || { label: "", note: "" } });
+  saveComponentAssignments();
+  render();
+  setFeedback(`已应用「${componentKit.items.find((item) => item.id === id).label}」`);
+});
+componentEdit?.querySelectorAll("input").forEach((input) => input.addEventListener("change", () => {
+  const active = assignedRangeForSelection();
+  if (!active) return;
+  active.meta = {
+    label: componentKit.clean(componentEdit.querySelector("#componentLabel").value),
+    note: componentKit.clean(componentEdit.querySelector("#componentNote").value),
+  };
+  saveComponentAssignments();
+  render();
+}));
+document.querySelector("#componentRemove")?.addEventListener("click", () => {
+  flushPendingPreviewEdits();
+  const active = assignedRangeForSelection();
+  if (!active) return;
+  componentAssignments = componentAssignments.filter((assignment) => assignment !== active);
+  saveComponentAssignments();
+  render();
+  setFeedback("已恢复普通排版");
 });
 
 const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
@@ -2051,7 +2430,10 @@ if (saved) {
   try {
     const stored = JSON.parse(saved);
     const storedTheme = THEMES[stored.theme] ? stored.theme : "";
-    if (storedTheme) {
+    if (stored.theme && stored.theme !== "classic" && !THEMES[stored.theme]) {
+      // 已下线的精选主题不恢复旧配色；首次渲染会将默认经典主题写回本地。
+      Object.assign(state, buildSkinState(DEFAULT_SKIN));
+    } else if (storedTheme) {
       // 精选主题：恢复整套主题参数 + 用户微调。
       Object.assign(state, buildThemeState(storedTheme));
       Object.assign(state, normalizeTemplateParams(stored, state));

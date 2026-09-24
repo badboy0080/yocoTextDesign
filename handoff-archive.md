@@ -1,5 +1,45 @@
 # 历史交接记录
 
+### 2026-09-23 重启本地服务
+
+- 想做什么：重启本地开发服务。
+- 做成了什么：停掉 5174 上的旧进程，重新启动。5173 上是别的项目，没动。
+- 改了哪些文件：`handoff-log.md`。
+- 如何验证：`http://localhost:5174/api/health` 返回 `ok: true`，DeepSeek 已配置。
+- 待办/风险：提示词改动还没提交、没部署。
+
+### 2026-09-23 C 灵感气泡精修与资产交付
+
+- 想做什么：选择 C 方案继续精修。
+- 做成了什么：保留气泡双眼，调整字重、字距与内部留白；制作字体无依赖的矢量与透明 PNG，包含横版、上下组合、独立图案、黑白版与 16–512px 图标。
+- 改了哪些文件：`design/yooco-rounded-logo-20260923/c-final/`、设计简报和日志。
+- 如何验证：目视检查 16/24/32/48/64px 图标和 120/160/192px 横版；独立验收通过 10 个核心 SVG、透明通道、边界、8 个图标尺寸与黑白眼睛镂空。展示板说明文字仍用系统字体，不属于 Logo 字形。
+- 待办/风险：16px 尾部细节较弱，常规图标建议至少 24px；网站接入与浏览器标签实测待做，未部署。
+
+### 2026-09-23 精简工作台文案
+
+- 想做什么：去掉工作台里反复解释功能的文字，保留必要操作提示。
+- 做成了什么：清理首屏说明和参数复述；换成短示例文章；语法和风险处理建议收进悬停/聚焦提示；署名的预览与复制稿统一。
+- 改了哪些文件：`public/studio.html`、`public/app.js`、`public/styles.css`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：浏览器检查默认页、主题、署名和复制反馈；JS 语法、生产构建、`git diff --check` 通过。
+- 待办/风险：改动仍在本地，未部署；浏览器显示复制成功，但剪贴板内容未能通过浏览器工具读取，真实公众号粘贴仍待验收。
+
+### 2026-09-23 提示词改成按主题拆文章
+
+- 想做什么：第一版按文章选题并按配方拆块；没改参数时再优化随机换主题并重拆；改过就锁定；恢复默认后重新按文章选；抽到经典时气质和皮肤仍按文章选。
+- 做成了什么：系统提示词不再要求模型填颜色。工作台把本次主题规则发给接口。选中主题后只用主题表里的颜色和造型。
+- 改了哪些文件：`lib/deepseek-normalizer.js`、`app/api/normalize/route.ts`、`public/app.js`、`public/studio.html`、`CONTEXT.md`、`handoff-log.md`。
+- 如何验证：刷新工作台。第一次优化按文章选题。不改参数再点一次，主题从七个里换。改过滑杆后再点，主题不动。
+- 待办/风险：还没提交、没部署。要刷新工作台才加载新脚本。
+
+### 2026-09-23 作品差异、长文、Logo 与按钮统一
+
+- 目标：扩大六件作品的排版差异、延长点开后的文章、设计 Logo，并按主次统一按钮颜色。
+- 完成：六种杂志/路书/评论/留白/山景/票据版式与完整示例长文；纸页 Y 矢量标志覆盖三页及浏览器图标；主操作按钮用首页浅绿渐变，导航、切换、上传、轮播、关闭、下载配置及工作台次要按钮用高级灰。
+- 文件：`lib/works.ts`、`components/work-modal.tsx`、`app/works.css`、`components/brand-logo.tsx`、`public/yooco-mark.svg`、`public/favicon.svg`、主页/工作台样式与入口、按钮组件、交接日志。
+- 验证：`npm run build:edgeone`、`npx tsc --noEmit`、相关文件定向 ESLint 通过；浏览器检查作品封面、长文弹窗滚动、做同款进入工作台，以及首页、作品弹窗、工作台主绿次灰的实际颜色。全量 ESLint 中 metrics 旧 useEffect 警告未处理。
+- 待办：正式部署、真实 AI 请求及公众号粘贴未验收；当前改动未提交。
+
 ### 2026-09-22 主标题改用官方文字动画
 
 - 想做什么：不要粒子，改用 https://demos.gsap.com/demo/animate-text/ 。
@@ -522,3 +562,108 @@
 - 改了哪些文件：`app/home-landing.tsx`、`handoff-log.md`。
 - 如何验证：`http://localhost:5174/`。页面上没有「开始一篇」。按钮是浅绿色，字是深色。
 - 待办/风险：还没提交、没部署。渐变左右很接近，看起来接近一块浅绿。
+### 2026-09-23 页面设计参考第一轮筛选
+
+- 想做什么：从七个参考网站筛选适合主页、作品页、作品弹窗与工作台的设计，并按 grill-with-docs 分轮讨论。
+- 已完成：核对四页实现与公开来源，建议 Osmo + Obys 为主，Made With GSAP 补充横轨交互。方案未确认，未修改页面代码。
+- 文件：docs/design-reference-review.md、handoff-log.md、handoff-archive.md（超出最近五次的记录归档）。
+- 验证：源码与公开网页内容核对；浏览器截图连续超时，具体视觉与动态效果尚未验证。
+- 后续确认：两轮主要选择已记录于当前摘要和讨论稿；新增标题中英文六版提案待确认。ADHD 抓取失败，Bleibt Gleich 当前内容与预期可能不一致；参考站具体动效仍待浏览器核验。
+
+### 2026-09-23 四页设计实现与本地验收
+
+- 目标：按已确认的杂志气质、暖白墨黑绿色、电脑优先方案实现四类页面。
+- 完成：六版中英标题、横轨拖拽、网格筛选、大预览与焦点返回、工作台外壳精修；修正手机双列和复制提示溢出、做同款标题同步。
+- 文件：app/hero-type-morph.tsx、app/home.css、app/works.css；components/work-modal.tsx、works-gallery.tsx、works-rail.tsx；public/styles.css、studio.html、app.js；lib/works.ts；设计稿、交接与复盘记录。
+- 验证：生产构建、类型、定向 ESLint、JS 语法；1440/375/320 浏览器检查；标题固定高度、筛选、拖拽防误触、弹窗退出、做同款、暗色预览、复制通过。
+- 待办：配置下载触发但未收到下载事件，文件落盘未确认；真实 AI 与公众号粘贴未验收；未提交、未部署。本地使用 next start --port 5174，避免与 vinext 同时改写 .next 类型。
+
+### 2026-09-23 工作台配置框层级
+
+- 目标：配置框之间有间距，未展开为白色，展开为淡灰色。
+- 完成：右侧参数框统一留 10px 间距，独立细边框；按展开状态切换白/淡灰背景，原有选项布局与交互保留。
+- 文件：`public/styles.css`、`handoff-log.md`。
+- 验证：浏览器检查默认、展开及切换后的背景色和实际间距；`git diff --check` 通过。
+- 待办：未提交、未部署。
+
+### 2026-09-23 精简轮播提示与配置选中态
+
+- 目标：移除首页标题和作品横轨的轮播控件；换页脚文案、弹窗关闭 X、工作台选中项绿底深字。
+- 完成：两组控件与提示行移除，自动播放/拖动保留；页脚为「你的最佳排版助理」；关闭按钮显示 X 并保留中文无障碍名称；主题、气质、皮肤选中项用绿渐变和深色字。
+- 文件：`app/hero-type-morph.tsx`、`app/home.css`、`components/works-rail.tsx`、`app/works.css`、`app/home-landing.tsx`、`components/work-modal.tsx`、`public/styles.css`、日志。
+- 验证：生产构建与相关文件 ESLint 通过；浏览器确认控件消失、页脚新文案、X、三类选中项实际颜色。
+- 待办：未提交、未部署；真实 AI 与公众号粘贴仍未验收。
+
+### 2026-09-23 登录、注册与订阅页设计预览
+
+- 目标：重新参考最初的网站，为 Yooco 增加登录、注册和订阅页。
+- 完成：三页采用书刊式大标题、绿底品牌封面、清晰的账号表单和月/年方案切换；入口连到首页与工作台额度提示；未接入的账号与付款状态清楚标注。
+- 文件：`app/login/page.tsx`、`app/register/page.tsx`、`app/subscribe/page.tsx`、`app/account.css`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`public/studio.html`、`public/app.js`、`public/styles.css`、设计记录与日志。
+- 验证：Next 生产构建通过；浏览器查看三页和月/年价格切换、注册密码不一致提示；表单无原生提交路径。
+- 待办：尚无账号、支付、订单和订阅后端；部署后的本地安全与文案修正尚未再次部署。电脑效果已浏览器核对，手机宽度需继续实测。
+
+### 2026-09-23 提交并部署 EdgeOne
+
+- 想做什么：把当前代码提交，并部署到 EdgeOne。
+- 做成了什么：提交 `209c406`、`a9f9b27`、`df82a9a`。生产部署成功，部署号 `dp4dkt9dz1fh`。
+- 改了哪些文件：`handoff-log.md`。代码提交见上面三个提交号。
+- 如何验证：部署命令返回 Deploy Success。控制台：`https://console.cloud.tencent.com/edgeone/pages/project/makers-8cjhosfqcnmc/deployment/dp4dkt9dz1fh`。
+- 待办/风险：没有推送到 GitHub。预览链接带时效 token。稿件、视频、页脚草稿没进这次提交。
+
+### 2026-09-23 排查 EdgeOne 预览链 504
+
+- 想做什么：Edge 打开预览链，控制台出现 504 Gateway Time-out。
+- 做成了什么：用新的预览口令打开首页，页面正常。首页文件、登录、订阅、工作室、健康检查、访问统计都是 200。这次没有复现 504。
+- 改了哪些文件：无代码改动。
+- 如何验证：浏览器打开预览首页，标题和输入框都在；逐个请求资源看状态码。
+- 待办/风险：504 是网关等太久。若失败地址是 `/api/normalize`，是点「优化排版」后 AI 超时。需要失败那条请求的网址才能继续修。
+
+
+### 2026-09-23 展开参数卡片改白底
+
+- 想做什么：把截图中展开的参数设置卡片改为白色背景。
+- 做成了什么：展开卡片改为纯白，悬停只用很浅的灰绿；选中项绿色和卡片间距保持不变。
+- 改了哪些文件：`public/styles.css`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：浏览器检查展开背景为白色、收起和展开正常、选中项仍为绿渐变；`git diff --check` 通过。
+- 待办/风险：仍在本地，未部署。
+
+### 2026-09-23 工作台预览改为整块画布
+
+- 想做什么：让截图红框里的预览区成为完整的文本画布，去掉像外框的灰色留边。
+- 做成了什么：预览背景与文章背景同色同宽，去掉纸页阴影；深色预览也保持整块背景，正文宽度控制和编辑保留。
+- 改了哪些文件：`public/styles.css`、`public/app.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：浏览器在手机和电脑宽度检查画布边界，并切换暗色预览、深色皮肤；JS 语法、生产构建、`git diff --check` 通过。
+- 待办/风险：仍在本地，未部署；真实公众号粘贴待验收。
+
+### 2026-09-23 Yooco 折页 Logo
+
+- 想做什么：重设计截图中的网站 Logo，并用于全站。
+- 做成了什么：把柔和书页改成奶白与浅绿的几何折页 Y；统一字标，更新首页、作品、账号页、工作台和 favicon；提供独立横版 SVG。
+- 改了哪些文件：`public/yooco-mark.svg`、`public/favicon.svg`、`public/yooco-logo.svg`、`components/brand-logo.tsx`、`app/globals.css`、`app/layout.tsx`、`public/studio.html`、`public/styles.css`、日志。
+- 如何验证：浏览器核对首页导航和横版图形；三个 SVG 可解析；生产构建、`git diff --check` 通过。
+- 待办/风险：仍在本地，未部署；未制作印刷版与黑白版。
+
+
+### 2026-09-23 Yooco 圆润 Logo 三方向提案
+
+- 想做什么：先学习专业 Logo 流程，再设计荧光绿、柔和圆角图案与圆润 Yooco 字标。
+- 做成了什么：核对参考图与用途，研究设计指南，生成三方案板；修正首轮过度发光，推荐 A 双 o 小伙伴。
+- 改了哪些文件：`design/yooco-rounded-logo-20260923/brief.md`、`prompts.md`、`yooco-concepts-v1.png` 与日志。
+- 如何验证：目视检查准确拼写、图文组合、单色与反白示例；设计图已存入项目。
+- 待办/风险：待阿超选型；字标偏厚需精修；小尺寸实测、矢量稿、透明独立资产未完成。未改网站、未部署。
+
+### 2026-09-23 工作台并进作品页侧边栏
+
+- 想做什么：工作台不再单独一页，在作品页左侧切换。顶栏只留按钮。侧边栏可折叠。
+- 做成了什么：`/works` 用侧边栏切作品和工作台。`/studio` 会跳到 `/works?panel=studio`。工作台顶上只留优化、恢复默认、导出、导入。折叠后只留 logo、两个图标和折叠按钮。
+- 改了哪些文件：`components/works-frame.tsx`、`app/works/page.tsx`、`app/works.css`、`public/studio.html`、`public/styles.css`、`app/home-landing.tsx`、`lib/works.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`next.config.ts`、`vite.config.ts`、`handoff-log.md`。
+- 如何验证：打开 `http://localhost:5174/works`，点工作台能看到预览和参数；点折叠只剩图标；再点展开。
+- 待办/风险：还没提交、没部署。
+
+### 2026-09-23 文字排版样式汇总 HTML
+
+- 想做什么：从阿超给出的 40 个网站寻找标题排版灵感，输出可浏览 HTML。
+- 做成了什么：24 款中文提案，分文章章节、封面专题、个性表达；附来源、适用场景、参数及证据状态，支持试字、筛选、搜索、收藏、复制清单和窄版。
+- 改了哪些文件：`public/typography-atlas.html`、交接日志与阶段复盘。
+- 如何验证：JS 语法通过；浏览器确认 24 款/40 来源，分类、搜索与空态、长标题、收藏、复制、390px 窄版；手机宽度无横向溢出、无控制台错误。单文件无外部字体和脚本依赖。
+- 待办/风险：多数参考站只确认文本结构，Getty 实看画面，证据不足站已逐条注明。设计为中文适配提案；未接入工作台、未部署，公众号粘贴兼容性待选型后验证。

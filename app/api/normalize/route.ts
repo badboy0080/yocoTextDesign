@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       throw new AppError("REQUEST_TOO_LARGE", "提交内容过大，请控制在 160,000 个字符以内。", 413);
     }
     const body = await request.json();
-    const source = validateRequest(body);
+    const { source, assignment } = validateRequest(body);
     const trial = await consumeNormalizeQuota(request);
-    const data = await normalizeWithDeepSeek(source, getDeepseekApiKey(), getDeepseekModel());
+    const data = await normalizeWithDeepSeek(source, getDeepseekApiKey(), getDeepseekModel(), assignment);
     return Response.json({ ok: true, data, trial }, { headers: trialHeaders() });
   } catch (error) {
     const known = error instanceof AppError;

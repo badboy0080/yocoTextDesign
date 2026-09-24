@@ -1,168 +1,142 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
-
 .account-app {
-  --account-paper: #f8f7f2;
-  --account-ink: #1e2720;
-  --account-muted: #697268;
-  --account-line: #dadfd5;
-  --account-green: #a9fd83;
-  --account-green-deep: #08795b;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: var(--account-paper);
-  color: var(--account-ink);
-  color-scheme: light;
-  font-family: "DM Sans", Arial, "Microsoft YaHei", sans-serif;
+  --account-paper: var(--yooco-color-paper, #f8f9f4);
+  --account-ink: var(--yooco-color-ink, #20251f);
+  --account-muted: var(--yooco-color-muted, #626b61);
+  --account-line: var(--yooco-color-border, #dce2d8);
+  --account-green: var(--yooco-color-primary, #b6ff5c);
+  --account-link: var(--yooco-color-link, #355d27);
+  min-height: 100dvh; display: flex; flex-direction: column; background: var(--account-paper);
+  color: var(--account-ink); color-scheme: light;
+  font-family: var(--yooco-font-sans, Inter, Arial, "Microsoft YaHei", sans-serif);
 }
-
 .account-app * { box-sizing: border-box; }
 .account-app main { flex: 1; }
-.account-container { width: min(100% - 64px, 1440px); margin-inline: auto; }
+.account-container { width: min(100% - 48px, 1200px); margin-inline: auto; }
 .account-header { border-bottom: 1px solid var(--account-line); background: var(--account-paper); }
-.account-header-inner { min-height: 80px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.account-header-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .account-logo { display: inline-flex; align-items: center; }
-.account-nav { display: flex; align-items: center; gap: clamp(22px, 3vw, 46px); }
-.account-nav a, .account-footer a { color: #3d4840; text-decoration: none; font-size: 13px; font-weight: 600; }
-.account-nav a:last-child { display: inline-flex; align-items: center; gap: 4px; }
-.account-nav a:hover, .account-footer a:hover { color: var(--account-green-deep); }
-.account-nav a:focus-visible, .account-footer a:focus-visible, .auth-panel a:focus-visible, .account-app button:focus-visible, .account-app input:focus-visible { outline: 2px solid var(--account-green-deep); outline-offset: 3px; }
+.account-nav { display: flex; align-items: center; gap: clamp(18px, 2.6vw, 32px); }
+.account-nav a, .account-footer a { color: var(--account-muted); text-decoration: none; font-size: 13px; font-weight: 600; }
+.account-nav a:last-child { display: inline-flex; align-items: center; gap: 4px; color: var(--account-ink); }
+.account-nav a:hover, .account-footer a:hover { color: var(--account-link); }
+.account-nav a:focus-visible, .account-footer a:focus-visible, .auth-panel a:focus-visible, .account-app button:focus-visible, .account-app input:focus-visible { outline: 2px solid var(--yooco-color-focus, #355d27); outline-offset: 3px; }
 .account-footer { border-top: 1px solid var(--account-line); }
-.account-footer-inner { min-height: 72px; display: flex; justify-content: space-between; align-items: center; gap: 20px; color: var(--account-muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; }
-.account-index, .account-tail { display: flex; justify-content: space-between; align-items: center; color: #778278; font-size: 11px; font-weight: 700; letter-spacing: .12em; }
-.account-index { padding-block: 23px 18px; border-bottom: 1px solid var(--account-line); }
-.account-tail { padding-block: 20px 26px; border-top: 1px solid var(--account-line); }
-
-.auth-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(400px, .95fr); min-height: min(780px, calc(100dvh - 235px)); }
-.auth-editorial { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; min-height: 660px; margin: 22px 0; padding: clamp(26px, 3.2vw, 52px); isolation: isolate; background: #d7e7d1; }
-.auth-editorial-register { background: #e5e9d7; }
-.auth-editorial::before { position: absolute; inset: 0; z-index: -1; content: ""; background-image: radial-gradient(#92a68f 1px, transparent 1px); background-size: 31px 31px; opacity: .24; }
-.auth-editorial-top, .auth-editorial-bottom { display: flex; justify-content: space-between; align-items: center; gap: 15px; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
-.auth-editorial-center { position: relative; z-index: 1; max-width: 650px; }
-.auth-small-title, .auth-eyebrow { color: #3c765d; font-size: 11px; font-weight: 700; letter-spacing: .2em; }
-.auth-editorial h1 { margin: 20px 0 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(58px, 6vw, 108px); font-weight: 600; line-height: 1.12; letter-spacing: -.085em; }
-.auth-editorial h1 em { color: #3e7254; font-style: normal; }
-.auth-editorial-caption { max-width: 320px; margin-top: 26px; padding-top: 15px; border-top: 1px solid #6c8d76; color: #415447; font-family: "Fraunces", Georgia, serif; font-size: 15px; }
-.auth-edition-mark { display: inline-flex; align-items: baseline; font-family: "Fraunces", Georgia, serif; font-size: 38px; line-height: 1; letter-spacing: -.11em; }
-.auth-edition-mark span { margin-left: 3px; color: #2c6b45; font-size: 20px; }
-.auth-orbit { position: absolute; z-index: 0; width: 440px; height: 440px; border: 1px solid rgba(45, 104, 66, .31); border-radius: 50%; pointer-events: none; }
-.auth-orbit-one { right: -170px; top: 5%; }
-.auth-orbit-two { right: -280px; top: 20%; width: 640px; height: 640px; }
-
-.auth-panel { display: flex; flex-direction: column; justify-content: center; width: min(100%, 520px); margin-inline: auto; padding: 55px 42px 60px; }
-.auth-panel-heading h2 { margin: 16px 0 6px; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(38px, 3.2vw, 58px); font-weight: 600; letter-spacing: -.055em; line-height: 1.15; }
-.auth-panel-heading > p:last-child { color: var(--account-muted); font-size: 15px; line-height: 1.6; }
-.auth-preview-note { margin-top: 28px; padding: 12px 15px; border: 1px solid #d9dfd6; border-radius: 10px; background: #eff2ec; color: #4e5a4f; font-size: 12px; line-height: 1.6; }
-.auth-form { display: grid; gap: 21px; margin-top: 30px; }
-.auth-field { display: grid; gap: 10px; font-size: 13px; font-weight: 700; }
+.account-footer-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--account-muted); font-size: 12px; }
+.account-index, .account-tail { display: flex; align-items: center; justify-content: space-between; color: var(--account-muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+.account-index { padding-block: 20px 16px; border-bottom: 1px solid var(--account-line); }
+.account-tail { padding-block: 18px 24px; border-top: 1px solid var(--account-line); }
+.auth-grid { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(360px, 1fr); gap: clamp(48px, 9vw, 140px); align-items: center; min-height: min(680px, calc(100dvh - 210px)); padding: 56px 0 64px; }
+.auth-editorial { position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 430px; padding: 28px; border: 1px solid var(--account-line); border-radius: var(--yooco-radius-lg, 12px); background: var(--yooco-color-soft, #edf2e8); overflow: hidden; }
+.auth-editorial-register { background: #f1f4e9; }
+.auth-editorial::after { position: absolute; right: -70px; bottom: -100px; width: 250px; height: 250px; border: 1px solid #cbd8c4; border-radius: 50%; content: ""; pointer-events: none; }
+.auth-editorial-top, .auth-editorial-bottom { display: flex; justify-content: space-between; gap: 16px; color: var(--account-muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.auth-editorial-center { position: relative; z-index: 1; max-width: 400px; }
+.auth-small-title, .auth-eyebrow { margin: 0; color: var(--account-link); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.auth-editorial h1 { margin: 22px 0 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(42px, 5vw, 68px); font-weight: 500; line-height: 1.08; letter-spacing: -.06em; }
+.auth-editorial h1 em { color: var(--account-link); font-style: normal; }
+.auth-editorial-caption { max-width: 280px; margin: 24px 0 0; padding-top: 14px; border-top: 1px solid #c1d1bb; color: var(--account-muted); font-size: 14px; line-height: 1.65; }
+.auth-panel { width: min(100%, 440px); margin-inline: auto; }
+.auth-panel-heading h2 { margin: 12px 0 8px; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(30px, 3vw, 42px); font-weight: 500; letter-spacing: -.04em; line-height: 1.15; }
+.auth-panel-heading > p:last-child { margin: 0; color: var(--account-muted); font-size: 14px; line-height: 1.6; }
+.auth-preview-note { margin-top: 24px; padding: 11px 13px; border: 1px solid var(--account-line); border-radius: var(--yooco-radius-md, 8px); background: var(--yooco-color-surface, #fff); color: var(--account-muted); font-size: 12px; line-height: 1.6; }
+.auth-form { display: grid; gap: 18px; margin-top: 24px; }
+.auth-field { display: grid; gap: 8px; font-size: 14px; font-weight: 600; }
 .auth-field > span:first-child { display: flex; justify-content: space-between; align-items: center; }
-.auth-field-index { color: #99a49a; font-size: 10px; letter-spacing: .12em; }
-.auth-field input { width: 100%; height: 54px; padding: 0 17px; border: 1px solid #d9dfd6; border-radius: 10px; background: #fff; color: var(--account-ink); font: inherit; font-size: 14px; font-weight: 400; outline: none; transition: border-color .2s, box-shadow .2s; }
-.auth-field input::placeholder { color: #a5aaa4; }
-.auth-field input:focus { border-color: #6db572; box-shadow: 0 0 0 3px #a9fd8338; }
+.auth-field-index { color: var(--account-muted); font-size: 11px; font-weight: 500; }
+.auth-field input { width: 100%; height: 48px; padding: 0 13px; border: 1px solid var(--account-line); border-radius: var(--yooco-radius-md, 8px); background: var(--yooco-color-surface, #fff); color: var(--account-ink); font: inherit; font-size: 14px; font-weight: 400; outline: none; transition: border-color var(--yooco-duration-fast, 150ms), box-shadow var(--yooco-duration-fast, 150ms); }
+.auth-field input::placeholder { color: #8a9488; }
+.auth-field input:focus { border-color: var(--account-link); box-shadow: 0 0 0 3px rgb(53 93 39 / 14%); }
 .auth-password-wrap { position: relative; display: block; }
-.auth-password-wrap input { padding-right: 56px; }
-.auth-password-wrap button { position: absolute; top: 0; right: 0; width: 54px; height: 54px; display: grid; place-items: center; border: 0; background: transparent; color: #68746b; cursor: pointer; }
-.account-primary-button, .account-secondary-button { min-height: 54px; display: inline-flex; justify-content: space-between; align-items: center; gap: 15px; padding: 0 20px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; transition: transform .2s, filter .2s, background .2s; }
-.account-primary-button { border: 1px solid #91e17a; background: linear-gradient(90deg, #a9fd83, #98f68d); color: #17331b; cursor: pointer; }
-.account-primary-button:hover { filter: brightness(.96); transform: translateY(-2px); }
-.account-secondary-button { border: 1px solid #d8ded6; background: #edf0ec; color: #38473b; }
-.account-secondary-button:hover { background: #e2e8e1; transform: translateY(-2px); }
-.auth-notice { margin: -5px 0 0; padding: 12px 14px; border-left: 3px solid #339e68; background: #edf7e9; color: #244f34; font-size: 13px; line-height: 1.55; }
-.auth-panel-bottom { display: grid; gap: 22px; margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--account-line); }
+.auth-password-wrap input { padding-right: 48px; }
+.auth-password-wrap button { position: absolute; inset: 0 0 0 auto; width: 48px; border: 0; background: transparent; color: var(--account-muted); cursor: pointer; }
+.account-primary-button, .account-secondary-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0 16px; border-radius: var(--yooco-radius-md, 8px); font-size: 14px; font-weight: 700; text-decoration: none; transition: transform var(--yooco-duration-base, 200ms), background var(--yooco-duration-base, 200ms); }
+.account-primary-button { border: 1px solid var(--account-green); background: var(--account-green); color: var(--account-ink); cursor: pointer; }
+.account-primary-button:hover { background: #a8ed50; transform: translateY(-1px); }
+.account-secondary-button { border: 1px solid var(--account-line); background: var(--yooco-color-surface, #fff); color: var(--account-ink); }
+.account-secondary-button:hover { border-color: var(--account-link); transform: translateY(-1px); }
+.auth-notice { margin: -2px 0 0; padding: 11px 13px; border-left: 3px solid var(--account-link); background: var(--yooco-color-soft, #edf2e8); color: var(--account-ink); font-size: 13px; line-height: 1.55; }
+.auth-panel-bottom { display: grid; gap: 18px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--account-line); }
 .auth-panel-bottom p { margin: 0; color: var(--account-muted); font-size: 13px; }
-.auth-panel-bottom p a { margin-left: 5px; color: #19684b; font-weight: 700; text-decoration: none; }
+.auth-panel-bottom p a { margin-left: 4px; color: var(--account-link); font-weight: 700; text-decoration: none; }
 .auth-panel-bottom p a:hover { text-decoration: underline; }
-
-.subscribe-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .55fr); gap: 50px; align-items: end; min-height: 500px; padding: 65px 0 68px; }
-.subscribe-hero-main h1 { margin: 28px 0 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(72px, 8.5vw, 138px); font-weight: 600; line-height: 1.05; letter-spacing: -.075em; }
-.subscribe-hero-main h1 em { color: #3f7b59; font-style: normal; }
-.subscribe-period { color: #85c96c; }
-.subscribe-hero-side { display: grid; gap: 30px; padding: 0 0 12px; }
-.subscribe-hero-side p { max-width: 340px; margin: 0; color: #536155; font-size: 15px; line-height: 1.9; }
-.subscribe-issue { display: flex; align-items: baseline; gap: 5px; font-family: "Fraunces", Georgia, serif; font-size: 56px; font-weight: 600; letter-spacing: -.08em; line-height: 1; }
-.subscribe-issue > span { color: #559768; font-size: 25px; }
-.subscribe-issue small { align-self: end; margin-left: 11px; color: #69776a; font-family: "DM Sans", Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
-.subscribe-plans { padding: 39px 0 75px; border-top: 1px solid var(--account-line); }
+.subscribe-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(250px, .65fr); gap: 48px; align-items: end; min-height: 400px; padding: 64px 0 58px; }
+.subscribe-hero-main h1 { margin: 24px 0 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(56px, 8vw, 106px); font-weight: 500; line-height: 1.02; letter-spacing: -.07em; }
+.subscribe-hero-main h1 em { color: var(--account-link); font-style: normal; }
+.subscribe-period { color: var(--account-link); }
+.subscribe-hero-side { display: grid; gap: 22px; padding-bottom: 8px; }
+.subscribe-hero-side p { max-width: 340px; margin: 0; color: var(--account-muted); font-size: 14px; line-height: 1.8; }
+.subscribe-issue { display: flex; align-items: baseline; gap: 10px; font-family: var(--yooco-font-mono, ui-monospace, monospace); font-size: 20px; font-weight: 700; letter-spacing: .04em; }
+.subscribe-issue small { color: var(--account-muted); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+.subscribe-plans { padding: 34px 0 64px; border-top: 1px solid var(--account-line); }
 .subscribe-section-top { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
-.subscribe-section-top h2 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(28px, 3vw, 42px); font-weight: 600; letter-spacing: -.04em; }
-.subscribe-section-top > span { color: #718073; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
-.subscribe-billing { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 38px 0 23px; color: #68766a; font-size: 13px; }
-.subscribe-billing-controls { display: inline-flex; gap: 5px; padding: 5px; border: 1px solid #d8ded4; border-radius: 10px; background: #edf0ec; }
-.subscribe-billing-controls button { min-height: 37px; padding: 0 15px; border: 0; border-radius: 7px; background: transparent; color: #677168; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
-.subscribe-billing-controls button.is-active { background: #fff; color: #1f3625; box-shadow: 0 1px 5px #20392312; }
-.subscribe-billing-controls button span { margin-left: 4px; color: #257a4a; font-size: 11px; }
+.subscribe-section-top h2 { margin: 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(26px, 3vw, 38px); font-weight: 500; letter-spacing: -.04em; }
+.subscribe-section-top > span { color: var(--account-muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.subscribe-billing { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 30px 0 20px; color: var(--account-muted); font-size: 13px; }
+.subscribe-billing-controls { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--account-line); border-radius: var(--yooco-radius-md, 8px); background: var(--yooco-color-soft, #edf2e8); }
+.subscribe-billing-controls button { min-height: 36px; padding: 0 13px; border: 0; border-radius: 6px; background: transparent; color: var(--account-muted); cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+.subscribe-billing-controls button.is-active { background: var(--yooco-color-surface, #fff); color: var(--account-ink); box-shadow: 0 1px 4px rgb(32 37 31 / 10%); }
+.subscribe-billing-controls button span { margin-left: 4px; color: var(--account-link); font-size: 11px; }
 .subscribe-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.subscribe-card { display: flex; flex-direction: column; min-height: 580px; padding: clamp(26px, 3vw, 45px); border: 1px solid #d9dfd6; border-radius: 16px; background: #fff; }
-.subscribe-card-pro { border-color: #8fac88; background: #e5f1dd; }
-.subscribe-card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 70px; color: #53745e; font-size: 11px; font-weight: 700; letter-spacing: .16em; }
-.subscribe-card-symbol { color: #6d9f70; font-family: Georgia, serif; font-size: 37px; line-height: .6; }
-.subscribe-card h3 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(31px, 3vw, 46px); font-weight: 600; letter-spacing: -.05em; }
-.subscribe-card-description { min-height: 48px; margin: 8px 0 0; color: #66746a; font-size: 14px; line-height: 1.7; }
-.subscribe-price { display: flex; align-items: baseline; gap: 7px; margin: 24px 0 25px; }
-.subscribe-price strong { font-family: "Fraunces", Georgia, serif; font-size: clamp(47px, 5.2vw, 75px); font-weight: 600; letter-spacing: -.075em; line-height: 1; }
-.subscribe-price span { color: #69786b; font-size: 13px; }
-.subscribe-features { display: grid; gap: 13px; min-height: 110px; margin: 0 0 32px; padding: 23px 0 0; border-top: 1px solid #cdd8cb; list-style: none; }
-.subscribe-features li { display: flex; align-items: flex-start; gap: 10px; color: #47584c; font-size: 13px; line-height: 1.5; }
-.subscribe-features svg { flex: none; margin-top: 2px; color: #2a8d51; }
+.subscribe-card { display: flex; flex-direction: column; min-height: 500px; padding: clamp(24px, 3vw, 36px); border: 1px solid var(--account-line); border-radius: var(--yooco-radius-lg, 12px); background: var(--yooco-color-surface, #fff); }
+.subscribe-card-pro { border-color: #a6c494; background: var(--yooco-color-soft, #edf2e8); }
+.subscribe-card-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 56px; color: var(--account-muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.subscribe-card-symbol { color: var(--account-link); font-family: var(--yooco-font-mono, ui-monospace, monospace); font-size: 14px; }
+.subscribe-card h3 { margin: 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(28px, 3vw, 40px); font-weight: 500; letter-spacing: -.04em; }
+.subscribe-card-description { min-height: 44px; margin: 8px 0 0; color: var(--account-muted); font-size: 14px; line-height: 1.6; }
+.subscribe-price { display: flex; align-items: baseline; gap: 7px; margin: 24px 0; }
+.subscribe-price strong { font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(42px, 5vw, 64px); font-weight: 500; letter-spacing: -.06em; line-height: 1; }
+.subscribe-price span { color: var(--account-muted); font-size: 13px; }
+.subscribe-features { display: grid; gap: 12px; min-height: 106px; margin: 0 0 28px; padding: 20px 0 0; border-top: 1px solid var(--account-line); list-style: none; }
+.subscribe-features li { display: flex; align-items: flex-start; gap: 9px; color: var(--account-muted); font-size: 13px; line-height: 1.5; }
+.subscribe-features svg { flex: none; margin-top: 2px; color: var(--account-link); }
 .subscribe-card > .account-secondary-button, .subscribe-card > .account-primary-button { width: 100%; margin-top: auto; }
-.subscribe-card > .account-primary-button:disabled { opacity: .72; cursor: not-allowed; transform: none; filter: none; }
-.subscribe-disclosure { max-width: 750px; margin: 22px 0 0; color: #6b766b; font-size: 12px; line-height: 1.75; }
-.subscribe-bottom { display: grid; grid-template-columns: minmax(140px, .35fr) minmax(0, 1fr) minmax(230px, .55fr); gap: 35px; align-items: end; min-height: 370px; padding: 65px 0 75px; border-top: 1px solid var(--account-line); }
-.subscribe-bottom-label { align-self: start; color: #66806a; font-size: 11px; font-weight: 700; letter-spacing: .14em; }
-.subscribe-bottom h2 { margin: 0; font-family: "Fraunces", "Songti SC", Georgia, serif; font-size: clamp(44px, 4.8vw, 75px); font-weight: 600; line-height: 1.14; letter-spacing: -.065em; }
-.subscribe-bottom-details { display: grid; gap: 30px; }
-.subscribe-bottom-details p { margin: 0; color: #627065; font-size: 14px; line-height: 1.9; }
-.subscribe-bottom-details a { width: max-content; display: inline-flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #588868; color: #246547; font-size: 14px; font-weight: 700; text-decoration: none; }
-
-@media (max-width: 920px) {
-  .auth-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .auth-editorial { min-height: 640px; }
-  .auth-panel { padding-inline: 30px; }
-  .subscribe-hero { gap: 25px; }
+.subscribe-card > .account-primary-button:disabled { opacity: .72; cursor: not-allowed; transform: none; }
+.subscribe-disclosure { max-width: 750px; margin: 18px 0 0; color: var(--account-muted); font-size: 12px; line-height: 1.7; }
+.subscribe-bottom { display: grid; grid-template-columns: minmax(120px, .35fr) minmax(0, 1fr) minmax(220px, .55fr); gap: 32px; align-items: end; min-height: 300px; padding: 56px 0 64px; border-top: 1px solid var(--account-line); }
+.subscribe-bottom-label { align-self: start; color: var(--account-link); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.subscribe-bottom h2 { margin: 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(38px, 4.8vw, 64px); font-weight: 500; line-height: 1.1; letter-spacing: -.06em; }
+.subscribe-bottom-details { display: grid; gap: 24px; }
+.subscribe-bottom-details p { margin: 0; color: var(--account-muted); font-size: 14px; line-height: 1.8; }
+.subscribe-bottom-details a { width: max-content; display: inline-flex; align-items: center; gap: 8px; padding-bottom: 7px; border-bottom: 1px solid var(--account-link); color: var(--account-link); font-size: 14px; font-weight: 700; text-decoration: none; }
+@media (max-width: 820px) {
+  .auth-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr); gap: 36px; }
+  .subscribe-hero { gap: 28px; }
   .subscribe-bottom { grid-template-columns: 1fr 1fr; }
   .subscribe-bottom-label { grid-column: 1 / -1; }
 }
-@media (max-width: 740px) {
-  .account-container { width: min(100% - 36px, 600px); }
-  .account-header-inner { min-height: 68px; }
-  .account-nav { gap: 16px; }
+@media (max-width: 680px) {
+  .account-container { width: min(100% - 32px, 560px); }
+  .account-header-inner { min-height: 64px; }
+  .account-nav { gap: 14px; }
   .account-nav a { font-size: 12px; }
   .account-nav a:first-child { display: none; }
-  .auth-grid { display: flex; flex-direction: column; }
-  .auth-editorial { min-height: 360px; margin: 16px 0 0; padding: 25px; }
-  .auth-editorial h1 { font-size: clamp(48px, 10vw, 75px); }
-  .auth-editorial-caption { margin-top: 13px; }
-  .auth-orbit-one { right: -230px; top: -50px; }
-  .auth-orbit-two { right: -340px; top: -50px; }
-  .auth-panel { width: 100%; padding: 45px 0 55px; }
-  .account-footer-inner { flex-wrap: wrap; padding-block: 20px; }
+  .auth-grid { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding: 32px 0 48px; }
+  .auth-editorial { min-height: 300px; padding: 22px; }
+  .auth-editorial h1 { font-size: clamp(40px, 11vw, 60px); }
+  .auth-panel { width: 100%; }
+  .account-footer-inner { flex-wrap: wrap; padding-block: 18px; }
   .account-footer-inner span:nth-child(2) { display: none; }
-  .subscribe-hero { grid-template-columns: 1fr; gap: 35px; min-height: 0; padding: 65px 0 55px; }
-  .subscribe-hero-main h1 { font-size: clamp(58px, 11vw, 85px); }
+  .subscribe-hero { grid-template-columns: 1fr; gap: 30px; min-height: 0; padding: 48px 0; }
+  .subscribe-hero-main h1 { font-size: clamp(52px, 14vw, 78px); }
   .subscribe-hero-side { grid-template-columns: auto 1fr; align-items: end; gap: 20px; }
-  .subscribe-issue { font-size: 40px; }
-  .subscribe-issue small { display: none; }
-  .subscribe-hero-side p { font-size: 13px; }
   .subscribe-card-grid { grid-template-columns: 1fr; }
   .subscribe-card { min-height: 0; }
-  .subscribe-card-top { margin-bottom: 40px; }
-  .subscribe-bottom { grid-template-columns: 1fr; gap: 20px; min-height: 0; padding: 55px 0; }
+  .subscribe-card-top { margin-bottom: 38px; }
+  .subscribe-bottom { grid-template-columns: 1fr; gap: 20px; min-height: 0; padding: 48px 0; }
   .subscribe-bottom-label { grid-column: auto; }
-  .subscribe-bottom-details { max-width: 450px; }
 }
-@media (max-width: 430px) {
-  .account-container { width: min(100% - 28px, 600px); }
-  .account-nav { gap: 11px; }
+@media (max-width: 420px) {
+  .account-container { width: min(100% - 24px, 560px); }
+  .account-nav { gap: 10px; }
   .account-nav a { font-size: 11px; }
+  .auth-editorial { min-height: 280px; }
   .auth-editorial-top { font-size: 9px; }
-  .auth-editorial { min-height: 335px; }
-  .auth-editorial h1 { font-size: 47px; }
-  .account-tail { font-size: 9px; letter-spacing: .04em; }
+  .auth-editorial h1 { font-size: 39px; }
+  .account-tail { font-size: 9px; letter-spacing: .03em; }
   .subscribe-hero-main h1 { font-size: 49px; }
   .subscribe-hero-side { grid-template-columns: 1fr; gap: 10px; }
   .subscribe-billing { align-items: flex-start; flex-direction: column; }
-  .subscribe-card { padding: 25px; }
+  .subscribe-card { padding: 22px; }
   .subscribe-section-top > span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

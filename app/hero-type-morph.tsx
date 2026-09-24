@@ -64,7 +64,7 @@ export function HeroTypeMorph() {
 
   return (
     <div className="hero-morph" ref={rootRef}>
-      <h1 className="sr-only">把一篇好文章，排成读者愿意读完的样子</h1>
+      <h1 id="home-hero-title" className="sr-only">把一篇好文章，排成读者愿意读完的样子</h1>
       <div className="hero-copy" data-style={layout.id} aria-hidden="true" key={layout.id}>
         <p className="hero-morph-label"><span>0{index + 1} / 06</span> {layout.name}</p>
         <div className="hero-title" lang={english ? "en" : "zh-CN"}>

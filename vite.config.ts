@@ -61,7 +61,10 @@ export default defineConfig(async ({ mode }) => {
           server.middlewares.use((request, _response, next) => {
             const [pathname, search = ""] = (request.url ?? "/").split("?");
             if (pathname === "/studio" || pathname === "/studio/") {
-              request.url = `/studio.html${search ? `?${search}` : ""}`;
+              _response.statusCode = 302;
+              _response.setHeader("Location", "/works?panel=studio");
+              _response.end();
+              return;
             }
             next();
           });

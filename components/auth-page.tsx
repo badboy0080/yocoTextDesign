@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AccountLayout } from "@/components/account-layout";
@@ -10,11 +10,23 @@ type Mode = "login" | "register";
 export function AuthPage({ mode }: { mode: Mode }) {
   const isRegister = mode === "register";
   const [showPassword, setShowPassword] = useState(false);
-  const [notice, setNotice] = useState(false);
+  const [notice, setNotice] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLInputElement>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setNotice(true);
+  function handlePreview() {
+    for (const field of [nameRef.current, emailRef.current, passwordRef.current, confirmRef.current]) {
+      if (field && !field.reportValidity()) return;
+    }
+    if (isRegister) {
+      if (passwordRef.current?.value !== confirmRef.current?.value) {
+        setNotice("两次输入的密码不一致，请重新确认。");
+        return;
+      }
+    }
+    setNotice("账号功能正在准备中。现在可以直接进入工作台试用，无需注册。");
   }
 
   return (
@@ -22,16 +34,14 @@ export function AuthPage({ mode }: { mode: Mode }) {
       <div className="account-container auth-page">
         <div className="account-index"><span>YOOCO / ACCOUNT</span><span>{isRegister ? "02" : "01"} — 03</span></div>
         <div className="auth-grid">
-          <section className={`auth-editorial ${isRegister ? "auth-editorial-register" : ""}`} aria-label="Yooco 品牌介绍">
-            <div className="auth-editorial-top"><span>WORDS DESERVE DESIGN.</span><span>VOL. 01 / 2026</span></div>
+          <section className={`auth-editorial ${isRegister ? "auth-editorial-register" : ""}`} aria-label="Yooco 账号说明">
+            <div className="auth-editorial-top"><span>YOOCO / ACCOUNT</span><span>{isRegister ? "CREATE" : "SIGN IN"}</span></div>
             <div className="auth-editorial-center">
-              <p className="auth-small-title">THE ART OF READING</p>
-              <h1>{isRegister ? <>开始写下<br /><em>你的</em>下一篇。</> : <>好文章，<br />值得被<em>读完。</em></>}</h1>
-              <p className="auth-editorial-caption">From a draft to a story worth staying for.</p>
+              <p className="auth-small-title">专注内容，也照顾呈现</p>
+              <h1>{isRegister ? <>为下一篇<br /><em>留下位置。</em></> : <>从上次的灵感<br /><em>继续创作。</em></>}</h1>
+              <p className="auth-editorial-caption">保存你的工作台偏好，随时回到文章。</p>
             </div>
-            <div className="auth-editorial-bottom"><span>文字 · 版式 · 阅读</span><span className="auth-edition-mark">Y<span>✳</span></span></div>
-            <div className="auth-orbit auth-orbit-one" aria-hidden="true" />
-            <div className="auth-orbit auth-orbit-two" aria-hidden="true" />
+            <div className="auth-editorial-bottom"><span>文字 · 版式 · 阅读</span><span>YOOCO STUDIO</span></div>
           </section>
 
           <section className="auth-panel" aria-labelledby="auth-title">
@@ -43,21 +53,21 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
             <div className="auth-preview-note" role="note">页面预览：账号功能尚未开放。填写内容不会发送或保存。</div>
 
-            <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="auth-form">
               {isRegister && (
                 <label className="auth-field">
                   <span>称呼 <span className="auth-field-index">01</span></span>
-                  <input name="name" type="text" placeholder="怎么称呼你" autoComplete="off" required />
+                  <input ref={nameRef} type="text" placeholder="怎么称呼你" autoComplete="off" required />
                 </label>
               )}
               <label className="auth-field">
                 <span>邮箱 <span className="auth-field-index">{isRegister ? "02" : "01"}</span></span>
-                <input name="email" type="email" placeholder="name@example.com" autoComplete="off" required />
+                <input ref={emailRef} type="email" placeholder="name@example.com" autoComplete="off" required />
               </label>
               <label className="auth-field">
                 <span>密码 <span className="auth-field-index">{isRegister ? "03" : "02"}</span></span>
                 <span className="auth-password-wrap">
-                  <input name="password" type={showPassword ? "text" : "password"} placeholder={isRegister ? "至少 8 位字符" : "输入密码"} autoComplete="off" minLength={isRegister ? 8 : undefined} required />
+                  <input ref={passwordRef} type={showPassword ? "text" : "password"} placeholder={isRegister ? "至少 8 位字符" : "输入密码"} autoComplete="off" minLength={isRegister ? 8 : undefined} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "隐藏密码" : "显示密码"} aria-pressed={showPassword}>
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -66,18 +76,18 @@ export function AuthPage({ mode }: { mode: Mode }) {
               {isRegister && (
                 <label className="auth-field">
                   <span>确认密码 <span className="auth-field-index">04</span></span>
-                  <input name="confirm-password" type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
+                  <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
                 </label>
               )}
-              <button className="account-primary-button" type="submit">
+              <button className="account-primary-button" type="button" onClick={handlePreview}>
                 {isRegister ? "预览注册流程" : "预览登录流程"}<ArrowRight size={19} aria-hidden="true" />
               </button>
-              {notice && <p className="auth-notice" role="status">账号功能正在准备中。现在可以直接进入工作台试用，无需注册。</p>}
-            </form>
+              {notice && <p className="auth-notice" role="status">{notice}</p>}
+            </div>
 
             <div className="auth-panel-bottom">
               <p>{isRegister ? "已经有账户？" : "还没有账户？"} <Link href={isRegister ? "/login" : "/register"}>{isRegister ? "返回登录" : "创建账户"} ↗</Link></p>
-              <Link className="account-secondary-button" href="/studio">免登录试用工作台 <ArrowRight size={17} aria-hidden="true" /></Link>
+              <Link className="account-secondary-button" href="/works?panel=studio">免登录试用工作台 <ArrowRight size={17} aria-hidden="true" /></Link>
             </div>
           </section>
         </div>

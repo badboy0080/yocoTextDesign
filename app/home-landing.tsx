@@ -30,7 +30,7 @@ import { HeroTypeMorph } from "./hero-type-morph";
 import { WorksRail } from "@/components/works-rail";
 import "./home.css";
 
-const STUDIO_URL = "/studio";
+const STUDIO_URL = "/works?panel=studio";
 const ACCEPT_FILES =
   ".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -135,15 +135,15 @@ export function HomeLanding() {
       <HomeDotField />
       <Script src="/analytics.js" strategy="afterInteractive" />
 
-      <header className="sticky top-0 z-20 border-b border-border/80 bg-background">
-        <div className="yooco-shell flex h-16 items-center justify-between">
+      <header className="yooco-header sticky top-0 z-20 border-b border-border/80 bg-background">
+        <div className="yooco-shell flex h-16 items-center justify-between gap-4">
           <Link
             href="/"
             className="font-[family-name:var(--yooco-display)] text-xl font-semibold tracking-tight text-foreground"
           >
             <BrandLogo />
           </Link>
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="yooco-nav flex items-center gap-1 sm:gap-2">
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <a href="#works-heading">作品</a>
             </Button>
@@ -153,21 +153,27 @@ export function HomeLanding() {
               </Button>
             ) : null}
             <Button asChild variant="ghost" size="sm">
+              <Link href="/subscribe">订阅</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
               <a href={STUDIO_URL}>工作室</a>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/login">登录</Link>
             </Button>
           </nav>
         </div>
       </header>
 
       <main className="relative z-10">
-        <section className="yooco-hero">
+        <section className="yooco-hero" aria-labelledby="home-hero-title">
           <div className="yooco-shell mx-auto flex max-w-3xl flex-col items-center text-center">
-            <p className="text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
+            <p className="yooco-hero-kicker text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
               Yooco
             </p>
             <HeroTypeMorph />
-            <div className="mt-8 w-full text-left">
-              <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-none">
+            <div className="yooco-input-wrap mt-8 w-full text-left">
+              <Card className="yooco-input-card gap-0 overflow-hidden border-border/80 py-0 shadow-none">
                 <CardContent className="px-0 pt-0">
                   <label className="sr-only" htmlFor="home-article-input">
                     文章原文

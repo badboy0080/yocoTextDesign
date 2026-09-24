@@ -21,7 +21,8 @@ export function AccountLayout({
           <nav className="account-nav" aria-label="页面导航">
             <Link href="/works">作品</Link>
             <Link href="/subscribe">订阅</Link>
-            <Link href="/studio">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
+            <Link href="/login">登录</Link>
+            <Link href="/works?panel=studio">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
           </nav>
         </div>
       </header>

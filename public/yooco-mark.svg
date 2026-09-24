@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Yooco">
-  <rect width="48" height="48" rx="12" fill="#20251F"/>
-  <path d="M7 10.5c6.6 0 11.6 1.6 17 7.3v12.1C19.3 23.3 14.7 21.1 7 20.8V10.5Z" fill="#A9FD83"/>
-  <path d="M41 10.5c-6.6 0-11.6 1.6-17 7.3v12.1c4.7-4.5 9.3-6.7 17-7V10.5Z" fill="#98F68D"/>
-  <path d="M20.8 25.4 24 29l3.2-3.6v11.4L24 40l-3.2-3.2V25.4Z" fill="#B9FF9B"/>
-  <path d="M7 24.1c5.4.3 9.4 1.6 12.5 3.9" fill="none" stroke="#718F72" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M41 24.1c-5.4.3-9.4 1.6-12.5 3.9" fill="none" stroke="#718F72" stroke-width="1.2" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="128" viewBox="0 0 160 128" role="img" aria-label="Yooco 灵感气泡"><path d="M16 57 C16 24 41 11 78 11 C118 11 143 23 143 57 C143 82 128 101 103 112 C96 115 93 113 96 105 C100 92 90 93 77 94 C39 98 16 84 16 57Z" fill="#B6FF5C"/><g fill="#20251F"><ellipse cx="61" cy="57" rx="7.5" ry="14"/><ellipse cx="97" cy="57" rx="7.5" ry="14"/></g></svg>

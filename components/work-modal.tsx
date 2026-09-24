@@ -9,12 +9,11 @@ export function WorkPreview({ work }: { work: WorkPiece }) {
   return (
     <article className={`work-sheet work-sheet--${work.themeId}`} style={{ background: work.pageColor, color: work.textColor }}>
       <header className="work-sheet-header">
-        <div className="work-sheet-meta"><span>YOOCO / SELECTED WORK</span><span>{work.themeLabel} · 0{["fresh", "vermilion", "mono", "serene", "stub", "editorial"].indexOf(work.themeId) + 1}</span></div>
+        <div className="work-sheet-meta"><span>YOOCO / SELECTED WORK</span><span>{work.themeLabel} · 0{["fresh", "mono", "serene", "stub", "editorial"].indexOf(work.themeId) + 1}</span></div>
         {work.themeId === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
-        {work.themeId === "vermilion" && <span className="work-sheet-big-number" aria-hidden="true">02</span>}
         {work.themeId === "mono" && <span className="work-sheet-vertical" aria-hidden="true">SPACE / FORM / RHYTHM</span>}
-        {work.themeId === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ 005</span></span>}
-        {work.themeId === "editorial" && <span className="work-sheet-issue">ISSUE 06 <span>EDITOR&apos;S NOTE</span></span>}
+        {work.themeId === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ 004</span></span>}
+        {work.themeId === "editorial" && <span className="work-sheet-issue">ISSUE 05 <span>EDITOR&apos;S NOTE</span></span>}
         <h3 style={{ color: work.titleColor }}>{work.title}</h3>
         <p className="work-sheet-deck">{work.fit} <span>／</span> {work.deck}</p>
       </header>

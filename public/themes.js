@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 六套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 五套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -51,38 +51,6 @@ const THEMES = {
       dataReport: { core: ["stat", "list"], accent: ["card", "highlight"] },
       lifestyle: { core: ["paragraph", "card"], accent: ["quote"] },
       caseStudy: { core: ["steps", "list"], accent: ["code", "quote"] },
-    },
-  },
-
-  // 朱白评论：观点力量感，朱红克制点睛，编号章节
-  vermilion: {
-    label: "朱白评论",
-    en: "VERMILION",
-    primary: "#d43d33",
-    fit: "深度分析 · 观点 · 力量感",
-    params: {
-      styleVariant: "standard",
-      textColor: "#3a3a3a", accentColor: "#d43d33",
-      highlightColor: "#fdeaea", highlightTextColor: "#9a241c",
-      cardColor: "#fdf3f2", quoteColor: "#fef9f8", cardTitleColor: "#d43d33",
-      pageColor: "#fffdfc", linkColor: "#d43d33",
-      codeBackground: "#f3f4f6", codeColor: "#1f2937", dividerColor: "#e7e5e4",
-      mutedColor: "#9c9a97", titleColor: "#211d1a", borderColor: "#e7e5e4",
-      bodyFont: "system", headingFont: "system", textAlign: "left",
-      fontSize: 15, lineHeight: 1.8, letterSpacing: 0.5, paragraphSpacing: 20,
-      headingSize: 27, headingWeight: 900, headingSpacingBefore: 38, headingSpacingAfter: 14,
-      headingStyle: "index", cardStyle: "band", listStyle: "circle",
-      highlightStyle: "background", cardRadius: 12, imageRadius: 8, cardPadding: 22,
-      showDivider: true,
-    },
-    recipe: {
-      opinion: { core: ["paragraph", "quote"], accent: ["card"] },
-      tutorial: { core: ["steps", "code", "list"], accent: ["card"] },
-      checklist: { core: ["list", "card"], accent: ["stat"] },
-      interview: { core: ["paragraph", "quote"], accent: ["card"] },
-      dataReport: { core: ["stat", "list"], accent: ["card"] },
-      lifestyle: { core: ["paragraph", "quote"], accent: ["card"] },
-      caseStudy: { core: ["steps", "list"], accent: ["quote", "card"] },
     },
   },
 
@@ -215,7 +183,7 @@ const THEMES = {
   },
 };
 
-const THEME_ORDER = ["fresh", "vermilion", "mono", "serene", "stub", "editorial"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

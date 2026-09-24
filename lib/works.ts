@@ -43,23 +43,6 @@ const freshParams = {
   showDivider: true,
 };
 
-const vermilionParams = {
-  theme: "vermilion",
-  textColor: "#3a3a3a",
-  accentColor: "#d43d33",
-  cardColor: "#fdf3f2",
-  quoteColor: "#fef9f8",
-  pageColor: "#fffdfc",
-  titleColor: "#211d1a",
-  fontSize: 15,
-  lineHeight: 1.8,
-  headingSize: 27,
-  headingStyle: "index",
-  cardStyle: "band",
-  listStyle: "circle",
-  showDivider: true,
-};
-
 const monoParams = {
   theme: "mono",
   textColor: "#52525b",
@@ -155,29 +138,6 @@ const BASE_WORKS: WorkPiece[] = [
       { type: "quote", text: "先把路走完，再谈风景。" },
     ],
     params: freshParams,
-  },
-  {
-    id: "vermilion-note",
-    title: "把观点写短",
-    themeId: "vermilion",
-    themeLabel: "朱白评论",
-    fit: "观点 · 评论",
-    primary: "#d43d33",
-    pageColor: "#fffdfc",
-    titleColor: "#211d1a",
-    textColor: "#3a3a3a",
-    accentColor: "#d43d33",
-    source: article(
-      "把观点写短",
-      `长文不是堆句子。读者要的是一句能站住的判断。\n\n## 怎么收\n\n- 先写结论\n- 再给一个例子\n- 最后停笔\n\n> 说完就停，比再补一段更有力。`,
-    ),
-    blocks: [
-      { type: "p", text: "长文不是堆句子。读者要的是一句能站住的判断。" },
-      { type: "h2", text: "怎么收" },
-      { type: "list", items: ["先写结论", "再给一个例子", "最后停笔"] },
-      { type: "quote", text: "说完就停，比再补一段更有力。" },
-    ],
-    params: vermilionParams,
   },
   {
     id: "mono-grid",
@@ -286,17 +246,6 @@ const STORIES: Record<string, WorkBlock[]> = {
     { type: "h2", text: "下山之后" },
     { type: "p", text: "回到地铁站时，城市的声音又一下子涌了回来。腿有点酸，但脑子比出门前清楚。我把这条路线存在地图里，没有给它打分；下次有空，再沿着另一条小路走上去。" },
   ],
-  "vermilion-note": [
-    { type: "p", text: "写观点文章时，我们常把“说得完整”误当成“说得有力”。一段判断之后接三段解释，再接五个例子，读者反而找不到作者真正想说的话。短不是字数要求，而是每句话都承担任务。" },
-    { type: "h2", text: "先亮出判断" },
-    { type: "p", text: "我最近删掉一篇稿子的前四百字，直接用第五段开头：“好的排版先决定读者在哪里停下。”删完以后，后面的证据有了明确方向。读者可以不同意这个判断，但至少知道自己在和什么讨论。" },
-    { type: "quote", text: "一句能被反驳的话，通常比一段谁也不会反对的空话更有价值。" },
-    { type: "h2", text: "证据只留最有效的" },
-    { type: "p", text: "一个具体的例子，常常胜过五个相似的形容词。比如说“标题旁边留出一行空白，手机上第一屏就能看到正文”，比说“整体更高级、更舒服”更容易让人判断。证据越具体，观点越不必大声。" },
-    { type: "list", items: ["开头给出明确判断", "中段只保留一个关键例子", "结尾指出适用范围，不重复开头"] },
-    { type: "h2", text: "在该停的地方停" },
-    { type: "p", text: "写完最后一个证据，试着把收尾段整段删除。如果文章仍然成立，就让它在那里结束。短文的力量往往来自收束：留下足够的信息，也留下读者自己思考的位置。" },
-  ],
   "mono-grid": [
     { type: "p", text: "打开一张塞满颜色、注释和边框的页面，眼睛会先寻找出口，而不是寻找内容。留白不是把设计做少；它给标题、图片与正文划出各自的边界，让阅读有顺序。" },
     { type: "h2", text: "空白决定先后" },
@@ -356,7 +305,6 @@ export const WORKS: WorkPiece[] = BASE_WORKS.map((work) => ({
   ...work,
   deck: ({
     "fresh-walk": "把周末走成一张路书",
-    "vermilion-note": "一个判断，三处证据",
     "mono-grid": "让文字之间有距离",
     "serene-hill": "一次没有终点的散步",
     "stub-list": "轻装出门的三项清单",
@@ -375,7 +323,7 @@ export function applyWork(work: WorkPiece) {
   localStorage.setItem("yooco-article-source", work.source.trim());
   localStorage.setItem("yooco-article-title", title);
   localStorage.setItem("wechat-style-lab-config", JSON.stringify({ theme: work.themeId, ...work.params }));
-  window.location.assign("/studio");
+  window.location.assign("/works?panel=studio");
 }
 
 export function downloadWorkConfig(work: WorkPiece) {

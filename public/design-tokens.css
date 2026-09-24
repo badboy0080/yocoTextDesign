@@ -1,22 +1,23 @@
+@import url("./brand-tokens.css");
 /* Dimensional Interface Schema — shared tokens for Yooco chrome */
 :root {
-  --di-primary: #3b82f6;
-  --di-secondary: #60a5fa;
-  --di-tertiary: #c084fc;
-  --di-neutral: #71717a;
-  --di-bg: #ffffff;
-  --di-surface: #18181b;
-  --di-text: #71717a;
-  --di-ink: #18181b;
-  --di-border: #e4e4e7;
+  --di-primary: var(--yooco-color-focus);
+  --di-secondary: var(--yooco-color-link);
+  --di-tertiary: var(--yooco-color-primary);
+  --di-neutral: var(--yooco-color-muted);
+  --di-bg: var(--yooco-color-surface);
+  --di-surface: var(--yooco-color-ink);
+  --di-text: var(--yooco-color-muted);
+  --di-ink: var(--yooco-color-ink);
+  --di-border: var(--yooco-color-border);
   --di-border-zinc: #3f3f46;
   --di-border-soft: #f4f4f5;
 
   --di-radius-xs: 2px;
-  --di-radius-sm: 16px;
-  --di-radius-md: 24px;
-  --di-radius-lg: 40px;
-  --di-radius-xl: 64px;
+  --di-radius-sm: var(--yooco-radius-md);
+  --di-radius-md: var(--yooco-radius-lg);
+  --di-radius-lg: var(--yooco-radius-xl);
+  --di-radius-xl: var(--yooco-radius-xl);
   --di-radius-full: 9999px;
 
   --di-space-1: 4px;
@@ -66,21 +67,21 @@
   );
 
   --di-duration-fast: 150ms;
-  --di-duration: 500ms;
+  --di-duration: var(--yooco-duration-base);
   --di-ease: ease;
 
   /* Studio chrome aliases (legacy selector names) */
   --ink: var(--di-ink);
   --muted: var(--di-text);
   --line: var(--di-border);
-  --paper: #fafafa;
+  --paper: var(--yooco-color-paper);
   --panel: var(--di-bg);
   --accent: var(--di-primary);
   --surface: var(--di-surface);
   --radius: var(--di-radius-md);
   --shadow: var(--di-shadow-glass);
-  /* Retire lime: map chrome accents to dimensional primary / white */
-  --lime: #ffffff;
+  /* Legacy interface aliases follow the shared Yooco palette. */
+  --lime: var(--yooco-color-primary);
   --lime-dark: var(--di-primary);
 }
 

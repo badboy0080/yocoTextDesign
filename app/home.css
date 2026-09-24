@@ -3,33 +3,33 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&display=swap");
 
 .yooco-home {
-  --yooco-display: "Fraunces", "Songti SC", "Noto Serif SC", Georgia, serif;
-  --yooco-accent: #0a9d75;
-  --yooco-accent-hover: #088a66;
+  --yooco-display: var(--yooco-font-display, "Fraunces", "Songti SC", "Noto Serif SC", Georgia, serif);
+  --yooco-accent: var(--yooco-color-primary, #b6ff5c);
+  --yooco-accent-hover: #a3ec4e;
   /* Keep product entry light even if OS prefers dark */
-  --background: #f8f7f2;
-  --foreground: #171717;
-  --card: #fffefa;
-  --card-foreground: #171717;
-  --muted: #f1f1ec;
-  --muted-foreground: #5c5f5b;
-  --border: #e4e7e3;
-  --input: #e4e7e3;
-  --ring: #0a9d75;
-  --primary: #171717;
+  --background: var(--yooco-color-paper, #f8f9f4);
+  --foreground: var(--yooco-color-ink, #20251f);
+  --card: var(--yooco-color-surface, #ffffff);
+  --card-foreground: var(--yooco-color-ink, #20251f);
+  --muted: var(--yooco-color-soft, #edf2e8);
+  --muted-foreground: var(--yooco-color-muted, #626b61);
+  --border: var(--yooco-color-border, #dce2d8);
+  --input: var(--yooco-color-border, #dce2d8);
+  --ring: var(--yooco-color-focus, #355d27);
+  --primary: var(--yooco-color-ink, #20251f);
   --primary-foreground: #fafafa;
   --destructive: #c62828;
   color-scheme: light;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #f8f7f2;
+  background: var(--background);
   color: var(--foreground);
 }
 
 .yooco-shell {
   width: 100%;
-  max-width: 72rem;
+  max-width: 80rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
@@ -41,21 +41,57 @@
 }
 
 .yooco-hero {
-  padding-block: 2.25rem 2.75rem;
+  position: relative;
+  padding-block: 3.5rem 4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.yooco-header {
+  background: color-mix(in srgb, var(--background) 94%, transparent) !important;
+  backdrop-filter: blur(14px);
+}
+
+.yooco-nav {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.yooco-nav a,
+.yooco-nav button {
+  min-height: 2.5rem;
+}
+
+.yooco-hero-kicker {
+  color: var(--yooco-color-link, #355d27) !important;
+  font-family: var(--yooco-font-mono, ui-monospace, monospace);
+  font-size: .7rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.yooco-input-wrap {
+  position: relative;
+}
+
+.yooco-input-card {
+  border-color: var(--yooco-color-border-strong, #889681) !important;
+  border-radius: var(--yooco-radius-lg, 12px) !important;
+  background: var(--yooco-color-surface, #fff) !important;
+  box-shadow: var(--yooco-shadow-md, 0 12px 30px rgba(32, 37, 31, .08)) !important;
 }
 
 .hero-morph { width:100%; height:18rem; position:relative; margin-top:.6rem; container-type:inline-size; }
 .hero-copy { height:18rem; text-align:center; display:flex; flex-direction:column; justify-content:center; }
-.hero-morph-label { margin:0 0 1rem; color:#08795b; font-size:.68rem; letter-spacing:.15em; }
+.hero-morph-label { margin:0 0 1rem; color:var(--yooco-color-link, #355d27); font-size:.68rem; letter-spacing:.15em; }
 .hero-morph-label > span { margin-right:.8rem; font-family:Arial,sans-serif; color:#899082; font-size:.6rem; }
-.hero-title { font-family:var(--yooco-display); font-size:clamp(1.6rem,5.2cqw,3.15rem); font-weight:650; line-height:1.2; letter-spacing:-.03em; color:#20251f; }
+.hero-title { font-family:var(--yooco-display); font-size:clamp(1.6rem,5.2cqw,3.15rem); font-weight:650; line-height:1.2; letter-spacing:-.03em; color:var(--yooco-color-ink, #20251f); }
 .hero-line { display:block; }
-.hero-sub { margin:1rem 0 0; font-size:.9rem; line-height:1.6; color:#6b7166; }
+.hero-sub { margin:1rem 0 0; font-size:.9rem; line-height:1.6; color:var(--yooco-color-body, #485244); }
 .hero-copy[data-style="sans-offset"] { text-align:left; padding-inline:8%; }
 .hero-copy[data-style="sans-offset"] .hero-title { font-family:Arial,"Microsoft YaHei",sans-serif; font-weight:900; letter-spacing:-.055em; }
 .hero-copy[data-style="sans-offset"] .hero-line:nth-child(2) { padding-left:13%; }
-.hero-copy[data-style="sans-offset"] .hero-line-last { padding-left:22%; color:#08795b; }
-.hero-copy[data-style="sans-offset"] .hero-sub { border-left:2px solid #08795b; padding-left:.8rem; }
+.hero-copy[data-style="sans-offset"] .hero-line-last { padding-left:22%; color:var(--yooco-color-link, #355d27); }
+.hero-copy[data-style="sans-offset"] .hero-sub { border-left:2px solid var(--yooco-color-link, #355d27); padding-left:.8rem; }
 .hero-copy[data-style="bilingual-note"] { display:grid; grid-template-columns:minmax(0,1fr) minmax(6rem,21%); align-content:center; align-items:end; gap:0 1.2rem; text-align:left; padding-inline:6%; }
 .hero-copy[data-style="bilingual-note"] .hero-morph-label { grid-column:1/-1; }
 .hero-copy[data-style="bilingual-note"] .hero-title { font-size:clamp(1.45rem,4.7cqw,2.8rem); }
@@ -64,12 +100,17 @@
 .hero-copy[data-style="english-serif"] em { font-weight:400; }
 .hero-copy[data-style="english-poster"] { text-align:left; padding-inline:8%; }
 .hero-copy[data-style="english-poster"] .hero-title { font-family:Arial,sans-serif; font-size:clamp(1.5rem,5.6cqw,3.5rem); font-weight:900; line-height:1.05; letter-spacing:-.05em; }
-.hero-copy[data-style="english-poster"] em { font-style:normal; color:#08795b; }
+.hero-copy[data-style="english-poster"] em { font-style:normal; color:var(--yooco-color-link, #355d27); }
 .hero-copy[data-style="english-poster"] .hero-line-last { text-align:right; padding-right:15%; }
 .hero-copy[data-style="bilingual-rule"] .hero-title { font-size:clamp(1.5rem,4.6cqw,2.8rem); font-weight:560; letter-spacing:.025em; }
 .hero-copy[data-style="bilingual-rule"] .hero-sub { align-self:center; max-width:90%; border-top:1px solid #b6beac; padding-top:.65rem; font-family:Georgia,serif; font-size:.8rem; }
-@media (min-width:640px) { .yooco-hero { padding-block:2rem 3rem; } }
+@media (min-width:640px) { .yooco-hero { padding-block:4.5rem 5rem; } }
 @media (max-width:639px) {
+  .yooco-shell { padding-inline: 1rem; }
+  .yooco-header .yooco-shell { gap: .5rem; }
+  .yooco-nav { flex: 1; justify-content: flex-end; overflow-x: auto; scrollbar-width: none; }
+  .yooco-nav::-webkit-scrollbar { display: none; }
+  .yooco-nav a, .yooco-nav button { padding-inline: .55rem; font-size: .75rem; }
   .hero-morph { height:17rem; }
   .hero-copy { height:17rem; }
   .hero-title { font-size:clamp(1.65rem,6.4cqw,2.4rem); }
@@ -82,12 +123,13 @@
   .hero-copy[data-style="english-poster"] .hero-title { font-size:clamp(1.5rem,7cqw,2.6rem); }
 }
 .yooco-section {
-  padding-block: 4.5rem;
+  padding-block: 4rem;
 }
 
 .yooco-band {
-  padding-block: 4.5rem;
-  background: #f7f8f6;
+  padding-block: 4rem;
+  background: var(--yooco-color-soft, #edf2e8);
+  border-block: 1px solid var(--yooco-color-border, #dce2d8);
 }
 
 .morph {
@@ -107,7 +149,7 @@
   height: 20rem;
   overflow: hidden;
   border-radius: 1rem;
-  background-color: #111111;
+  background-color: var(--yooco-color-ink, #20251f);
   background-image:
     linear-gradient(
       90deg,
@@ -181,7 +223,7 @@
 
 .morph-messy .is-note {
   font-size: 0.85rem;
-  color: #3ddc97;
+  color: var(--yooco-color-primary, #b6ff5c);
 }
 
 .morph-neat .is-title {
@@ -203,7 +245,7 @@
   display: block;
   margin-top: 0.75rem;
   padding-left: 0.7rem;
-  border-left: 3px solid #3ddc97;
+  border-left: 3px solid var(--yooco-color-primary, #b6ff5c);
   font-size: 0.95rem;
   line-height: 1.15;
   color: #f3f1ec;
@@ -215,7 +257,7 @@
   padding-left: 0.7rem;
   font-size: 0.85rem;
   line-height: 1.15;
-  color: #3ddc97;
+  color: var(--yooco-color-primary, #b6ff5c);
 }
 
 .yooco-step-icon {
@@ -224,10 +266,10 @@
   height: 2.75rem;
   align-items: center;
   justify-content: center;
-  border-radius: 0.75rem;
+  border-radius: var(--yooco-radius-md, 8px);
   border: 1px solid var(--border);
   background: #ffffff;
-  color: var(--yooco-accent);
+  color: var(--yooco-color-link, #355d27);
 }
 
 .yooco-pricing-grid {
@@ -238,13 +280,13 @@
 .yooco-pricing-card {
   padding: 1.75rem 1.5rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #ffffff;
+  border-radius: var(--yooco-radius-lg, 12px);
+  background: var(--yooco-color-surface, #ffffff);
 }
 
 .yooco-pricing-card.is-featured {
-  border-color: color-mix(in srgb, var(--yooco-accent) 45%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--yooco-accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--yooco-color-link, #355d27) 45%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--yooco-color-primary, #b6ff5c) 38%, transparent);
 }
 
 @media (min-width: 640px) {

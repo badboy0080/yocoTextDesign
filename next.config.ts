@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [{ source: "/studio", destination: "/studio.html" }];
+  async redirects() {
+    return [{ source: "/studio", destination: "/works?panel=studio", permanent: false }];
   },
 };
 

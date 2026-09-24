@@ -3,71 +3,79 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#3B82F6" />
-    <title>Yooco · 公众号排版实验室</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#20251F" />
+    <title>Yooco · 工作台</title>
+    <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
-    <link rel="stylesheet" href="./styles.css?v=editorial-v12" />
+    <link rel="stylesheet" href="./styles.css?v=components-v2" />
+    <link rel="stylesheet" href="./studio-ui.css?v=vi-v1" />
+    <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="Yooco 首页">
-        <img src="/yooco-mark.svg" alt="" aria-hidden="true" width="32" height="32" /><span>Yooco</span>
-      </a>
+    <div class="studio-layout">
+      <aside class="studio-navigation" aria-label="网站导航">
+        <a class="studio-logo" href="/" aria-label="Yooco 首页"><img src="/yooco-logo.svg?v=bubble-c-v1" width="145" height="36" alt="Yooco" /></a>
+        <nav><a href="/works?panel=studio" aria-current="page">工作台</a><a href="/works">作品</a></nav>
+        <a class="studio-home-link" href="/">返回首页</a>
+      </aside>
+      <div class="studio-main">
+    <header class="topbar topbar-buttons">
+      <h1 class="studio-title">工作台</h1>
       <div class="topbar-actions">
-        <span class="trial-meter" id="trialMeter" aria-live="polite">试用剩余 10 次</span>
         <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
         <button class="ghost-button" id="resetButton" type="button">恢复默认</button>
-        <button class="accent-button" id="exportButton" type="button">导出配置</button>
+        <button class="accent-button" id="exportButton" type="button" title="包含当前文章文字与组件选择">导出配置</button>
         <label class="ghost-button file-button">导入配置<input id="importInput" type="file" accept="application/json,.json" /></label>
       </div>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
-      免费试用次数已用完。升级专业版：¥9.9/月 或 ¥59.9/年。
+      <span id="trialBannerText">今日试用已用完，订阅暂未开放。</span>
+      <a href="/subscribe">查看方案 ↗</a>
     </div>
 
     <main id="top" class="app-shell">
-      <div hidden>
-        <textarea id="articleInput" rows="1" spellcheck="false"></textarea>
-        <span id="articleStatus" role="status"></span>
-      </div>
-
       <div class="lab-shell">
-      <section class="lab-grid" aria-label="排版实验室">
+      <section class="lab-grid" aria-label="工作台">
         <section class="preview-panel">
           <div class="preview-header">
-            <div class="panel-kicker">最终预览</div>
+            <div class="editor-view-tabs" role="tablist" aria-label="编辑视图">
+              <button type="button" id="resultViewTab" role="tab" aria-selected="true" aria-controls="previewStage">排版结果</button>
+              <button type="button" id="sourceViewTab" role="tab" aria-selected="false" aria-controls="sourcePanel" tabindex="-1">原文</button>
+            </div>
             <div class="preview-header-actions">
               <p class="copy-feedback" id="copyFeedback" role="status"></p>
-              <button class="copy-button" id="copyButton" type="button">一键复制排版</button>
+              <button class="copy-button" id="copyButton" type="button">复制排版</button>
             </div>
           </div>
-          <div class="preview-stage" id="previewStage">
+          <div class="source-panel" id="sourcePanel" role="tabpanel" aria-labelledby="sourceViewTab" hidden>
+            <label for="articleInput">文章原文</label>
+            <p id="sourceHelp">支持纯文字和 Markdown，修改后会同步更新排版。</p>
+            <textarea id="articleInput" rows="16" spellcheck="false" aria-describedby="sourceHelp" placeholder="在这里粘贴或编辑文章…"></textarea>
+          </div>
+          <div class="preview-stage" id="previewStage" role="tabpanel" aria-labelledby="resultViewTab">
             <article class="web-preview" aria-label="公众号文章预览">
               <div class="article-page" id="articlePage">
-                <div class="article-meta">Yooco · 排版预览</div>
-                <h2 id="articleTitle" contenteditable="true" spellcheck="false">把一篇好文章，排成读者愿意读完的样子</h2>
-                <p class="article-subtitle" id="articleSubtitle">参数可调、结构可解释、复制可继续编辑</p>
+                <h2 id="articleTitle" contenteditable="true" spellcheck="false">雨停以后，去散步</h2>
                 <div id="articleBody" class="article-content"></div>
               </div>
             </article>
           </div>
           <div class="preview-footer">
-            <span id="previewSummary">正文 16px · 行高 1.75 · 段距 18px</span>
+            <span id="articleStatus" role="status"></span>
             <div class="preview-footer-tools">
               <label class="preview-tool-toggle"><input id="darkPreviewToggle" type="checkbox" />暗色预览</label>
             </div>
           </div>
         </section>
 
-        <aside class="insight-panel">
+        <aside class="insight-panel" aria-label="文章属性">
+          <h2 class="properties-title">文章属性</h2>
           <div id="styleMount" class="style-parameters-mount">
             <section class="workspace-pane style-parameters" id="stylePane" aria-label="模板参数">
               <div class="control-group is-open" data-accordion>
                 <button type="button" class="group-toggle" aria-expanded="true">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></span>
                   <span class="group-label">精选主题</span>
-                  <span class="group-hint">AI 可自动选，也可手改</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -92,16 +100,44 @@
                 </div>
               </div>
 
+              <div class="control-group content-component-group is-open" id="componentPickerGroup" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="true">
+                  <span class="group-icon" aria-hidden="true">▤</span>
+                  <span class="group-label">内容组件</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
+                  <div class="component-picker" id="componentPicker">
+                    <p class="component-picker-intro">点击预览段落，或聚焦后按 Alt+Enter；用下方按钮加入相邻内容。</p>
+                    <p class="component-selection" id="componentSelection" role="status">请先选择内容块</p>
+                    <div class="component-range-actions">
+                      <button id="componentExtendBefore" type="button">加入上一块</button>
+                      <button id="componentExtendAfter" type="button">加入下一块</button>
+                    </div>
+                    <div class="component-filters" role="group" aria-label="组件分类">
+                      <button type="button" data-component-filter="all" aria-pressed="true">全部</button>
+                      <button type="button" data-component-filter="text" aria-pressed="false">纯文字</button>
+                      <button type="button" data-component-filter="image" aria-pressed="false">图文</button>
+                    </div>
+                    <div class="component-gallery" id="componentGallery"></div>
+                    <div class="component-edit" id="componentEdit" hidden>
+                      <label>眉题或标签<input id="componentLabel" type="text" maxlength="100" placeholder="可留空" /></label>
+                      <label>边注或补充说明<input id="componentNote" type="text" maxlength="100" placeholder="可留空" /></label>
+                      <button id="componentRemove" type="button">恢复普通排版</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="control-group" data-accordion>
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h9v9h-9z"/><path d="M5.5 6.5h5M5.5 9.5h3.5"/></svg></span>
                   <span class="group-label">文章类型</span>
-                  <span class="group-hint">影响排版配方</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
-                  <label class="select-control"><span>文章类型</span><select data-key="articleType"><option value="auto">自动（跟随 AI 判断）</option><option value="tutorial">教程 / 操作指南</option><option value="checklist">盘点 / 工具清单</option><option value="opinion">观点 / 深度分析</option><option value="interview">访谈 / 人物特稿</option><option value="dataReport">数据复盘 / 报告</option><option value="lifestyle">生活 / 情感随笔</option><option value="caseStudy">案例实战 / 复盘</option></select></label>
-                  <label class="toggle-control"><span>结尾签名区（仅精选主题）</span><input data-key="showSignature" type="checkbox" /><i></i></label>
+                  <label class="select-control"><span>文章类型</span><select data-key="articleType"><option value="auto">自动</option><option value="tutorial">教程 / 操作指南</option><option value="checklist">盘点 / 工具清单</option><option value="opinion">观点 / 深度分析</option><option value="interview">访谈 / 人物特稿</option><option value="dataReport">数据复盘 / 报告</option><option value="lifestyle">生活 / 情感随笔</option><option value="caseStudy">案例实战 / 复盘</option></select></label>
+                  <label class="toggle-control" title="仅精选主题支持结尾签名区"><span>结尾签名区</span><input data-key="showSignature" type="checkbox" /><i></i></label>
                 </div>
               </div>
 
@@ -109,14 +145,22 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5 8 3.5l5 9"/><path d="M5.2 9.5h5.6"/></svg></span>
                   <span class="group-label">造型</span>
-                  <span class="group-hint">标题 / 卡片 / 列表</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
                   <label class="select-control"><span>标题样式</span><select data-key="headingStyle"><option value="bar">左竖条</option><option value="line">底部细线</option><option value="index">序号大字</option><option value="block">色块标签</option>
                     <option value="poster">叠号双语</option>
                     <option value="panel">序号黑卡</option>
-                    <option value="oval">黄圈序号</option></select></label>
+                    <option value="oval">黄圈序号</option>
+                    <option value="atlas-editorial">书刊眉题</option>
+                    <option value="atlas-index">索引框题</option>
+                    <option value="atlas-quote">引语开篇</option>
+                    <option value="atlas-pill">栏目胶囊</option>
+                    <option value="atlas-vertical">竖排边签</option>
+                    <option value="atlas-ticket">电影票根</option>
+                    <option value="atlas-marker">半幅荧光</option>
+                    <option value="atlas-shadow">硬边字影</option>
+                    <option value="atlas-weight">字重节奏</option></select></label>
                   <label class="select-control"><span>卡片样式</span><select data-key="cardStyle"><option value="border">左边框</option><option value="outline">描边圆角</option><option value="soft">柔和底色</option><option value="band">标题栏卡片</option></select></label>
                   <label class="select-control"><span>列表样式</span><select data-key="listStyle"><option value="dot">普通圆点</option><option value="circle">圆形实心序号</option><option value="ghost">大号半透明数字</option><option value="check">对勾箭头</option></select></label>
                 </div>
@@ -126,7 +170,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2.2"/><circle cx="10" cy="7" r="2.2"/><circle cx="8" cy="10.2" r="2.2"/></svg></span>
                   <span class="group-label">颜色</span>
-                  <span class="group-hint">视觉性格</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -149,7 +192,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h9"/><path d="M8 4.5v7"/><path d="M5.5 11.5h5"/></svg></span>
                   <span class="group-label">文字</span>
-                  <span class="group-hint">阅读节奏</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -170,7 +212,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5v9"/><path d="M8.5 3.5v9"/><path d="M3.5 8h5"/><path d="M11 6.5v6"/><path d="M11 6.5h2"/></svg></span>
                   <span class="group-label">标题层级</span>
-                  <span class="group-hint">H1 至 H4+</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -189,7 +230,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 9.8 9.8 6.2"/><path d="M7.2 4.8a2.2 2.2 0 0 1 3.1 3.1"/><path d="M8.8 11.2a2.2 2.2 0 0 1-3.1-3.1"/></svg></span>
                   <span class="group-label">重点与链接</span>
-                  <span class="group-hint">AI 或手动</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -204,7 +244,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h9"/><path d="M3.5 8h9"/><path d="M3.5 11.5h6"/></svg></span>
                   <span class="group-label">列表、引用与卡片</span>
-                  <span class="group-hint">信息块节奏</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -222,7 +261,6 @@
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="10" height="9" rx="1.5"/><path d="M5.5 9.5 7.2 7.8l1.6 1.6 1.7-2.2 1.5 2.3"/></svg></span>
                   <span class="group-label">分隔线、代码与图片</span>
-                  <span class="group-hint">细节</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
@@ -235,7 +273,10 @@
                   <label class="toggle-control"><span>显示引用卡片</span><input data-key="showQuote" type="checkbox" /><i></i></label>
                   <label class="toggle-control"><span>显示内容分隔线</span><input data-key="showDivider" type="checkbox" /><i></i></label>
                   <label class="toggle-control"><span>显示配图占位</span><input data-key="showImage" type="checkbox" /><i></i></label>
-                  <p class="markdown-tip" style="margin:0;">可用语法：<code>:::card 标题</code>、<code>:::steps 操作步骤</code>、<code>:::stat 关键数据</code>（每行 <code>99% | 完读率</code>）。复制时列表/步骤用段落模拟；图片优先素材库；代码过长建议截图。</p>
+                  <span class="studio-help">
+                    <button class="studio-help-trigger" type="button" aria-describedby="syntaxHelp">语法说明 <span aria-hidden="true">ⓘ</span></button>
+                    <span class="studio-help-popover" role="tooltip" id="syntaxHelp">卡片 <code>:::card 标题</code> · 步骤 <code>:::steps</code> · 数据 <code>:::stat</code>（每行「数值 | 名称」）</span>
+                  </span>
                 </div>
               </div>
             </section>
@@ -247,15 +288,17 @@
       <div class="compliance-panel compliance-panel--page" id="compliancePanel" hidden>
         <div class="compliance-head">
           <p class="compliance-level" id="complianceLevel">合规检查</p>
-          <label class="preview-tool-toggle"><input id="lockBrandColor" type="checkbox" />复制时尽量锁定品牌色</label>
+          <label class="preview-tool-toggle" title="复制后仍需在公众号后台检查颜色"><input id="lockBrandColor" type="checkbox" />保留品牌色</label>
         </div>
         <ul class="compliance-list" id="complianceList"></ul>
       </div>
     </main>
+      </div>
+    </div>
 
-    <footer class="site-footer"><span>Yooco · 好排版的参考起点</span><span>借鉴结构，不复制内容</span></footer>
     <script src="./analytics.js?v=funnel-v1"></script>
-    <script src="./themes.js?v=dimensional-v11"></script>
-    <script src="./app.js?v=editorial-v13"></script>
+    <script src="./themes.js?v=themes-trim-v1"></script>
+    <script src="./content-components.js?v=components-v2"></script>
+    <script src="./app.js?v=vi-v1"></script>
   </body>
 </html>

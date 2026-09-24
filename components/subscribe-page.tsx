@@ -21,7 +21,7 @@ export function SubscribePage() {
             <h1 id="subscribe-heading">好文章，<br /><em>值得</em>好版式<span className="subscribe-period">。</span></h1>
           </div>
           <div className="subscribe-hero-side">
-            <div className="subscribe-issue">YOOCO<span>✳</span><small>ISSUE NO. 03</small></div>
+            <div className="subscribe-issue">YOOCO<small>PLAN NO. 03</small></div>
             <p>从一篇草稿，到读者愿意停留的页面。先用完整工作台试试，再选择适合自己的节奏。</p>
           </div>
         </section>
@@ -45,10 +45,10 @@ export function SubscribePage() {
                 <li><Check size={16} aria-hidden="true" />查看作品与排版灵感</li>
                 <li><Check size={16} aria-hidden="true" />调整版式、复制与导出配置</li>
               </ul>
-              <Link className="account-secondary-button" href="/studio">开始免费试用 <ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link className="account-secondary-button" href="/works?panel=studio">开始免费试用 <ArrowRight size={18} aria-hidden="true" /></Link>
             </article>
             <article className="subscribe-card subscribe-card-pro">
-              <div className="subscribe-card-top"><span>02 / PRO</span><span className="subscribe-card-symbol" aria-hidden="true">✳</span></div>
+              <div className="subscribe-card-top"><span>02 / PRO</span><span className="subscribe-card-symbol" aria-hidden="true">+</span></div>
               <div><h3>保持灵感不断线</h3><p className="subscribe-card-description">专业版方案预览，正式权益将随账号系统公布。</p></div>
               <div className="subscribe-price"><strong>{yearly ? "¥59.9" : "¥9.9"}</strong><span>/ {yearly ? "年" : "月"}</span></div>
               <ul className="subscribe-features">

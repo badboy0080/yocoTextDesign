@@ -26,7 +26,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import { HomeDotField } from "@/components/home-dot-field";
-import { HeroTypeMorph } from "./hero-type-morph";
 import { WorksRail } from "@/components/works-rail";
 import "./home.css";
 
@@ -168,10 +167,10 @@ export function HomeLanding() {
       <main className="relative z-10">
         <section className="yooco-hero" aria-labelledby="home-hero-title">
           <div className="yooco-shell mx-auto flex max-w-3xl flex-col items-center text-center">
-            <p className="yooco-hero-kicker text-sm font-medium tracking-wide text-[var(--yooco-accent)]">
-              Yooco
-            </p>
-            <HeroTypeMorph />
+            <p className="yooco-hero-kicker">好文章，值得好排版</p>
+            <h1 id="home-hero-title" className="yooco-hero-title">
+              Best layout with AI
+            </h1>
             <div className="yooco-input-wrap mt-8 w-full text-left">
               <Card className="yooco-input-card gap-0 overflow-hidden border-border/80 py-0 shadow-none">
                 <CardContent className="px-0 pt-0">

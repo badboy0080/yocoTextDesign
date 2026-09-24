@@ -62,11 +62,22 @@
 }
 
 .yooco-hero-kicker {
-  color: var(--yooco-color-link, #355d27) !important;
-  font-family: var(--yooco-font-mono, ui-monospace, monospace);
-  font-size: .7rem;
-  letter-spacing: .16em;
-  text-transform: uppercase;
+  margin: 0;
+  color: var(--yooco-color-ink, #20251f);
+  font-family: "Songti SC", "SimSun", "Noto Serif SC", serif;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.yooco-hero-title {
+  margin: 0.85rem 0 0;
+  color: var(--yooco-color-ink, #20251f);
+  font-family: var(--yooco-display, "Fraunces", Georgia, serif);
+  font-size: clamp(2.8rem, 7vw, 5.4rem);
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
 .yooco-input-wrap {
@@ -74,10 +85,10 @@
 }
 
 .yooco-input-card {
-  border-color: var(--yooco-color-border-strong, #889681) !important;
-  border-radius: var(--yooco-radius-lg, 12px) !important;
-  background: var(--yooco-color-surface, #fff) !important;
-  box-shadow: var(--yooco-shadow-md, 0 12px 30px rgba(32, 37, 31, .08)) !important;
+  border-color: var(--yooco-color-border, #dce2d8) !important;
+  border-radius: 1.75rem !important;
+  background: color-mix(in srgb, var(--yooco-color-surface, #fff) 92%, var(--yooco-color-paper, #f8f9f4)) !important;
+  box-shadow: 0 16px 40px rgba(32, 37, 31, 0.08) !important;
 }
 
 .hero-morph { width:100%; height:18rem; position:relative; margin-top:.6rem; container-type:inline-size; }

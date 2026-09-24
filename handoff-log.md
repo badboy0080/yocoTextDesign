@@ -37,6 +37,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-09-24 首页改成居中输入和斜排版式
+
+- 想做什么：首页布局参考 Pippit 的居中结构，配色仍用现在的纸色和浅绿。
+- 做成了什么：副标题「好文章，值得好排版」用宋体放在主标题上方。主标题改为 Best layout with AI。输入框圆角加大。下方一句「没有创意？试试下方的版式」，五张版式卡片斜着排开。
+- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/layout.tsx`、`components/works-rail.tsx`、`app/works.css`、`handoff-log.md`。
+- 如何验证：`http://localhost:5174/` 能看到居中标题、圆角输入框和斜卡片。空着点优化排版不会跳走。
+- 待办/风险：还没提交、没部署。
+
 ### 2026-09-24 提交并部署 EdgeOne
 
 - 想做什么：提交当前站点改动，并部署到 EdgeOne。

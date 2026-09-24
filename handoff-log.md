@@ -16,7 +16,7 @@ Yooco 品牌 VI 手册（2026-09-24，本地待验收）：新增 `public/brand-
 
 Logo C 精修交付（2026-09-23）：阿超选定 C 灵感气泡。已完成圆润气泡与双眼、较轻字标、SVG 与透明 PNG、横版/竖版/独立图案/黑白版及 16–512px 图标，交付在 `design/yooco-rounded-logo-20260923/c-final/`。常规图标建议 24px 以上，横版 120px 以上；网站尚未接入、未部署。
 
-设计实现（2026-09-23）：新增登录、注册、订阅三个设计预览页；首页有订阅和登录入口，工作台额度提示可进入订阅方案。现有账号和支付后端均未接入，页面明确标注预览，输入不提交，订阅按钮不可付款。延续暖白、墨黑、浅绿与高级灰；六件作品、Logo、工作台样式等此前成果保留。2026-09-24 已部署 EdgeOne 生产，部署号 `dputygug5ajo`。正式账号、支付、配置下载文件落盘、真实 AI 请求及公众号粘贴待办。
+设计实现（2026-09-23）：新增登录、注册、订阅三个设计预览页；首页有订阅和登录入口，工作台额度提示可进入订阅方案。现有账号和支付后端均未接入，页面明确标注预览，输入不提交，订阅按钮不可付款。延续暖白、墨黑、浅绿与高级灰；六件作品、Logo、工作台样式等此前成果保留。2026-09-24 已部署 EdgeOne 生产，部署号 `dpy43bkul7qd`。正式账号、支付、配置下载文件落盘、真实 AI 请求及公众号粘贴待办。
 
 工作台文案（2026-09-23，本地待部署）：删除多余说明、副标题和参数复述；保留操作名称，语法与发布提醒改为悬停/聚焦查看。预览及复制稿的签名文字已统一。
 
@@ -28,7 +28,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 产品：Yooco 双轨上线。增长首页为干净 SaaS 落地页；主句中文「把一篇好文章，排成读者愿意读完的样子」（Fraunces + 宋体衬线）。标题改为六种中英文 GSAP 构图（书刊、中文海报、双语旁注、英文衬线、英文海报、中英对照），进场后停五秒；输入时暂停，自动切换，轮播控件已移除。首页背景是灰色点阵，鼠标周围约 200 像素内的点辐射成蓝色。没有粒子字。输入框在主句下方，作品区在输入框下面。没有「三步发出去」。价格板块先隐藏（`SHOW_PRICING`）。首页已去掉「免费试用 10 次」按钮。已下线原稿/清氧绿对比图。已接最小漏斗：访问 → 试用点击 → 排版成功。首页试用按钮已去掉，`trial_click` 暂时不会从首页发出。
 
-- **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-8cjhosfqcnmc`），加速区 global（含大陆）。2026-09-24 部署 `dputygug5ajo`。预览：`https://yooco-gxrxaiig.edgeone.cool`（国内常需控制台「预览」带 `eo_token` 的链接，有时效）。DeepSeek 已配生产环境变量。构建部署：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
+- **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-8cjhosfqcnmc`），加速区 global（含大陆）。2026-09-24 部署 `dpy43bkul7qd`。预览：`https://yooco-gxrxaiig.edgeone.cool`（国内常需控制台「预览」带 `eo_token` 的链接，有时效）。DeepSeek 已配生产环境变量。构建部署：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
 - **本地**：`npm run dev` → http://localhost:5173/ 。5173 被别的项目占用时，用 `npx vinext dev --port 5174`。CTA 走 `/studio`。密钥在 `.dev.vars`（已忽略，不入库）。`nodejs_compat` 只留在 `wrangler.jsonc`，不要再写进 `vite.config.ts`。
 - **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
@@ -36,6 +36,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-09-24 提交并部署首页布局
+
+- 想做什么：提交首页布局改动，并部署到 EdgeOne。
+- 做成了什么：提交 `7f43e89`。生产部署成功，部署号 `dpy43bkul7qd`。
+- 改了哪些文件：`handoff-log.md`。
+- 如何验证：部署命令返回 Deploy Success。控制台：`https://console.cloud.tencent.com/edgeone/pages/project/makers-8cjhosfqcnmc/deployment/dpy43bkul7qd`。
+- 待办/风险：没有推送到 GitHub。预览链接带时效 token。
 
 ### 2026-09-24 首页改成居中输入和斜排版式
 

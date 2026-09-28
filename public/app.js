@@ -165,10 +165,12 @@ let previewSyncTimer = 0;
 let selectedComponentRange = null;
 let componentFilter = "all";
 let componentAssignments = [];
+let lastBlockSignatures = [];
 try {
   const savedComponents = JSON.parse(localStorage.getItem("yooco-content-components") || "null");
   if (savedComponents?.articleSource === articleSource && Array.isArray(savedComponents.assignments)) {
     componentAssignments = savedComponents.assignments;
+    if (articleSource.trim()) lastBlockSignatures = parseArticle(articleSource).blocks.map(componentBlockSignature);
   }
 } catch { /* ignore stale component data */ }
 
@@ -1050,8 +1052,69 @@ function saveComponentAssignments() {
   localStorage.setItem("yooco-content-components", JSON.stringify({ articleSource, assignments: componentAssignments }));
 }
 
+function signatureBlockType(signature) {
+  try {
+    const parsed = JSON.parse(signature);
+    return Array.isArray(parsed) ? String(parsed[0] || "") : "";
+  } catch {
+    return "";
+  }
+}
+
+function blockAlignment(previous, next) {
+  if (!previous.length) return null;
+  const map = new Array(previous.length).fill(-1);
+  const used = new Set();
+  let bestDelta = 0;
+  let bestScore = -1;
+  const minDelta = 1 - previous.length;
+  const maxDelta = next.length - 1;
+  for (let delta = minDelta; delta <= maxDelta; delta += 1) {
+    let score = 0;
+    previous.forEach((signature, index) => {
+      if (next[index + delta] === signature) score += 1;
+    });
+    if (score > bestScore || (score === bestScore && delta === 0)) {
+      bestScore = score;
+      bestDelta = delta;
+    }
+  }
+  if (bestScore > 0) {
+    previous.forEach((signature, index) => {
+      const target = index + bestDelta;
+      if (next[target] === signature) {
+        map[index] = target;
+        used.add(target);
+      }
+    });
+  }
+  const exactCount = map.filter((index) => index >= 0).length;
+  if (!exactCount) {
+    const sameShape = previous.length === next.length && previous.every((signature, index) => signatureBlockType(signature) === signatureBlockType(next[index]));
+    return sameShape ? previous.map((_, index) => index) : map;
+  }
+  previous.forEach((signature, index) => {
+    if (map[index] >= 0 || index >= next.length || used.has(index)) return;
+    if (signatureBlockType(signature) === signatureBlockType(next[index])) {
+      map[index] = index;
+      used.add(index);
+    }
+  });
+  return map;
+}
+
+function assignmentStart(map, start, count) {
+  if (!map) return start;
+  if (start < 0 || start + count > map.length) return -1;
+  const mapped = Array.from({ length: count }, (_, offset) => map[start + offset]);
+  if (mapped.some((index) => index < 0)) return -1;
+  const ordered = [...mapped].sort((left, right) => left - right);
+  const contiguous = ordered.every((index, position) => index === ordered[0] + position);
+  return contiguous ? ordered[0] : -1;
+}
+
 function reconcileComponentAssignments(blocks) {
-  const signatures = blocks.map(componentBlockSignature);
+  const map = blockAlignment(lastBlockSignatures, blocks.map(componentBlockSignature));
   const occupied = new Set();
   const next = [];
   componentAssignments.forEach((assignment) => {
@@ -1059,26 +1122,32 @@ function reconcileComponentAssignments(blocks) {
     if (!componentKit?.items.some((item) => item.id === assignment.id)) return;
     const saved = assignment.signatures;
     if (!Array.isArray(saved) || !saved.length || saved.length > 4) return;
-    const matches = (start) => start >= 0 && saved.every((signature, offset) => signatures[start + offset] === signature);
-    let start = Number(assignment.startIndex);
-    if (!matches(start)) {
-      const candidates = signatures.map((_, index) => index).filter(matches);
-      if (candidates.length !== 1) return;
-      start = candidates[0];
-    }
+    const start = assignmentStart(map, Number(assignment.startIndex), saved.length);
+    if (start < 0 || start + saved.length > blocks.length) return;
     if (saved.some((_, offset) => occupied.has(start + offset))) return;
     const group = blocks.slice(start, start + saved.length);
-    if (componentKit.compatibility(assignment.id, group)) return;
     saved.forEach((_, offset) => occupied.add(start + offset));
-    next.push({ id: assignment.id, startIndex: start, signatures: saved, meta: {
+    next.push({ id: assignment.id, startIndex: start, signatures: group.map(componentBlockSignature), meta: {
       label: componentKit.clean(assignment.meta?.label), note: componentKit.clean(assignment.meta?.note),
     } });
   });
+  lastBlockSignatures = articleSource.trim() ? blocks.map(componentBlockSignature) : [];
   if (JSON.stringify(next) !== JSON.stringify(componentAssignments)) {
     componentAssignments = next;
     saveComponentAssignments();
   }
   return componentAssignments;
+}
+
+function isDifferentArticle(before, after) {
+  if (!before.trim() || !componentAssignments.length) return false;
+  if (!after.trim()) return true;
+  const textOf = (source) => parseArticle(source).blocks.map((block) => String(block.text || block.alt || "").trim()).filter(Boolean);
+  const oldTexts = textOf(before);
+  const newTexts = textOf(after);
+  if (!oldTexts.length || !newTexts.length) return true;
+  if (oldTexts.some((text) => newTexts.includes(text))) return false;
+  return oldTexts.length > 2 || newTexts.length > 2 || oldTexts.length !== newTexts.length;
 }
 
 function assignedRangeForSelection() {
@@ -1388,23 +1457,13 @@ function syncPreviewEdits() {
   const markdown = serializePreviewToMarkdown();
   articleSource = markdown;
   const after = getArticleModel().blocks;
-  if (before.length === after.length) {
-    const oldSignatures = before.map(componentBlockSignature);
-    const newSignatures = after.map(componentBlockSignature);
-    componentAssignments.forEach((assignment) => {
-      const start = assignment.startIndex;
-      const count = assignment.signatures.length;
-      const oldGroup = before.slice(start, start + count);
-      const newGroup = after.slice(start, start + count);
-      const stillExists = newSignatures.some((_, candidate) => assignment.signatures.every((signature, offset) => newSignatures[candidate + offset] === signature));
-      if (stillExists || oldGroup.length !== count || newGroup.length !== count) return;
-      const outsideUnchanged = oldSignatures.every((signature, index) => index >= start && index < start + count || signature === newSignatures[index]);
-      if (!outsideUnchanged || oldGroup.some((block, index) => block.type !== newGroup[index].type)) return;
-      if (componentKit.compatibility(assignment.id, newGroup)) return;
-      assignment.signatures = newGroup.map(componentBlockSignature);
-    });
-  }
+  const beforePlacement = componentAssignments.map((item) => `${item.id}:${item.startIndex}:${item.signatures.length}`);
   reconcileComponentAssignments(after);
+  const afterPlacement = componentAssignments.map((item) => `${item.id}:${item.startIndex}:${item.signatures.length}`);
+  if (before.length !== after.length || beforePlacement.join("|") !== afterPlacement.join("|")) {
+    selectedComponentRange = null;
+    render();
+  }
   if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
   persistArticleSource();
   renderComponentPicker();
@@ -2059,6 +2118,7 @@ function importConfig(file) {
         articleTitleOverride = typeof payload.article.title === "string" ? payload.article.title : "";
         blockTypeOverrides = {};
         componentAssignments = Array.isArray(payload.article.components) ? payload.article.components : [];
+        lastBlockSignatures = articleSource.trim() ? parseArticle(articleSource).blocks.map(componentBlockSignature) : [];
         if (articleInput) articleInput.value = articleSource;
         reconcileComponentAssignments(getArticleModel().blocks);
         persistArticleSource();
@@ -2099,8 +2159,14 @@ function trimInvalidOverrides() {
 function applyArticleSource(showStatus = true) {
   if (articleInput) {
     const incoming = articleInput.value.trim();
-    if (incoming !== articleSource) selectedComponentRange = null;
-    articleSource = incoming;
+    if (incoming !== articleSource) {
+      selectedComponentRange = null;
+      if (isDifferentArticle(articleSource, incoming)) {
+        componentAssignments = [];
+        lastBlockSignatures = [];
+      }
+      articleSource = incoming;
+    }
   }
   trimInvalidOverrides();
   persistArticleSource();
@@ -2120,6 +2186,7 @@ function clearArticleSource() {
   articleTitleOverride = "";
   blockTypeOverrides = {};
   componentAssignments = [];
+  lastBlockSignatures = [];
   selectedComponentRange = null;
   lastAiResult = null;
   persistArticleSource();

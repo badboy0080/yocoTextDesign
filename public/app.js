@@ -2244,14 +2244,71 @@ articleBody.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
 });
-articleBody.addEventListener("click", (event) => {
-  const target = event.target.closest("[data-block-index][data-type]");
-  if (!target || !articleBody.contains(target)) return;
+const COMPONENT_SLIDE_MAX = 4;
+let componentSlideAnchor = null;
+let componentSlideActive = false;
+
+function previewBlockIndex(node) {
+  const target = node?.closest?.("[data-block-index][data-type]");
+  if (!target || !articleBody.contains(target)) return -1;
   const model = getArticleModel();
-  if (model.isSample) return;
-  const sourceIndex = Number(target.dataset.blockIndex);
-  const index = model.blocks.findIndex((block) => block.sourceIndex === sourceIndex);
+  if (model.isSample) return -1;
+  return model.blocks.findIndex((block) => block.sourceIndex === Number(target.dataset.blockIndex));
+}
+
+function slideSelectionRange(anchor, current) {
+  if (current >= anchor) return [anchor, Math.min(current, anchor + COMPONENT_SLIDE_MAX - 1)];
+  return [Math.max(current, anchor - (COMPONENT_SLIDE_MAX - 1)), anchor];
+}
+
+function paintComponentSelection() {
+  const model = getArticleModel();
+  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
+    const blockIndex = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
+    node.classList.toggle("is-component-selected", Boolean(selectedComponentRange) && blockIndex >= selectedComponentRange[0] && blockIndex <= selectedComponentRange[1]);
+  });
+}
+
+articleBody.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  const index = previewBlockIndex(event.target);
   if (index < 0) return;
+  componentSlideAnchor = index;
+  componentSlideActive = false;
+  const move = (moveEvent) => {
+    if (componentSlideAnchor == null || (moveEvent.buttons & 1) === 0) return;
+    const current = previewBlockIndex(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY));
+    if (current < 0 || current === componentSlideAnchor) return;
+    if (!componentSlideActive) {
+      componentSlideActive = true;
+      articleBody.classList.add("is-component-sliding");
+    }
+    moveEvent.preventDefault();
+    window.getSelection()?.removeAllRanges();
+    selectedComponentRange = slideSelectionRange(componentSlideAnchor, current);
+    paintComponentSelection();
+    renderComponentPicker();
+  };
+  const finish = () => {
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", finish);
+    document.removeEventListener("pointercancel", finish);
+    articleBody.classList.remove("is-component-sliding");
+    const slid = componentSlideActive;
+    componentSlideAnchor = null;
+    if (!slid) return;
+    renderComponentPicker();
+    window.setTimeout(() => { componentSlideActive = false; }, 0);
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", finish);
+  document.addEventListener("pointercancel", finish);
+});
+articleBody.addEventListener("click", (event) => {
+  if (componentSlideActive) return;
+  const index = previewBlockIndex(event.target);
+  if (index < 0) return;
+  const model = getArticleModel();
   if (event.shiftKey && selectedComponentRange) {
     selectedComponentRange = [Math.min(selectedComponentRange[0], index), Math.max(selectedComponentRange[0], index)];
   } else {
@@ -2260,10 +2317,7 @@ articleBody.addEventListener("click", (event) => {
     selectedComponentRange = assigned
       ? [assigned.startIndex, assigned.startIndex + assigned.signatures.length - 1] : [index, index];
   }
-  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
-    const blockIndex = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
-    node.classList.toggle("is-component-selected", blockIndex >= selectedComponentRange[0] && blockIndex <= selectedComponentRange[1]);
-  });
+  paintComponentSelection();
   renderComponentPicker();
 });
 articleBody.addEventListener("keydown", (event) => {

@@ -1224,6 +1224,8 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .component-picker :where(button, [role="option"]) { transition: none; }
 }
 .article-content [data-block-index].is-component-selected { outline: 2px solid var(--accent-color, #08795b); outline-offset: 4px; }
+.article-content.is-component-sliding,
+.article-content.is-component-sliding * { user-select: none; }
 .component-picker-intro,.component-selection { margin: 0; color: #60695e; font-size: 11px; line-height: 1.6; }
 .component-selection { padding: 8px 10px; border-radius: 7px; background: #f4f7f1; color: #25372a; }
 .component-range-actions { display: flex; gap: 6px; }

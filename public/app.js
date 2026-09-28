@@ -1671,6 +1671,106 @@ function applyAiLook(aiParams, assignment) {
   state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
 }
 
+function claimComponent(blocks, taken, assignments, start, count, id) {
+  if (start < 0 || count < 1 || start + count > blocks.length) return false;
+  if (Array.from({ length: count }, (_, offset) => taken[start + offset]).some(Boolean)) return false;
+  const group = blocks.slice(start, start + count);
+  if (componentKit.compatibility(id, group)) return false;
+  for (let offset = 0; offset < count; offset += 1) taken[start + offset] = true;
+  assignments.push({
+    id,
+    startIndex: start,
+    signatures: group.map(componentBlockSignature),
+    meta: { label: "", note: "" },
+  });
+  return true;
+}
+
+function uncoverIfArticleIsFull(blocks, taken, assignments) {
+  if (blocks.length <= 2 || taken.filter(Boolean).length < blocks.length) return;
+  ["sidenote", "book"].forEach((id) => {
+    if (taken.filter(Boolean).length < blocks.length) return;
+    const index = assignments.findIndex((item) => item.id === id);
+    if (index < 0) return;
+    const removed = assignments.splice(index, 1)[0];
+    for (let offset = 0; offset < removed.signatures.length; offset += 1) taken[removed.startIndex + offset] = false;
+  });
+}
+
+function applySuitableComponents() {
+  const model = getArticleModel();
+  if (!componentKit || model.isSample) return;
+  const blocks = model.blocks;
+  const taken = blocks.map(() => false);
+  const assignments = [];
+  for (let index = 0; index < blocks.length; index += 1) {
+    if (blocks[index].type !== "steps" || taken[index]) continue;
+    let imageAt = -1;
+    for (let cursor = Math.max(0, index - 3); cursor <= Math.min(blocks.length - 1, index + 3); cursor += 1) {
+      if (blocks[cursor].type === "image" && blocks[cursor].url && !taken[cursor]) {
+        imageAt = cursor;
+        break;
+      }
+    }
+    if (imageAt < 0) continue;
+    const start = Math.min(index, imageAt);
+    const count = Math.max(index, imageAt) - start + 1;
+    if (count > 4 || blocks.slice(start, start + count).some((_, offset) => taken[start + offset])) continue;
+    claimComponent(blocks, taken, assignments, start, count, "steps");
+  }
+  for (let index = 0; index < blocks.length - 1; index += 1) {
+    const first = blocks[index];
+    const second = blocks[index + 1];
+    if (first.type !== "image" || !first.url || second.type !== "image" || !second.url) continue;
+    const conclusion = blocks[index + 2];
+    const withConclusion = conclusion && ["paragraph", "lead"].includes(conclusion.type) && String(conclusion.text || "").trim().length <= 220;
+    claimComponent(blocks, taken, assignments, index, withConclusion ? 3 : 2, "compare");
+  }
+  for (let index = 0; index < blocks.length - 1; index += 1) {
+    const image = blocks[index];
+    const text = blocks[index + 1];
+    if (taken[index] || taken[index + 1] || image.type !== "image" || !image.url) continue;
+    if (!["paragraph", "lead", "heading"].includes(text.type)) continue;
+    const chars = String(text.text || "").trim().length;
+    if (!chars || chars > 500) continue;
+    claimComponent(blocks, taken, assignments, index, 2, chars <= 260 ? "side-by-side" : "hero");
+  }
+  for (let index = 0; index < blocks.length - 1; index += 1) {
+    if (taken[index] || taken[index + 1]) continue;
+    const question = String(blocks[index].text || "").trim();
+    const asked = /[？?]$/.test(question) || /^(问|Q[：:])/i.test(question);
+    if (!asked || !["paragraph", "lead", "heading"].includes(blocks[index].type)) continue;
+    if (!["paragraph", "lead"].includes(blocks[index + 1].type)) continue;
+    claimComponent(blocks, taken, assignments, index, 2, "qa");
+  }
+  for (let index = 0; index < blocks.length; index += 1) {
+    if (taken[index] || !["quote", "card"].includes(blocks[index].type)) continue;
+    const next = blocks[index + 1];
+    const withExplanation = next && !taken[index + 1] && ["paragraph", "lead"].includes(next.type) && String(next.text || "").trim().length <= 300;
+    claimComponent(blocks, taken, assignments, index, withExplanation ? 2 : 1, "viewpoint");
+  }
+  const opening = blocks.findIndex((block, index) => !taken[index] && ["paragraph", "lead"].includes(block.type));
+  if (opening === 0 || (opening === 1 && blocks[0]?.type === "heading" && !taken[0])) {
+    claimComponent(blocks, taken, assignments, opening === 1 ? 0 : opening, opening === 1 ? 2 : 1, "book");
+  }
+  let sidenoteAt = -1;
+  let sidenoteLength = 160;
+  blocks.forEach((block, index) => {
+    if (taken[index] || !["paragraph", "lead"].includes(block.type)) return;
+    const chars = String(block.text || "").trim().length;
+    if (chars > sidenoteLength) {
+      sidenoteAt = index;
+      sidenoteLength = chars;
+    }
+  });
+  if (sidenoteAt >= 0) claimComponent(blocks, taken, assignments, sidenoteAt, 1, "sidenote");
+  uncoverIfArticleIsFull(blocks, taken, assignments);
+  componentAssignments = assignments;
+  lastBlockSignatures = blocks.map(componentBlockSignature);
+  saveComponentAssignments();
+  render();
+}
+
 function applyAiNormalization(data, assignment) {
   const markdown = structuredDocumentToMarkdown(data?.document);
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
@@ -1684,6 +1784,7 @@ function applyAiNormalization(data, assignment) {
   else articleSource = markdown;
   syncControls();
   applyArticleSource(false);
+  applySuitableComponents();
   const blockCountFromAi = data.document.blocks.length;
   setStatus(`已优化 ${blockCountFromAi} 个内容块`);
   setFeedback("排版已更新");

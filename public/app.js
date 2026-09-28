@@ -444,7 +444,20 @@ function inlineMarkdown(value) {
     .replace(/\n/g, "<br />");
 }
 
+const EMBEDDED_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+
+function embeddedImageUrl(value) {
+  const raw = String(value || "").trim().replace(/\s/g, "");
+  const match = raw.match(/^data:image\/(png|jpeg|gif|webp);base64,([a-z0-9+/=]+)$/i);
+  if (!match) return "";
+  const bytes = Math.floor(match[2].length * 3 / 4);
+  if (!bytes || bytes > EMBEDDED_IMAGE_MAX_BYTES) return "";
+  return raw;
+}
+
 function safeImageUrl(value) {
+  const embedded = embeddedImageUrl(value);
+  if (embedded) return embedded;
   try {
     const raw = String(value || "").trim();
     if (!raw) return "";
@@ -742,16 +755,27 @@ function htmlToMarkdown(html) {
   return cleanMarkdown(childrenToMarkdown(documentFromPaste.body));
 }
 
-function insertMarkdownAtCursor(markdown) {
-  if (!articleInput) {
-    articleSource = articleSource ? `${articleSource.trim()}\n\n${markdown}` : markdown;
-    persistArticleSource();
-    render();
+function insertMarkdownAtCursor(markdown, { append = false } = {}) {
+  if (!articleInput || append) {
+    const base = articleSource.trim();
+    const next = base ? `${base}\n\n${markdown}` : markdown;
+    if (articleInput) {
+      articleInput.value = next;
+      articleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+      articleSource = next;
+      persistArticleSource();
+      render();
+    }
     return;
   }
   const start = articleInput.selectionStart;
   const end = articleInput.selectionEnd;
-  articleInput.setRangeText(markdown, start, end, "end");
+  const before = articleInput.value.slice(0, start);
+  const after = articleInput.value.slice(end);
+  const lead = before.endsWith("\n\n") || !before ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+  const tail = after.startsWith("\n\n") || !after ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+  articleInput.setRangeText(`${lead}${markdown.trim()}${tail}`, start, end, "end");
   articleInput.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
@@ -2052,13 +2076,17 @@ function importConfig(file) {
 }
 
 function persistArticleSource() {
-  if (articleSource) localStorage.setItem("yooco-article-source", articleSource);
-  else localStorage.removeItem("yooco-article-source");
-  if (articleTitleOverride) localStorage.setItem("yooco-article-title", articleTitleOverride);
-  else localStorage.removeItem("yooco-article-title");
-  localStorage.setItem("yooco-infer-first-line-title", String(inferFirstLineTitle));
-  localStorage.setItem("yooco-block-type-overrides", JSON.stringify(blockTypeOverrides));
-  saveComponentAssignments();
+  try {
+    if (articleSource) localStorage.setItem("yooco-article-source", articleSource);
+    else localStorage.removeItem("yooco-article-source");
+    if (articleTitleOverride) localStorage.setItem("yooco-article-title", articleTitleOverride);
+    else localStorage.removeItem("yooco-article-title");
+    localStorage.setItem("yooco-infer-first-line-title", String(inferFirstLineTitle));
+    localStorage.setItem("yooco-block-type-overrides", JSON.stringify(blockTypeOverrides));
+    saveComponentAssignments();
+  } catch {
+    if (copyFeedback) copyFeedback.textContent = "图片已显示。文章太大，刷新后可能丢失。";
+  }
 }
 
 function trimInvalidOverrides() {
@@ -2156,14 +2184,62 @@ function autoSegmentArticle() {
   copyFeedback.textContent = "已分段";
 }
 
-function handleRichTextPaste(event) {
-  const html = event.clipboardData?.getData("text/html") || "";
-  if (!html || !/<[a-z][\s\S]*>/i.test(html)) return;
-  const markdown = htmlToMarkdown(html);
-  if (!markdown) return;
+function clipboardImageFiles(data) {
+  const allowed = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+  const fromItems = Array.from(data?.items || [])
+    .filter((item) => item.kind === "file" && allowed.has(item.type))
+    .map((item) => item.getAsFile())
+    .filter(Boolean);
+  if (fromItems.length) return fromItems;
+  return Array.from(data?.files || []).filter((file) => allowed.has(file.type));
+}
+
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleRichTextPaste(event) {
+  const data = event.clipboardData;
+  const files = clipboardImageFiles(data);
+  const inPreview = Boolean(articleBody?.contains(event.target));
+  const html = data?.getData("text/html") || "";
+  const hasHtml = Boolean(html && /<[a-z][\s\S]*>/i.test(html));
+  if (inPreview && !files.length) return;
+  if (!files.length && !hasHtml) return;
   event.preventDefault();
-  insertMarkdownAtCursor(markdown);
-  copyFeedback.textContent = "已转换";
+  const pieces = [];
+  let markdown = "";
+  if (hasHtml) {
+    markdown = htmlToMarkdown(html);
+    if (markdown) pieces.push(markdown);
+  } else {
+    const plain = (data?.getData("text/plain") || "").trim();
+    if (plain) pieces.push(plain);
+  }
+  const htmlAlreadyHasImage = /!\[[^\]]*\]\(https?:\/\//.test(markdown);
+  let pastedImage = false;
+  if (!htmlAlreadyHasImage) {
+    for (const file of files) {
+      if (file.size > EMBEDDED_IMAGE_MAX_BYTES) {
+        copyFeedback.textContent = "这张图片太大，没有贴进文章";
+        continue;
+      }
+      const url = embeddedImageUrl(await readImageFile(file));
+      if (!url) continue;
+      pieces.push(`![文章配图](${url})`);
+      pastedImage = true;
+    }
+  }
+  if (!pieces.length) return;
+  const append = Boolean(articleBody?.contains(event.target));
+  if (append) flushPendingPreviewEdits();
+  insertMarkdownAtCursor(pieces.join("\n\n"), { append });
+  copyFeedback.textContent = pastedImage ? "已贴入图片" : "已转换";
 }
 
 controls.forEach((control) => {
@@ -2206,6 +2282,7 @@ lockBrandColor?.addEventListener("change", () => {
 if (lockBrandColor) lockBrandColor.checked = localStorage.getItem("yooco-lock-brand-color") === "1";
 aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
 articleInput?.addEventListener("paste", handleRichTextPaste);
+articleBody?.addEventListener("paste", handleRichTextPaste);
 articleInput?.addEventListener("input", () => {
   articleTitleOverride = "";
   applyArticleSource(false);

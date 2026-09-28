@@ -11,22 +11,43 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const isRegister = mode === "register";
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLInputElement>(null);
 
-  function handlePreview() {
+  async function handleSubmit() {
     for (const field of [nameRef.current, emailRef.current, passwordRef.current, confirmRef.current]) {
       if (field && !field.reportValidity()) return;
     }
-    if (isRegister) {
-      if (passwordRef.current?.value !== confirmRef.current?.value) {
-        setNotice("两次输入的密码不一致，请重新确认。");
+    if (isRegister && passwordRef.current?.value !== confirmRef.current?.value) {
+      setNotice("两次输入的密码不一致，请重新确认。");
+      return;
+    }
+    setBusy(true);
+    setNotice("");
+    try {
+      const response = await fetch(isRegister ? "/api/auth/register" : "/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: nameRef.current?.value || "",
+          email: emailRef.current?.value || "",
+          password: passwordRef.current?.value || "",
+        }),
+      });
+      const data = await response.json().catch(() => ({})) as { message?: string };
+      if (!response.ok) {
+        setNotice(data.message || "暂时无法完成，请稍后再试。");
         return;
       }
+      location.href = "/studio.html";
+    } catch {
+      setNotice("暂时无法连接本机账号服务。");
+    } finally {
+      setBusy(false);
     }
-    setNotice("账号功能正在准备中。现在可以直接进入工作台试用，无需注册。");
   }
 
   return (
@@ -51,7 +72,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
               <p>{isRegister ? "为每一次创作，留一个专属位置。" : "让排版从上次的灵感继续。"}</p>
             </div>
 
-            <div className="auth-preview-note" role="note">页面预览：账号功能尚未开放。填写内容不会发送或保存。</div>
+            <div className="auth-preview-note" role="note">本机测试时，账号只在这次打开的服务里有效。部署到 Edge 之后，同事才能用同一套账号登录。</div>
 
             <div className="auth-form">
               {isRegister && (
@@ -79,8 +100,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
                   <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
                 </label>
               )}
-              <button className="account-primary-button" type="button" onClick={handlePreview}>
-                {isRegister ? "预览注册流程" : "预览登录流程"}<ArrowRight size={19} aria-hidden="true" />
+              <button className="account-primary-button" type="button" onClick={handleSubmit} disabled={busy}>
+                {busy ? "正在提交…" : isRegister ? "创建账户" : "登录"}<ArrowRight size={19} aria-hidden="true" />
               </button>
               {notice && <p className="auth-notice" role="status">{notice}</p>}
             </div>

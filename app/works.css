@@ -94,6 +94,21 @@
 .work-sheet--editorial .work-sheet-lead::first-letter { float:left; padding:.05em .14em 0 0; font-family:Georgia,serif; font-size:3.7rem; line-height:.9; color:#d47325; }
 .work-sheet--editorial h4 { padding-left:.8rem; border-left:4px solid #e07b2c; font-family:"Songti SC","SimSun",serif; }
 .work-sheet--editorial blockquote { border:0!important; padding:1rem 1.2rem; background:#f4ebdc; font-family:"Songti SC","SimSun",serif; font-size:1.16rem; }
+.work-sheet--figure h3 { max-width:12em; font-size:2rem; line-height:1.25; }
+.work-figure { margin:0 0 1.1rem; }
+.work-figure img { display:block; width:100%; height:12rem; object-fit:cover; border-radius:2px; }
+.work-figure figcaption { margin-top:.45rem; font-size:.75rem; letter-spacing:.04em; opacity:.7; }
+.work-beside { display:grid; grid-template-columns:42% minmax(0,1fr); gap:1rem; align-items:start; margin-bottom:1rem; }
+.work-beside .work-figure { margin:0; }
+.work-beside .work-figure img { height:16rem; }
+.work-compare { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1rem; }
+.work-compare .work-figure img { height:9.5rem; }
+.work-steps { margin:0; padding:0; list-style:none; }
+.work-steps li { display:grid; grid-template-columns:4.6rem minmax(0,1fr); gap:.85rem; align-items:center; margin:0 0 1rem; }
+.work-steps img { width:4.6rem; height:4.6rem; object-fit:cover; border-radius:2px; }
+.work-steps strong { display:block; margin-bottom:.2rem; font-size:.95rem; }
+.work-steps p { margin:0!important; }
+.work-layout-beside .work-sheet-content { display:none; }
 .work-cover .work-sheet--mono .work-sheet-header { min-height:17rem; }
 .work-cover .work-sheet--stub h4 { margin-top:1rem; }
 .work-modal { position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:rgba(17,17,17,.48); padding:clamp(.6rem,2.5vw,2rem); color:var(--yooco-color-ink); color-scheme:light; }
@@ -114,19 +129,37 @@
 .work-btn:hover { filter:brightness(.95); }
 .works-app { display:flex; min-height:100dvh; background:var(--yooco-color-paper); color:var(--yooco-color-ink); color-scheme:light; }
 .works-side { display:flex; position:sticky; top:0; height:100dvh; width:200px; flex:none; flex-direction:column; gap:24px; border-right:1px solid var(--yooco-color-border); padding:24px 16px; }
-.works-logo { display:block; color:var(--yooco-color-ink); text-decoration:none; }
+.works-brand-row { display:flex; align-items:center; justify-content:space-between; gap:4px; min-width:0; }
+.works-logo { display:block; min-width:0; color:var(--yooco-color-ink); text-decoration:none; }
 .works-logo img { display:block; width:145px; height:auto; max-width:100%; }
+.works-brand-row .yooco-brand img { width:112px; }
 .works-nav { display:flex; flex-direction:column; gap:.45rem; }
 .works-nav button, .works-fold { display:flex; align-items:center; gap:.55rem; width:100%; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--yooco-color-muted); padding:.62rem .7rem; font-size:14px; font-weight:500; text-align:left; cursor:pointer; }
 .works-nav button svg, .works-fold svg { width:16px; height:16px; flex:none; }
 .works-nav button.is-active { border-color:var(--yooco-color-border); background:var(--yooco-color-soft); box-shadow:inset 3px 0 var(--yooco-color-primary); color:var(--yooco-color-ink); }
 
-.works-fold { margin-top:auto; color:var(--yooco-color-muted); }
+.works-brand-row .works-fold { width:32px; min-height:32px; margin:0; padding:0; justify-content:center; flex:none; color:var(--yooco-color-muted); }
+.works-account { position:relative; display:flex; align-items:center; gap:8px; min-width:0; margin-top:auto; padding:8px 4px; }
+.works-avatar { width:36px; height:36px; flex:none; display:grid; place-items:center; border-radius:50%; background:color-mix(in srgb, var(--avatar-color, #B6FF5C) 28%, white); color:var(--avatar-color, #5c8a22); }
+.works-avatar svg { width:28px; height:22px; }
+.works-account-copy { min-width:0; display:grid; line-height:1.3; }
+.works-account-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:650; }
+.works-account-copy small { color:var(--yooco-color-muted); font-size:11px; }
+.works-account-menu { position:relative; margin-left:auto; flex:none; }
+.works-account-more { width:28px; height:28px; min-height:28px; display:grid; place-items:center; padding:0; border:0; border-radius:8px; background:transparent; color:var(--yooco-color-ink); cursor:pointer; }
+.works-account-more svg { width:16px; height:16px; }
+.works-account-more:hover { background:var(--yooco-color-soft); }
+.works-account-popover { position:absolute; right:0; bottom:calc(100% + 6px); z-index:20; min-width:132px; display:grid; padding:6px; border:1px solid var(--yooco-color-border); border-radius:10px; background:var(--yooco-color-surface); box-shadow:0 8px 24px rgba(32, 37, 31, .12); }
+.works-account-popover button { min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:var(--yooco-color-ink); font:13px/1.3 var(--yooco-font-sans); text-align:left; cursor:pointer; }
+.works-account-popover button:hover { background:var(--yooco-color-soft); }
 .works-fold:hover, .works-nav button:hover { background:var(--yooco-color-soft); }
-.works-app.is-side-collapsed .works-side { width:64px; padding-inline:.7rem; align-items:center; }
-.works-app.is-side-collapsed .works-logo img { width:32px; height:32px; }
-.works-app.is-side-collapsed .works-nav button span, .works-app.is-side-collapsed .works-fold span { display:none; }
-.works-app.is-side-collapsed .works-nav button, .works-app.is-side-collapsed .works-fold { justify-content:center; padding:.62rem; }
+.works-app.is-side-collapsed .works-side { width:80px; padding-inline:8px; align-items:center; }
+.works-app.is-side-collapsed .works-logo img { width:28px; height:28px; }
+.works-app.is-side-collapsed .works-brand-row { width:100%; gap:2px; }
+.works-app.is-side-collapsed .works-nav button span { display:none; }
+.works-app.is-side-collapsed .works-nav button { justify-content:center; padding:.62rem; }
+.works-app.is-side-collapsed .works-account-copy { display:none; }
+.works-app.is-side-collapsed .works-account { justify-content:center; padding-inline:0; }
 .works-view { min-height:100dvh; }
 .works-studio-view { height:100dvh; }
 .works-studio-frame { display:block; width:100%; height:100%; border:0; background:var(--yooco-color-surface); }
@@ -147,6 +180,8 @@
 @media(min-width:1500px) { .works-track .work-card { width:17rem; } }
 @media(max-width:1100px) { .works-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .works-side { width:200px; padding-inline:16px; } .work-dialog { grid-template-columns:minmax(0,1fr) 16rem; } }
 @media(max-width:700px) {
+  .work-beside { grid-template-columns:1fr; }
+  .work-beside .work-figure img { height:12rem; }
   .works-app { flex-direction:column; }
   .works-side { position:static; height:auto; width:auto; flex-direction:row; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-right:0; border-bottom:1px solid var(--yooco-color-border); }
   .works-page { padding-top:2rem; }
@@ -174,7 +209,8 @@
 @media(prefers-reduced-motion:reduce) { .work-cover { transition:none; } .works-fan .work-card { transform: none; } }
 
 /* Compact navigation keeps its labels accessible and never crops the wordmark. */
-.works-nav button,.works-fold { min-height:44px; }
+.works-nav button { min-height:44px; }
+.works-brand-row .works-fold { min-height:32px; }
 .works-logo { padding-block:8px; }
 .works-logo > .works-mark { display:none; }
 .works-app.is-side-collapsed .works-mark { display:block; }
@@ -184,6 +220,7 @@
  .works-app .works-side,.works-app.is-side-collapsed .works-side { position:static; height:auto; width:100%; flex-direction:row; flex-wrap:wrap; align-items:center; gap:12px; padding:12px 16px; border-right:0; border-bottom:1px solid var(--yooco-color-border); }
  .works-nav { flex-direction:row; margin-left:auto; gap:4px; }
  .works-fold { display:none; }
+ .works-account { margin-top:0; max-width:180px; }
  .works-app.is-side-collapsed .yooco-brand { display:inline-flex; }
  .works-app.is-side-collapsed .works-mark { display:none; }
  .works-app.is-side-collapsed .works-logo img { width:120px; height:auto; }

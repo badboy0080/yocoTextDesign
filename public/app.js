@@ -2785,3 +2785,63 @@ try {
 
 renderTrialMeter();
 refreshTrialFromServer();
+showLocalAccount();
+
+async function showLocalAccount() {
+  const account = document.querySelector("#studioAccount");
+  const login = document.querySelector("#studioLogin");
+  const logout = document.querySelector("#studioLogout");
+  const more = document.querySelector("#studioAccountMore");
+  const popover = document.querySelector("#studioAccountPopover");
+  const closeMenu = () => {
+    if (!popover || !more) return;
+    popover.hidden = true;
+    more.setAttribute("aria-expanded", "false");
+  };
+  more?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = popover?.hidden !== false;
+    if (popover) popover.hidden = !open;
+    more.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.querySelector("#studioProfile")?.addEventListener("click", closeMenu);
+  document.addEventListener("click", (event) => {
+    if (popover?.hidden !== false) return;
+    if (event.target instanceof Element && event.target.closest(".studio-account-menu")) return;
+    closeMenu();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
+  logout?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    location.href = "/login";
+  });
+  if (!account) return;
+  try {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) {
+      if (login) login.hidden = false;
+      return;
+    }
+    const data = await response.json();
+    if (!data?.email) {
+      if (login) login.hidden = false;
+      return;
+    }
+    account.hidden = false;
+    if (login) login.hidden = true;
+    const name = document.querySelector("#studioAccountName");
+    if (name) {
+      name.textContent = data.name || data.email;
+      name.title = data.email;
+    }
+    const avatar = document.querySelector("#studioAvatar");
+    if (avatar) {
+      const colors = ["#5c8a22", "#3d6cb5", "#c47a24", "#c45c78", "#2f8f86", "#7a52b8"];
+      const sum = [...data.email].reduce((total, char) => total + char.charCodeAt(0), 0);
+      avatar.style.setProperty("--avatar-color", colors[sum % colors.length]);
+      avatar.innerHTML = `<svg viewBox="0 0 160 120" aria-hidden="true"><path d="M16 57C16 24 41 11 78 11C118 11 143 23 143 57C143 82 128 101 103 112C96 115 93 113 96 105C100 92 90 93 77 94C39 98 16 84 16 57Z" fill="currentColor"/><g fill="#20251F"><ellipse cx="61" cy="57" rx="7.5" ry="14"/><ellipse cx="97" cy="57" rx="7.5" ry="14"/></g></svg>`;
+    }
+  } catch { /* 未登录时工作台仍可试用 */ }
+}

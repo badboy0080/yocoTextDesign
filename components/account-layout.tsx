@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { AccountMenu } from "@/components/account-menu";
 import { BrandLogo } from "@/components/brand-logo";
 import "@/app/account.css";
 
@@ -21,7 +22,7 @@ export function AccountLayout({
           <nav className="account-nav" aria-label="页面导航">
             <Link href="/works">作品</Link>
             <Link href="/subscribe">订阅</Link>
-            <Link href="/login">登录</Link>
+            <AccountMenu />
             <Link href="/works?panel=studio">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
           </nav>
         </div>

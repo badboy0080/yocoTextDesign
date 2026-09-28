@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#F8F9F4" />
+  <title>Yooco 视觉识别系统 | Brand VI</title>
+  <meta name="description" content="Yooco 企业视觉识别手册：标志、色彩、字体、版式、图像、文案与应用示例。" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --ink:#20251F; --lime:#B6FF5C; --paper:#F8F9F4; --white:#FFFFFF;
+      --muted:#626B61; --line:#DCE2D8; --soft:#EDF2E8; --radius:16px;
+      --sans:Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+      --serif:Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.65; }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    button { font:inherit; }
+    a { color:inherit; }
+    :focus-visible { outline:3px solid var(--ink); outline-offset:4px; }
+    .skip-link { position:fixed; z-index:100; top:-70px; left:20px; padding:9px 14px; background:var(--lime); border-radius:8px; font-weight:700; }
+    .skip-link:focus { top:12px; }
+    .app { display:grid; grid-template-columns:250px minmax(0,1fr); min-height:100dvh; }
+    .rail { position:sticky; top:0; align-self:start; height:100dvh; padding:30px 22px 24px; border-right:1px solid var(--line); background:var(--paper); display:flex; flex-direction:column; z-index:20; }
+    .rail-logo { display:block; width:152px; height:auto; }
+    .rail-caption { margin:12px 0 32px; color:var(--muted); font-size:11px; letter-spacing:.06em; }
+    .rail-heading { margin:0 0 10px; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    .rail-nav { display:grid; gap:2px; overflow-y:auto; padding-right:4px; }
+    .rail-nav a { display:flex; align-items:center; gap:11px; min-height:37px; padding:6px 10px; border-radius:9px; color:#3F493D; font-size:12px; text-decoration:none; transition:background .18s ease,color .18s ease; }
+    .rail-nav a span { color:#788176; font-size:10px; font-variant-numeric:tabular-nums; }
+    .rail-nav a:hover,.rail-nav a[aria-current="true"] { background:var(--lime); color:var(--ink); }
+    .rail-nav a[aria-current="true"] { font-weight:700; }
+    .rail-foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; line-height:1.6; }
+    .rail-foot strong { display:block; color:var(--ink); font-size:12px; }
+    .mobile-bar { display:none; }
+    main { min-width:0; }
+    .page { max-width:1440px; margin:0 auto; padding:0 clamp(24px,5vw,88px) 110px; }
+    .topline { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:29px 0 22px; border-bottom:1px solid var(--line); color:var(--muted); font-size:11px; letter-spacing:.04em; }
+    .topline b { color:var(--ink); font-size:11px; }
+    .top-actions { display:flex; gap:8px; }
+    .small-button { border:1px solid var(--line); background:var(--white); color:var(--ink); border-radius:8px; padding:8px 11px; font-size:11px; font-weight:700; cursor:pointer; }
+    .small-button:hover { background:var(--lime); border-color:var(--lime); }
+    .hero { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr); align-items:center; gap:36px; min-height:540px; padding:58px 0 67px; }
+    .hero-eyebrow { display:inline-flex; align-items:center; gap:10px; margin:0 0 22px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.1em; }
+    .hero-eyebrow::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--lime); box-shadow:0 0 0 1px var(--ink); }
+    h1,h2,h3,p { overflow-wrap:anywhere; }
+    h1 { max-width:840px; margin:0; font-size:clamp(54px,7.2vw,110px); line-height:.98; letter-spacing:-.075em; font-weight:800; }
+    h1 .hero-title-cn { display:block; margin-top:9px; font-size:clamp(48px,5.5vw,80px); white-space:nowrap; }
+    .hero-english { display:block; margin-top:17px; color:#697267; font-size:clamp(18px,2.4vw,29px); font-weight:400; line-height:1.15; letter-spacing:-.04em; }
+    .hero-lead { max-width:42ch; margin:33px 0 0; color:#394338; font-size:17px; line-height:1.85; }
+    .hero-visual { position:relative; display:flex; align-items:center; justify-content:center; aspect-ratio:4/4.3; min-height:390px; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius); background:var(--lime); }
+    .hero-visual::before,.hero-visual::after { content:""; position:absolute; inset:7%; border:1px solid rgba(32,37,31,.3); border-radius:50%; transform:scaleX(1.12); }
+    .hero-visual::after { inset:19%; }
+    .hero-visual img { position:relative; z-index:2; display:block; width:min(68%,330px); filter:drop-shadow(0 12px 14px rgba(32,37,31,.07)); }
+    .hero-visual small { position:absolute; z-index:2; left:20px; bottom:17px; font-size:10px; letter-spacing:.08em; }
+    .hero-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .hero-meta div { min-width:0; padding:21px 18px 23px 0; }
+    .hero-meta div+div { padding-left:24px; border-left:1px solid var(--line); }
+    .hero-meta small { display:block; color:var(--muted); font-size:11px; }
+    .hero-meta b { display:block; margin-top:6px; font-size:13px; line-height:1.45; }
+    .section { padding:92px 0 0; scroll-margin-top:24px; }
+    .section+.section { margin-top:82px; border-top:1px solid var(--line); }
+    .section-index { margin:0 0 15px; color:var(--muted); font-size:11px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:.12em; }
+    .section h2 { margin:0; font-size:clamp(35px,4vw,60px); line-height:1.08; letter-spacing:-.055em; }
+    .section-intro { max-width:67ch; margin:21px 0 35px; color:#4E584D; font-size:14px; line-height:1.8; }
+    .minor-title { margin:0 0 15px; font-size:18px; letter-spacing:-.025em; }
+    .muted { color:var(--muted); }
+    .status-tag { display:inline-block; padding:4px 8px; border:1px solid var(--line); border-radius:5px; background:var(--white); color:var(--muted); font-size:10px; font-weight:700; vertical-align:middle; }
+    .status-tag.confirmed { background:var(--lime); border-color:var(--lime); color:var(--ink); }
+    .rule-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius); background:var(--line); }
+    .rule-grid article { min-width:0; min-height:202px; padding:27px; background:var(--white); }
+    .rule-grid .number { color:#859082; font-size:11px; }
+    .rule-grid h3 { margin:34px 0 9px; font-size:20px; }
+    .rule-grid p { max-width:27ch; margin:0; color:var(--muted); font-size:12px; }
+    .spec-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .specimen { position:relative; display:flex; align-items:center; justify-content:center; min-height:260px; padding:37px; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .specimen.dark { background:var(--ink); border-color:var(--ink); }
+    .specimen.gray { background:#E9EEE6; }
+    .specimen.logo-main img { width:min(74%,440px); height:auto; }
+    .specimen.logo-dark img { width:min(74%,440px); height:auto; }
+    .specimen.mark img { width:min(45%,170px); height:auto; }
+    .specimen.stack img { width:min(47%,210px); height:auto; }
+    .specimen-label { position:absolute; left:18px; bottom:15px; color:var(--muted); font-size:10px; letter-spacing:.04em; }
+    .specimen.dark .specimen-label { color:#BFC8BA; }
+    .file-caption { display:flex; align-items:start; justify-content:space-between; gap:12px; margin:12px 2px 25px; font-size:11px; }
+    .file-caption strong { display:block; font-size:12px; }
+    .file-caption a { color:#3B5A31; font-weight:700; text-underline-offset:3px; }
+    .spacing-panel { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(230px,.8fr); gap:25px; align-items:center; margin-top:32px; padding:25px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .clearspace { position:relative; display:grid; place-items:center; min-height:260px; border:1px dashed #AEB8A7; background:repeating-linear-gradient(0deg,#F9FBF7 0 19px,#E9F0E5 20px),repeating-linear-gradient(90deg,transparent 0 19px,#E9F0E5 20px); }
+    .clearspace::before { content:""; position:absolute; inset:36px; border:1px solid var(--ink); }
+    .clearspace img { position:relative; width:min(68%,360px); background:var(--white); }
+    .clearspace em { position:absolute; top:15px; left:15px; color:var(--muted); font-size:11px; font-style:normal; }
+    .spacing-panel ul,.rule-list { margin:0; padding-left:18px; color:#4C564A; font-size:12px; line-height:1.9; }
+    .spacing-panel li+li,.rule-list li+li { margin-top:6px; }
+    .wrong-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:11px; margin-top:34px; }
+    .wrong { min-width:0; }
+    .wrong-art { display:grid; place-items:center; min-height:128px; padding:12px; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--white); }
+    .wrong-art img { width:78%; }
+    .wrong.stretch .wrong-art img { transform:scaleX(1.24); }
+    .wrong.rotate .wrong-art img { transform:rotate(-13deg); }
+    .wrong.low .wrong-art { background:var(--lime); }
+    .wrong.shadow .wrong-art img { filter:drop-shadow(6px 8px 2px #959d90); }
+    .wrong p { margin:8px 2px 0; color:#5B6659; font-size:11px; }
+    .palette { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+    .swatch { overflow:hidden; border:1px solid var(--line); border-radius:12px; background:var(--white); }
+    .swatch-color { height:148px; border-bottom:1px solid var(--line); }
+    .swatch-info { display:flex; align-items:end; justify-content:space-between; gap:8px; padding:14px; }
+    .swatch-info strong { display:block; font-size:13px; }
+    .swatch-info code { color:var(--muted); font-size:11px; }
+    .copy-hex { border:1px solid var(--line); border-radius:7px; padding:6px 8px; background:var(--white); color:var(--ink); font-size:10px; font-weight:700; cursor:pointer; }
+    .copy-hex:hover { background:var(--lime); }
+    .contrast-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; margin-top:28px; }
+    .contrast-card { min-height:132px; padding:18px; border:1px solid var(--line); border-radius:12px; }
+    .contrast-card span { display:block; margin-bottom:17px; font-size:13px; font-weight:700; }
+    .contrast-card strong { display:block; font-size:19px; }
+    .contrast-card small { display:block; font-size:10px; }
+    .note { margin-top:23px; padding:17px 19px; border-left:3px solid var(--lime); background:var(--white); color:#4C564A; font-size:12px; line-height:1.8; }
+    .type-demo { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .type-box { min-height:336px; padding:30px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .type-box h3 { margin:0 0 32px; color:var(--muted); font-size:11px; letter-spacing:.08em; }
+    .type-large { margin:0; font-size:clamp(40px,4.8vw,67px); font-weight:700; line-height:1.18; letter-spacing:-.055em; }
+    .type-editorial { font-family:var(--serif); font-weight:500; letter-spacing:-.07em; }
+    .type-box .sample-p { max-width:36ch; margin:25px 0 0; color:#4B5549; font-size:14px; line-height:1.85; }
+    .type-scale { width:100%; border-collapse:collapse; margin-top:27px; background:var(--white); font-size:12px; }
+    .type-scale th,.type-scale td { padding:14px 17px; border-bottom:1px solid var(--line); text-align:left; }
+    .type-scale th { color:var(--muted); font-size:10px; letter-spacing:.08em; }
+    .type-scale tr:last-child td { border-bottom:0; }
+    .grid-demo { display:grid; grid-template-columns:repeat(12,1fr); gap:8px; height:210px; padding:20px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .grid-demo i { background:#E6F2D9; border-radius:3px; }
+    .grid-demo .grid-content { grid-column:2/8; grid-row:1; align-self:end; padding:17px 19px; background:var(--lime); font-style:normal; font-size:21px; font-weight:700; line-height:1.28; }
+    .grid-demo .grid-caption { grid-column:8/12; grid-row:1; align-self:end; padding:15px; background:var(--white); border:1px solid var(--line); font-size:11px; font-style:normal; }
+    .guidance-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin-top:22px; }
+    .guidance-pair article { padding:22px; border:1px solid var(--line); border-radius:12px; background:var(--white); }
+    .guidance-pair h3 { margin:0 0 10px; font-size:15px; }
+    .guidance-pair p { margin:0; color:var(--muted); font-size:12px; }
+    .image-principles { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; }
+    .image-board { display:grid; grid-template-columns:1.6fr .7fr; gap:8px; min-height:345px; padding:12px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .image-board .focus { display:flex; flex-direction:column; justify-content:end; padding:25px; background:linear-gradient(145deg,#C8D1C5,#839A83 70%,#4F6654); color:var(--white); }
+    .image-board .focus span { width:51px; height:51px; margin-bottom:auto; border:2px solid var(--white); border-radius:50%; }
+    .image-board .focus strong { max-width:12ch; font-size:24px; line-height:1.22; }
+    .image-board .detail { display:flex; align-items:end; padding:13px; background:#D8E1D5; color:#344235; font-size:11px; }
+    .image-rules { padding:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .image-rules h3 { margin:0 0 15px; font-size:18px; }
+    .image-rules ul { margin:0; padding-left:19px; color:#4D584C; font-size:12px; line-height:1.9; }
+    .voice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
+    .voice-card { padding:25px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .voice-card p { margin:4px 0 17px; font-size:22px; font-weight:700; line-height:1.35; }
+    .voice-card small { color:var(--muted); font-size:11px; }
+    .voice-card.do { border-top:5px solid var(--lime); }
+    .voice-card.dont { border-top:5px solid #9AA39A; }
+    .applications { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+    .app-card { min-width:0; }
+    .app-frame { overflow:hidden; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+    .app-caption { display:flex; justify-content:space-between; gap:10px; margin:9px 3px 0; font-size:11px; }
+    .app-caption span { color:var(--muted); }
+    .web-frame { min-height:325px; }
+    .web-top { display:flex; align-items:center; justify-content:space-between; height:54px; padding:0 23px; border-bottom:1px solid var(--line); }
+    .web-top img { width:105px; }
+    .web-top span { color:var(--muted); font-size:10px; }
+    .web-body { display:grid; grid-template-columns:1fr .72fr; gap:20px; align-items:center; padding:35px 25px 40px; }
+    .web-body h3 { max-width:11ch; margin:0; font-size:clamp(23px,2.8vw,38px); line-height:1.14; letter-spacing:-.05em; }
+    .web-body p { max-width:23ch; margin:11px 0 0; color:var(--muted); font-size:11px; }
+    .web-body .cta { display:inline-block; margin-top:19px; padding:8px 14px; border-radius:999px; background:var(--lime); font-size:10px; font-weight:700; }
+    .web-body .web-visual { display:grid; place-items:center; min-height:176px; border-radius:12px; background:var(--lime); }
+    .web-visual img { width:min(53%,130px); }
+    .social-frame { display:grid; grid-template-columns:1fr 1fr; min-height:325px; padding:27px; background:var(--ink); color:var(--white); }
+    .social-frame .social-copy { display:flex; flex-direction:column; align-items:start; }
+    .social-frame .social-copy img { width:125px; }
+    .social-frame h3 { max-width:10ch; margin:auto 0 8px; font-family:var(--serif); font-size:clamp(24px,2.6vw,38px); font-weight:500; line-height:1.25; }
+    .social-frame p { margin:0; color:#D7DED2; font-size:10px; }
+    .social-frame .social-mark { display:grid; place-items:center; }
+    .social-mark img { width:min(90%,190px); }
+    .card-frame { display:grid; place-items:center; min-height:325px; padding:27px; background:#E9EEE6; }
+    .business-card { display:flex; flex-direction:column; justify-content:space-between; width:min(100%,390px); aspect-ratio:1.7; padding:25px; border-radius:11px; background:var(--paper); box-shadow:0 14px 31px rgba(32,37,31,.09); }
+    .business-card img { width:145px; }
+    .business-card p { max-width:24ch; margin:0; font-size:15px; font-weight:700; line-height:1.4; }
+    .slide-frame { display:flex; flex-direction:column; justify-content:space-between; min-height:325px; padding:30px; background:var(--lime); }
+    .slide-frame img { width:130px; }
+    .slide-frame h3 { max-width:14ch; margin:0; font-size:clamp(30px,3.2vw,47px); line-height:1.15; letter-spacing:-.05em; }
+    .slide-frame small { font-size:10px; }
+    .asset-list { display:grid; border-top:1px solid var(--line); }
+    .asset-row { display:grid; grid-template-columns:80px 1fr auto; align-items:center; gap:18px; min-height:92px; border-bottom:1px solid var(--line); }
+    .asset-preview { display:grid; place-items:center; width:72px; height:62px; border:1px solid var(--line); border-radius:9px; background:var(--white); }
+    .asset-preview.dark { background:var(--ink); }
+    .asset-preview img { max-width:75%; max-height:60%; }
+    .asset-row strong { display:block; font-size:13px; }
+    .asset-row span { color:var(--muted); font-size:11px; }
+    .asset-row a { padding:7px 11px; border:1px solid var(--line); border-radius:7px; background:var(--white); font-size:11px; font-weight:700; text-decoration:none; }
+    .asset-row a:hover { background:var(--lime); border-color:var(--lime); }
+    .source-list { display:grid; gap:8px; padding-left:20px; font-size:12px; }
+    .source-list a { color:#2C5B32; text-underline-offset:3px; }
+    .footer { display:flex; justify-content:space-between; gap:20px; margin-top:100px; padding-top:23px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    .footer img { width:106px; display:block; margin-bottom:7px; }
+    .toast { position:fixed; right:26px; bottom:24px; z-index:50; padding:10px 15px; border-radius:8px; background:var(--ink); color:var(--white); font-size:12px; box-shadow:0 11px 27px rgba(32,37,31,.16); opacity:0; transform:translateY(7px); pointer-events:none; transition:opacity .2s ease,transform .2s ease; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    @media (max-width:1040px) {
+      .app { grid-template-columns:205px minmax(0,1fr); }
+      .rail { padding-inline:15px; }
+      .hero { min-height:470px; gap:20px; }
+      .hero-visual { min-height:320px; }
+      .wrong-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .palette { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:760px) {
+      .app { display:block; }
+      .rail { display:none; position:fixed; top:58px; left:0; width:min(290px,85vw); height:calc(100dvh - 58px); border-right:1px solid var(--line); box-shadow:12px 16px 30px rgba(32,37,31,.08); }
+      .rail.open { display:flex; }
+      .mobile-bar { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; height:58px; padding:0 17px; border-bottom:1px solid var(--line); background:var(--paper); }
+      .mobile-bar img { width:104px; }
+      .mobile-bar button { border:1px solid var(--line); border-radius:7px; background:var(--white); padding:6px 10px; color:var(--ink); font-size:12px; font-weight:700; }
+      .page { padding-inline:20px; }
+      .topline { padding-top:18px; }
+      .hero { grid-template-columns:1fr; padding:55px 0 39px; }
+      .hero-visual { min-height:0; aspect-ratio:1.4; }
+      .hero-visual img { width:min(48%,230px); }
+      .section { padding-top:63px; scroll-margin-top:70px; }
+      .section+.section { margin-top:55px; }
+      .spec-grid,.type-demo,.image-principles,.applications { grid-template-columns:1fr; }
+      .spacing-panel { grid-template-columns:1fr; }
+      .grid-demo { grid-template-columns:repeat(4,1fr); }
+      .grid-demo i:nth-child(n+5) { display:none; }
+      .grid-demo .grid-content { grid-column:1/4; }
+      .grid-demo .grid-caption { grid-column:4/5; }
+    }
+    @media (max-width:520px) {
+      .topline { align-items:start; }
+      .topline > span { max-width:17ch; }
+      .section h2 { font-size:31px; text-wrap:balance; }
+      .hero-meta { grid-template-columns:1fr; }
+      .hero-meta div,.hero-meta div+div { padding:13px 0; border-left:0; }
+      .hero-meta div+div { border-top:1px solid var(--line); }
+      .rule-grid,.guidance-pair,.voice-grid,.contrast-row { grid-template-columns:1fr; }
+      .rule-grid article { min-height:150px; }
+      .rule-grid h3 { margin-top:16px; }
+      .wrong-grid { gap:10px; }
+      .specimen { min-height:190px; }
+      .palette { gap:9px; }
+      .swatch-color { height:115px; }
+      .swatch-info { padding:10px; }
+      .swatch-info strong { font-size:11px; }
+      .copy-hex { font-size:9px; }
+      .type-scale { display:block; overflow-x:auto; white-space:nowrap; }
+      .type-scale th,.type-scale td { padding:11px; }
+      .grid-demo .grid-caption { font-size:9px; padding:7px; }
+      .social-frame { min-height:260px; padding:18px; }
+      .social-frame .social-copy img { width:95px; }
+      .asset-row { grid-template-columns:56px 1fr auto; gap:9px; }
+      .asset-preview { width:52px; height:52px; }
+      .asset-row span { display:block; max-width:30ch; overflow-wrap:anywhere; }
+      .asset-row a { padding:6px 8px; }
+      .footer { display:block; }
+    }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition:none !important; animation:none !important; } }
+    @media print {
+      @page { size:A4; margin:15mm; }
+      body { background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .app { display:block; }
+      .rail,.mobile-bar,.top-actions,.copy-hex,.toast { display:none !important; }
+      .page { max-width:none; padding:0; }
+      .hero { min-height:0; padding:28px 0 35px; }
+      .section { padding-top:30px; break-inside:avoid-page; }
+      .section+.section { margin-top:28px; }
+      .specimen,.app-card,.rule-grid article,.swatch,.type-box { break-inside:avoid; }
+      .footer { margin-top:50px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳转到正文</a>
+  <div class="app">
+    <div class="mobile-bar"><img src="./yooco-logo.svg" alt="Yooco" width="104" height="26" /><button id="menuButton" type="button" aria-expanded="false" aria-controls="rail">目录</button></div>
+    <aside class="rail" id="rail" aria-label="章节目录">
+      <img class="rail-logo" src="./yooco-logo.svg" alt="Yooco" width="152" height="38" />
+      <p class="rail-caption">视觉识别手册 / 2026.09</p>
+      <p class="rail-heading">Contents</p>
+      <nav class="rail-nav">
+        <a href="#overview"><span>01</span> 系统概览</a>
+        <a href="#principles"><span>02</span> 视觉原则</a>
+        <a href="#logo"><span>03</span> 标志系统</a>
+        <a href="#color"><span>04</span> 品牌色彩</a>
+        <a href="#type"><span>05</span> 字体与层级</a>
+        <a href="#layout"><span>06</span> 栅格与留白</a>
+        <a href="#image"><span>07</span> 图像与图形</a>
+        <a href="#voice"><span>08</span> 文案语气</a>
+        <a href="#applications"><span>09</span> 应用示例</a>
+        <a href="#assets"><span>10</span> 资产与交付</a>
+        <a href="#sources"><span>11</span> 依据与维护</a>
+      </nav>
+      <div class="rail-foot"><strong>Yooco · Brand VI</strong>现有品牌资产与应用规范建议<br />供设计、内容和合作团队查用</div>
+    </aside>
+    <main id="main">
+      <div class="page">
+        <div class="topline"><span><b>YOOCO</b> / VISUAL IDENTITY SYSTEM</span><div class="top-actions"><button class="small-button" type="button" id="printButton">打印 / 存为 PDF</button><a class="small-button" href="#assets" style="text-decoration:none">下载资产</a></div></div>
+        <header class="hero" id="overview">
+          <div>
+            <p class="hero-eyebrow">品牌规范 · 版本 0.1</p>
+            <h1>Yooco<span class="hero-title-cn">视觉识别系统</span></h1>
+            <span class="hero-english">A visual system for better reading.</span>
+            <p class="hero-lead">把一篇好文章，排成读者愿意读完的样子。这份手册让标志、文字、图像与界面在每一次表达中保持一致。</p>
+          </div>
+          <div class="hero-visual" aria-label="Yooco 灵感气泡图形展示"><img src="./yooco-mark.svg" alt="Yooco 荧光绿灵感气泡" width="280" height="224" /><small>THE MARK / ORIGINAL VECTOR</small></div>
+        </header>
+        <div class="hero-meta" aria-label="手册状态"><div><small>视觉核心</small><b>灵感气泡 · 圆润 Yooco 字标</b></div><div><small>已有定稿</small><b>标志资产、主绿、深墨、最小尺寸</b></div><div><small>本册建议</small><b>字体层级、图像、版式与应用模板</b></div></div>
+
+        <section class="section" id="principles" aria-labelledby="principles-title">
+          <p class="section-index">02 / PRINCIPLES</p><h2 id="principles-title">先清楚，再好看。</h2>
+          <p class="section-intro">Yooco 的视觉语言服务于写作和阅读。品牌标志保持轻快，内容排版保持清晰，装饰只在必要时帮助读者找到重点。以下原则用于指导新页面和新物料，属于本手册的应用建议。</p>
+          <div class="rule-grid">
+            <article><span class="number">01 / CLARITY</span><h3>阅读优先</h3><p>标题、导语、正文和辅助信息要有可识别的顺序，不用装饰代替内容层级。</p></article>
+            <article><span class="number">02 / AIR</span><h3>留白成节奏</h3><p>用间距区分内容关系，让每个重点都有呼吸空间，而不是把每处都做成卡片。</p></article>
+            <article><span class="number">03 / SPARK</span><h3>轻快但克制</h3><p>荧光绿只承担强调与识别。大面积正文仍由深墨与浅色底承载。</p></article>
+          </div>
+        </section>
+
+        <section class="section" id="logo" aria-labelledby="logo-title">
+          <p class="section-index">03 / MARK SYSTEM</p><h2 id="logo-title">一个表情，一眼认出。</h2>
+          <p class="section-intro">主标志由气泡图形和专属矢量字标组成。气泡保留双眼与向右下方的软弧，不额外添加嘴巴或表情。正式使用请直接调用原始 SVG，不用字体重打字标。<span class="status-tag confirmed">已有定稿</span></p>
+          <div class="spec-grid">
+            <div><div class="specimen logo-main"><img src="./yooco-logo.svg" alt="Yooco 浅色背景横版标志" width="440" height="109" /><span class="specimen-label">01 / 浅底标准版</span></div><div class="file-caption"><strong>主标志</strong><a href="./yooco-logo.svg" download>下载 SVG</a></div></div>
+            <div><div class="specimen dark logo-dark"><img src="./brand-vi-assets/yooco-logo-dark.svg" alt="Yooco 深色背景横版标志" width="440" height="109" /><span class="specimen-label">02 / 深底反白版</span></div><div class="file-caption"><strong>深色底专用</strong><a href="./brand-vi-assets/yooco-logo-dark.svg" download>下载 SVG</a></div></div>
+            <div><div class="specimen mark gray"><img src="./yooco-mark.svg" alt="Yooco 独立气泡图形" width="170" height="136" /><span class="specimen-label">03 / 小空间使用</span></div><div class="file-caption"><strong>独立图形</strong><a href="./yooco-mark.svg" download>下载 SVG</a></div></div>
+            <div><div class="specimen stack"><img src="./brand-vi-assets/yooco-stacked.svg" alt="Yooco 上下堆叠标志" width="210" height="210" /><span class="specimen-label">04 / 方形版式使用</span></div><div class="file-caption"><strong>堆叠组合</strong><a href="./brand-vi-assets/yooco-stacked.svg" download>下载 SVG</a></div></div>
+          </div>
+          <div class="spacing-panel"><div class="clearspace"><em>X = 气泡可见高度的 1/4</em><img src="./yooco-logo.svg" alt="标志留白区域示意" width="360" height="89" /></div><div><h3 class="minor-title">尺寸与留白 <span class="status-tag confirmed">已有定稿</span></h3><ul><li>横版标志宽度建议不小于 120px。</li><li>独立气泡常规显示不小于 24px；16px 只用于 favicon 等极小场景。</li><li>四周最少保留 X 的空白区域，X 为气泡可见高度的四分之一。</li><li>浅底用深墨字标，深底用白色字标；背景复杂时先增加承托区。</li></ul></div></div>
+          <h3 class="minor-title" style="margin-top:35px">避免这些用法</h3>
+          <div class="wrong-grid" aria-label="标志错误用法示意">
+            <div class="wrong stretch"><div class="wrong-art"><img src="./yooco-logo.svg" alt="被横向拉伸的错误示意" /></div><p>不拉伸比例</p></div>
+            <div class="wrong rotate"><div class="wrong-art"><img src="./yooco-logo.svg" alt="被旋转的错误示意" /></div><p>不旋转标志</p></div>
+            <div class="wrong low"><div class="wrong-art"><img src="./yooco-logo.svg" alt="主绿底上对比不足的错误示意" /></div><p>不让气泡消失在同色背景里</p></div>
+            <div class="wrong shadow"><div class="wrong-art"><img src="./yooco-logo.svg" alt="添加阴影的错误示意" /></div><p>不加投影或特效</p></div>
+          </div>
+        </section>
+
+        <section class="section" id="color" aria-labelledby="color-title">
+          <p class="section-index">04 / COLOR</p><h2 id="color-title">明亮一点，信息更清楚。</h2>
+          <p class="section-intro">主绿负责识别和动作，深墨负责阅读，浅色底负责空间。以下前三色来自现有 Logo 交付规范；纯白为本册页面与应用示例的辅助色。</p>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-color" style="background:#B6FF5C"></div><div class="swatch-info"><div><strong>灵感绿</strong><code>#B6FF5C</code></div><button type="button" class="copy-hex" data-copy="#B6FF5C" aria-label="复制灵感绿色值">复制</button></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#20251F"></div><div class="swatch-info"><div><strong>深墨</strong><code>#20251F</code></div><button type="button" class="copy-hex" data-copy="#20251F" aria-label="复制深墨色值">复制</button></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#F8F9F4"></div><div class="swatch-info"><div><strong>展示浅底</strong><code>#F8F9F4</code></div><button type="button" class="copy-hex" data-copy="#F8F9F4" aria-label="复制展示浅底色值">复制</button></div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#FFFFFF"></div><div class="swatch-info"><div><strong>内容白</strong><code>#FFFFFF</code></div><button type="button" class="copy-hex" data-copy="#FFFFFF" aria-label="复制内容白色值">复制</button></div></div>
+          </div>
+          <div class="contrast-row">
+            <div class="contrast-card" style="background:#B6FF5C;color:#20251F"><span>深墨文字 / 灵感绿底</span><strong>12.96:1</strong><small>可用于文字与按钮</small></div>
+            <div class="contrast-card" style="background:#FFFFFF;color:#20251F"><span>深墨文字 / 白底</span><strong>15.60:1</strong><small>适合长段阅读</small></div>
+            <div class="contrast-card" style="background:#FFFFFF;color:#B6FF5C"><span style="color:#20251F">灵感绿文字 / 白底</span><strong style="color:#20251F">1.20:1</strong><small style="color:#20251F">对比不足，不用于小字</small></div>
+          </div>
+          <div class="note">色值为屏幕 RGB / HEX。荧光绿的印刷还需要纸张、工艺、专色与实物打样；本册不把自动换算出的 CMYK 或 Pantone 当成最终标准。对比度按 WCAG 相对亮度公式计算，正文目标至少 4.5:1。</div>
+        </section>
+
+        <section class="section" id="type" aria-labelledby="type-title">
+          <p class="section-index">05 / TYPOGRAPHY</p><h2 id="type-title">字体有分工，文章才有节奏。</h2>
+          <p class="section-intro">Logo 字标是矢量图形，不由系统字体替代。界面和说明采用清楚的无衬线体；文章专题可在大标题使用宋体语感。以下字号为数字应用建议，具体页面可随内容调整。</p>
+          <div class="type-demo">
+            <div class="type-box"><h3>界面与功能 / SANS</h3><p class="type-large">好内容，<br />读起来更好。</p><p class="sample-p">菜单、按钮、注释和操作说明以稳定、清晰为先。字体退化时保持系统可用，不依赖远程字体加载。</p></div>
+            <div class="type-box"><h3>文章与专题 / EDITORIAL</h3><p class="type-large type-editorial">把一篇好文章，<br />排成愿意读完的样子。</p><p class="sample-p">编辑感用在封面与标题，正文仍以舒适的字距、行距和栏宽支撑长时间阅读。</p></div>
+          </div>
+          <table class="type-scale" aria-label="建议字号层级"><thead><tr><th>层级</th><th>桌面建议</th><th>手机建议</th><th>用法</th></tr></thead><tbody>
+            <tr><td>展示标题</td><td>56–72 / 1.12</td><td>36–46 / 1.16</td><td>封面或专题开篇</td></tr>
+            <tr><td>一级标题</td><td>36–44 / 1.22</td><td>28–34 / 1.25</td><td>页面主信息</td></tr>
+            <tr><td>章节标题</td><td>24–30 / 1.35</td><td>22–26 / 1.38</td><td>内容分段</td></tr>
+            <tr><td>正文</td><td>16–18 / 1.7–1.9</td><td>16–17 / 1.75</td><td>长文阅读</td></tr>
+            <tr><td>辅助信息</td><td>12–13 / 1.5</td><td>12–13 / 1.5</td><td>图注、时间与备注</td></tr>
+          </tbody></table>
+        </section>
+
+        <section class="section" id="layout" aria-labelledby="layout-title">
+          <p class="section-index">06 / LAYOUT</p><h2 id="layout-title">用栅格建立秩序。</h2>
+          <p class="section-intro">版式要先照顾阅读顺序，再分配视觉重量。建议桌面采用 12 栏、手机采用 4 栏，间距按 8px 的倍数递进；这是为 Yooco 新物料制定的工作规范，不是 Logo 本身的几何数据。</p>
+          <div class="grid-demo" aria-label="十二栏栅格示意"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><div class="grid-content">标题先建立入口，<br />正文再给出答案。</div><div class="grid-caption">图文不抢阅读顺序。相邻内容用共同边线或留白建立关系。</div></div>
+          <div class="guidance-pair"><article><h3>间距序列</h3><p>8 / 16 / 24 / 32 / 48 / 64 px。相同层级重复相同距离，减少随意的微调。</p></article><article><h3>长文栏宽</h3><p>正文建议控制在 560–680px，手机两侧留足边距；避免一行过长或双列正文过窄。</p></article></div>
+        </section>
+
+        <section class="section" id="image" aria-labelledby="image-title">
+          <p class="section-index">07 / IMAGERY</p><h2 id="image-title">图像补充内容，不替内容说话。</h2>
+          <p class="section-intro">优先使用真实文章、真实人物与真实场景的图片。图像需要主体明确、留出标题空间，并保留来源和必要图注。本页图块只示意画面关系，不代表可直接使用的照片素材。</p>
+          <div class="image-principles"><div class="image-board" role="img" aria-label="一个明确主体与辅助细节的图像布局示意"><div class="focus"><span></span><strong>一个画面，<br />一个重点。</strong></div><div class="detail">辅助细节<br />留作说明</div></div><div class="image-rules"><h3>图像选择规则</h3><ul><li>只用获得使用权的真实图片；保留摄影或素材来源。</li><li>同一篇文章中保持相近的明暗和裁切逻辑，不叠加荧光滤镜。</li><li>标题压图前先检查对比；复杂图像可加纯色承托区。</li><li>人物和重要物体不要被手机裁切吞掉。</li><li>图像无法加载时，图注仍能说明内容。</li></ul></div></div>
+          <div class="note">图标延续气泡图形的圆润外轮廓与明确轮廓线，但不把两只眼睛复制成每个功能图标。功能图标首先要让用户看懂动作。</div>
+        </section>
+
+        <section class="section" id="voice" aria-labelledby="voice-title">
+          <p class="section-index">08 / VOICE</p><h2 id="voice-title">像编辑一样，把话说清楚。</h2>
+          <p class="section-intro">品牌文案以内容和动作开头。说明用户现在能做什么、下一步会发生什么，避免夸张承诺。下列示例是本手册对已有工作台文案的延伸建议。</p>
+          <div class="voice-grid"><div class="voice-card do"><small>推荐 / CLEAR</small><p>贴入文章，选择一种排版。</p><small>动作具体，结果可预期。</small></div><div class="voice-card dont"><small>避免 / VAGUE</small><p>一键引爆你的内容影响力！</p><small>夸张且无法验证。</small></div><div class="voice-card do"><small>推荐 / HELPFUL</small><p>复制排版后，请检查图片与颜色。</p><small>直接说明发布前的检查点。</small></div><div class="voice-card dont"><small>避免 / NOISY</small><p>惊艳全场的视觉奇迹，即刻开启。</p><small>修饰多于信息。</small></div></div>
+        </section>
+
+        <section class="section" id="applications" aria-labelledby="applications-title">
+          <p class="section-index">09 / APPLICATIONS</p><h2 id="applications-title">从屏幕到纸面，保持同一张脸。</h2>
+          <p class="section-intro">下面展示网站、社交封面、纸品与演示文稿的组合方式。均为版式示意；正式物料应替换为最终内容、实际尺寸和有授权的图像。</p>
+          <div class="applications">
+            <article class="app-card"><div class="app-frame web-frame"><div class="web-top"><img src="./yooco-logo.svg" alt="Yooco 网站页眉标志" /><span>作品　工作台　关于</span></div><div class="web-body"><div><h3>把文章排好，<br />让读者读完。</h3><p>从原稿到可分享的好排版。</p><span class="cta">开始排版</span></div><div class="web-visual"><img src="./yooco-mark.svg" alt="Yooco 气泡图形" /></div></div></div><div class="app-caption"><strong>网站首页</strong><span>宽屏优先，手机上下堆叠</span></div></article>
+            <article class="app-card"><div class="app-frame social-frame"><div class="social-copy"><img src="./brand-vi-assets/yooco-logo-dark.svg" alt="Yooco 深底标志" /><h3>好内容，<br />认真排版。</h3><p>内容封面示意 / 1080 × 1080</p></div><div class="social-mark"><img src="./yooco-mark.svg" alt="Yooco 气泡图形" /></div></div><div class="app-caption"><strong>社交媒体封面</strong><span>只保留一个主要信息</span></div></article>
+            <article class="app-card"><div class="app-frame card-frame"><div class="business-card"><img src="./yooco-logo.svg" alt="Yooco 名片标志" /><p>把一篇好文章，<br />排成读者愿意读完的样子。</p></div></div><div class="app-caption"><strong>名片与纸品</strong><span>印刷色需另行打样</span></div></article>
+            <article class="app-card"><div class="app-frame slide-frame"><img src="./yooco-logo.svg" alt="Yooco 演示稿标志" /><h3>让内容和设计，<br />一起帮读者读完。</h3><small>YOOCO / PRESENTATION COVER</small></div><div class="app-caption"><strong>演示文稿</strong><span>标题集中，留白完整</span></div></article>
+          </div>
+        </section>
+
+        <section class="section" id="assets" aria-labelledby="assets-title">
+          <p class="section-index">10 / ASSETS</p><h2 id="assets-title">直接使用正确文件。</h2>
+          <p class="section-intro">下载与网站一致的矢量资源。SVG 字标不依赖外部字体。不要从网页截图裁切 Logo；需要位图时，从原始 SVG 导出透明 PNG。</p>
+          <div class="asset-list">
+            <div class="asset-row"><div class="asset-preview"><img src="./yooco-logo.svg" alt="" /></div><div><strong>浅底横版 Logo</strong><span>yooco-logo.svg · 网站正在使用</span></div><a href="./yooco-logo.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview dark"><img src="./brand-vi-assets/yooco-logo-dark.svg" alt="" /></div><div><strong>深底横版 Logo</strong><span>yooco-logo-dark.svg · 绿图形与白字标</span></div><a href="./brand-vi-assets/yooco-logo-dark.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview"><img src="./yooco-mark.svg" alt="" /></div><div><strong>独立气泡图形</strong><span>yooco-mark.svg · 小空间与头像</span></div><a href="./yooco-mark.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview"><img src="./brand-vi-assets/yooco-stacked.svg" alt="" /></div><div><strong>堆叠组合</strong><span>yooco-stacked.svg · 方形版式</span></div><a href="./brand-vi-assets/yooco-stacked.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview"><img src="./brand-vi-assets/yooco-logo-black.svg" alt="" /></div><div><strong>单色黑版</strong><span>yooco-logo-black.svg · 单色印制</span></div><a href="./brand-vi-assets/yooco-logo-black.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview dark"><img src="./brand-vi-assets/yooco-logo-white.svg" alt="" /></div><div><strong>单色白版</strong><span>yooco-logo-white.svg · 深色单色底</span></div><a href="./brand-vi-assets/yooco-logo-white.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview"><img src="./brand-vi-assets/yooco-mark-black.svg" alt="" /></div><div><strong>独立图形黑版</strong><span>yooco-mark-black.svg · 单色印制</span></div><a href="./brand-vi-assets/yooco-mark-black.svg" download>下载</a></div>
+            <div class="asset-row"><div class="asset-preview dark"><img src="./brand-vi-assets/yooco-mark-white.svg" alt="" /></div><div><strong>独立图形白版</strong><span>yooco-mark-white.svg · 深色单色底</span></div><a href="./brand-vi-assets/yooco-mark-white.svg" download>下载</a></div>
+          </div>
+        </section>
+
+        <section class="section" id="sources" aria-labelledby="sources-title">
+          <p class="section-index">11 / REFERENCE & GOVERNANCE</p><h2 id="sources-title">保持可查，也保持可更新。</h2>
+          <p class="section-intro">本册把已交付的 Yooco Logo 规范与新拟定的应用规则放在一起。标志形状、色值、最小尺寸和留白来自现有资产说明；字体层级、栅格、图像与应用示例属于建议，正式印刷参数需打样确认。</p>
+          <div class="guidance-pair"><article><h3>使用优先级</h3><p>先用本册提供的 SVG；已有品牌色与标志规则优先于应用示例。新场景先验证对比、可读性与授权。</p></article><article><h3>版本维护</h3><p>修改 Logo、主色或最小尺寸时同步更新源 SVG、网站和本册。新增模板应写明适用场景与不可用情况。</p></article></div>
+          <h3 class="minor-title" style="margin-top:34px">研究依据</h3>
+          <ol class="source-list"><li><a href="https://www.atlassian.com/software/confluence/resources/guides/how-to/brand-guidelines" target="_blank" rel="noreferrer">Atlassian: Brand guidelines template</a>，品牌手册常见内容框架。</li><li><a href="https://www.ibm.com/design/language/ibm-logos/8-bar/" target="_blank" rel="noreferrer">IBM Design Language: Logo usage</a>，标志留白、版本、背景和错误用法。</li><li><a href="https://www.ibm.com/design/language/2x-grid/" target="_blank" rel="noreferrer">IBM Design Language: 2x Grid</a>，跨媒介栅格和间距系统。</li><li><a href="https://designsystem.digital.gov/design-tokens/color/theme-tokens/" target="_blank" rel="noreferrer">U.S. Web Design System: Theme color tokens</a>，颜色按用途分配。</li><li><a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" target="_blank" rel="noreferrer">W3C WAI: Contrast minimum</a>，文字对比度检查。</li></ol>
+          <p class="note">资料用于确定 VI 手册的专业范围与可执行方式；页面中的 Yooco 规则是针对本品牌制定，不照搬参考品牌的标志、视觉元素或文案。</p>
+        </section>
+        <footer class="footer"><div><img src="./yooco-logo.svg" alt="Yooco" /><span>让内容与设计，服务同一次阅读。</span></div><div>Yooco Brand VI · 版本 0.1 · 2026.09.24<br />现有资产 + 应用规范建议</div></footer>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const menuButton = document.querySelector('#menuButton');
+    const rail = document.querySelector('#rail');
+    menuButton?.addEventListener('click', () => {
+      const open = rail.classList.toggle('open');
+      menuButton.setAttribute('aria-expanded', String(open));
+    });
+    document.querySelectorAll('.rail-nav a').forEach(link => link.addEventListener('click', () => {
+      rail.classList.remove('open');
+      menuButton?.setAttribute('aria-expanded', 'false');
+    }));
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { rail.classList.remove('open'); menuButton?.setAttribute('aria-expanded', 'false'); }
+    });
+    const sections = [...document.querySelectorAll('header[id], section[id]')];
+    const links = [...document.querySelectorAll('.rail-nav a')];
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        const visible = entries.filter(entry => entry.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        links.forEach(link => link.setAttribute('aria-current', String(link.hash === '#' + visible.target.id)));
+      }, { rootMargin:'-12% 0px -65% 0px', threshold:[0,.2,.5] });
+      sections.forEach(section => observer.observe(section));
+    }
+    document.querySelector('#printButton')?.addEventListener('click', () => window.print());
+    let toastTimer;
+    document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy);
+        const toast = document.querySelector('#toast');
+        toast.textContent = `已复制 ${button.dataset.copy}`;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1900);
+      } catch { document.querySelector('#toast').textContent = '请手动选择色值复制'; document.querySelector('#toast').classList.add('show'); }
+    }));
+  </script>
+</body>
+</html>

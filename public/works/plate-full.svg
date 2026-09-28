@@ -1,0 +1,15 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="挤满的一页">
+  <rect width="640" height="420" fill="#eceae4"/>
+  <g fill="#b7b3a8">
+    <rect x="28" y="28" width="180" height="70"/>
+    <rect x="220" y="28" width="160" height="70"/>
+    <rect x="392" y="28" width="220" height="70"/>
+    <rect x="28" y="112" width="270" height="90"/>
+    <rect x="310" y="112" width="302" height="90"/>
+    <rect x="28" y="216" width="120" height="80"/>
+    <rect x="160" y="216" width="200" height="80"/>
+    <rect x="372" y="216" width="240" height="80"/>
+    <rect x="28" y="310" width="360" height="80"/>
+    <rect x="400" y="310" width="212" height="80"/>
+  </g>
+</svg>

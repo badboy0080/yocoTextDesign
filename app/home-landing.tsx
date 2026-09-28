@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -25,11 +26,46 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+import { EyeTracker } from "@/components/eye-tracker";
 import { HomeDotField } from "@/components/home-dot-field";
 import { WorksRail } from "@/components/works-rail";
 import "./home.css";
 
 const STUDIO_URL = "/works?panel=studio";
+
+function HomeAccountLink() {
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json() as { email?: string };
+        if (data?.email) setEmail(data.email);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    location.href = "/login";
+  }
+
+  if (!email) {
+    return (
+      <Button asChild variant="ghost" size="sm">
+        <Link href="/login">登录</Link>
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <span className="max-w-[140px] truncate px-2 text-sm text-foreground" title={email}>{email}</span>
+      <Button variant="ghost" size="sm" type="button" onClick={logout}>退出</Button>
+    </>
+  );
+}
 const ACCEPT_FILES =
   ".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -157,9 +193,7 @@ export function HomeLanding() {
             <Button asChild variant="ghost" size="sm">
               <a href={STUDIO_URL}>工作室</a>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">登录</Link>
-            </Button>
+            <HomeAccountLink />
           </nav>
         </div>
       </header>
@@ -168,8 +202,25 @@ export function HomeLanding() {
         <section className="yooco-hero" aria-labelledby="home-hero-title">
           <div className="yooco-shell mx-auto flex max-w-3xl flex-col items-center text-center">
             <p className="yooco-hero-kicker">好文章，值得好排版</p>
-            <h1 id="home-hero-title" className="yooco-hero-title">
-              Best layout with AI
+            <h1 id="home-hero-title" className="yooco-hero-title" aria-label="Best layout with AI">
+              {"Best lay"}
+              <span className="yooco-hero-mark">
+                <span className="yooco-hero-mark-letter">o</span>
+                <span className="yooco-hero-mark-logo" aria-hidden="true">
+                  <EyeTracker
+                    shape="Bubble"
+                    eyes="Slant"
+                    eyeScale={1.7}
+                    eyeWidth={0.85}
+                    follow={72}
+                    bounce={26}
+                    size={64}
+                    restAfter={2000}
+                    near={320}
+                  />
+                </span>
+              </span>
+              {"ut with AI"}
             </h1>
             <div className="yooco-input-wrap mt-8 w-full text-left">
               <Card className="yooco-input-card gap-0 overflow-hidden border-border/80 py-0 shadow-none">

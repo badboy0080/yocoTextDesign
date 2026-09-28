@@ -80,6 +80,51 @@
   line-height: 1.05;
 }
 
+/* the o stays in the heading so it can be read and copied.
+   The slot is the letter's own width; the mark is centred on
+   that slot and matched to the letter's height. */
+.yooco-hero-mark {
+  position: relative;
+  display: inline-block;
+  width: 0.505em;
+  height: 0;
+  margin-inline: 4px;
+  vertical-align: baseline;
+  line-height: 0;
+}
+
+.yooco-hero-mark-letter {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.yooco-hero-mark-logo {
+  position: absolute;
+  left: 50%;
+  bottom: -0.104em;
+  width: 0.66em;
+  height: 0.66em;
+  transform: translateX(-50%);
+}
+
+.yooco-hero-mark .eyt,
+.yooco-hero-mark .eyt-ball {
+  width: 100%;
+  height: 100%;
+}
+
+.yooco-hero-mark .eyt {
+  --fill-slab: var(--yooco-color-primary);
+  --fill-on: var(--yooco-color-ink);
+}
+
 .yooco-input-wrap {
   position: relative;
 }
@@ -313,3 +358,44 @@
     transition: none !important;
   }
 }
+
+/* ══ Eye tracker ═══════════════════════════════════════════
+   See components/eye-tracker.tsx. The frame holds the largest ball the
+   Size knob allows, so the wall never rescales it.
+   Bencho reads --bg, --fill-slab, --fill-on and --ink and does not
+   define them. They are set here, on the component, from this site's
+   own tokens: paper is the ground, the white surface is the slab,
+   ink is the mark. Nothing is added to the page root. */
+.eyt {
+  --bg: var(--yooco-color-paper, #f8f9f4);
+  --fill-slab: var(--yooco-color-surface, #ffffff);
+  --fill-on: var(--yooco-color-ink, #20251f);
+  --ink: var(--yooco-color-ink, #20251f);
+  width: 200px;
+  height: 200px;
+  display: grid;
+  place-items: center;}
+
+.eyt-ball {
+  width: var(--eyt-size, 100px);
+  height: var(--eyt-size, 100px);
+  overflow: visible;}
+
+/* the ball is the Fill's own slab and the eyes its ink: white
+   with dark eyes on a light fill, near-black with light eyes on
+   a dark one */
+.eyt-body { fill: var(--fill-slab, #ffffff); }
+
+.eyt-eye { fill: var(--fill-on, #0b0b0d); }
+
+.logo-test .eyt { width: auto; height: auto; }
+
+.logo-test .eyt-body { fill: var(--ink); }
+
+.logo-test .eyt-eye { fill: var(--bg); }
+
+/* the circle and pill in dark mode match the hexagon: a lifted
+   dark body with the eyes kept white */
+[data-theme="dark"] .logo-test .eyt-body { fill: #2b2c30; }
+
+[data-theme="dark"] .logo-test .eyt-eye { fill: #fbfbfa; }

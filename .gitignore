@@ -47,7 +47,7 @@ next-env.d.ts
 /outputs/
 /work/
 
-# Tencent Cloud EdgeOne
+/.data/
 .env
 .edgeone/*
 .tef_dist/*

@@ -16,9 +16,11 @@
 .account-header-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .account-logo { display: inline-flex; align-items: center; }
 .account-nav { display: flex; align-items: center; gap: clamp(18px, 2.6vw, 32px); }
-.account-nav a, .account-footer a { color: var(--account-muted); text-decoration: none; font-size: 13px; font-weight: 600; }
+.account-nav a, .account-footer a, .account-email, .account-logout { color: var(--account-muted); text-decoration: none; font-size: 13px; font-weight: 600; }
+.account-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-logout { background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
 .account-nav a:last-child { display: inline-flex; align-items: center; gap: 4px; color: var(--account-ink); }
-.account-nav a:hover, .account-footer a:hover { color: var(--account-link); }
+.account-nav a:hover, .account-footer a:hover, .account-logout:hover { color: var(--account-link); }
 .account-nav a:focus-visible, .account-footer a:focus-visible, .auth-panel a:focus-visible, .account-app button:focus-visible, .account-app input:focus-visible { outline: 2px solid var(--yooco-color-focus, #355d27); outline-offset: 3px; }
 .account-footer { border-top: 1px solid var(--account-line); }
 .account-footer-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--account-muted); font-size: 12px; }

@@ -5,19 +5,65 @@ import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { applyWork, downloadWorkConfig, type WorkPiece } from "@/lib/works";
 
-export function WorkPreview({ work }: { work: WorkPiece }) {
+function WorkFigure({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
   return (
-    <article className={`work-sheet work-sheet--${work.themeId}`} style={{ background: work.pageColor, color: work.textColor }}>
+    <figure className="work-figure">
+      <img src={src} alt={alt} />
+      {caption ? <figcaption>{caption}</figcaption> : null}
+    </figure>
+  );
+}
+
+export function WorkPreview({ work }: { work: WorkPiece }) {
+  const stamp = work.sheetNo ?? `0${["fresh", "mono", "serene", "stub", "editorial"].indexOf(work.themeId) + 1}`;
+  const images = work.blocks.filter((block) => block.type === "image");
+  const steps = work.blocks.filter((block) => block.type === "step");
+  const prose = work.blocks.filter((block) => block.type === "p" || block.type === "quote");
+  return (
+    <article className={`work-sheet work-sheet--${work.layout ? "figure" : work.themeId}${work.layout ? ` work-layout-${work.layout}` : ""}`} style={{ background: work.pageColor, color: work.textColor }}>
       <header className="work-sheet-header">
-        <div className="work-sheet-meta"><span>YOOCO / SELECTED WORK</span><span>{work.themeLabel} · 0{["fresh", "mono", "serene", "stub", "editorial"].indexOf(work.themeId) + 1}</span></div>
-        {work.themeId === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
-        {work.themeId === "mono" && <span className="work-sheet-vertical" aria-hidden="true">SPACE / FORM / RHYTHM</span>}
-        {work.themeId === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ 004</span></span>}
-        {work.themeId === "editorial" && <span className="work-sheet-issue">ISSUE 05 <span>EDITOR&apos;S NOTE</span></span>}
+        <div className="work-sheet-meta"><span>YOOCO / SELECTED WORK</span><span>{work.themeLabel} · {stamp}</span></div>
+        {!work.layout && work.themeId === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
+        {!work.layout && work.themeId === "mono" && <span className="work-sheet-vertical" aria-hidden="true">SPACE / FORM / RHYTHM</span>}
+        {!work.layout && work.themeId === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ 004</span></span>}
+        {!work.layout && work.themeId === "editorial" && <span className="work-sheet-issue">ISSUE 05 <span>EDITOR&apos;S NOTE</span></span>}
         <h3 style={{ color: work.titleColor }}>{work.title}</h3>
         <p className="work-sheet-deck">{work.fit} <span>／</span> {work.deck}</p>
       </header>
-      <div className="work-sheet-content">{work.blocks.map((block, index) => {
+      {work.layout === "hero" && images[0]?.type === "image" ? <WorkFigure src={images[0].src} alt={images[0].alt} caption={images[0].caption} /> : null}
+      {work.layout === "beside" && images[0]?.type === "image" ? (
+        <div className="work-beside">
+          <WorkFigure src={images[0].src} alt={images[0].alt} caption={images[0].caption} />
+          <div>{prose.map((block, index) => block.type === "quote"
+            ? <blockquote key={index} style={{ borderColor: work.accentColor }}>{block.text}</blockquote>
+            : <p key={index}>{block.type === "p" ? block.text : ""}</p>)}</div>
+        </div>
+      ) : null}
+      {work.layout === "compare" ? (
+        <div className="work-compare">
+          {images.map((block) => block.type === "image" ? <WorkFigure key={block.src} src={block.src} alt={block.alt} caption={block.caption} /> : null)}
+        </div>
+      ) : null}
+      {work.layout === "steps" ? (
+        <ol className="work-steps">
+          {steps.map((block, index) => block.type === "step" ? (
+            <li key={block.src}>
+              <img src={block.src} alt={block.alt} />
+              <div>
+                <strong style={{ color: work.titleColor }}>{index + 1}. {block.title}</strong>
+                <p>{block.text}</p>
+              </div>
+            </li>
+          ) : null)}
+        </ol>
+      ) : null}
+      <div className="work-sheet-content">{work.layout ? prose.filter(() => work.layout !== "beside").map((block, index) => {
+        if (block.type === "quote") {
+          return <blockquote key={index} style={{ borderColor: work.accentColor }}>{block.text}</blockquote>;
+        }
+        if (block.type === "p") return <p key={index}>{block.text}</p>;
+        return null;
+      }) : work.blocks.map((block, index) => {
         if (block.type === "h2") {
           return (
             <h4 key={index} style={{ color: work.titleColor }}>
@@ -41,7 +87,8 @@ export function WorkPreview({ work }: { work: WorkPiece }) {
             </ul>
           );
         }
-        return <p key={index} className={index === 0 ? "work-sheet-lead" : undefined}>{block.text}</p>;
+        if (block.type === "p") return <p key={index} className={index === 0 ? "work-sheet-lead" : undefined}>{block.text}</p>;
+        return null;
       })}</div>
       <footer className="work-sheet-end">YOOCO <span>·</span> FIN.</footer>
     </article>

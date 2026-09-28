@@ -8,7 +8,7 @@
     <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=components-v2" />
-    <link rel="stylesheet" href="./studio-ui.css?v=vi-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=account-menu-v2" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -16,17 +16,30 @@
       <aside class="studio-navigation" aria-label="网站导航">
         <a class="studio-logo" href="/" aria-label="Yooco 首页"><img src="/yooco-logo.svg?v=bubble-c-v1" width="145" height="36" alt="Yooco" /></a>
         <nav><a href="/works?panel=studio" aria-current="page">工作台</a><a href="/works">作品</a></nav>
-        <a class="studio-home-link" href="/">返回首页</a>
+        <div class="studio-side-foot">
+          <a class="studio-home-link" href="/">返回首页</a>
+          <div class="studio-account" id="studioAccount" hidden>
+            <span class="studio-avatar" id="studioAvatar" aria-hidden="true"></span>
+            <span class="studio-account-text">
+              <strong id="studioAccountName"></strong>
+              <small>免费版</small>
+            </span>
+            <div class="studio-account-menu">
+              <button type="button" id="studioAccountMore" aria-haspopup="menu" aria-expanded="false" aria-controls="studioAccountPopover" aria-label="账号菜单">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3.5" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12.5" cy="8" r="1.2" fill="currentColor"/></svg>
+              </button>
+              <div class="studio-account-popover" id="studioAccountPopover" role="menu" hidden>
+                <button type="button" role="menuitem" id="studioProfile">个人信息</button>
+                <button type="button" role="menuitem" id="studioLogout">退出登录</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </aside>
       <div class="studio-main">
     <header class="topbar topbar-buttons">
       <h1 class="studio-title">工作台</h1>
-      <div class="topbar-actions">
-        <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
-        <button class="ghost-button" id="resetButton" type="button">恢复默认</button>
-        <button class="accent-button" id="exportButton" type="button" title="包含当前文章文字与组件选择">导出配置</button>
-        <label class="ghost-button file-button">导入配置<input id="importInput" type="file" accept="application/json,.json" /></label>
-      </div>
+      <a class="studio-login" id="studioLogin" href="/login">Log in</a>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
       <span id="trialBannerText">今日试用已用完，订阅暂未开放。</span>
@@ -61,9 +74,25 @@
             </article>
           </div>
           <div class="preview-footer">
+            <div class="preview-footer-files">
+              <button class="ghost-button" id="resetButton" type="button" title="恢复默认">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.2-3.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 2.8V5.2H5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                恢复
+              </button>
+              <button class="ghost-button" id="exportButton" type="button" title="包含当前文章文字与组件选择">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5.5 7.2 8 9.7l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11.5v1.2A1.3 1.3 0 0 0 4.3 14h7.4a1.3 1.3 0 0 0 1.3-1.3v-1.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                导出
+              </button>
+              <label class="ghost-button file-button" title="导入配置">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 9.7V2.5M5.5 5 8 2.5 10.5 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11.5v1.2A1.3 1.3 0 0 0 4.3 14h7.4a1.3 1.3 0 0 0 1.3-1.3v-1.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                导入
+                <input id="importInput" type="file" accept="application/json,.json" />
+              </label>
+            </div>
             <span id="articleStatus" role="status"></span>
             <div class="preview-footer-tools">
               <label class="preview-tool-toggle"><input id="darkPreviewToggle" type="checkbox" />暗色预览</label>
+              <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
             </div>
           </div>
         </section>
@@ -132,11 +161,10 @@
               <div class="control-group" data-accordion>
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5h9v9h-9z"/><path d="M5.5 6.5h5M5.5 9.5h3.5"/></svg></span>
-                  <span class="group-label">文章类型</span>
+                  <span class="group-label">结尾</span>
                   <span class="group-chevron" aria-hidden="true"></span>
                 </button>
                 <div class="group-body">
-                  <label class="select-control"><span>文章类型</span><select data-key="articleType"><option value="auto">自动</option><option value="tutorial">教程 / 操作指南</option><option value="checklist">盘点 / 工具清单</option><option value="opinion">观点 / 深度分析</option><option value="interview">访谈 / 人物特稿</option><option value="dataReport">数据复盘 / 报告</option><option value="lifestyle">生活 / 情感随笔</option><option value="caseStudy">案例实战 / 复盘</option></select></label>
                   <label class="toggle-control" title="仅精选主题支持结尾签名区"><span>结尾签名区</span><input data-key="showSignature" type="checkbox" /><i></i></label>
                 </div>
               </div>
@@ -299,6 +327,6 @@
     <script src="./analytics.js?v=funnel-v1"></script>
     <script src="./themes.js?v=themes-trim-v1"></script>
     <script src="./content-components.js?v=components-v2"></script>
-    <script src="./app.js?v=vi-v1"></script>
+    <script src="./app.js?v=account-menu-v1"></script>
   </body>
 </html>

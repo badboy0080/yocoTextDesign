@@ -2,7 +2,9 @@ export type WorkBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
   | { type: "quote"; text: string }
-  | { type: "list"; items: string[] };
+  | { type: "list"; items: string[] }
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "step"; title: string; text: string; src: string; alt: string };
 
 export type WorkPiece = {
   id: string;
@@ -19,6 +21,8 @@ export type WorkPiece = {
   source: string;
   blocks: WorkBlock[];
   params: Record<string, string | number | boolean>;
+  layout?: "hero" | "beside" | "compare" | "steps";
+  sheetNo?: string;
 };
 
 const freshParams = {
@@ -231,6 +235,102 @@ const BASE_WORKS: WorkPiece[] = [
     ],
     params: editorialParams,
   },
+  {
+    id: "figure-hero",
+    title: "山路上的一张照片",
+    themeId: "serene",
+    themeLabel: "大图叙事",
+    fit: "图文 · 大图叙事",
+    sheetNo: "06",
+    layout: "hero",
+    primary: "#355d27",
+    pageColor: "#f7f8f3",
+    titleColor: "#243028",
+    textColor: "#3c463c",
+    accentColor: "#355d27",
+    source: article(
+      "山路上的一张照片",
+      `![半山的路](/works/plate-hill.svg)\n\n走到第二个岔路口，我没有再往上。风从树叶后面过来，山下的车声只剩一层很轻的声音。\n\n> 照片记下的是停下的地方，不是山顶。`,
+    ),
+    blocks: [
+      { type: "image", src: "/works/plate-hill.svg", alt: "半山的路", caption: "半山，第二个岔路口" },
+      { type: "p", text: "走到第二个岔路口，我没有再往上。风从树叶后面过来，山下的车声只剩一层很轻的声音。" },
+      { type: "quote", text: "照片记下的是停下的地方，不是山顶。" },
+    ],
+    params: sereneParams,
+  },
+  {
+    id: "figure-beside",
+    title: "封面旁边的一句说明",
+    themeId: "editorial",
+    themeLabel: "图文并置",
+    fit: "图文 · 图文并置",
+    sheetNo: "07",
+    layout: "beside",
+    primary: "#355d27",
+    pageColor: "#fbf7ef",
+    titleColor: "#243028",
+    textColor: "#3c463c",
+    accentColor: "#355d27",
+    source: article(
+      "封面旁边的一句说明",
+      `![一页说明](/works/plate-page.svg)\n\n封面只放一件事。旁边那句说明告诉读者，点开之后能做什么。\n\n不要在图的旁边再堆一段理念。一句就够。`,
+    ),
+    blocks: [
+      { type: "image", src: "/works/plate-page.svg", alt: "一页说明", caption: "封面" },
+      { type: "p", text: "封面只放一件事。旁边那句说明告诉读者，点开之后能做什么。" },
+      { type: "p", text: "不要在图的旁边再堆一段理念。一句就够。" },
+    ],
+    params: editorialParams,
+  },
+  {
+    id: "figure-compare",
+    title: "挤满，和留白",
+    themeId: "mono",
+    themeLabel: "双图对照",
+    fit: "图文 · 双图对照",
+    sheetNo: "08",
+    layout: "compare",
+    primary: "#20251f",
+    pageColor: "#ffffff",
+    titleColor: "#20251f",
+    textColor: "#3c463c",
+    accentColor: "#20251f",
+    source: article(
+      "挤满，和留白",
+      `![改前，格子挤在一起](/works/plate-full.svg)\n\n![改后，只留一句](/works/plate-air.svg)\n\n左边什么都想讲，右边只留读者第一眼该看的。删掉之后，句子才有地方停。`,
+    ),
+    blocks: [
+      { type: "image", src: "/works/plate-full.svg", alt: "改前，格子挤在一起", caption: "改前" },
+      { type: "image", src: "/works/plate-air.svg", alt: "改后，只留一句", caption: "改后" },
+      { type: "p", text: "左边什么都想讲，右边只留读者第一眼该看的。删掉之后，句子才有地方停。" },
+    ],
+    params: monoParams,
+  },
+  {
+    id: "figure-steps",
+    title: "出门前的三步",
+    themeId: "fresh",
+    themeLabel: "步骤图解",
+    fit: "图文 · 步骤图解",
+    sheetNo: "09",
+    layout: "steps",
+    primary: "#0a9d75",
+    pageColor: "#ffffff",
+    titleColor: "#111827",
+    textColor: "#374151",
+    accentColor: "#0a9d75",
+    source: article(
+      "出门前的三步",
+      `![装上水](/works/step-water.svg)\n\n![看清路](/works/step-path.svg)\n\n![走到能歇的地方](/works/step-rest.svg)\n\n:::steps 出门\n1. 把水瓶装满，回程也留一点。\n2. 看清路线，和最后一班车。\n3. 走到愿意停下的地方，就可以回头。\n:::`,
+    ),
+    blocks: [
+      { type: "step", title: "装上水", text: "把水瓶装满，回程也留一点。", src: "/works/step-water.svg", alt: "装上水" },
+      { type: "step", title: "看清路", text: "看清路线，和最后一班车。", src: "/works/step-path.svg", alt: "看清路" },
+      { type: "step", title: "走到能歇的地方", text: "走到愿意停下的地方，就可以回头。", src: "/works/step-rest.svg", alt: "走到能歇的地方" },
+    ],
+    params: freshParams,
+  },
 ];
 
 // Gallery articles are real, editable Markdown so "做同款" opens the same full story.
@@ -297,6 +397,8 @@ function markdownFromBlocks(title: string, blocks: WorkBlock[]) {
     if (block.type === "h2") return `## ${block.text}`;
     if (block.type === "quote") return `> ${block.text}`;
     if (block.type === "list") return block.items.map((item) => `- ${item}`).join("\n");
+    if (block.type === "image") return `![${block.alt}](${block.src})`;
+    if (block.type === "step") return `![${block.alt}](${block.src})\n\n**${block.title}** ${block.text}`;
     return block.text;
   }).join("\n\n"));
 }
@@ -309,6 +411,10 @@ export const WORKS: WorkPiece[] = BASE_WORKS.map((work) => ({
     "serene-hill": "一次没有终点的散步",
     "stub-list": "轻装出门的三项清单",
     "editorial-journal": "一次改稿，三次转向",
+    "figure-hero": "一张照片，带着一段停下的话",
+    "figure-beside": "图在左，说明在右",
+    "figure-compare": "同一件事的两种排法",
+    "figure-steps": "一步一张小图",
   } as Record<string, string>)[work.id],
   blocks: STORIES[work.id] ?? work.blocks,
   source: STORIES[work.id] ? markdownFromBlocks(work.title, STORIES[work.id]) : work.source,

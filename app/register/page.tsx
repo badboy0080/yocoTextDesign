@@ -3,7 +3,7 @@ import { AuthPage } from "@/components/auth-page";
 
 export const metadata: Metadata = {
   title: "注册 · Yooco",
-  description: "Yooco 账号页面预览。当前可免登录试用工作台。",
+  description: "用邮箱注册 Yooco。账号存在这台电脑上。",
 };
 
 export default function RegisterPage() {

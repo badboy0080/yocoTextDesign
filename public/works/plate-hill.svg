@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="hill path">
+  <rect width="800" height="480" fill="#d7e6d4"/>
+  <circle cx="620" cy="110" r="42" fill="#f4e7b4"/>
+  <path d="M0 300 C140 250 220 340 360 300 C500 260 560 210 800 250 V480 H0 Z" fill="#8eae96"/>
+  <path d="M0 360 C180 310 280 400 460 350 C620 310 700 340 800 320 V480 H0 Z" fill="#5c7d68"/>
+  <path d="M0 410 C200 380 340 450 520 410 C660 380 720 420 800 400 V480 H0 Z" fill="#2f5344"/>
+</svg>

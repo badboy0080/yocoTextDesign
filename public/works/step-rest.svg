@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="歇一下">
+  <rect width="240" height="240" fill="#f3eee4"/>
+  <rect x="46" y="128" width="148" height="16" rx="4" fill="#355d27"/>
+  <rect x="62" y="144" width="14" height="48" fill="#243028"/>
+  <rect x="164" y="144" width="14" height="48" fill="#243028"/>
+  <circle cx="176" cy="78" r="22" fill="#f4e7b4"/>
+</svg>

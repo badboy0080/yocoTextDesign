@@ -23,19 +23,12 @@
   color: var(--ol-text);
 }
 
-.yooco-brand-mark {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--ol-lime);
-  color: #000;
-  font-family: var(--ol-sans);
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: -0.06em;
-  line-height: 1;
+.yooco-brand--dark .yooco-brand-bubble,
+.studio-logo .yooco-brand-bubble {
+  display: block;
+  width: auto;
+  height: 34px;
+  flex: none;
 }
 
 .yooco-brand-word {
@@ -47,11 +40,9 @@
   line-height: 1;
 }
 
-.yooco-brand--compact .yooco-brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  font-size: 15px;
+.yooco-brand--dark.yooco-brand--compact .yooco-brand-bubble {
+  width: auto;
+  height: 26px;
 }
 
 .yooco-brand--compact .yooco-brand-word {

@@ -215,7 +215,8 @@
 .works-brand-row .works-fold { min-height:32px; }
 .works-logo { padding-block:8px; }
 .works-logo > .works-mark { display:none; }
-.works-app.is-side-collapsed .works-mark { display:block; }
+.works-app.is-side-collapsed .works-mark { display:block; width:auto; height:28px; }
+.works-brand-row .yooco-brand--dark .yooco-brand-bubble { width:auto; height:34px; }
 .works-app.is-side-collapsed .yooco-brand { display:none; }
 @media(max-width:1023px) {
  .works-app { flex-direction:column; }

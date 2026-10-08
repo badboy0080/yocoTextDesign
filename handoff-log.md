@@ -87,11 +87,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 如何验证：本地 1440 宽打开四页，用页面上的真实位置对照红圈。折叠图标颜色是 rgb(98, 107, 97)。
 - 待办/风险：这四处还没改。订阅页仍是浅色。
 
-### 2026-10-08 Obsidian & Lime 视觉改版
-
-- 想做什么：把首页、作品页、工作台和登录改成黑底荧光绿，控件和流程不动。
-- 做成了什么：四页都换成 Obsidian & Lime。中文标题、粘贴、优化排版、复制排版、九件作品和登录用词都还在。价格仍隐藏。没有部署，没有改密钥、支付、次数限制和统计。
-- 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`app/works.css`、`app/account.css`、`components/brand-logo.tsx`、`components/works-frame.tsx`、`components/account-layout.tsx`、`components/auth-page.tsx`、`public/obsidian-lime.css`、`public/studio.html`、`public/studio-ui.css`、`handoff-log.md`。
-- 如何验证：本地打开首页、作品、工作台和登录。空着点优化会提示先贴文章；贴上文字后进入工作台。作品仍是九篇，筛「步骤图解」只剩一件。工作台能切到原文、打开暗色预览。手机宽度首页仍能看到粘贴和优化排版。未部署。
-- 待办/风险：订阅页仍是原来的浅色。公众号粘贴还要人来贴。要同事看到，需要再部署一次。
-

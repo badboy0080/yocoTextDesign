@@ -174,14 +174,18 @@ body:has(.account-app.is-obsidian) { background: #000; }
 .account-app.is-obsidian .account-email,
 .account-app.is-obsidian .account-logout { color: rgba(255,255,255,.7); }
 .account-app.is-obsidian .account-nav a:last-child { color: #ebebeb; }
-.account-app.is-obsidian .auth-grid { position: relative; }
+.account-app.is-obsidian .auth-grid { position: relative; align-items: start; }
 .account-app.is-obsidian .auth-editorial {
+  justify-content: flex-start;
   min-height: 520px;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 2.5rem;
   background: rgba(255,255,255,.03);
   backdrop-filter: blur(16px);
 }
+.account-app.is-obsidian .auth-editorial-center { margin-top: 4px; }
+.account-app.is-obsidian .auth-editorial h1 { margin-top: 0; }
+.account-app.is-obsidian .auth-editorial-bottom { margin-top: auto; }
 .account-app.is-obsidian .auth-editorial::after { border-color: rgba(204,255,0,.25); }
 .account-app.is-obsidian .auth-editorial h1,
 .account-app.is-obsidian .auth-panel-heading h2 {
@@ -253,4 +257,8 @@ body:has(.account-app.is-obsidian) { background: #000; }
   pointer-events: none;
 }
 .account-app.is-obsidian .auth-grid { z-index: 1; }
+@media (max-width: 680px) {
+  .account-app.is-obsidian .auth-grid { align-items: stretch; }
+  .account-app.is-obsidian .auth-editorial-center { margin-top: 20px; }
+}
 .account-app.is-obsidian :focus-visible { outline-color: #ccff00; }

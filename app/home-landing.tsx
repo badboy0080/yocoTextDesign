@@ -179,22 +179,27 @@ export function HomeLanding() {
         <section className="ol-hero" aria-labelledby="home-hero-title">
           <div className="ol-hero-copy">
             <p className="ol-kicker">YOOCO / LAYOUT</p>
-            <h1 id="home-hero-title">好文章，<span>值得好排版</span></h1>
+            <h1 id="home-hero-title">
+              <span className="ol-hero-line">
+                好文章，
+                <span className="ol-eye ol-float" aria-hidden="true">
+                  <EyeTracker
+                    shape="Bubble"
+                    eyes="Slant"
+                    eyeScale={1.7}
+                    eyeWidth={0.85}
+                    follow={72}
+                    bounce={26}
+                    size={72}
+                    restAfter={2000}
+                    near={320}
+                  />
+                </span>
+              </span>
+              <span className="ol-hero-accent">值得好排版</span>
+            </h1>
           </div>
           <div className="ol-hero-panel">
-            <div className="ol-eye ol-float" aria-hidden="true">
-              <EyeTracker
-                shape="Bubble"
-                eyes="Slant"
-                eyeScale={1.7}
-                eyeWidth={0.85}
-                follow={72}
-                bounce={26}
-                size={72}
-                restAfter={2000}
-                near={320}
-              />
-            </div>
             <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goOptimize(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
@@ -264,10 +269,10 @@ export function HomeLanding() {
       </main>
 
       <footer className="ol-footer">
-        <a className="ol-footer-cta" href={STUDIO_URL}>进入工作台 <ArrowRight size={22} aria-hidden="true" /></a>
         <div className="ol-footer-row">
           <BrandLogo onDark compact />
           <span>你的最佳排版助理</span>
+          <a className="ol-footer-link" href={STUDIO_URL}>进入工作台</a>
           <span className="ol-copy">YOOCO © 2026</span>
         </div>
       </footer>

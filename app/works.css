@@ -269,6 +269,8 @@ body:has(.works-app) { background: #000; }
   color: #ebebeb;
 }
 .works-fold:hover, .works-nav button:hover { background: rgba(255,255,255,.06); }
+.works-app .works-brand-row .works-fold { color: #ebebeb; }
+.works-app .works-brand-row .works-fold:hover { color: #fff; background: rgba(255,255,255,.06); }
 .works-account-copy strong { color: #ebebeb; }
 .works-account-copy small, .works-count, .works-intro, .works-head p:not(.works-eyebrow) { color: rgba(255,255,255,.6); }
 .works-account-more { color: #ebebeb; }

@@ -540,7 +540,12 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   letter-spacing: -0.06em;
   line-height: 0.92;
 }
-.ol-hero h1 span {
+.ol-hero-line {
+  display: flex;
+  align-items: center;
+  gap: 0.12em;
+}
+.ol-hero h1 .ol-hero-accent {
   display: block;
   font-style: italic;
   font-weight: 400;
@@ -551,15 +556,13 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 }
 .ol-hero-panel { position: relative; }
 .ol-eye {
-  position: absolute;
-  top: -28px;
-  right: 18px;
-  z-index: 2;
-  width: 72px;
-  height: 72px;
+  position: relative;
+  flex: none;
+  width: 0.72em;
+  height: 0.72em;
   animation: ol-float 6s ease-in-out infinite;
 }
-.ol-eye .eyt, .ol-eye .eyt-ball { width: 72px; height: 72px; }
+.ol-eye .eyt, .ol-eye .eyt-ball { width: 100%; height: 100%; }
 .ol-eye .eyt { --fill-slab: #ccff00; --fill-on: #000; --bg: transparent; }
 .ol-composer {
   display: flex;
@@ -660,32 +663,21 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 .ol-pricing-grid span, .ol-pricing-grid p { margin: 0; }
 .ol-pricing-note { margin: 12px 0 0; font-size: 12px; }
 .ol-footer { padding: 28px 48px 36px; background: #000; }
-.ol-footer-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 88px;
-  padding: 0 32px;
-  border-radius: 999px;
-  background: var(--ol-lime);
-  color: #000;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  text-decoration: none;
-  box-shadow: 0 0 30px rgba(204, 255, 0, 0.25);
-  transition: background 0.25s var(--ol-ease), color 0.25s var(--ol-ease);
-}
-.ol-footer-cta:hover { background: #fff; }
 .ol-footer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 22px;
   color: var(--ol-text-dim);
   font-size: 14px;
 }
+.ol-footer-link {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.ol-footer-link:hover { color: rgba(255, 255, 255, 0.72); }
 .ol-copy { font-family: var(--ol-mono); font-size: 11px; letter-spacing: 0.14em; }
 .ol-watermark {
   position: absolute;
@@ -723,7 +715,6 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   .ol-hero h1 { font-size: clamp(2.8rem, 12vw, 4.4rem); }
   .ol-home .works-band { margin-inline: 12px; padding: 32px 12px 20px; border-radius: 2rem; }
   .ol-footer, .ol-pricing { padding-inline: 16px; }
-  .ol-footer-cta { min-height: 68px; padding-inline: 20px; }
   .ol-status { display: none; }
 }
 @media (max-width: 640px) {

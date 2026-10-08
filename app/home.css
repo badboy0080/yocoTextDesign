@@ -523,7 +523,7 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   padding: 48px 48px 64px;
   text-align: center;
 }
-.ol-hero-copy { width: min(100%, 920px); }
+.ol-hero-copy { width: min(100%, 1200px); }
 .ol-kicker {
   margin: 0 0 18px;
   color: var(--ol-lime);
@@ -536,19 +536,22 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   margin: 0;
   color: var(--ol-text);
   font-family: var(--ol-sans);
-  font-size: clamp(3.4rem, 6.6vw, 7.2rem);
+  font-size: clamp(2.8rem, 5.6vw, 5.4rem);
   font-weight: 500;
   letter-spacing: -0.06em;
-  line-height: 0.92;
+  line-height: 1;
+  white-space: nowrap;
 }
 .ol-hero-line {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: nowrap;
   gap: 0.12em;
+  white-space: nowrap;
 }
 .ol-hero h1 .ol-hero-accent {
-  display: block;
+  display: inline;
   font-style: italic;
   font-weight: 400;
   background: linear-gradient(100deg, #ccff00 10%, #ffffff 80%);
@@ -714,7 +717,7 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   .ol-header { grid-template-columns: 1fr auto; }
   .ol-nav { grid-column: 1 / -1; width: auto; justify-content: flex-start; overflow-x: auto; }
   .ol-hero { gap: 28px; padding: 28px 20px 40px; }
-  .ol-hero h1 { font-size: clamp(2.8rem, 12vw, 4.4rem); }
+  .ol-hero h1 { font-size: clamp(1.65rem, 7.2vw, 2.4rem); }
   .ol-home .works-band { margin-inline: 12px; padding: 32px 12px 20px; border-radius: 2rem; }
   .ol-footer, .ol-pricing { padding-inline: 16px; }
   .ol-status { display: none; }

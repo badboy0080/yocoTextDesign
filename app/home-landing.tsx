@@ -195,8 +195,8 @@ export function HomeLanding() {
                     near={320}
                   />
                 </span>
+                <span className="ol-hero-accent">值得好排版</span>
               </span>
-              <span className="ol-hero-accent">值得好排版</span>
             </h1>
           </div>
           <div className="ol-hero-panel">

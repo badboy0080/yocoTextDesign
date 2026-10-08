@@ -51,7 +51,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <AccountLayout section={isRegister ? "创建账户" : "欢迎回来"}>
+    <AccountLayout section={isRegister ? "创建账户" : "欢迎回来"} skin="obsidian">
       <div className="account-container auth-page">
         <div className="account-index"><span>YOOCO / ACCOUNT</span><span>{isRegister ? "02" : "01"} — 03</span></div>
         <div className="auth-grid">

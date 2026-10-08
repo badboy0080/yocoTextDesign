@@ -14,20 +14,10 @@ import {
   FilePlus2,
 } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 
 import { EyeTracker } from "@/components/eye-tracker";
-import { HomeDotField } from "@/components/home-dot-field";
 import { WorksRail } from "@/components/works-rail";
 import "./home.css";
 
@@ -53,16 +43,14 @@ function HomeAccountLink() {
 
   if (!email) {
     return (
-      <Button asChild variant="ghost" size="sm">
-        <Link href="/login">登录</Link>
-      </Button>
+      <Link className="ol-login" href="/login">登录</Link>
     );
   }
 
   return (
     <>
-      <span className="max-w-[140px] truncate px-2 text-sm text-foreground" title={email}>{email}</span>
-      <Button variant="ghost" size="sm" type="button" onClick={logout}>退出</Button>
+      <span className="ol-account" title={email}>{email}</span>
+      <button className="ol-login" type="button" onClick={logout}>退出</button>
     </>
   );
 }
@@ -166,187 +154,125 @@ export function HomeLanding() {
   }
 
   return (
-    <div className="yooco-home relative">
-      <HomeDotField />
+    <div className="ol-home">
       <Script src="/analytics.js" strategy="afterInteractive" />
-
-      <header className="yooco-header sticky top-0 z-20 border-b border-border/80 bg-background">
-        <div className="yooco-shell flex h-16 items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="font-[family-name:var(--yooco-display)] text-xl font-semibold tracking-tight text-foreground"
-          >
-            <BrandLogo />
-          </Link>
-          <nav className="yooco-nav flex items-center gap-1 sm:gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <a href="#works-heading">作品</a>
-            </Button>
-            {SHOW_PRICING ? (
-              <Button asChild variant="ghost" size="sm">
-                <a href="#yooco-pricing">价格</a>
-              </Button>
-            ) : null}
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/subscribe">订阅</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <a href={STUDIO_URL}>工作室</a>
-            </Button>
-            <HomeAccountLink />
-          </nav>
+      <div className="ol-glow ol-glow-a" aria-hidden="true" />
+      <div className="ol-glow ol-glow-b" aria-hidden="true" />
+      <div className="ol-shell">
+      <header className="ol-header">
+        <Link href="/" aria-label="Yooco 首页">
+          <BrandLogo onDark />
+        </Link>
+        <nav className="ol-nav" aria-label="页面">
+          <a href="#works-heading">作品</a>
+          {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
+          <Link href="/subscribe">订阅</Link>
+          <a href={STUDIO_URL}>工作室</a>
+        </nav>
+        <div className="ol-header-end">
+          <p className="ol-status"><span className="ol-pulse" aria-hidden="true" />STUDIO</p>
+          <HomeAccountLink />
         </div>
       </header>
 
-      <main className="relative z-10">
-        <section className="yooco-hero" aria-labelledby="home-hero-title">
-          <div className="yooco-shell mx-auto flex max-w-3xl flex-col items-center text-center">
-            <p className="yooco-hero-kicker">好文章，值得好排版</p>
-            <h1 id="home-hero-title" className="yooco-hero-title" aria-label="Best layout with AI">
-              {"Best lay"}
-              <span className="yooco-hero-mark">
-                <span className="yooco-hero-mark-letter">o</span>
-                <span className="yooco-hero-mark-logo" aria-hidden="true">
-                  <EyeTracker
-                    shape="Bubble"
-                    eyes="Slant"
-                    eyeScale={1.7}
-                    eyeWidth={0.85}
-                    follow={72}
-                    bounce={26}
-                    size={64}
-                    restAfter={2000}
-                    near={320}
-                  />
-                </span>
-              </span>
-              {"ut with AI"}
-            </h1>
-            <div className="yooco-input-wrap mt-8 w-full text-left">
-              <Card className="yooco-input-card gap-0 overflow-hidden border-border/80 py-0 shadow-none">
-                <CardContent className="px-0 pt-0">
-                  <label className="sr-only" htmlFor="home-article-input">
-                    文章原文
-                  </label>
-                  <Textarea
-                    id="home-article-input"
-                    rows={5}
-                    spellCheck={false}
-                    placeholder="粘贴公众号原文，点「优化排版」开始"
-                    value={source}
-                    aria-invalid={Boolean(hint) || undefined}
-                    className={cn(
-                      "min-h-32 resize-y rounded-none border-0 bg-transparent px-4 py-4 text-base shadow-none focus-visible:ring-0 sm:px-5",
-                      "placeholder:text-muted-foreground/70",
-                    )}
-                    onChange={(event) => {
-                      setSource(event.target.value);
-                      if (hint) setHint("");
-                    }}
-                    onKeyDown={(event) => {
-                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                        event.preventDefault();
-                        goOptimize();
-                      }
-                    }}
-                  />
-                </CardContent>
-                <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border/60 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
-                  <input
-                    ref={fileInputRef}
-                    className="sr-only"
-                    type="file"
-                    accept={ACCEPT_FILES}
-                    tabIndex={-1}
-                    onChange={onFilePicked}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={importing || pending}
-                    onClick={openFilePicker}
-                    className="justify-start sm:w-auto"
-                  >
-                    <FilePlus2 />
-                    {importing ? "读取中…" : "上传 txt / docx"}
-                  </Button>
-                  <div className="min-w-0 flex-1">
-                    {hint ? (
-                      <Alert variant="destructive" className="border-destructive/30 py-2">
-                        <AlertCircle />
-                        <AlertDescription>{hint}</AlertDescription>
-                      </Alert>
-                    ) : (
-                      <p className="hidden text-xs text-muted-foreground sm:block">
-                        Ctrl / ⌘ + Enter 也可提交
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    size="lg"
-                    disabled={pending || importing}
-                    onClick={goOptimize}
-                    className="border-0 bg-[linear-gradient(90deg,#A9FD83,#98F68D)] text-[#17331b] shadow-none hover:brightness-95"
-                  >
-                    {pending ? "正在打开…" : "优化排版"}
-                    {!pending ? <ArrowRight /> : null}
-                  </Button>
-                </CardFooter>
-              </Card>
+      <main>
+        <section className="ol-hero" aria-labelledby="home-hero-title">
+          <div className="ol-hero-copy">
+            <p className="ol-kicker">YOOCO / LAYOUT</p>
+            <h1 id="home-hero-title">好文章，<span>值得好排版</span></h1>
+          </div>
+          <div className="ol-hero-panel">
+            <div className="ol-eye ol-float" aria-hidden="true">
+              <EyeTracker
+                shape="Bubble"
+                eyes="Slant"
+                eyeScale={1.7}
+                eyeWidth={0.85}
+                follow={72}
+                bounce={26}
+                size={72}
+                restAfter={2000}
+                near={320}
+              />
             </div>
+            <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goOptimize(); }}>
+              <label className="sr-only" htmlFor="home-article-input">文章原文</label>
+              <textarea
+                id="home-article-input"
+                rows={6}
+                spellCheck={false}
+                placeholder="粘贴公众号原文，点「优化排版」开始"
+                value={source}
+                aria-invalid={Boolean(hint) || undefined}
+                onChange={(event) => {
+                  setSource(event.target.value);
+                  if (hint) setHint("");
+                }}
+                onKeyDown={(event) => {
+                  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                    event.preventDefault();
+                    goOptimize();
+                  }
+                }}
+              />
+              <div className="ol-composer-bar">
+                <input
+                  ref={fileInputRef}
+                  className="sr-only"
+                  type="file"
+                  accept={ACCEPT_FILES}
+                  tabIndex={-1}
+                  onChange={onFilePicked}
+                />
+                <button type="button" className="ol-upload" disabled={importing || pending} onClick={openFilePicker}>
+                  <FilePlus2 size={16} aria-hidden="true" />
+                  {importing ? "读取中…" : "上传 txt / docx"}
+                </button>
+                <p className={hint ? "ol-hint is-error" : "ol-hint"} role={hint ? "alert" : undefined}>
+                  {hint ? <><AlertCircle size={14} aria-hidden="true" />{hint}</> : "Ctrl / ⌘ + Enter 也可提交"}
+                </p>
+                <button type="submit" className="ol-primary" disabled={pending || importing}>
+                  {pending ? "正在打开…" : "优化排版"}
+                  {!pending ? <ArrowRight size={18} aria-hidden="true" /> : null}
+                </button>
+              </div>
+            </form>
           </div>
         </section>
 
         <WorksRail />
 
         {SHOW_PRICING ? (
-        <section
-          className="yooco-band"
-          aria-labelledby="yooco-pricing-heading"
-          id="yooco-pricing"
-        >
-          <div className="yooco-shell">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2
-                id="yooco-pricing-heading"
-                className="font-[family-name:var(--yooco-display)] text-3xl font-semibold tracking-tight"
-              >
-                价格
-              </h2>
-              <p className="mt-3 text-base text-muted-foreground">
-                试用免费限 10 次 / 专业版 ¥9.9/月 / ¥59.9/年
-              </p>
-            </div>
-            <ul className="yooco-pricing-grid mt-12">
-              {PLANS.map((plan) => (
-                <li
-                  key={plan.name}
-                  className={cn("yooco-pricing-card", plan.featured && "is-featured")}
-                >
-                  <p className="text-sm text-muted-foreground">{plan.name}</p>
-                  <p className="mt-3 font-[family-name:var(--yooco-display)] text-3xl font-semibold tracking-tight">
-                    {plan.price}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">{plan.note}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
-              付费可开电子普票
-            </p>
+        <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">
+          <div className="ol-pricing-intro">
+            <h2 id="yooco-pricing-heading">价格</h2>
+            <p>试用免费限 10 次 / 专业版 ¥9.9/月 / ¥59.9/年</p>
           </div>
+          <ul className="ol-pricing-grid">
+            {PLANS.map((plan) => (
+              <li key={plan.name} className={plan.featured ? "is-featured" : undefined}>
+                <p>{plan.name}</p>
+                <strong>{plan.price}</strong>
+                <span>{plan.note}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="ol-pricing-note">付费可开电子普票</p>
+          <p className="ol-pricing-note">符合条件可申请退款</p>
         </section>
         ) : null}
       </main>
 
-      <footer className="relative z-10 border-t border-border/80 bg-background">
-        <div className="yooco-shell flex flex-col items-center justify-between gap-3 py-8 text-sm text-muted-foreground sm:flex-row">
-          <BrandLogo compact />
+      <footer className="ol-footer">
+        <a className="ol-footer-cta" href={STUDIO_URL}>进入工作台 <ArrowRight size={22} aria-hidden="true" /></a>
+        <div className="ol-footer-row">
+          <BrandLogo onDark compact />
           <span>你的最佳排版助理</span>
+          <span className="ol-copy">YOOCO © 2026</span>
         </div>
       </footer>
+      <p className="ol-watermark" aria-hidden="true">YOOCO</p>
+      </div>
     </div>
   );
 }

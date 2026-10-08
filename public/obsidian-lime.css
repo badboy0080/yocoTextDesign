@@ -1,0 +1,73 @@
+/* Obsidian & Lime chrome. Article themes keep their own colors. */
+:root {
+  --ol-black: #000000;
+  --ol-shell: #0c0c0c;
+  --ol-surface: #0a0a0a;
+  --ol-lime: #ccff00;
+  --ol-emerald: #10b981;
+  --ol-text: #ebebeb;
+  --ol-text-dim: rgba(255, 255, 255, 0.6);
+  --ol-text-mute: rgba(255, 255, 255, 0.3);
+  --ol-glass: rgba(255, 255, 255, 0.03);
+  --ol-line: rgba(255, 255, 255, 0.1);
+  --ol-radius: 2rem;
+  --ol-sans: "Space Grotesk", "Noto Sans SC", sans-serif;
+  --ol-mono: "JetBrains Mono", monospace;
+  --ol-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.yooco-brand--dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ol-text);
+}
+
+.yooco-brand-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--ol-lime);
+  color: #000;
+  font-family: var(--ol-sans);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.yooco-brand-word {
+  font-family: var(--ol-sans);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.06em;
+  color: var(--ol-text);
+  line-height: 1;
+}
+
+.yooco-brand--compact .yooco-brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.yooco-brand--compact .yooco-brand-word {
+  font-size: 16px;
+}
+
+@keyframes ol-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes ol-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ol-float, .ol-pulse { animation: none !important; }
+}

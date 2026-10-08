@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap");
+@import url("../public/obsidian-lime.css");
+
 .account-app {
   --account-paper: var(--yooco-color-paper, #f8f9f4);
   --account-ink: var(--yooco-color-ink, #20251f);
@@ -144,3 +147,110 @@
 @media (prefers-reduced-motion: reduce) {
   .account-app *, .account-app *::before, .account-app *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Login / register only. Subscribe keeps the light account page. */
+body:has(.account-app.is-obsidian) { background: #000; }
+.account-app.is-obsidian {
+  --account-paper: #000;
+  --account-ink: #ebebeb;
+  --account-muted: rgba(255,255,255,.6);
+  --account-line: rgba(255,255,255,.1);
+  --account-green: #ccff00;
+  --account-link: #ccff00;
+  min-height: 100dvh;
+  color: #ebebeb;
+  color-scheme: dark;
+  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+  background:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
+    #000;
+  background-size: 60px 60px, 60px 60px, auto;
+}
+.account-app.is-obsidian .account-header,
+.account-app.is-obsidian .account-footer { border-color: rgba(255,255,255,.1); background: transparent; }
+.account-app.is-obsidian .account-nav a,
+.account-app.is-obsidian .account-footer a,
+.account-app.is-obsidian .account-email,
+.account-app.is-obsidian .account-logout { color: rgba(255,255,255,.7); }
+.account-app.is-obsidian .account-nav a:last-child { color: #ebebeb; }
+.account-app.is-obsidian .auth-grid { position: relative; }
+.account-app.is-obsidian .auth-editorial {
+  min-height: 520px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 2.5rem;
+  background: rgba(255,255,255,.03);
+  backdrop-filter: blur(16px);
+}
+.account-app.is-obsidian .auth-editorial::after { border-color: rgba(204,255,0,.25); }
+.account-app.is-obsidian .auth-editorial h1,
+.account-app.is-obsidian .auth-panel-heading h2 {
+  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -.06em;
+  color: #ebebeb;
+}
+.account-app.is-obsidian .auth-editorial h1 em { color: #ccff00; font-style: italic; }
+.account-app.is-obsidian .auth-small-title,
+.account-app.is-obsidian .auth-eyebrow { color: #ccff00; font-family: "JetBrains Mono", monospace; letter-spacing: .16em; text-transform: uppercase; }
+.account-app.is-obsidian .auth-editorial-caption { border-top-color: rgba(255,255,255,.12); }
+.account-app.is-obsidian .auth-panel {
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 2.5rem;
+  background: rgba(255,255,255,.03);
+  backdrop-filter: blur(16px);
+}
+.account-app.is-obsidian .auth-preview-note {
+  border-color: rgba(255,255,255,.1);
+  border-radius: 1.25rem;
+  background: rgba(0,0,0,.35);
+  color: rgba(255,255,255,.6);
+}
+.account-app.is-obsidian .auth-field input {
+  height: 52px;
+  border-color: rgba(255,255,255,.14);
+  border-radius: 1rem;
+  background: #111;
+  color: #ebebeb;
+  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+}
+.account-app.is-obsidian .auth-field input::placeholder { color: rgba(255,255,255,.3); }
+.account-app.is-obsidian .auth-field input:focus { border-color: #ccff00; box-shadow: 0 0 0 3px rgba(204,255,0,.18); }
+.account-app.is-obsidian .account-primary-button {
+  border: 0;
+  border-radius: 999px;
+  background: #ccff00;
+  color: #000;
+  box-shadow: 0 0 30px rgba(204,255,0,.3);
+}
+.account-app.is-obsidian .account-primary-button:hover { background: #d6ff4d; transform: scale(1.03); }
+.account-app.is-obsidian .account-secondary-button {
+  border-color: rgba(255,255,255,.14);
+  border-radius: 999px;
+  background: transparent;
+  color: #ebebeb;
+}
+.account-app.is-obsidian .account-secondary-button:hover { border-color: #ccff00; }
+.account-app.is-obsidian .auth-panel-bottom { border-top-color: rgba(255,255,255,.1); }
+.account-app.is-obsidian .auth-panel-bottom p a { color: #ccff00; }
+.account-app.is-obsidian .auth-notice { border-left-color: #ccff00; background: rgba(204,255,0,.08); color: #ebebeb; }
+.account-app.is-obsidian .account-index,
+.account-app.is-obsidian .account-tail,
+.account-app.is-obsidian .auth-editorial-top,
+.account-app.is-obsidian .auth-editorial-bottom { font-family: "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.account-app.is-obsidian .account-container { position: relative; }
+.account-app.is-obsidian main { position: relative; }
+.account-app.is-obsidian main::after {
+  content: "YOOCO";
+  position: absolute;
+  left: 4%;
+  bottom: 6%;
+  z-index: 0;
+  color: rgba(255,255,255,.05);
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -.08em;
+  pointer-events: none;
+}
+.account-app.is-obsidian .auth-grid { z-index: 1; }
+.account-app.is-obsidian :focus-visible { outline-color: #ccff00; }

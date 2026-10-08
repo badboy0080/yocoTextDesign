@@ -8,16 +8,19 @@ import "@/app/account.css";
 export function AccountLayout({
   children,
   section,
+  skin,
 }: {
   children: ReactNode;
   section: string;
+  skin?: "obsidian";
 }) {
+  const obsidian = skin === "obsidian";
   return (
-    <div className="account-app">
+    <div className={`account-app${obsidian ? " is-obsidian" : ""}`}>
       <header className="account-header">
         <div className="account-container account-header-inner">
           <Link href="/" className="account-logo" aria-label="Yooco 首页">
-            <BrandLogo />
+            <BrandLogo onDark={obsidian} />
           </Link>
           <nav className="account-nav" aria-label="页面导航">
             <Link href="/works">作品</Link>

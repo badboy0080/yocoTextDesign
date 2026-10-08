@@ -119,7 +119,7 @@ export function WorksFrame() {
       <aside className="works-side">
         <div className="works-brand-row">
           <a className="works-logo" href="/" aria-label="Yooco 首页">
-            <BrandLogo />
+            <BrandLogo onDark />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="works-mark" src="/yooco-mark.svg" width="32" height="32" alt="" />
           </a>

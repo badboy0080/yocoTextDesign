@@ -16,7 +16,7 @@ const TEMPLATE_DEFAULTS = {
   theme: "classic", articleType: "auto", showSignature: false,
 };
 
-// 4 个气质方向：决定招牌造型（标题/卡片/列表），每个方向下挂 2~3 套具体配色皮肤。
+// 四个气质方向决定标题、卡片和列表造型。界面只露出这四张卡，点卡片套用该方向的第一套皮肤。
 const MOODS = {
   minimal: {
     label: "克制高级", hint: "冷静 · 留白", headingStyle: "line", cardStyle: "outline", listStyle: "dot",
@@ -133,7 +133,6 @@ const darkPreviewToggle = document.querySelector("#darkPreviewToggle");
 const lockBrandColor = document.querySelector("#lockBrandColor");
 const copyFeedback = document.querySelector("#copyFeedback");
 const moodGrid = document.querySelector("#moodGrid");
-const skinRow = document.querySelector("#skinRow");
 const moodPicker = document.querySelector("#moodPicker");
 const moodPickerGroup = document.querySelector("#moodPickerGroup");
 const skinCurrent = document.querySelector("#skinCurrent");
@@ -152,27 +151,13 @@ let serverTrialEnforced = false;
 const articleTitle = document.querySelector("#articleTitle");
 const stylePane = document.querySelector("#stylePane");
 const styleMount = document.querySelector("#styleMount");
-const componentKit = window.YoocoContentComponents;
-const componentGallery = document.querySelector("#componentGallery");
-const componentSelection = document.querySelector("#componentSelection");
-const componentEdit = document.querySelector("#componentEdit");
 let articleSource = localStorage.getItem("yooco-article-source") || "";
 let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
 let blockTypeOverrides = {};
 let lastAiResult = null;
 let previewSyncTimer = 0;
-let selectedComponentRange = null;
-let componentFilter = "all";
-let componentAssignments = [];
-let lastBlockSignatures = [];
-try {
-  const savedComponents = JSON.parse(localStorage.getItem("yooco-content-components") || "null");
-  if (savedComponents?.articleSource === articleSource && Array.isArray(savedComponents.assignments)) {
-    componentAssignments = savedComponents.assignments;
-    if (articleSource.trim()) lastBlockSignatures = parseArticle(articleSource).blocks.map(componentBlockSignature);
-  }
-} catch { /* ignore stale component data */ }
+try { localStorage.removeItem("yooco-content-components"); } catch { /* ignore private mode */ }
 
 function setStatus(message) {
   if (articleStatus) articleStatus.textContent = message;
@@ -327,7 +312,7 @@ function isTheme() {
   return Boolean(state.theme && state.theme !== "classic" && THEMES[state.theme]);
 }
 
-// 切换精选主题（5 套之一）或回到 classic（旧的 4 方向 11 皮肤）。
+// 切换精选主题，或回到 classic（四套气质方向，每套用自己的默认皮肤）。
 function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   if (themeId !== "classic" && !THEMES[themeId]) return;
   const previousArticleType = state.articleType;
@@ -348,12 +333,6 @@ function applyTheme(themeId, { fromUser = true, articleType } = {}) {
 function syncMoodUI() {
   moodGrid?.querySelectorAll("[data-mood]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.mood === currentMood);
-  });
-  skinRow?.querySelectorAll("[data-skin]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.skin === currentSkin);
-    const skin = SKINS[button.dataset.skin];
-    button.style.setProperty("--swatch-accent", skin.accentColor);
-    button.style.setProperty("--swatch-bg", skin.pageColor);
   });
   themeGrid?.querySelectorAll("[data-theme]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.theme === state.theme);
@@ -377,7 +356,7 @@ function syncMoodUI() {
 
 function renderMoodUI() {
   if (themeGrid) {
-    const classicButton = `<button type="button" class="theme-chip is-classic" data-theme="classic" title="4 方向 × 11 皮肤的通用体系"><b>经典</b></button>`;
+    const classicButton = `<button type="button" class="theme-chip is-classic" data-theme="classic" title="四套气质方向"><b>经典</b></button>`;
     const themeButtons = THEME_ORDER.map((id) => {
       const theme = THEMES[id];
       return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
@@ -392,14 +371,6 @@ function renderMoodUI() {
       `<button type="button" class="mood-card" data-mood="${id}"><b>${mood.label}</b><span>${mood.hint}</span></button>`).join("");
     moodGrid.querySelectorAll("[data-mood]").forEach((button) => {
       button.addEventListener("click", () => applySkin(MOODS[button.dataset.mood].skins[0]));
-    });
-  }
-  if (skinRow) {
-    const chips = Object.entries(MOODS).map(([moodId, mood]) => mood.skins.map((skinId) =>
-      `<button type="button" class="skin-chip" data-skin="${skinId}" data-mood="${moodId}" title="${SKINS[skinId].label}">${SKINS[skinId].label}</button>`).join("")).join("");
-    skinRow.querySelector(".skin-chips").innerHTML = chips;
-    skinRow.querySelectorAll("[data-skin]").forEach((button) => {
-      button.addEventListener("click", () => applySkin(button.dataset.skin));
     });
   }
   syncMoodUI();
@@ -1044,202 +1015,6 @@ function splitHeadingCaption(text) {
   };
 }
 
-function componentBlockSignature(block) {
-  return JSON.stringify([block.type, block.text || "", block.title || "", block.url || "", block.alt || "", block.items || [], block.level || 0]);
-}
-
-function saveComponentAssignments() {
-  localStorage.setItem("yooco-content-components", JSON.stringify({ articleSource, assignments: componentAssignments }));
-}
-
-function signatureBlockType(signature) {
-  try {
-    const parsed = JSON.parse(signature);
-    return Array.isArray(parsed) ? String(parsed[0] || "") : "";
-  } catch {
-    return "";
-  }
-}
-
-function blockAlignment(previous, next) {
-  if (!previous.length) return null;
-  const map = new Array(previous.length).fill(-1);
-  const used = new Set();
-  let bestDelta = 0;
-  let bestScore = -1;
-  const minDelta = 1 - previous.length;
-  const maxDelta = next.length - 1;
-  for (let delta = minDelta; delta <= maxDelta; delta += 1) {
-    let score = 0;
-    previous.forEach((signature, index) => {
-      if (next[index + delta] === signature) score += 1;
-    });
-    if (score > bestScore || (score === bestScore && delta === 0)) {
-      bestScore = score;
-      bestDelta = delta;
-    }
-  }
-  if (bestScore > 0) {
-    previous.forEach((signature, index) => {
-      const target = index + bestDelta;
-      if (next[target] === signature) {
-        map[index] = target;
-        used.add(target);
-      }
-    });
-  }
-  const exactCount = map.filter((index) => index >= 0).length;
-  if (!exactCount) {
-    const sameShape = previous.length === next.length && previous.every((signature, index) => signatureBlockType(signature) === signatureBlockType(next[index]));
-    return sameShape ? previous.map((_, index) => index) : map;
-  }
-  previous.forEach((signature, index) => {
-    if (map[index] >= 0 || index >= next.length || used.has(index)) return;
-    if (signatureBlockType(signature) === signatureBlockType(next[index])) {
-      map[index] = index;
-      used.add(index);
-    }
-  });
-  return map;
-}
-
-function assignmentStart(map, start, count) {
-  if (!map) return start;
-  if (start < 0 || start + count > map.length) return -1;
-  const mapped = Array.from({ length: count }, (_, offset) => map[start + offset]);
-  if (mapped.some((index) => index < 0)) return -1;
-  const ordered = [...mapped].sort((left, right) => left - right);
-  const contiguous = ordered.every((index, position) => index === ordered[0] + position);
-  return contiguous ? ordered[0] : -1;
-}
-
-function reconcileComponentAssignments(blocks) {
-  const map = blockAlignment(lastBlockSignatures, blocks.map(componentBlockSignature));
-  const occupied = new Set();
-  const next = [];
-  componentAssignments.forEach((assignment) => {
-    if (!assignment || typeof assignment !== "object") return;
-    if (!componentKit?.items.some((item) => item.id === assignment.id)) return;
-    const saved = assignment.signatures;
-    if (!Array.isArray(saved) || !saved.length || saved.length > 4) return;
-    const start = assignmentStart(map, Number(assignment.startIndex), saved.length);
-    if (start < 0 || start + saved.length > blocks.length) return;
-    if (saved.some((_, offset) => occupied.has(start + offset))) return;
-    const group = blocks.slice(start, start + saved.length);
-    saved.forEach((_, offset) => occupied.add(start + offset));
-    next.push({ id: assignment.id, startIndex: start, signatures: group.map(componentBlockSignature), meta: {
-      label: componentKit.clean(assignment.meta?.label), note: componentKit.clean(assignment.meta?.note),
-    } });
-  });
-  lastBlockSignatures = articleSource.trim() ? blocks.map(componentBlockSignature) : [];
-  if (JSON.stringify(next) !== JSON.stringify(componentAssignments)) {
-    componentAssignments = next;
-    saveComponentAssignments();
-  }
-  return componentAssignments;
-}
-
-function isDifferentArticle(before, after) {
-  if (!before.trim() || !componentAssignments.length) return false;
-  if (!after.trim()) return true;
-  const textOf = (source) => parseArticle(source).blocks.map((block) => String(block.text || block.alt || "").trim()).filter(Boolean);
-  const oldTexts = textOf(before);
-  const newTexts = textOf(after);
-  if (!oldTexts.length || !newTexts.length) return true;
-  if (oldTexts.some((text) => newTexts.includes(text))) return false;
-  return oldTexts.length > 2 || newTexts.length > 2 || oldTexts.length !== newTexts.length;
-}
-
-function assignedRangeForSelection() {
-  if (!selectedComponentRange) return null;
-  const [start, end] = selectedComponentRange;
-  return componentAssignments.find((item) => item.startIndex === start && item.signatures.length === end - start + 1) || null;
-}
-
-function componentContentSummary(blocks) {
-  return blocks.map((block) => block.text || block.alt || block.title || (block.items || []).map((item) => typeof item === "string" ? item : item.label || item.value).join("、"))
-    .filter(Boolean).join(" · ").slice(0, 90);
-}
-
-function componentPickerPreview(blocks, id) {
-  if (!blocks.length) return "";
-  const parts = blocks.map((block) => {
-    if (block.type === "image") return `<figure class="article-image"><img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.alt || "文章配图")}" loading="lazy" /><figcaption>${escapeHtml(block.alt || "文章配图")}</figcaption></figure>`;
-    if (block.type === "steps") return `<section class="steps-block"><strong>${escapeHtml(block.title || "操作步骤")}</strong>${(block.items || []).map((step) => `<p>${escapeHtml(step)}</p>`).join("")}</section>`;
-    return `<p>${escapeHtml(block.text || block.title || "")}</p>`;
-  });
-  return componentKit.render(id, parts, blocks, {}, state, "preview");
-}
-
-function componentSuggestionScore(id, blocks, start) {
-  const chars = blocks.map((block) => block.text || "").join("").length;
-  const types = new Set(blocks.map((block) => block.type));
-  const articleType = state.articleType !== "auto" ? state.articleType : lastAiResult?.template?.params?.articleType || "auto";
-  if (id === "qa") return /[？?]$/.test(String(blocks[0]?.text || "")) || articleType === "interview" ? 100 : 0;
-  if (id === "steps") return types.has("steps") ? 100 : 0;
-  if (id === "compare") return blocks.filter((block) => block.type === "image").length === 2 ? 100 : 0;
-  if (id === "hero") return types.has("image") && start === 0 ? 85 : 45;
-  if (id === "side-by-side") return types.has("image") && chars < 280 ? 75 : 25;
-  if (id === "book") return start === 0 ? 80 : 20;
-  if (id === "viewpoint") return types.has("quote") || types.has("card") || articleType === "opinion" ? 75 : 35;
-  if (id === "sidenote") return chars > 160 ? 70 : 25;
-  return 0;
-}
-
-function renderComponentPicker() {
-  if (!componentGallery || !componentKit) return;
-  const model = getArticleModel();
-  reconcileComponentAssignments(model.blocks);
-  if (selectedComponentRange && selectedComponentRange[1] >= model.blocks.length) selectedComponentRange = null;
-  const [start, end] = selectedComponentRange || [-1, -1];
-  const selected = !model.isSample && start >= 0 ? model.blocks.slice(start, end + 1) : [];
-  if (componentSelection) componentSelection.textContent = selected.length
-    ? `已选 ${selected.length} 个内容块 · ${componentContentSummary(selected) || "请改选有文字的内容"}`
-    : "请先选择文章中的内容块";
-  const beforeButton = document.querySelector("#componentExtendBefore");
-  const afterButton = document.querySelector("#componentExtendAfter");
-  if (beforeButton) beforeButton.disabled = !selected.length || start <= 0 || selected.length >= 4;
-  if (afterButton) afterButton.disabled = !selected.length || end >= model.blocks.length - 1 || selected.length >= 4;
-  const active = assignedRangeForSelection();
-  const ranked = componentKit.items.filter((item) => componentFilter === "all" || item.category === componentFilter)
-    .map((item) => ({ item, reason: componentKit.compatibility(item.id, selected), score: componentSuggestionScore(item.id, selected, start) }))
-    .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)) || b.score - a.score);
-  const firstAvailable = ranked.find(({ reason }) => !reason)?.item.id;
-  const selectedLength = selected.map((block) => block.text || (block.items || []).join("")).join("").length;
-  componentGallery.innerHTML = ranked.map(({ item, reason }) => {
-    const chosen = active?.id === item.id;
-    const suggestion = lastAiResult && firstAvailable === item.id && !reason ? " · 推荐" : "";
-    const excerpt = selected.length ? componentContentSummary(selected) : "选中内容后预览自己的文字";
-    const lengthHint = !reason && selectedLength > item.softMax ? " · 内容较长，建议拆段" : "";
-    return `<div class="component-option-card"><button type="button" class="component-option${chosen ? " is-active" : ""}" data-component-choice="${item.id}" ${reason ? "disabled" : ""} aria-pressed="${chosen ? "true" : "false"}">
-      <span class="component-option-head"><strong>${item.label}${suggestion}</strong><small>${item.category === "text" ? "纯文字" : "图文"}</small></span>
-      <span class="component-option-hint">${reason || item.hint}${lengthHint}</span>
-      <span class="component-option-excerpt">${componentKit.escape(excerpt)}</span>
-    </button>${reason ? "" : `<div class="component-option-preview" aria-hidden="true">${componentPickerPreview(selected, item.id)}</div>`}</div>`;
-  }).join("");
-  if (componentEdit) {
-    componentEdit.hidden = !active;
-    if (active) {
-      componentEdit.querySelector("#componentLabel").value = active.meta?.label || "";
-      componentEdit.querySelector("#componentNote").value = active.meta?.note || "";
-    }
-  }
-}
-
-function wrapComponentParts(parts, blocks, mode) {
-  if (!componentKit || !componentAssignments.length) return parts;
-  const starts = new Map(reconcileComponentAssignments(blocks).map((item) => [item.startIndex, item]));
-  const result = [];
-  for (let index = 0; index < parts.length;) {
-    const assignment = starts.get(index);
-    if (!assignment) { result.push(parts[index]); index += 1; continue; }
-    const count = assignment.signatures.length;
-    result.push(componentKit.render(assignment.id, parts.slice(index, index + count), blocks.slice(index, index + count), assignment.meta, state, mode));
-    index += count;
-  }
-  return result;
-}
-
 const ATLAS_HEADING_STYLES = ["atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"];
 
 function splitAtlasHeadingLines(text) {
@@ -1327,7 +1102,6 @@ function renderBody() {
     if (item.type === "paragraph") return `<p data-type="paragraph" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     return "";
   });
-  if (!model.isSample) parts = wrapComponentParts(parts, model.blocks, "preview");
   // 精选主题：自动目录（取前 3 个二级标题，纯导航，不写回原文）。
   if (isTheme()) {
     const tocItems = model.blocks
@@ -1345,12 +1119,6 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
-  if (selectedComponentRange) {
-    articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
-      const index = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
-      node.classList.toggle("is-component-selected", index >= selectedComponentRange[0] && index <= selectedComponentRange[1]);
-    });
-  }
   articleTitle.textContent = model.title;
   articleTitle.contentEditable = "true";
 }
@@ -1367,8 +1135,7 @@ function serializePreviewToMarkdown() {
     return (clone.textContent || "").replace(/\u00a0/g, " ").trim();
   };
   const parts = [];
-  [...articleBody.children].flatMap((el) => el.dataset.component
-    ? [...(el.querySelector(":scope > .cc-content")?.children || [])] : [el]).forEach((el) => {
+  [...articleBody.children].forEach((el) => {
     const type = el.dataset.type || "";
     // 目录与签名是精选主题的派生装饰，不写回原文。
     if (type === "toc" || type === "signature") return;
@@ -1452,21 +1219,11 @@ function serializePreviewToMarkdown() {
 }
 
 function syncPreviewEdits() {
-  const before = getArticleModel().blocks;
   articleTitleOverride = (articleTitle?.innerText || "").trim();
   const markdown = serializePreviewToMarkdown();
   articleSource = markdown;
-  const after = getArticleModel().blocks;
-  const beforePlacement = componentAssignments.map((item) => `${item.id}:${item.startIndex}:${item.signatures.length}`);
-  reconcileComponentAssignments(after);
-  const afterPlacement = componentAssignments.map((item) => `${item.id}:${item.startIndex}:${item.signatures.length}`);
-  if (before.length !== after.length || beforePlacement.join("|") !== afterPlacement.join("|")) {
-    selectedComponentRange = null;
-    render();
-  }
   if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
   persistArticleSource();
-  renderComponentPicker();
   setStatus("已在预览中修改文字");
 }
 
@@ -1552,7 +1309,6 @@ function render(options = {}) {
     renderBody();
     renderStructureEditor();
   }
-  renderComponentPicker();
 }
 
 function applyMarksToMarkdown(text, marks) {
@@ -1671,106 +1427,6 @@ function applyAiLook(aiParams, assignment) {
   state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
 }
 
-function claimComponent(blocks, taken, assignments, start, count, id) {
-  if (start < 0 || count < 1 || start + count > blocks.length) return false;
-  if (Array.from({ length: count }, (_, offset) => taken[start + offset]).some(Boolean)) return false;
-  const group = blocks.slice(start, start + count);
-  if (componentKit.compatibility(id, group)) return false;
-  for (let offset = 0; offset < count; offset += 1) taken[start + offset] = true;
-  assignments.push({
-    id,
-    startIndex: start,
-    signatures: group.map(componentBlockSignature),
-    meta: { label: "", note: "" },
-  });
-  return true;
-}
-
-function uncoverIfArticleIsFull(blocks, taken, assignments) {
-  if (blocks.length <= 2 || taken.filter(Boolean).length < blocks.length) return;
-  ["sidenote", "book"].forEach((id) => {
-    if (taken.filter(Boolean).length < blocks.length) return;
-    const index = assignments.findIndex((item) => item.id === id);
-    if (index < 0) return;
-    const removed = assignments.splice(index, 1)[0];
-    for (let offset = 0; offset < removed.signatures.length; offset += 1) taken[removed.startIndex + offset] = false;
-  });
-}
-
-function applySuitableComponents() {
-  const model = getArticleModel();
-  if (!componentKit || model.isSample) return;
-  const blocks = model.blocks;
-  const taken = blocks.map(() => false);
-  const assignments = [];
-  for (let index = 0; index < blocks.length; index += 1) {
-    if (blocks[index].type !== "steps" || taken[index]) continue;
-    let imageAt = -1;
-    for (let cursor = Math.max(0, index - 3); cursor <= Math.min(blocks.length - 1, index + 3); cursor += 1) {
-      if (blocks[cursor].type === "image" && blocks[cursor].url && !taken[cursor]) {
-        imageAt = cursor;
-        break;
-      }
-    }
-    if (imageAt < 0) continue;
-    const start = Math.min(index, imageAt);
-    const count = Math.max(index, imageAt) - start + 1;
-    if (count > 4 || blocks.slice(start, start + count).some((_, offset) => taken[start + offset])) continue;
-    claimComponent(blocks, taken, assignments, start, count, "steps");
-  }
-  for (let index = 0; index < blocks.length - 1; index += 1) {
-    const first = blocks[index];
-    const second = blocks[index + 1];
-    if (first.type !== "image" || !first.url || second.type !== "image" || !second.url) continue;
-    const conclusion = blocks[index + 2];
-    const withConclusion = conclusion && ["paragraph", "lead"].includes(conclusion.type) && String(conclusion.text || "").trim().length <= 220;
-    claimComponent(blocks, taken, assignments, index, withConclusion ? 3 : 2, "compare");
-  }
-  for (let index = 0; index < blocks.length - 1; index += 1) {
-    const image = blocks[index];
-    const text = blocks[index + 1];
-    if (taken[index] || taken[index + 1] || image.type !== "image" || !image.url) continue;
-    if (!["paragraph", "lead", "heading"].includes(text.type)) continue;
-    const chars = String(text.text || "").trim().length;
-    if (!chars || chars > 500) continue;
-    claimComponent(blocks, taken, assignments, index, 2, chars <= 260 ? "side-by-side" : "hero");
-  }
-  for (let index = 0; index < blocks.length - 1; index += 1) {
-    if (taken[index] || taken[index + 1]) continue;
-    const question = String(blocks[index].text || "").trim();
-    const asked = /[？?]$/.test(question) || /^(问|Q[：:])/i.test(question);
-    if (!asked || !["paragraph", "lead", "heading"].includes(blocks[index].type)) continue;
-    if (!["paragraph", "lead"].includes(blocks[index + 1].type)) continue;
-    claimComponent(blocks, taken, assignments, index, 2, "qa");
-  }
-  for (let index = 0; index < blocks.length; index += 1) {
-    if (taken[index] || !["quote", "card"].includes(blocks[index].type)) continue;
-    const next = blocks[index + 1];
-    const withExplanation = next && !taken[index + 1] && ["paragraph", "lead"].includes(next.type) && String(next.text || "").trim().length <= 300;
-    claimComponent(blocks, taken, assignments, index, withExplanation ? 2 : 1, "viewpoint");
-  }
-  const opening = blocks.findIndex((block, index) => !taken[index] && ["paragraph", "lead"].includes(block.type));
-  if (opening === 0 || (opening === 1 && blocks[0]?.type === "heading" && !taken[0])) {
-    claimComponent(blocks, taken, assignments, opening === 1 ? 0 : opening, opening === 1 ? 2 : 1, "book");
-  }
-  let sidenoteAt = -1;
-  let sidenoteLength = 160;
-  blocks.forEach((block, index) => {
-    if (taken[index] || !["paragraph", "lead"].includes(block.type)) return;
-    const chars = String(block.text || "").trim().length;
-    if (chars > sidenoteLength) {
-      sidenoteAt = index;
-      sidenoteLength = chars;
-    }
-  });
-  if (sidenoteAt >= 0) claimComponent(blocks, taken, assignments, sidenoteAt, 1, "sidenote");
-  uncoverIfArticleIsFull(blocks, taken, assignments);
-  componentAssignments = assignments;
-  lastBlockSignatures = blocks.map(componentBlockSignature);
-  saveComponentAssignments();
-  render();
-}
-
 function applyAiNormalization(data, assignment) {
   const markdown = structuredDocumentToMarkdown(data?.document);
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
@@ -1784,7 +1440,6 @@ function applyAiNormalization(data, assignment) {
   else articleSource = markdown;
   syncControls();
   applyArticleSource(false);
-  applySuitableComponents();
   const blockCountFromAi = data.document.blocks.length;
   setStatus(`已优化 ${blockCountFromAi} 个内容块`);
   setFeedback("排版已更新");
@@ -2088,7 +1743,6 @@ function buildCopyHtml() {
     }
     return "";
   });
-  if (!model.isSample) body = wrapComponentParts(body, model.blocks, "copy");
   if (tocHtmlBlock) {
     const leadIndex = body.findIndex((part) => part.includes('data-yooco-lead="1"'));
     body.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtmlBlock);
@@ -2103,22 +1757,14 @@ function buildCopyHtml() {
 
 function buildCopyPlain(html) {
   const model = getArticleModel();
-  const assignments = reconcileComponentAssignments(model.blocks);
-  const starts = new Map(assignments.map((item) => [item.startIndex, item]));
-  const ends = new Map(assignments.map((item) => [item.startIndex + item.signatures.length - 1, item]));
-  const blocks = model.blocks.map((item, index) => {
-    const assignment = starts.get(index);
-    const label = assignment?.meta?.label || "";
-    const note = ends.get(index)?.meta?.note || "";
-    let content = "";
-    if (item.type === "list") content = (item.items || []).join("\n");
-    else if (item.type === "steps") content = [item.title, ...(item.items || [])].filter(Boolean).join("\n");
-    else if (item.type === "stat") content = [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
-    else if (item.type === "divider") content = "——";
-    else if (item.type === "image") content = [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
-    else if (["quote", "card"].includes(item.type)) content = [item.title, item.text].filter(Boolean).join("：");
-    else content = item.text || "";
-    return [label, content, note].filter(Boolean).join("\n");
+  const blocks = model.blocks.map((item) => {
+    if (item.type === "list") return (item.items || []).join("\n");
+    if (item.type === "steps") return [item.title, ...(item.items || [])].filter(Boolean).join("\n");
+    if (item.type === "stat") return [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
+    if (item.type === "divider") return "——";
+    if (item.type === "image") return [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
+    if (["quote", "card"].includes(item.type)) return [item.title, item.text].filter(Boolean).join("：");
+    return item.text || "";
   }).filter(Boolean);
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -2173,7 +1819,7 @@ function exportConfig() {
     template: { type: "universal", name: isTheme()
       ? `精选主题 · ${THEMES[state.theme].label}`
       : `${MOODS[currentMood].label} · ${SKINS[currentSkin].label}`, params: { ...getTemplateParams(), mood: currentMood, skin: currentSkin } },
-    article: { source: articleSource, title: articleTitleOverride, components: reconcileComponentAssignments(getArticleModel().blocks) },
+    article: { source: articleSource, title: articleTitleOverride },
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -2218,10 +1864,7 @@ function importConfig(file) {
         articleSource = payload.article.source;
         articleTitleOverride = typeof payload.article.title === "string" ? payload.article.title : "";
         blockTypeOverrides = {};
-        componentAssignments = Array.isArray(payload.article.components) ? payload.article.components : [];
-        lastBlockSignatures = articleSource.trim() ? parseArticle(articleSource).blocks.map(componentBlockSignature) : [];
         if (articleInput) articleInput.value = articleSource;
-        reconcileComponentAssignments(getArticleModel().blocks);
         persistArticleSource();
       }
       styleTouched = true;
@@ -2244,7 +1887,6 @@ function persistArticleSource() {
     else localStorage.removeItem("yooco-article-title");
     localStorage.setItem("yooco-infer-first-line-title", String(inferFirstLineTitle));
     localStorage.setItem("yooco-block-type-overrides", JSON.stringify(blockTypeOverrides));
-    saveComponentAssignments();
   } catch {
     if (copyFeedback) copyFeedback.textContent = "图片已显示。文章太大，刷新后可能丢失。";
   }
@@ -2260,14 +1902,7 @@ function trimInvalidOverrides() {
 function applyArticleSource(showStatus = true) {
   if (articleInput) {
     const incoming = articleInput.value.trim();
-    if (incoming !== articleSource) {
-      selectedComponentRange = null;
-      if (isDifferentArticle(articleSource, incoming)) {
-        componentAssignments = [];
-        lastBlockSignatures = [];
-      }
-      articleSource = incoming;
-    }
+    if (incoming !== articleSource) articleSource = incoming;
   }
   trimInvalidOverrides();
   persistArticleSource();
@@ -2286,9 +1921,6 @@ function clearArticleSource() {
   articleSource = "";
   articleTitleOverride = "";
   blockTypeOverrides = {};
-  componentAssignments = [];
-  lastBlockSignatures = [];
-  selectedComponentRange = null;
   lastAiResult = null;
   persistArticleSource();
   setStatus("当前为示例文章");
@@ -2489,154 +2121,6 @@ articleBody.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
 });
-const COMPONENT_SLIDE_MAX = 4;
-let componentSlideAnchor = null;
-let componentSlideActive = false;
-
-function previewBlockIndex(node) {
-  const target = node?.closest?.("[data-block-index][data-type]");
-  if (!target || !articleBody.contains(target)) return -1;
-  const model = getArticleModel();
-  if (model.isSample) return -1;
-  return model.blocks.findIndex((block) => block.sourceIndex === Number(target.dataset.blockIndex));
-}
-
-function slideSelectionRange(anchor, current) {
-  if (current >= anchor) return [anchor, Math.min(current, anchor + COMPONENT_SLIDE_MAX - 1)];
-  return [Math.max(current, anchor - (COMPONENT_SLIDE_MAX - 1)), anchor];
-}
-
-function paintComponentSelection() {
-  const model = getArticleModel();
-  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
-    const blockIndex = model.blocks.findIndex((block) => block.sourceIndex === Number(node.dataset.blockIndex));
-    node.classList.toggle("is-component-selected", Boolean(selectedComponentRange) && blockIndex >= selectedComponentRange[0] && blockIndex <= selectedComponentRange[1]);
-  });
-}
-
-articleBody.addEventListener("pointerdown", (event) => {
-  if (event.button !== 0) return;
-  const index = previewBlockIndex(event.target);
-  if (index < 0) return;
-  componentSlideAnchor = index;
-  componentSlideActive = false;
-  const move = (moveEvent) => {
-    if (componentSlideAnchor == null || (moveEvent.buttons & 1) === 0) return;
-    const current = previewBlockIndex(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY));
-    if (current < 0 || current === componentSlideAnchor) return;
-    if (!componentSlideActive) {
-      componentSlideActive = true;
-      articleBody.classList.add("is-component-sliding");
-    }
-    moveEvent.preventDefault();
-    window.getSelection()?.removeAllRanges();
-    selectedComponentRange = slideSelectionRange(componentSlideAnchor, current);
-    paintComponentSelection();
-    renderComponentPicker();
-  };
-  const finish = () => {
-    document.removeEventListener("pointermove", move);
-    document.removeEventListener("pointerup", finish);
-    document.removeEventListener("pointercancel", finish);
-    articleBody.classList.remove("is-component-sliding");
-    const slid = componentSlideActive;
-    componentSlideAnchor = null;
-    if (!slid) return;
-    renderComponentPicker();
-    window.setTimeout(() => { componentSlideActive = false; }, 0);
-  };
-  document.addEventListener("pointermove", move);
-  document.addEventListener("pointerup", finish);
-  document.addEventListener("pointercancel", finish);
-});
-articleBody.addEventListener("click", (event) => {
-  if (componentSlideActive) return;
-  const index = previewBlockIndex(event.target);
-  if (index < 0) return;
-  const model = getArticleModel();
-  if (event.shiftKey && selectedComponentRange) {
-    selectedComponentRange = [Math.min(selectedComponentRange[0], index), Math.max(selectedComponentRange[0], index)];
-  } else {
-    const assigned = reconcileComponentAssignments(model.blocks).find((entry) =>
-      index >= entry.startIndex && index < entry.startIndex + entry.signatures.length);
-    selectedComponentRange = assigned
-      ? [assigned.startIndex, assigned.startIndex + assigned.signatures.length - 1] : [index, index];
-  }
-  paintComponentSelection();
-  renderComponentPicker();
-});
-articleBody.addEventListener("keydown", (event) => {
-  if (!event.altKey || event.key !== "Enter") return;
-  const target = event.target.closest("[data-block-index][data-type]");
-  if (!target || !articleBody.contains(target)) return;
-  const model = getArticleModel();
-  if (model.isSample) return;
-  const index = model.blocks.findIndex((block) => block.sourceIndex === Number(target.dataset.blockIndex));
-  if (index < 0) return;
-  event.preventDefault();
-  selectedComponentRange = [index, index];
-  articleBody.querySelectorAll("[data-block-index]").forEach((node) => {
-    node.classList.toggle("is-component-selected", node === target);
-  });
-  renderComponentPicker();
-});
-document.querySelector("#componentExtendBefore")?.addEventListener("click", () => {
-  if (!selectedComponentRange) return;
-  flushPendingPreviewEdits();
-  selectedComponentRange = [Math.max(0, selectedComponentRange[0] - 1), selectedComponentRange[1]];
-  render();
-});
-document.querySelector("#componentExtendAfter")?.addEventListener("click", () => {
-  if (!selectedComponentRange) return;
-  flushPendingPreviewEdits();
-  const last = getArticleModel().blocks.length - 1;
-  selectedComponentRange = [selectedComponentRange[0], Math.min(last, selectedComponentRange[1] + 1)];
-  render();
-});
-
-document.querySelectorAll("[data-component-filter]").forEach((button) => button.addEventListener("click", () => {
-  componentFilter = button.dataset.componentFilter;
-  document.querySelectorAll("[data-component-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-  renderComponentPicker();
-}));
-componentGallery?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-component-choice]");
-  if (!button || button.disabled || !selectedComponentRange) return;
-  flushPendingPreviewEdits();
-  const model = getArticleModel();
-  if (model.isSample) return;
-  const [start, end] = selectedComponentRange;
-  const group = model.blocks.slice(start, end + 1);
-  const id = button.dataset.componentChoice;
-  if (componentKit.compatibility(id, group)) return;
-  const old = assignedRangeForSelection();
-  componentAssignments = componentAssignments.filter((assignment) =>
-    assignment.startIndex + assignment.signatures.length - 1 < start || assignment.startIndex > end);
-  componentAssignments.push({ id, startIndex: start, signatures: group.map(componentBlockSignature), meta: old?.meta || { label: "", note: "" } });
-  saveComponentAssignments();
-  render();
-  setFeedback(`已应用「${componentKit.items.find((item) => item.id === id).label}」`);
-});
-componentEdit?.querySelectorAll("input").forEach((input) => input.addEventListener("change", () => {
-  const active = assignedRangeForSelection();
-  if (!active) return;
-  active.meta = {
-    label: componentKit.clean(componentEdit.querySelector("#componentLabel").value),
-    note: componentKit.clean(componentEdit.querySelector("#componentNote").value),
-  };
-  saveComponentAssignments();
-  render();
-}));
-document.querySelector("#componentRemove")?.addEventListener("click", () => {
-  flushPendingPreviewEdits();
-  const active = assignedRangeForSelection();
-  if (!active) return;
-  componentAssignments = componentAssignments.filter((assignment) => assignment !== active);
-  saveComponentAssignments();
-  render();
-  setFeedback("已恢复普通排版");
-});
-
 const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
 let blockTypeMenu = null;
 let blockTypeMenuIndex = null;

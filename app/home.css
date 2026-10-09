@@ -640,17 +640,19 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 .ol-primary:hover:not(:disabled) { transform: scale(1.05); }
 .ol-upload:disabled, .ol-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 .ol-home .works-band {
-  margin: 0 28px 28px;
-  padding: 48px 32px 36px;
+  margin: 0;
+  padding: 36px 32px 8px;
   border: 0;
-  border-radius: 4rem 4rem 2rem 2rem;
-  background: #e5e5e5;
-  color: #000;
+  border-radius: 0;
+  background: transparent;
+  color: #ebebeb;
 }
 .ol-home .works-head.works-head-fan h2,
-.ol-home .works-more { color: #000; font-family: var(--ol-sans); }
+.ol-home .works-more { color: #ebebeb; font-family: var(--ol-sans); }
 .ol-home .works-head.works-head-fan h2 { letter-spacing: -0.04em; font-weight: 600; }
-.ol-home .works-more { border-bottom-color: #000; }
+.ol-home .works-more { border-bottom-color: rgba(255, 255, 255, 0.45); }
+.ol-home .works-fan .work-card { transition: transform 0.25s ease; }
+.ol-home .works-fan .work-cover { border-radius: 1.5rem; }
 .ol-pricing { padding: 12px 48px 56px; }
 .ol-pricing-intro { text-align: center; }
 .ol-pricing-intro h2 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.06em; }
@@ -718,7 +720,7 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   .ol-nav { grid-column: 1 / -1; width: auto; justify-content: flex-start; overflow-x: auto; }
   .ol-hero { gap: 28px; padding: 28px 20px 40px; }
   .ol-hero h1 { font-size: clamp(1.65rem, 7.2vw, 2.4rem); }
-  .ol-home .works-band { margin-inline: 12px; padding: 32px 12px 20px; border-radius: 2rem; }
+  .ol-home .works-band { padding: 28px 12px 8px; }
   .ol-footer, .ol-pricing { padding-inline: 16px; }
   .ol-status { display: none; }
 }

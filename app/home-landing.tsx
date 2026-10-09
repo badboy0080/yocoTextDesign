@@ -19,6 +19,7 @@ import Link from "next/link";
 
 import { EyeTracker } from "@/components/eye-tracker";
 import { WorksRail } from "@/components/works-rail";
+import { TRIAL_LIMIT } from "@/lib/trial-quota";
 import "./home.css";
 
 const STUDIO_URL = "/works?panel=studio";
@@ -87,7 +88,7 @@ async function readArticleFile(file: File): Promise<string> {
 const SHOW_PRICING = false;
 
 const PLANS = [
-  { name: "试用", price: "免费", note: "限 10 次", featured: true },
+  { name: "试用", price: "免费", note: `限 ${TRIAL_LIMIT} 次`, featured: true },
   { name: "专业版", price: "¥9.9", note: "每月", featured: false },
   { name: "专业版年付", price: "¥59.9", note: "每年", featured: false },
 ] as const;
@@ -285,7 +286,7 @@ export function HomeLanding() {
         <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">
           <div className="ol-pricing-intro">
             <h2 id="yooco-pricing-heading">价格</h2>
-            <p>试用免费限 10 次 / 专业版 ¥9.9/月 / ¥59.9/年</p>
+            <p>试用免费限 {TRIAL_LIMIT} 次 / 专业版 ¥9.9/月 / ¥59.9/年</p>
           </div>
           <ul className="ol-pricing-grid">
             {PLANS.map((plan) => (

@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+免费次数和凭空大标题（2026-10-09，本地，未部署）：未登录优化从每天 10 次改为每天 3 次。用尽后仍是「免费次数用完了。留下邮箱，开放订阅我通知你。」没有收款，也没有看广告换次数。原文里没有的大标题不会再出现在预览最上面。优化失败时，工具栏会写出接口返回的错误码和说明。
+
 本地预览（2026-10-09）：开发服务在 5174。非本机域名也能打开页面，不再被拦住。
 
 EdgeOne 部署（2026-10-09，未发出）：想发到项目 `yooco`。命令行没有登录，也没有 `EDGEONE_PAGES_API_TOKEN`，所以没有构建、没有部署。线上仍是旧版本。
@@ -49,11 +51,19 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-8cjhosfqcnmc`），加速区 global（含大陆）。2026-09-24 部署 `dpy43bkul7qd`。预览：`https://yooco-gxrxaiig.edgeone.cool`（国内常需控制台「预览」带 `eo_token` 的链接，有时效）。DeepSeek 已配生产环境变量。构建部署：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
 - **本地**：`npm run dev` → http://localhost:5173/ 。5173 被别的项目占用时，用 `npx vinext dev --port 5174`。CTA 走 `/studio`。密钥在 `.dev.vars`（已忽略，不入库）。`nodejs_compat` 只留在 `wrangler.jsonc`，不要再写进 `vite.config.ts`。
-- **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
+- **试用**：`POST /api/normalize` 免费 3 次/IP/天（`lib/trial-quota.js`）。用尽后工作台留邮箱，不收款。EdgeOne 用 Blob，Cloudflare 用 Cache API。
 - **漏斗**：`visit` / `trial_click` / `optimize_ok` 写入 EdgeOne Blob（失败不影响使用）。看数：`/metrics?token=`，口令为环境变量 `ANALYTICS_TOKEN`。
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-10-09 试用改为 3 次，并拦住凭空大标题
+
+- 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。
+- 做成了什么：次数统一到 `lib/trial-quota.js`。用尽后仍是留邮箱。模型返回的标题或开头小标题如果对不上原文，会丢掉，预览不再画巨大标题。失败时工具栏显示「错误码：说明」；没有这些字段时仍是「暂时无法完成优化，请稍后重试。」
+- 改了哪些文件：`lib/trial-quota.js`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、`public/ground-title.js`、`public/app.js`、`public/studio.html`、`public/styles.css`、`public/studio-ui.css`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。未部署。
+- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。订阅页那句「每天 3 次」这次没在浏览器里单独打开。要同事看到，需要再部署一次。
 
 ### 2026-10-09 EdgeOne 没部署成
 
@@ -86,12 +96,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/studio.html`、`public/app.js`、`public/styles.css`、`public/studio-ui.css`、`public/content-components.js`（删除）、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：本地打开工作台。右侧没有「内容组件」。气质与皮肤展开后只有四张卡，没有皮肤胶囊。四张卡分别套上墨黑米白、复古墨绿、橙粉活力、深空荧光，示例文章还在。点精选主题再回经典，气质卡还在。没有页面报错。未部署。
 - 待办/风险：要同事看到，需要再部署一次。以前存过的组件选择会丢掉，文章回到普通排版。
-
-### 2026-10-09 首页眼睛放回标题中间
-
-- 想做什么：荧光绿眼睛不要放在句末，要回到「好文章」和「值得好排版」中间。
-- 做成了什么：标题仍是一行「好文章值得好排版」，没有逗号。眼睛在两句中间，整行仍在页面中间。一屏和半露卡片没动。
-- 改了哪些文件：`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地 1440×900，眼睛左边是「好文章」，右边是「值得好排版」。页面没有滚动条。正中间那张卡仍露出一半。未部署。
-- 待办/风险：要同事看到，需要再部署一次。
 

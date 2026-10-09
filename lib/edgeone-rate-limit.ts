@@ -1,27 +1,12 @@
 import { AppError } from "./deepseek-normalizer";
 
-export const TRIAL_LIMIT = 10;
-const IP_DAILY_LIMIT = TRIAL_LIMIT;
 const GLOBAL_DAILY_LIMIT = 500;
 const IP_PER_MINUTE_LIMIT = 2;
 const STORE_NAME = "yooco-rate-limit";
 const CACHE_ORIGIN = "https://yooco-rate-limit.invalid";
-
-export const UPGRADE_PROMPT =
-  "免费试用次数已用完（每天 10 次）。升级专业版：¥9.9/月 或 ¥59.9/年。";
-
-export const UPGRADE_OFFER = {
-  monthly: "¥9.9/月",
-  yearly: "¥59.9/年",
-} as const;
+const RATE_LIMIT_MESSAGE = "请稍后再试。";
 
 type Counter = { count: number };
-
-export type TrialQuota = {
-  remaining: number | null;
-  limit: number;
-  enforced: boolean;
-};
 
 export class RateLimitError extends AppError {
   retryAfter: number;
@@ -33,7 +18,7 @@ export class RateLimitError extends AppError {
     message: string,
     retryAfter: number,
     remaining = 0,
-    limit = TRIAL_LIMIT,
+    limit = 0,
   ) {
     super(code, message, 429);
     this.retryAfter = retryAfter;
@@ -91,10 +76,6 @@ function isRateLimitEnabled(): boolean {
   if (flag === "0" || flag === "false" || flag === "off") return false;
   if (flag === "1" || flag === "true" || flag === "on") return true;
   return true;
-}
-
-function skippedQuota(): TrialQuota {
-  return { remaining: null, limit: TRIAL_LIMIT, enforced: false };
 }
 
 function cacheRequest(key: string): Request {
@@ -165,115 +146,49 @@ function quotaKeys(request: Request, now = Date.now()) {
   return {
     now,
     minuteKey: `ip/${day}/${ip}/m/${slot}`,
-    dayKey: `ip/${day}/${ip}/d`,
     globalKey: `global/${day}`,
     dayTtl: secondsUntilBeijingTomorrow(now),
     minuteTtl: secondsUntilNextMinute(now),
   };
 }
 
-async function readQuota(store: CounterStore, request: Request) {
-  const keys = quotaKeys(request);
-  const [minuteCount, dayCount, globalCount] = await Promise.all([
-    store.read(keys.minuteKey),
-    store.read(keys.dayKey),
-    store.read(keys.globalKey),
-  ]);
-  return { keys, minuteCount, dayCount, globalCount };
-}
-
-function remainingFromDayCount(dayCount: number): number {
-  return Math.max(0, IP_DAILY_LIMIT - dayCount);
-}
-
 /**
- * Read remaining free AI-normalize uses without consuming a slot.
- * No-op when the backing store is unavailable.
+ * Block short bursts and the site-wide daily cap.
+ * Account usage credits are counted separately and are not reset here.
+ * If the counter store is down, allow the request.
  */
-export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> {
-  if (!isRateLimitEnabled()) return skippedQuota();
+export async function consumeNormalizeRateLimit(request: Request): Promise<void> {
+  if (!isRateLimitEnabled()) return;
 
   let store: CounterStore | null;
   try {
     store = await openStore();
   } catch (error) {
     console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota();
+    return;
   }
-  if (!store) return skippedQuota();
+  if (!store) return;
 
   try {
-    const { dayCount } = await readQuota(store, request);
-    return {
-      remaining: remainingFromDayCount(dayCount),
-      limit: TRIAL_LIMIT,
-      enforced: true,
-    };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    console.warn("[rate-limit] quota peek failed, skip", error);
-    return skippedQuota();
-  }
-}
+    const keys = quotaKeys(request);
+    const [minuteCount, globalCount] = await Promise.all([
+      store.read(keys.minuteKey),
+      store.read(keys.globalKey),
+    ]);
 
-/**
- * Consume one AI-normalize quota. No-op when the backing store is unavailable.
- */
-export async function consumeNormalizeQuota(request: Request): Promise<TrialQuota> {
-  if (!isRateLimitEnabled()) return skippedQuota();
-
-  let store: CounterStore | null;
-  try {
-    store = await openStore();
-  } catch (error) {
-    console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota();
-  }
-  if (!store) return skippedQuota();
-
-  try {
-    const { keys, minuteCount, dayCount, globalCount } = await readQuota(store, request);
-    const remaining = remainingFromDayCount(dayCount);
-
-    if (minuteCount >= IP_PER_MINUTE_LIMIT) {
-      throw new RateLimitError(
-        "RATE_LIMITED",
-        "操作太频繁，请稍等一分钟再试。",
-        secondsUntilNextMinute(keys.now),
-        remaining,
-      );
-    }
-    if (dayCount >= IP_DAILY_LIMIT) {
-      throw new RateLimitError(
-        "TRIAL_EXHAUSTED",
-        UPGRADE_PROMPT,
-        secondsUntilBeijingTomorrow(keys.now),
-        0,
-      );
-    }
-    if (globalCount >= GLOBAL_DAILY_LIMIT) {
-      throw new RateLimitError(
-        "RATE_LIMITED",
-        "今天全站试用名额已满，请明天再来。",
-        secondsUntilBeijingTomorrow(keys.now),
-        remaining,
-      );
+    if (minuteCount >= IP_PER_MINUTE_LIMIT || globalCount >= GLOBAL_DAILY_LIMIT) {
+      const retryAfter = minuteCount >= IP_PER_MINUTE_LIMIT
+        ? secondsUntilNextMinute(keys.now)
+        : secondsUntilBeijingTomorrow(keys.now);
+      throw new RateLimitError("RATE_LIMITED", RATE_LIMIT_MESSAGE, retryAfter);
     }
 
     await Promise.all([
       store.write(keys.minuteKey, minuteCount + 1, keys.minuteTtl),
-      store.write(keys.dayKey, dayCount + 1, keys.dayTtl),
       store.write(keys.globalKey, globalCount + 1, keys.dayTtl),
     ]);
-
-    return {
-      remaining: remainingFromDayCount(dayCount + 1),
-      limit: TRIAL_LIMIT,
-      enforced: true,
-    };
   } catch (error) {
     if (error instanceof AppError) throw error;
     console.warn("[rate-limit] quota check failed, skip", error);
-    return skippedQuota();
   }
 }

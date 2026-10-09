@@ -142,12 +142,10 @@ const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
 const articleStatus = document.querySelector("#articleStatus");
 const trialMeter = document.querySelector("#trialMeter");
 const trialBanner = document.querySelector("#trialBanner");
-const trialBannerText = document.querySelector("#trialBannerText");
-const TRIAL_LIMIT = 10;
-const TRIAL_STORAGE_KEY = "yooco-trial";
-const UPGRADE_PROMPT = "今日试用已用完，订阅暂未开放。";
-let serverTrialRemaining = null;
-let serverTrialEnforced = false;
+const shareButton = document.querySelector("#shareButton");
+const shareDialog = document.querySelector("#shareDialog");
+let usageRemaining = null;
+let usageLogin = null;
 const articleTitle = document.querySelector("#articleTitle");
 const stylePane = document.querySelector("#stylePane");
 const styleMount = document.querySelector("#styleMount");
@@ -167,73 +165,140 @@ function setFeedback(message) {
   if (copyFeedback) copyFeedback.textContent = message;
 }
 
-function beijingDateKey(now = Date.now()) {
-  return new Date(now + 8 * 3600 * 1000).toISOString().slice(0, 10);
-}
-
-function readLocalTrialUsed() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(TRIAL_STORAGE_KEY) || "null");
-    if (raw?.date === beijingDateKey()) {
-      const used = Number(raw.used);
-      return Number.isFinite(used) && used > 0 ? Math.min(TRIAL_LIMIT, used) : 0;
-    }
-  } catch {
-    /* ignore quota / private mode */
-  }
-  return 0;
-}
-
-function writeLocalTrialUsed(used) {
-  try {
-    localStorage.setItem(TRIAL_STORAGE_KEY, JSON.stringify({
-      date: beijingDateKey(),
-      used: Math.max(0, Math.min(TRIAL_LIMIT, used)),
-    }));
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
-
-function remainingTrialCount() {
-  if (serverTrialRemaining !== null) return Math.max(0, serverTrialRemaining);
-  return Math.max(0, TRIAL_LIMIT - readLocalTrialUsed());
-}
-
-function renderTrialMeter() {
-  const remaining = remainingTrialCount();
+function renderUsage() {
+  const loggedIn = usageLogin === true;
+  const remaining = typeof usageRemaining === "number" ? usageRemaining : null;
   if (trialMeter) {
-    trialMeter.textContent = remaining > 0 ? `剩余 ${remaining} 次` : "试用已用完";
-    trialMeter.classList.toggle("is-empty", remaining <= 0);
+    const showMeter = loggedIn && remaining !== null;
+    trialMeter.hidden = !showMeter;
+    if (showMeter) {
+      trialMeter.textContent = `剩余 ${remaining} 次`;
+      trialMeter.classList.toggle("is-empty", remaining <= 0);
+    }
   }
-  if (trialBanner) trialBanner.hidden = remaining > 0;
+  if (trialBanner) trialBanner.hidden = !(loggedIn && remaining === 0);
   if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
-    aiNormalizeButton.disabled = remaining <= 0;
+    aiNormalizeButton.disabled = loggedIn && remaining === 0;
   }
 }
 
-function applyTrialFromServer(trial) {
-  if (!trial || typeof trial !== "object") return;
-  if (typeof trial.enforced === "boolean") serverTrialEnforced = trial.enforced;
-  if (typeof trial.remaining === "number" && Number.isFinite(trial.remaining)) {
-    serverTrialRemaining = Math.max(0, trial.remaining);
-    writeLocalTrialUsed(TRIAL_LIMIT - serverTrialRemaining);
+function applyUsageResponse(payload) {
+  if (!payload || typeof payload !== "object") return;
+  if (payload.loginRequired === true) {
+    usageLogin = false;
+    usageRemaining = null;
+  } else if (payload.loginRequired === false) {
+    usageLogin = true;
   }
-  renderTrialMeter();
+  const remaining = payload.trial && payload.trial.remaining;
+  if (typeof remaining === "number" && Number.isFinite(remaining)) {
+    usageLogin = true;
+    usageRemaining = Math.max(0, remaining);
+  }
+  renderUsage();
 }
 
-function showUpgradePrompt(message) {
-  const text = message || UPGRADE_PROMPT;
-  setStatus(text);
-  setFeedback("");
-  if (trialBanner) {
-    trialBanner.hidden = false;
-    if (trialBannerText) trialBannerText.textContent = text;
-  }
-  renderTrialMeter();
+function focusShareControl() {
+  const copy = document.querySelector("#shareCopy");
+  const login = document.querySelector("#shareLoginLink");
+  const close = document.querySelector("#shareClose");
+  const target = copy && !copy.hidden ? copy : login && !login.hidden ? login : close;
+  target?.focus();
 }
 
-async function refreshTrialFromServer() {
+function setShareMode(mode, detail = {}) {
+  const readyNote = document.querySelector("#shareReadyNote");
+  const loginNote = document.querySelector("#shareLoginNote");
+  const codeLabel = document.querySelector("#shareCodeLabel");
+  const linkLabel = document.querySelector("#shareLinkLabel");
+  const copy = document.querySelector("#shareCopy");
+  const login = document.querySelector("#shareLoginLink");
+  const codeInput = document.querySelector("#shareCodeValue");
+  const linkInput = document.querySelector("#shareLinkValue");
+  const status = document.querySelector("#shareCopyStatus");
+  const showReady = mode === "ready";
+  const showLogin = mode === "login";
+  if (readyNote) {
+    readyNote.hidden = showLogin;
+    readyNote.textContent = mode === "loading"
+      ? "正在生成分享链接…"
+      : mode === "error"
+        ? "暂时无法生成分享链接，请稍后再试。"
+        : "对方用这个码注册成功，双方各加 10 次。";
+  }
+  if (loginNote) loginNote.hidden = !showLogin;
+  if (codeLabel) codeLabel.hidden = !showReady;
+  if (linkLabel) linkLabel.hidden = !showReady;
+  if (copy) copy.hidden = !showReady;
+  if (login) login.hidden = !showLogin;
+  if (codeInput) codeInput.value = showReady ? detail.code || "" : "";
+  if (linkInput) linkInput.value = showReady ? detail.link || "" : "";
+  if (status) status.textContent = "";
+  focusShareControl();
+}
+
+async function openShareDialog() {
+  if (!shareDialog || typeof shareDialog.showModal !== "function") return;
+  if (!shareDialog.open) shareDialog.showModal();
+  if (usageLogin === false) {
+    setShareMode("login");
+    return;
+  }
+  setShareMode("loading");
+  try {
+    const response = await fetch("/api/auth/share", {
+      method: "POST",
+      headers: { accept: "application/json" },
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      usageLogin = false;
+      renderUsage();
+      setShareMode("login");
+      return;
+    }
+    if (!response.ok || !payload?.code) {
+      setShareMode("error");
+      return;
+    }
+    usageLogin = true;
+    const link = `${location.origin}/register?code=${encodeURIComponent(payload.code)}`;
+    setShareMode("ready", { code: payload.code, link });
+  } catch {
+    setShareMode("error");
+  }
+}
+
+function initShareDialog() {
+  shareButton?.addEventListener("click", () => {
+    openShareDialog();
+  });
+  document.querySelector("#trialShareButton")?.addEventListener("click", () => {
+    openShareDialog();
+  });
+  document.querySelector("#shareCopy")?.addEventListener("click", async () => {
+    const link = document.querySelector("#shareLinkValue")?.value || "";
+    const status = document.querySelector("#shareCopyStatus");
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      if (status) status.textContent = "已复制";
+    } catch {
+      const input = document.querySelector("#shareLinkValue");
+      input?.focus();
+      input?.select();
+      let copied = false;
+      try { copied = document.execCommand("copy"); } catch { copied = false; }
+      if (status) status.textContent = copied ? "已复制" : "请手动选择链接复制。";
+    }
+  });
+  shareDialog?.addEventListener("close", () => {
+    const status = document.querySelector("#shareCopyStatus");
+    if (status) status.textContent = "";
+  });
+}
+
+async function refreshUsage() {
   try {
     const response = await fetch("/api/normalize", {
       method: "GET",
@@ -241,11 +306,11 @@ async function refreshTrialFromServer() {
       cache: "no-store",
     });
     const payload = await response.json().catch(() => ({}));
-    if (response.ok && payload?.ok) applyTrialFromServer(payload.trial);
+    if (response.ok && payload?.ok) applyUsageResponse(payload);
   } catch {
-    /* keep local remaining */
+    /* keep the last known count */
   } finally {
-    renderTrialMeter();
+    renderUsage();
   }
 }
 
@@ -1451,8 +1516,15 @@ async function normalizeWithDeepSeek() {
     setFeedback("请先添加文章内容");
     return;
   }
-  if (remainingTrialCount() <= 0) {
-    showUpgradePrompt(UPGRADE_PROMPT);
+  if (usageLogin === false) {
+    setStatus("请先登录后再优化。");
+    setFeedback("");
+    return;
+  }
+  if (usageRemaining === 0) {
+    renderUsage();
+    setStatus("使用机会已用完。");
+    setFeedback("");
     return;
   }
   const originalLabel = aiNormalizeButton ? aiNormalizeButton.textContent : "";
@@ -1478,28 +1550,35 @@ async function normalizeWithDeepSeek() {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
       const message = payload?.error?.message || "暂时无法完成优化，请稍后重试。";
-      if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
-        serverTrialRemaining = 0;
-        writeLocalTrialUsed(TRIAL_LIMIT);
-        showUpgradePrompt();
+      if (response.status === 401 || payload?.error?.code === "LOGIN_REQUIRED") {
+        usageLogin = false;
+        usageRemaining = null;
+        renderUsage();
+        setStatus("请先登录后再优化。");
+        setFeedback("");
+        return;
+      }
+      if (payload?.error?.code === "CREDITS_EXHAUSTED") {
+        usageLogin = true;
+        usageRemaining = 0;
+        renderUsage();
+        setStatus("使用机会已用完。");
+        setFeedback("");
         return;
       }
       if (response.status === 429) {
         if (typeof payload?.error?.remaining === "number") {
-          serverTrialRemaining = payload.error.remaining;
-          renderTrialMeter();
+          usageRemaining = Math.max(0, payload.error.remaining);
+          renderUsage();
         }
-        setStatus("本次未调用 AI。");
-        setFeedback(message);
+        setStatus(message || "请稍后再试。");
+        setFeedback("");
         return;
       }
+      if (payload?.trial) applyUsageResponse(payload);
       throw new Error(message);
     }
-    if (payload.trial) applyTrialFromServer(payload.trial);
-    else if (!serverTrialEnforced) {
-      writeLocalTrialUsed(readLocalTrialUsed() + 1);
-      renderTrialMeter();
-    }
+    if (payload.trial) applyUsageResponse(payload);
     applyAiNormalization(payload.data, assignment);
     awaitingContentPick = false;
     try {
@@ -1514,7 +1593,7 @@ async function normalizeWithDeepSeek() {
     if (aiNormalizeButton) {
       delete aiNormalizeButton.dataset.busy;
       aiNormalizeButton.textContent = originalLabel;
-      renderTrialMeter();
+      renderUsage();
     }
   }
 }
@@ -2267,8 +2346,9 @@ try {
   }
 } catch { /* ignore */ }
 
-renderTrialMeter();
-refreshTrialFromServer();
+renderUsage();
+refreshUsage();
+initShareDialog();
 showLocalAccount();
 
 async function showLocalAccount() {
@@ -2305,14 +2385,19 @@ async function showLocalAccount() {
   try {
     const response = await fetch("/api/auth/me");
     if (!response.ok) {
+      usageLogin = false;
       if (login) login.hidden = false;
+      renderUsage();
       return;
     }
     const data = await response.json();
     if (!data?.email) {
+      usageLogin = false;
       if (login) login.hidden = false;
+      renderUsage();
       return;
     }
+    usageLogin = true;
     account.hidden = false;
     if (login) login.hidden = true;
     const name = document.querySelector("#studioAccountName");
@@ -2327,5 +2412,10 @@ async function showLocalAccount() {
       avatar.style.setProperty("--avatar-color", colors[sum % colors.length]);
       avatar.innerHTML = `<svg viewBox="0 0 160 120" aria-hidden="true"><path d="M16 57C16 24 41 11 78 11C118 11 143 23 143 57C143 82 128 101 103 112C96 115 93 113 96 105C100 92 90 93 77 94C39 98 16 84 16 57Z" fill="currentColor"/><g fill="#20251F"><ellipse cx="61" cy="57" rx="7.5" ry="14"/><ellipse cx="97" cy="57" rx="7.5" ry="14"/></g></svg>`;
     }
-  } catch { /* 未登录时工作台仍可试用 */ }
+    renderUsage();
+  } catch {
+    usageLogin = false;
+    if (login) login.hidden = false;
+    renderUsage();
+  }
 }

@@ -84,14 +84,6 @@ async function readArticleFile(file: File): Promise<string> {
   throw new Error("unsupported");
 }
 
-const SHOW_PRICING = false;
-
-const PLANS = [
-  { name: "试用", price: "免费", note: "限 10 次", featured: true },
-  { name: "专业版", price: "¥9.9", note: "每月", featured: false },
-  { name: "专业版年付", price: "¥59.9", note: "每年", featured: false },
-] as const;
-
 export function HomeLanding() {
   const [source, setSource] = useState("");
   const [hint, setHint] = useState("");
@@ -165,8 +157,6 @@ export function HomeLanding() {
         </Link>
         <nav className="ol-nav" aria-label="页面">
           <a href="#works-heading">作品</a>
-          {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
-          <Link href="/subscribe">订阅</Link>
           <a href={STUDIO_URL}>工作室</a>
         </nav>
         <div className="ol-header-end">
@@ -246,26 +236,6 @@ export function HomeLanding() {
         </section>
 
         <WorksRail />
-
-        {SHOW_PRICING ? (
-        <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">
-          <div className="ol-pricing-intro">
-            <h2 id="yooco-pricing-heading">价格</h2>
-            <p>试用免费限 10 次 / 专业版 ¥9.9/月 / ¥59.9/年</p>
-          </div>
-          <ul className="ol-pricing-grid">
-            {PLANS.map((plan) => (
-              <li key={plan.name} className={plan.featured ? "is-featured" : undefined}>
-                <p>{plan.name}</p>
-                <strong>{plan.price}</strong>
-                <span>{plan.note}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="ol-pricing-note">付费可开电子普票</p>
-          <p className="ol-pricing-note">符合条件可申请退款</p>
-        </section>
-        ) : null}
       </main>
 
       <footer className="ol-footer">

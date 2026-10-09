@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Yooco · Best layout with AI",
-  description: "好文章，值得好排版。",
+  title: "Yooco · 好文章值得好排版",
+  description: "好文章值得好排版",
   icons: {
     icon: "/favicon.svg?v=bubble-c-v1",
   },

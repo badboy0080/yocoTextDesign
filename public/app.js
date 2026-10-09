@@ -143,9 +143,13 @@ const articleStatus = document.querySelector("#articleStatus");
 const trialMeter = document.querySelector("#trialMeter");
 const trialBanner = document.querySelector("#trialBanner");
 const trialBannerText = document.querySelector("#trialBannerText");
+const waitlistForm = document.querySelector("#waitlistForm");
+const waitlistEmail = document.querySelector("#waitlistEmail");
+const waitlistFeedback = document.querySelector("#waitlistFeedback");
 const TRIAL_LIMIT = 10;
 const TRIAL_STORAGE_KEY = "yooco-trial";
-const UPGRADE_PROMPT = "今日试用已用完，订阅暂未开放。";
+const WAITLIST_COPY = "免费次数用完了。留下邮箱，开放订阅我通知你。";
+const UPGRADE_PROMPT = WAITLIST_COPY;
 let serverTrialRemaining = null;
 let serverTrialEnforced = false;
 const articleTitle = document.querySelector("#articleTitle");
@@ -228,9 +232,48 @@ function showUpgradePrompt(message) {
   setFeedback("");
   if (trialBanner) {
     trialBanner.hidden = false;
-    if (trialBannerText) trialBannerText.textContent = text;
+    if (trialBannerText) trialBannerText.textContent = WAITLIST_COPY;
   }
   renderTrialMeter();
+}
+
+function validWaitlistEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+if (waitlistForm) {
+  waitlistForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = (waitlistEmail?.value || "").trim();
+    const button = waitlistForm.querySelector("button");
+    if (!validWaitlistEmail(email)) {
+      if (waitlistFeedback) waitlistFeedback.textContent = "请填写有效的邮箱。";
+      return;
+    }
+    if (button) button.disabled = true;
+    if (waitlistFeedback) waitlistFeedback.textContent = "正在保存…";
+    try {
+      let deviceId = "";
+      try { deviceId = localStorage.getItem("yooco-device-id") || ""; } catch { /* ignore */ }
+      // 邮箱写入 /api/waitlist。服务端同时记漏斗事件 waitlist_email_submit，这里不再重复打点。
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, deviceId }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.ok) {
+        if (waitlistFeedback) waitlistFeedback.textContent = payload?.error?.message || "暂时没记下，请稍后再试。";
+        return;
+      }
+      if (waitlistEmail) waitlistEmail.value = "";
+      if (waitlistFeedback) waitlistFeedback.textContent = "已记下。开放订阅后通知你。";
+    } catch {
+      if (waitlistFeedback) waitlistFeedback.textContent = "暂时没记下，请稍后再试。";
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
 }
 
 async function refreshTrialFromServer() {

@@ -196,7 +196,15 @@ html.studio-embedded .studio-navigation { display:none; }
 .toggle-control i { background:rgba(255,255,255,.16); }
 .toggle-control input:checked + i { background:#ccff00; }
 .toggle-control input:checked + i::before { background:#000; }
-.trial-banner { border-color:rgba(204,255,0,.35); border-radius:1.5rem; background:rgba(204,255,0,.08); color:#ebebeb; }
+.trial-banner { display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; border-color:rgba(204,255,0,.35); border-radius:1.5rem; background:rgba(204,255,0,.08); color:#ebebeb; }
+.trial-banner[hidden] { display:none !important; }
+.trial-banner-copy { flex:1 1 16rem; margin:0; }
+.trial-waitlist { flex:1 1 16rem; margin:0; }
+.trial-waitlist input { border-color:rgba(255,255,255,.2); background:rgba(0,0,0,.35); color:#ebebeb; }
+.trial-waitlist input::placeholder { color:rgba(255,255,255,.45); }
+.trial-waitlist button { background:#ccff00; color:#000; }
+.trial-waitlist button:disabled { opacity:.55; }
+.trial-waitlist-feedback { flex-basis:100%; margin:0; color:#ccff00; }
 .trial-banner a { color:#ccff00; }
 .compliance-panel, .compliance-panel--page {
   flex:none;

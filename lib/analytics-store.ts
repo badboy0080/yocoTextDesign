@@ -1,6 +1,6 @@
 import { getAnalyticsToken } from "./runtime-env";
 
-export const FUNNEL_EVENTS = ["visit", "trial_click", "optimize_ok"] as const;
+export const FUNNEL_EVENTS = ["visit", "trial_click", "optimize_ok", "waitlist_email_submit"] as const;
 export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];
 
 export type EventCounts = { pv: number; uv: number };
@@ -10,6 +10,7 @@ export type FunnelDay = {
   visit: EventCounts;
   trial_click: EventCounts;
   optimize_ok: EventCounts;
+  waitlist_email_submit: EventCounts;
 };
 
 export type FunnelMetrics = {
@@ -19,6 +20,7 @@ export type FunnelMetrics = {
     visit: EventCounts;
     trial_click: EventCounts;
     optimize_ok: EventCounts;
+    waitlist_email_submit: EventCounts;
   };
 };
 
@@ -52,6 +54,7 @@ function emptyDay(): DayRecord {
     visit: emptyBucket(),
     trial_click: emptyBucket(),
     optimize_ok: emptyBucket(),
+    waitlist_email_submit: emptyBucket(),
   };
 }
 
@@ -166,6 +169,7 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
       visit: countsOf(record.visit),
       trial_click: countsOf(record.trial_click),
       optimize_ok: countsOf(record.optimize_ok),
+      waitlist_email_submit: countsOf(record.waitlist_email_submit),
     };
   });
 
@@ -173,11 +177,13 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
     visit: 0,
     trial_click: 0,
     optimize_ok: 0,
+    waitlist_email_submit: 0,
   };
   const totalsUv: Record<FunnelEvent, Set<string>> = {
     visit: new Set(),
     trial_click: new Set(),
     optimize_ok: new Set(),
+    waitlist_email_submit: new Set(),
   };
   for (const date of dates) {
     const record = doc.days[date];
@@ -195,6 +201,10 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
       visit: { pv: totalsPv.visit, uv: totalsUv.visit.size },
       trial_click: { pv: totalsPv.trial_click, uv: totalsUv.trial_click.size },
       optimize_ok: { pv: totalsPv.optimize_ok, uv: totalsUv.optimize_ok.size },
+      waitlist_email_submit: {
+        pv: totalsPv.waitlist_email_submit,
+        uv: totalsUv.waitlist_email_submit.size,
+      },
     },
   };
 }

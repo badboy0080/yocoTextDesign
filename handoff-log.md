@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+账号使用机会（2026-10-09，本地，未部署）：订阅入口从首页、登录、注册和工作台收起。打开 `/subscribe` 会进工作台，价格页不展示。登录后每个账号 10 次优化，成功才扣 1 次，不按天恢复。用完去分享，双方各加 10 次。未部署。
+
 Obsidian & Lime 视觉改版（2026-10-09，本地，未部署、未合并）：首页、作品页、工作台和登录改成黑底荧光绿。首页在 1440×900 里是一屏，不用往下滚。主标题是一行「好文章值得好排版」，荧光绿眼睛在「好文章」和「值得好排版」中间。底部作品卡只露出上半截，底仍是深色，卡片有圆角。左上角是绿色气泡。文章纸张颜色没动。没有部署。
 
 工作台去掉文章类型（2026-09-28，已部署 EdgeOne `dps63w6tv2in`）：配置里不再选手动文章类型。结尾签名开关还在，分组改叫「结尾」。排版仍按识别出的类型走。这次部署也带上登录、首页眼睛和作品图文。
@@ -41,11 +43,19 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - **国内向（主推试）**：腾讯云 EdgeOne Makers 项目 `yooco`（ID `makers-8cjhosfqcnmc`），加速区 global（含大陆）。2026-09-24 部署 `dpy43bkul7qd`。预览：`https://yooco-gxrxaiig.edgeone.cool`（国内常需控制台「预览」带 `eo_token` 的链接，有时效）。DeepSeek 已配生产环境变量。构建部署：`npm run build:edgeone` → `edgeone makers deploy -n yooco -a global`。
 - **海外备份**：Cloudflare `https://yooco.yooco-lab.workers.dev/`（国内多需代理）。工作室路径 `/studio` 与 `/studio.html` 都可用。
 - **本地**：`npm run dev` → http://localhost:5173/ 。5173 被别的项目占用时，用 `npx vinext dev --port 5174`。CTA 走 `/studio`。密钥在 `.dev.vars`（已忽略，不入库）。`nodejs_compat` 只留在 `wrangler.jsonc`，不要再写进 `vite.config.ts`。
-- **试用**：`POST /api/normalize` 免费 10 次/IP/天；工作室顶栏显示剩余次数；用尽提示专业版 ¥9.9/月、¥59.9/年（无真实支付）。EdgeOne 用 Blob，Cloudflare 用 Cache API。
+- **使用机会**：登录后按账号计算。新账号 10 次，一次成功的优化扣 1 次，不按天恢复。用完提示去分享，双方各加 10 次。短时间连点和全站一天的保护还在，提示是「请稍后再试」。
 - **漏斗**：`visit` / `trial_click` / `optimize_ok` 写入 EdgeOne Blob（失败不影响使用）。看数：`/metrics?token=`，口令为环境变量 `ANALYTICS_TOKEN`。
 - **待办**：ICP 备案后把 `yooco.yokeaai.xyz` 绑到 EdgeOne；当前未改阿里云 DNS。部署时需在 EdgeOne 配 `ANALYTICS_TOKEN`。
 
 ## 最近 5 次工作记录
+
+### 2026-10-09 藏起订阅，改成账号使用机会和分享加次
+
+- 想做什么：网站上不再出现订阅和价格。每个登录账号 10 次优化，分享注册双方各加 10 次。
+- 做成了什么：首页、登录、注册、工作台去掉订阅入口。旧订阅地址转到工作台。优化必须登录，成功才扣 1 次，次数为 0 时不调用模型。工作台右上角有礼包分享按钮，弹窗给出稳定分享码和注册链接。注册页可以改分享码。有效码在同一次保存里给新用户 20 次、分享者加 10 次。
+- 改了哪些文件：`lib/account-usage.ts`、`lib/account-usage.test.ts`、`lib/local-accounts.ts`、`lib/edgeone-rate-limit.ts`、`app/api/normalize/route.ts`、`app/api/auth/register/route.ts`、`app/api/auth/share/route.ts`、`app/subscribe/page.tsx`、`components/auth-page.tsx`、`components/account-layout.tsx`、`app/home-landing.tsx`、`public/studio.html`、`public/app.js`、`public/studio-ui.css`、`CONTEXT.md`、`package.json`、交接日志。
+- 如何验证：`npm test` 通过。本地服务看过首页、登录、注册没有订阅和价格；注册页带上链接里的分享码；`/subscribe` 转到工作台。接口核对了未登录不能优化、新账号 10 次、分享码不变、双方加次、错码和自己的码不加、失败优化不扣次。没有在浏览器里点开分享窗。未部署。
+- 待办/风险：要同事看到，需要再部署一次。订阅页设计文件还在仓库里，但地址已经转到工作台。
 
 ### 2026-10-09 首页眼睛放回标题中间
 
@@ -77,13 +87,5 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：整句在同一行，气泡夹在逗号后面。输入框仍在标题下面、页面中间。
 - 改了哪些文件：`app/home-landing.tsx`、`app/home.css`、`handoff-log.md`。
 - 如何验证：本地 1440 和 390 宽都是一行，没有横向溢出。未部署。
-- 待办/风险：要同事看到，需要再部署一次。
-
-### 2026-10-08 首页标题和输入框居中
-
-- 想做什么：输入框不要靠右。「好文章，值得好排版」放到中间，当欢迎语和主标题。
-- 做成了什么：标题在上，输入框在标题正下方，两边对齐页面中间。粘贴、上传和「优化排版」都还在。
-- 改了哪些文件：`app/home.css`、`handoff-log.md`。
-- 如何验证：本地 1440 宽，标题和输入卡的中心都在页面中间。390 宽没有横向溢出。未部署。
 - 待办/风险：要同事看到，需要再部署一次。
 

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AccountLayout } from "@/components/account-layout";
 
@@ -12,6 +13,9 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const params = useSearchParams();
+  const [shareCode, setShareCode] = useState(isRegister ? params.get("code") || "" : "");
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -35,11 +39,17 @@ export function AuthPage({ mode }: { mode: Mode }) {
           name: nameRef.current?.value || "",
           email: emailRef.current?.value || "",
           password: passwordRef.current?.value || "",
+          shareCode: isRegister ? shareCode : "",
         }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string };
+      const data = await response.json().catch(() => ({})) as { message?: string; shareApplied?: boolean };
       if (!response.ok) {
         setNotice(data.message || "暂时无法完成，请稍后再试。");
+        return;
+      }
+      if (isRegister && shareCode.trim() && data.shareApplied === false) {
+        setNotice(data.message || "这个分享码没有用上。账号已创建，现有 10 次使用机会。");
+        setDone(true);
         return;
       }
       location.href = "/studio.html";
@@ -100,10 +110,24 @@ export function AuthPage({ mode }: { mode: Mode }) {
                   <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
                 </label>
               )}
-              <button className="account-primary-button" type="button" onClick={handleSubmit} disabled={busy}>
+              {isRegister && (
+                <label className="auth-field">
+                  <span>分享码 <span className="auth-field-index">05</span></span>
+                  <input
+                    value={shareCode}
+                    onChange={(event) => setShareCode(event.target.value)}
+                    type="text"
+                    placeholder="选填"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </label>
+              )}
+              <button className="account-primary-button" type="button" onClick={handleSubmit} disabled={busy || done}>
                 {busy ? "正在提交…" : isRegister ? "创建账户" : "登录"}<ArrowRight size={19} aria-hidden="true" />
               </button>
               {notice && <p className="auth-notice" role="status">{notice}</p>}
+              {done && <Link className="account-secondary-button" href="/works?panel=studio">进入工作台 <ArrowRight size={17} aria-hidden="true" /></Link>}
             </div>
 
             <div className="auth-panel-bottom">

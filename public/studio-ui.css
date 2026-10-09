@@ -108,9 +108,9 @@ html.studio-embedded .studio-navigation { display:none; }
 .control-group.is-open .group-body-inner { padding:0 12px 16px; }
 .theme-grid,.mood-grid { gap:8px; }
 .theme-chip,.mood-card { border-color:var(--line); border-radius:6px; background:var(--panel); }
-.theme-chip.is-active,.mood-card.is-active,.skin-chip.is-active { border-color:var(--yooco-color-link); background:var(--yooco-color-soft); color:var(--ink); box-shadow:inset 3px 0 var(--yooco-color-primary); }
+.theme-chip.is-active,.mood-card.is-active { border-color:var(--yooco-color-link); background:var(--yooco-color-soft); color:var(--ink); box-shadow:inset 3px 0 var(--yooco-color-primary); }
 .theme-chip.is-active b,.mood-card.is-active b,.mood-card.is-active span { color:var(--ink); }
-.theme-chip b,.mood-card b,.skin-chip { font-size:12px; }
+.theme-chip b,.mood-card b { font-size:12px; }
 .theme-chip small,.mood-card span { font-size:12px; }
 .color-control,.range-control,.toggle-control,.select-control { font-size:12px; min-height:40px; }
 .select-control select,.structure-row select { min-height:40px; max-width:100%; border:1px solid var(--yooco-color-border-strong); border-radius:6px; background:var(--panel); color:var(--ink); font-size:12px; }
@@ -129,9 +129,6 @@ html.studio-embedded .studio-navigation { display:none; }
 .studio-help-popover { display:none; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--muted); font-size:12px; line-height:1.6; }
 .studio-help:hover .studio-help-popover,.studio-help:focus-within .studio-help-popover { display:block; }
 .studio-help-popover code { font-family:var(--yooco-font-mono); }
-.component-picker-intro,.component-selection,.component-option-copy small { font-size:12px; }
-.component-range-actions button,.component-filters button,#componentRemove { min-height:40px; }
-.component-edit input { min-height:40px; }
 @media(max-width:1023px) {
   .studio-account-popover { top: calc(100% + 6px); bottom: auto; }
   .studio-layout { display:block; }
@@ -181,19 +178,19 @@ html.studio-embedded .studio-navigation { display:none; }
 .insight-panel { background:#0a0a0a; }
 .studio-main .topbar, .preview-header, .preview-footer, .preview-panel { background:#0c0c0c; }
 .preview-stage { background:var(--preview-page-color,#fff); }
-.theme-chip, .mood-card, .skin-chip {
+.theme-chip, .mood-card {
   border-color:rgba(255,255,255,.1);
   border-radius:1rem;
   background:rgba(255,255,255,.03);
   color:#ebebeb;
 }
-.theme-chip.is-active, .theme-chip.is-classic.is-active, .mood-card.is-active, .skin-chip.is-active {
+.theme-chip.is-active, .theme-chip.is-classic.is-active, .mood-card.is-active {
   border-color:#ccff00;
   background:rgba(204,255,0,.12);
   color:#ebebeb;
   box-shadow:inset 3px 0 #ccff00;
 }
-.theme-chip.is-active b, .theme-chip.is-classic.is-active b, .mood-card.is-active b, .mood-card.is-active span, .skin-chip.is-active { color:#ebebeb; }
+.theme-chip.is-active b, .theme-chip.is-classic.is-active b, .mood-card.is-active b, .mood-card.is-active span { color:#ebebeb; }
 .mood-card.is-active { background:#ccff00; color:#000; }
 .mood-card.is-active b, .mood-card.is-active span { color:#000; }
 .toggle-control i { background:rgba(255,255,255,.16); }
@@ -216,28 +213,7 @@ html.studio-embedded .studio-navigation { display:none; }
 .compliance-level[data-level="warn"] { color:#f5d76e; }
 .compliance-level[data-level="risk"] { color:#ffb4a8; }
 .compliance-tooltip { border-color:rgba(255,255,255,.12); background:#141414; color:#ebebeb; }
-.component-picker { border-color:rgba(255,255,255,.1); border-radius:1.5rem; background:rgba(255,255,255,.03); }
-.component-picker :where(button, [role="option"]) {
-  border-color:rgba(255,255,255,.1);
-  border-radius:1rem;
-  background:rgba(255,255,255,.03);
-  color:#ebebeb;
-}
-.component-picker :where(button[aria-selected="true"], [role="option"][aria-selected="true"], .is-active) {
-  border-color:#ccff00;
-  background:rgba(204,255,0,.14);
-  color:#ebebeb;
-}
-.component-picker-intro, .component-option-hint, .component-option-excerpt, .component-option-head small { color:rgba(255,255,255,.55); }
-.component-selection { background:rgba(255,255,255,.05); color:#ebebeb; }
-.component-picker .component-filters button[aria-pressed="true"] { border-color:#ccff00; background:#ccff00; color:#000; }
-.component-option-card { border-color:rgba(255,255,255,.1); }
-.component-picker .component-option { background:transparent; }
-.component-picker .component-option.is-active { background:rgba(204,255,0,.12); color:#ebebeb; }
-.component-edit label { color: rgba(255,255,255,.72); }
-.component-edit { border-top-color: rgba(255,255,255,.1); }
-.component-option-excerpt, .component-option-preview { border-top-color: rgba(255,255,255,.1); }
-.component-edit input, .source-panel textarea, .select-control select, .structure-row select {
+.source-panel textarea, .select-control select, .structure-row select {
   border-color:rgba(255,255,255,.16);
   border-radius:12px;
   background:#111;

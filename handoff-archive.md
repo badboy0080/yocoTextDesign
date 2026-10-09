@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-08 左上角标志改回绿色气泡
+
+- 想做什么：左上角不要方块 Y，改回那颗绿气泡。
+- 做成了什么：首页、作品、登录和工作台左上角都是绿色气泡加 Yooco。气泡大约 43×34，不是正方形。
+- 改了哪些文件：`components/brand-logo.tsx`、`components/works-frame.tsx`、`public/yooco-mark-lime.svg`、`public/obsidian-lime.css`、`public/studio.html`、`app/works.css`、`handoff-log.md`。
+- 如何验证：本地看过首页、作品、登录和静态工作台的左上角。标志是气泡，字还在。未部署。
+- 待办/风险：要同事看到，需要再部署一次。
+
 ### 2026-10-08 改掉审阅里的四处外观
 
 - 想做什么：眼睛别压住输入卡，页脚不要第二颗主按钮，折叠图标要看得见，登录左标题上移。

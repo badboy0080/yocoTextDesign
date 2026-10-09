@@ -181,7 +181,9 @@ export function HomeLanding() {
             <p className="ol-kicker">YOOCO / LAYOUT</p>
             <h1 id="home-hero-title">
               <span className="ol-hero-line">
-                好文章，
+                <span className="ol-hero-words">
+                  好文章<span className="ol-hero-accent">值得好排版</span>
+                </span>
                 <span className="ol-eye ol-float" aria-hidden="true">
                   <EyeTracker
                     shape="Bubble"
@@ -195,7 +197,6 @@ export function HomeLanding() {
                     near={320}
                   />
                 </span>
-                <span className="ol-hero-accent">值得好排版</span>
               </span>
             </h1>
           </div>

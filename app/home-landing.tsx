@@ -99,27 +99,61 @@ export function HomeLanding() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  function trackTrialClick() {
+    try {
+      const track = (window as Window & { yoocoTrack?: (event: string) => void }).yoocoTrack;
+      if (typeof track === "function") {
+        track("trial_click");
+        return;
+      }
+    } catch {
+      /* fall through to a direct beacon */
+    }
+    try {
+      const deviceId = window.localStorage.getItem("yooco-device-id") || "";
+      const body = JSON.stringify({ event: "trial_click", deviceId });
+      if (navigator.sendBeacon) {
+        const sent = navigator.sendBeacon(
+          "/api/track",
+          new Blob([body], { type: "text/plain;charset=UTF-8" }),
+        );
+        if (sent) return;
+      }
+      void fetch("/api/track", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body,
+        keepalive: true,
+      });
+    } catch {
+      /* analytics must not block entry */
+    }
+  }
+
+  function readSource() {
+    const field = document.getElementById("home-article-input");
+    if (field instanceof HTMLTextAreaElement) return field.value;
+    return source;
+  }
+
   function goStudio(autoOptimize: boolean) {
     startTransition(() => {
       try {
-        const text = source.trim();
+        const text = readSource().trim();
         if (text) localStorage.setItem("yooco-article-source", text);
         if (autoOptimize && text) localStorage.setItem("yooco-auto-optimize", "1");
+        else localStorage.removeItem("yooco-auto-optimize");
       } catch {
         /* ignore quota / private mode */
       }
+      trackTrialClick();
       window.location.assign(STUDIO_URL);
     });
   }
 
-  function goOptimize() {
-    const text = source.trim();
-    if (!text) {
-      setHint("请先粘贴或输入文章。");
-      return;
-    }
+  function goTrial() {
     setHint("");
-    goStudio(true);
+    goStudio(Boolean(readSource().trim()));
   }
 
   function openFilePicker() {
@@ -200,13 +234,13 @@ export function HomeLanding() {
             </h1>
           </div>
           <div className="ol-hero-panel">
-            <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goOptimize(); }}>
+            <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
                 id="home-article-input"
                 rows={6}
                 spellCheck={false}
-                placeholder="粘贴公众号原文，点「优化排版」开始"
+                placeholder="粘贴公众号原文，点「免费试用」进入工作台"
                 value={source}
                 aria-invalid={Boolean(hint) || undefined}
                 onChange={(event) => {
@@ -216,7 +250,7 @@ export function HomeLanding() {
                 onKeyDown={(event) => {
                   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
                     event.preventDefault();
-                    goOptimize();
+                    goTrial();
                   }
                 }}
               />
@@ -234,10 +268,10 @@ export function HomeLanding() {
                   {importing ? "读取中…" : "上传 txt / docx"}
                 </button>
                 <p className={hint ? "ol-hint is-error" : "ol-hint"} role={hint ? "alert" : undefined}>
-                  {hint ? <><AlertCircle size={14} aria-hidden="true" />{hint}</> : "Ctrl / ⌘ + Enter 也可提交"}
+                  {hint ? <><AlertCircle size={14} aria-hidden="true" />{hint}</> : "贴了文章会带进工作台"}
                 </p>
                 <button type="submit" className="ol-primary" disabled={pending || importing}>
-                  {pending ? "正在打开…" : "优化排版"}
+                  {pending ? "正在打开…" : "免费试用"}
                   {!pending ? <ArrowRight size={18} aria-hidden="true" /> : null}
                 </button>
               </div>

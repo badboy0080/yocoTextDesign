@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const event = parseFunnelEvent((body as { event?: unknown }).event);
     if (!event) {
       return Response.json(
-        { ok: false, error: { code: "UNKNOWN_EVENT", message: "只接受 visit、trial_click、optimize_ok。" } },
+        { ok: false, error: { code: "UNKNOWN_EVENT", message: "只接受 visit、trial_click、optimize_ok、waitlist_email_submit。" } },
         { status: 400, headers: { "cache-control": "no-store" } },
       );
     }

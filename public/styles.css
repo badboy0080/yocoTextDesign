@@ -70,6 +70,32 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   line-height: 1.55;
 }
 .trial-banner[hidden] { display: none !important; }
+.trial-banner-copy { margin: 0; }
+.trial-waitlist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.trial-waitlist input {
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.trial-waitlist button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #17331b;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.trial-waitlist button:disabled { opacity: .6; cursor: wait; }
+.trial-waitlist-feedback { margin: 8px 0 0; font-size: 12px; }
+.trial-waitlist-feedback:empty { display: none; }
 .trial-banner a { margin-left: 8px; color: #516450; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .trial-banner a:hover { color: #235d3b; }
 .ghost-button, .accent-button, .ai-button {

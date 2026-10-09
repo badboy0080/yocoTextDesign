@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
-    <link rel="stylesheet" href="./styles.css?v=components-v2" />
-    <link rel="stylesheet" href="./studio-ui.css?v=account-credits-v1" />
+    <link rel="stylesheet" href="./styles.css?v=studio-trim-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=account-credits-trim-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -136,38 +136,6 @@
                 <div class="group-body">
                   <div class="mood-picker" id="moodPicker">
                     <div class="mood-grid" id="moodGrid"></div>
-                    <div class="skin-row" id="skinRow">
-                      <div class="skin-chips"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="control-group content-component-group is-open" id="componentPickerGroup" data-accordion>
-                <button type="button" class="group-toggle" aria-expanded="true">
-                  <span class="group-icon" aria-hidden="true">▤</span>
-                  <span class="group-label">内容组件</span>
-                  <span class="group-chevron" aria-hidden="true"></span>
-                </button>
-                <div class="group-body">
-                  <div class="component-picker" id="componentPicker">
-                    <p class="component-picker-intro">点击预览段落，或聚焦后按 Alt+Enter；用下方按钮加入相邻内容。</p>
-                    <p class="component-selection" id="componentSelection" role="status">请先选择内容块</p>
-                    <div class="component-range-actions">
-                      <button id="componentExtendBefore" type="button">加入上一块</button>
-                      <button id="componentExtendAfter" type="button">加入下一块</button>
-                    </div>
-                    <div class="component-filters" role="group" aria-label="组件分类">
-                      <button type="button" data-component-filter="all" aria-pressed="true">全部</button>
-                      <button type="button" data-component-filter="text" aria-pressed="false">纯文字</button>
-                      <button type="button" data-component-filter="image" aria-pressed="false">图文</button>
-                    </div>
-                    <div class="component-gallery" id="componentGallery"></div>
-                    <div class="component-edit" id="componentEdit" hidden>
-                      <label>眉题或标签<input id="componentLabel" type="text" maxlength="100" placeholder="可留空" /></label>
-                      <label>边注或补充说明<input id="componentNote" type="text" maxlength="100" placeholder="可留空" /></label>
-                      <button id="componentRemove" type="button">恢复普通排版</button>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -360,7 +328,6 @@
 
     <script src="./analytics.js?v=funnel-v1"></script>
     <script src="./themes.js?v=themes-trim-v1"></script>
-    <script src="./content-components.js?v=components-v2"></script>
-    <script src="./app.js?v=account-credits-v1"></script>
+    <script src="./app.js?v=account-credits-trim-v1"></script>
   </body>
 </html>

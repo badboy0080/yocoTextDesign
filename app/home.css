@@ -696,6 +696,15 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 }
 .ol-footer-link:hover { color: rgba(255, 255, 255, 0.72); }
 .ol-copy { font-family: var(--ol-mono); font-size: 11px; letter-spacing: 0.14em; }
+.ol-beian { margin: 12px 0 0; text-align: center; }
+.ol-beian a {
+  color: rgba(255, 255, 255, 0.38);
+  font-family: var(--ol-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.ol-beian a:hover { color: rgba(255, 255, 255, 0.62); }
 .ol-watermark {
   position: absolute;
   right: 4%;
@@ -770,7 +779,15 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
     min-height: 0;
     resize: none;
   }
-  .ol-footer { display: none; }
+  .ol-footer {
+    display: flex;
+    flex: none;
+    justify-content: center;
+    padding: 0 28px 8px;
+    background: transparent;
+  }
+  .ol-footer-row { display: none; }
+  .ol-beian { margin: 0; }
   .ol-watermark { bottom: 7.5rem; }
   .ol-home .works-band {
     flex: none;

@@ -505,6 +505,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .article-meta { margin-bottom: 22px; color: #8e9389; font-size: 10px; letter-spacing: .08em; }
 .article-page h2 { margin: 0 0 12px; color: var(--title-color, #20231f); font-family: var(--heading-font, inherit); font-size: var(--title-size, 26px); font-weight: var(--heading-weight, 800); line-height: var(--heading-line-height, 1.33); letter-spacing: -.04em; }
+.article-page h2[hidden] { display: none !important; }
 .article-subtitle { margin: 0 0 29px; color: #8e9389; font-size: 12px; line-height: 1.7; }
 .article-content { color: var(--text-color, #3f3f3f); font-family: var(--body-font, inherit); }
 .article-content p { margin: 0 0 var(--paragraph-spacing, 18px); font-size: var(--font-size, 16px); line-height: var(--line-height, 1.75); letter-spacing: var(--letter-spacing, .3px); text-align: var(--text-align, left); text-indent: var(--text-indent, 0); }

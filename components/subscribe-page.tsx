@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, MoveUpRight } from "lucide-react";
 import { AccountLayout } from "@/components/account-layout";
+import { TRIAL_LIMIT } from "@/lib/trial-quota";
 
 type Billing = "monthly" | "yearly";
 
@@ -41,7 +42,7 @@ export function SubscribePage() {
               <div><h3>先试试</h3><p className="subscribe-card-description">不用注册，直接进入工作台。</p></div>
               <div className="subscribe-price"><strong>¥0</strong><span>/ 当前免费试用</span></div>
               <ul className="subscribe-features">
-                <li><Check size={16} aria-hidden="true" />每天 10 次 AI 排版优化</li>
+                <li><Check size={16} aria-hidden="true" />每天 {TRIAL_LIMIT} 次 AI 排版优化</li>
                 <li><Check size={16} aria-hidden="true" />查看作品与排版灵感</li>
                 <li><Check size={16} aria-hidden="true" />调整版式、复制与导出配置</li>
               </ul>

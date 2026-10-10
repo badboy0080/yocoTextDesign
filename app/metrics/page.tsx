@@ -10,6 +10,8 @@ type FunnelDay = {
   trial_click: EventCounts;
   optimize_ok: EventCounts;
   waitlist_email_submit: EventCounts;
+  invite_share: EventCounts;
+  invite_redeem: EventCounts;
 };
 type MetricsPayload = {
   ok: true;
@@ -24,7 +26,7 @@ function rate(part: number, whole: number): string {
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
 
-function Counts({ day }: { day: Pick<FunnelDay, "visit" | "trial_click" | "optimize_ok" | "waitlist_email_submit"> }) {
+function Counts({ day }: { day: Pick<FunnelDay, "visit" | "trial_click" | "optimize_ok" | "waitlist_email_submit" | "invite_share" | "invite_redeem"> }) {
   return (
     <>
       <td className="px-3 py-2 tabular-nums">{day.visit.pv}</td>
@@ -35,6 +37,10 @@ function Counts({ day }: { day: Pick<FunnelDay, "visit" | "trial_click" | "optim
       <td className="px-3 py-2 tabular-nums">{day.optimize_ok.uv}</td>
       <td className="px-3 py-2 tabular-nums">{day.waitlist_email_submit.pv}</td>
       <td className="px-3 py-2 tabular-nums">{day.waitlist_email_submit.uv}</td>
+      <td className="px-3 py-2 tabular-nums">{day.invite_share.pv}</td>
+      <td className="px-3 py-2 tabular-nums">{day.invite_share.uv}</td>
+      <td className="px-3 py-2 tabular-nums">{day.invite_redeem.pv}</td>
+      <td className="px-3 py-2 tabular-nums">{day.invite_redeem.uv}</td>
     </>
   );
 }
@@ -104,7 +110,7 @@ function MetricsView() {
       <h1 className="text-2xl font-semibold tracking-tight">Yooco 漏斗</h1>
       <p className="mt-2 max-w-2xl text-zinc-600">
         访问（首页/工作室）→ 点击「免费试用」→ AI 排版成功。次数用尽后留下邮箱，记为
-        waitlist_email_submit。数字按北京时间记天；PV 是次数，UV 是独立访客。邮箱名单不在这页，用同一口令请求
+        waitlist_email_submit。打开或复制邀请码记 invite_share，好友注册填对码记 invite_redeem。数字按北京时间记天；PV 是次数，UV 是独立访客。邮箱名单不在这页，用同一口令请求
         /api/waitlist。
       </p>
 
@@ -136,7 +142,7 @@ function MetricsView() {
         <div className="mt-8 space-y-8">
           <section>
             <h2 className="text-base font-medium">累计</h2>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-xl border border-zinc-200 bg-white p-4">
                 <p className="text-zinc-500">访问 visit</p>
                 <p className="mt-1 text-2xl font-semibold tabular-nums">{data.totals.visit.pv}</p>
@@ -168,6 +174,16 @@ function MetricsView() {
                 </p>
                 <p className="text-zinc-500">UV {data.totals.waitlist_email_submit.uv}</p>
               </div>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4">
+                <p className="text-zinc-500">打开邀请码 invite_share</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{data.totals.invite_share.pv}</p>
+                <p className="text-zinc-500">UV {data.totals.invite_share.uv}</p>
+              </div>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4">
+                <p className="text-zinc-500">填码注册 invite_redeem</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{data.totals.invite_redeem.pv}</p>
+                <p className="text-zinc-500">UV {data.totals.invite_redeem.uv}</p>
+              </div>
             </div>
           </section>
 
@@ -186,12 +202,16 @@ function MetricsView() {
                     <th className="px-3 py-2 font-medium">ok UV</th>
                     <th className="px-3 py-2 font-medium">候补 PV</th>
                     <th className="px-3 py-2 font-medium">候补 UV</th>
+                    <th className="px-3 py-2 font-medium">邀请 PV</th>
+                    <th className="px-3 py-2 font-medium">邀请 UV</th>
+                    <th className="px-3 py-2 font-medium">填码 PV</th>
+                    <th className="px-3 py-2 font-medium">填码 UV</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.days.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-6 text-zinc-500" colSpan={9}>
+                      <td className="px-3 py-6 text-zinc-500" colSpan={13}>
                         还没有事件。打开首页或工作室会产生 visit。
                       </td>
                     </tr>

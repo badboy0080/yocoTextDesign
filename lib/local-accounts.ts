@@ -117,7 +117,7 @@ export async function registerAccount(input: { name: string; email: string; pass
   doc.users.push({ id, email, name, passwordHash: hashPassword(input.password), createdAt: new Date().toISOString() });
   await startSession(doc, id);
   await save(doc);
-  return { ok: true as const, email, name };
+  return { ok: true as const, id, email, name };
 }
 
 export async function loginAccount(input: { email: string; password: string }) {
@@ -140,7 +140,16 @@ export async function currentAccount() {
   const session = doc.sessions.find((item) => item.tokenHash === hashToken(token) && item.expiresAt > Date.now());
   if (!session) return null;
   const user = doc.users.find((item) => item.id === session.userId);
-  return user ? { email: user.email, name: user.name } : null;
+  return user ? { id: user.id, email: user.email, name: user.name } : null;
+}
+
+export async function deleteAccount(userId: number) {
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
+  const { doc, save } = await openDoc();
+  doc.users = doc.users.filter((user) => user.id !== userId);
+  doc.sessions = doc.sessions.filter((item) => item.userId !== userId);
+  await save(doc);
 }
 
 export async function logoutAccount() {

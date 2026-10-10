@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-免费次数和凭空大标题（2026-10-09，本地，未部署）：未登录优化从每天 10 次改为每天 3 次。用尽后仍是「免费次数用完了。留下邮箱，开放订阅我通知你。」没有收款，也没有看广告换次数。原文里没有的大标题不会再出现在预览最上面。优化失败时，工具栏会写出接口返回的错误码和说明。
+邀请好友（2026-10-10，本地，未部署）：登录后，作品页和直接打开的工作台账号菜单里有「邀请好友」。弹窗正文是「你的邀请码：XXX。一码最多用 5 次。好友注册填码，可多 5 次免费。」注册页有「邀请码（选填）」，提示「填了多 5 次免费」。填对的新账号多 5 次优化，挂在账号上，加在当天免费次数外面。访客每天仍是 3 次。一码最多 5 次，不能用自己的码。不收款。
+
+免费次数和凭空大标题（2026-10-09，已进 master）：未登录优化是每天 3 次。用尽后仍是「免费次数用完了。留下邮箱，开放订阅我通知你。」没有收款，也没有看广告换次数。原文里没有的大标题不会再出现在预览最上面。优化失败时，工具栏会写出接口返回的错误码和说明。
 
 本地预览（2026-10-09）：开发服务在 5174。非本机域名也能打开页面，不再被拦住。
 
@@ -57,13 +59,29 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-10 邀请好友对齐每天 3 次
+
+- 想做什么：#16 已经进 master。邀请好友这支要合进去，每天免费仍是 3 次，邀请加成加在外面。
+- 做成了什么：访客每天 3 次没改回去。填对邀请码的账号，剩余次数是当天剩下的加上最多 5 次加成。邀请文案和 `invite_share`、`invite_redeem` 还在。
+- 改了哪些文件：合入 master 时解开 `lib/edgeone-rate-limit.ts`、`public/app.js`、`public/studio.html`、`handoff-log.md`、`workUp.md`。
+- 如何验证：`lib/trial-quota.js` 里是 3。规则脚本会检查每天 3 次加邀请 5 次等于 8。
+- 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。
+
+### 2026-10-10 邀请好友
+
+- 想做什么：账号菜单加「邀请好友」，注册可以填邀请码。一码最多用 5 次，好友多 5 次免费优化。
+- 做成了什么：作品页和工作台菜单能打开发码弹窗，文案用张默那句。注册页有选填邀请码。码和次数存在 EdgeOne 那一类存储里；本机没有 Blob 时记在这次运行的内存里。剩余次数 = 当天这个 IP 还剩的免费次数 + 账号上的邀请加成。先扣当天的，再扣加成。
+- 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
+- 如何验证：注册页能看到邀请码。登录后点「邀请好友」能看到邀请码。错码不会建账号。第 6 次会说用满。
+- 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
+
 ### 2026-10-09 试用改为 3 次，并拦住凭空大标题
 
 - 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。
 - 做成了什么：次数统一到 `lib/trial-quota.js`。用尽后仍是留邮箱。模型返回的标题或开头小标题如果对不上原文，会丢掉，预览不再画巨大标题。失败时工具栏显示「错误码：说明」；没有这些字段时仍是「暂时无法完成优化，请稍后重试。」
 - 改了哪些文件：`lib/trial-quota.js`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、`public/ground-title.js`、`public/app.js`、`public/studio.html`、`public/styles.css`、`public/studio-ui.css`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。未部署。
-- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。订阅页那句「每天 3 次」这次没在浏览器里单独打开。要同事看到，需要再部署一次。
+- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。已进 master。
+- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。要同事看到，需要再部署一次。
 
 ### 2026-10-09 EdgeOne 没部署成
 
@@ -80,20 +98,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`vite.config.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：用非本机域名访问 `http://127.0.0.1:5174/` 返回页面，浏览器能看到「免费试用」。
 - 待办/风险：这只影响本地开发服务，不改变线上部署。
-
-### 2026-10-09 首页免费试用和候补邮箱
-
-- 想做什么：首页标题改成和页面大标题一样的中文。第一屏主按钮改成「免费试用」并进入工作台。免费次数用尽时留下邮箱，不要只说订阅没开放。
-- 做成了什么：标题和说明去掉旧逗号。主按钮是「免费试用」；贴了文章会带进工作台并自动排版，没贴也能进。次数用尽出现指定那句话和邮箱框。提交后写入名单，并记 `waitlist_email_submit`。没有开收款，价格数字没动。
-- 改了哪些文件：`app/layout.tsx`、`app/home-landing.tsx`、`app/metrics/page.tsx`、`app/api/track/route.ts`、`app/api/waitlist/route.ts`、`lib/analytics-store.ts`、`lib/waitlist-store.ts`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`public/styles.css`、`public/studio-ui.css`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：看首页标题和第一屏按钮。空着或贴一段字点「免费试用」都进工作台，贴过的会开始排版。把试用次数用完后，横幅是指定那句话，填邮箱能看到「已记下」。
-- 待办/风险：要同事看到，需要再部署一次。本地开发时邮箱只留在这次运行的内存里；EdgeOne 上写入 Blob。生产环境如果存不进去，页面会说没记下，不会假装成功。
-
-### 2026-10-09 工作台去掉内容组件和皮肤色块
-
-- 想做什么：删掉「内容组件」整块面板。气质与皮肤里删掉那排皮肤胶囊，四张气质卡留下。
-- 做成了什么：工作台打不开内容组件，优化后也不会再自动套组件。点气质卡仍套该方向的第一套皮肤。旧配置和 AI 若自带某一套皮肤，仍会用上。
-- 改了哪些文件：`public/studio.html`、`public/app.js`、`public/styles.css`、`public/studio-ui.css`、`public/content-components.js`（删除）、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地打开工作台。右侧没有「内容组件」。气质与皮肤展开后只有四张卡，没有皮肤胶囊。四张卡分别套上墨黑米白、复古墨绿、橙粉活力、深空荧光，示例文章还在。点精选主题再回经典，气质卡还在。没有页面报错。未部署。
-- 待办/风险：要同事看到，需要再部署一次。以前存过的组件选择会丢掉，文章回到普通排版。
-

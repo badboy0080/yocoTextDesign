@@ -16,6 +16,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLInputElement>(null);
+  const inviteRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit() {
     for (const field of [nameRef.current, emailRef.current, passwordRef.current, confirmRef.current]) {
@@ -35,6 +36,10 @@ export function AuthPage({ mode }: { mode: Mode }) {
           name: nameRef.current?.value || "",
           email: emailRef.current?.value || "",
           password: passwordRef.current?.value || "",
+          inviteCode: inviteRef.current?.value || "",
+          deviceId: (() => {
+            try { return localStorage.getItem("yooco-device-id") || ""; } catch { return ""; }
+          })(),
         }),
       });
       const data = await response.json().catch(() => ({})) as { message?: string };
@@ -52,7 +57,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
   return (
     <AccountLayout section={isRegister ? "创建账户" : "欢迎回来"} skin="obsidian">
-      <div className="account-container auth-page">
+      <div className={`account-container auth-page${isRegister ? " is-register" : ""}`}>
         <div className="account-index"><span>YOOCO / ACCOUNT</span><span>{isRegister ? "02" : "01"} — 03</span></div>
         <div className="auth-grid">
           <section className={`auth-editorial ${isRegister ? "auth-editorial-register" : ""}`} aria-label="Yooco 账号说明">
@@ -98,6 +103,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
                 <label className="auth-field">
                   <span>确认密码 <span className="auth-field-index">04</span></span>
                   <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
+                </label>
+              )}
+              {isRegister && (
+                <label className="auth-field">
+                  <span>邀请码（选填） <span className="auth-field-index">05</span></span>
+                  <input ref={inviteRef} type="text" placeholder="没有也可以注册" autoComplete="off" maxLength={16} spellCheck={false} />
+                  <small className="auth-field-hint">填了多 5 次免费</small>
                 </label>
               )}
               <button className="account-primary-button" type="button" onClick={handleSubmit} disabled={busy}>

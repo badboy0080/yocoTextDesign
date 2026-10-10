@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "@/app/works.css";
 import { BrandLogo } from "@/components/brand-logo";
+import { InviteModal } from "@/components/invite-modal";
 import { WorksGallery } from "@/components/works-gallery";
 
 type Panel = "works" | "studio";
@@ -53,6 +54,7 @@ export function WorksFrame() {
   const [studioReady, setStudioReady] = useState(panel === "studio");
   const [account, setAccount] = useState<{ email: string; name: string } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     setPanel(params.get("panel") === "studio" ? "studio" : "works");
@@ -163,6 +165,7 @@ export function WorksFrame() {
               {menuOpen ? (
                 <div className="works-account-popover" role="menu">
                   <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>个人信息</button>
+                  <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setInviteOpen(true); }}>邀请好友</button>
                   <button
                     type="button"
                     role="menuitem"
@@ -187,6 +190,7 @@ export function WorksFrame() {
           {studioReady ? <iframe className="works-studio-frame" title="工作台" src="/studio.html" /> : null}
         </div>
       </div>
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }

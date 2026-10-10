@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
-    <link rel="stylesheet" href="./styles.css?v=trial-3-title-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=trial-3-title-v1" />
+    <link rel="stylesheet" href="./styles.css?v=invite-trial3-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=invite-trial3-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -34,6 +34,7 @@
               </button>
               <div class="studio-account-popover" id="studioAccountPopover" role="menu" hidden>
                 <button type="button" role="menuitem" id="studioProfile">个人信息</button>
+                <button type="button" role="menuitem" id="studioInvite">邀请好友</button>
                 <button type="button" role="menuitem" id="studioLogout">退出登录</button>
               </div>
             </div>
@@ -43,7 +44,10 @@
       <div class="studio-main">
     <header class="topbar topbar-buttons">
       <h1 class="studio-title">工作台</h1>
-      <a class="studio-login" id="studioLogin" href="/login">Log in</a>
+      <div class="topbar-actions">
+        <span class="trial-meter" id="trialMeter" hidden>剩余次数</span>
+        <a class="studio-login" id="studioLogin" href="/login">Log in</a>
+      </div>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
       <p class="trial-banner-copy" id="trialBannerText">免费次数用完了。留下邮箱，开放订阅我通知你。</p>
@@ -300,8 +304,20 @@
       </div>
     </div>
 
-    <script src="./analytics.js?v=waitlist-v1"></script>
+    <div class="invite-modal" id="inviteModal" hidden>
+      <div class="invite-modal-card" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle" tabindex="-1">
+        <h2 id="inviteModalTitle">邀请好友</h2>
+        <p id="inviteModalBody">正在取出邀请码…</p>
+        <div class="invite-modal-actions">
+          <button class="invite-modal-copy" id="inviteCopy" type="button" disabled>复制邀请码</button>
+          <button class="invite-modal-close" id="inviteClose" type="button">关闭</button>
+        </div>
+        <p class="invite-modal-status" id="inviteModalStatus" role="status"></p>
+      </div>
+    </div>
+
+    <script src="./analytics.js?v=invite-v1"></script>
     <script src="./themes.js?v=themes-trim-v1"></script>
-    <script src="./app.js?v=trial-3-title-v1"></script>
+    <script src="./app.js?v=invite-trial3-v1"></script>
   </body>
 </html>

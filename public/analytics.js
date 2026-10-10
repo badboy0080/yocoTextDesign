@@ -3,7 +3,7 @@
 
   var STORAGE_KEY = "yooco-device-id";
   // waitlist_email_submit：次数用尽后提交候补邮箱。工作室由 /api/waitlist 记这一笔，页面不再重复打点。
-  var ALLOWED = { visit: 1, trial_click: 1, optimize_ok: 1, waitlist_email_submit: 1 };
+  var ALLOWED = { visit: 1, trial_click: 1, optimize_ok: 1, waitlist_email_submit: 1, invite_share: 1, invite_redeem: 1 };
 
   function getDeviceId() {
     try {

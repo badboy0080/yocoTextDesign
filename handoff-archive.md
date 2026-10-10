@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-10-09 首页免费试用和候补邮箱
+
+- 想做什么：首页标题改成和页面大标题一样的中文。第一屏主按钮改成「免费试用」并进入工作台。免费次数用尽时留下邮箱，不要只说订阅没开放。
+- 做成了什么：标题和说明去掉旧逗号。主按钮是「免费试用」；贴了文章会带进工作台并自动排版，没贴也能进。次数用尽出现指定那句话和邮箱框。提交后写入名单，并记 `waitlist_email_submit`。没有开收款，价格数字没动。
+- 改了哪些文件：`app/layout.tsx`、`app/home-landing.tsx`、`app/metrics/page.tsx`、`app/api/track/route.ts`、`app/api/waitlist/route.ts`、`lib/analytics-store.ts`、`lib/waitlist-store.ts`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`public/styles.css`、`public/studio-ui.css`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：看首页标题和第一屏按钮。空着或贴一段字点「免费试用」都进工作台，贴过的会开始排版。把试用次数用完后，横幅是指定那句话，填邮箱能看到「已记下」。
+- 待办/风险：要同事看到，需要再部署一次。本地开发时邮箱只留在这次运行的内存里；EdgeOne 上写入 Blob。生产环境如果存不进去，页面会说没记下，不会假装成功。
+
+### 2026-10-09 工作台去掉内容组件和皮肤色块
+
+- 想做什么：删掉「内容组件」整块面板。气质与皮肤里删掉那排皮肤胶囊，四张气质卡留下。
+- 做成了什么：工作台打不开内容组件，优化后也不会再自动套组件。点气质卡仍套该方向的第一套皮肤。旧配置和 AI 若自带某一套皮肤，仍会用上。
+- 改了哪些文件：`public/studio.html`、`public/app.js`、`public/styles.css`、`public/studio-ui.css`、`public/content-components.js`（删除）、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：本地打开工作台。右侧没有「内容组件」。气质与皮肤展开后只有四张卡，没有皮肤胶囊。四张卡分别套上墨黑米白、复古墨绿、橙粉活力、深空荧光，示例文章还在。点精选主题再回经典，气质卡还在。没有页面报错。未部署。
+- 待办/风险：要同事看到，需要再部署一次。以前存过的组件选择会丢掉，文章回到普通排版。
+
 ### 2026-10-09 首页眼睛放回标题中间
 
 - 想做什么：荧光绿眼睛不要放在句末，要回到「好文章」和「值得好排版」中间。

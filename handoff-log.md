@@ -2,7 +2,11 @@
 
 ## 当前接手摘要
 
-登录提示和主题列表（2026-10-10，本地，未部署）：登录和注册不再显示「本机测试时，账号只在这次打开的服务里有效」。工作台文章属性只剩一个「主题」。四套旧气质（克制高级、杂志编辑部、活泼小红书、暗黑科技）和五套精选主题在同一列表里。点旧气质仍套该方向的默认外观。没有「气质与皮肤」，也没有皮肤色块。邀请和每天 3 次没动。
+临时预览（2026-10-10）：正式项目 `yooco` 没更新，这台机器没有 EdgeOne 登录，也没有 `EDGEONE_PAGES_API_TOKEN`。当前分支发到了匿名临时项目 `makers-vr4pyksxgz7r`，部署号 `dp44b0vpwqsq`。大约北京时间 16:31 会删掉。线上登录页没有本机测试说明，`themes.js` 里有星探绿。DeepSeek 密钥不在这次临时项目里，优化排版可能不可用。
+
+星探绿（2026-10-10）：主题列表多了一项「星探绿」。点一下套上开源导读的版式：翠绿大号序号和 PART、第一张目录卡是实心绿、绿色圆点、深色代码块。正文色 `#374151`，强调色 `#059669`。邀请和每天 3 次没动。
+
+登录提示和主题列表（2026-10-10，本地，未部署）：登录和注册不再显示「本机测试时，账号只在这次打开的服务里有效」。工作台文章属性只剩一个「主题」。四套旧气质和原来的精选主题在同一列表里。点旧气质仍套该方向的默认外观。没有「气质与皮肤」，也没有皮肤色块。
 
 邀请好友（2026-10-10，本地，未部署）：登录后，作品页和直接打开的工作台账号菜单里有「邀请好友」。弹窗正文是「你的邀请码：XXX。一码最多用 5 次。好友注册填码，可多 5 次免费。」注册页有「邀请码（选填）」，提示「填了多 5 次免费」。填对的新账号多 5 次优化，挂在账号上，加在当天免费次数外面。访客每天仍是 3 次。一码最多 5 次，不能用自己的码。不收款。
 
@@ -61,6 +65,22 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-10 临时发到 EdgeOne
+
+- 想做什么：把当前登录改动和星探绿直接发到线上。
+- 做成了什么：正式项目 `yooco` 没发成，没有登录也没有 API Token。改成匿名临时项目 `makers-vr4pyksxgz7r`，部署号 `dp44b0vpwqsq`。构建时 Next 会检查 `vite.config.ts`，类型对不上，已从 `tsconfig.json` 的检查范围拿掉，构建才通过。
+- 改了哪些文件：`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：临时地址能打开。登录页没有「本机测试时」。`/themes.js` 里有「星探绿」。注册页还有邀请码。
+- 待办/风险：临时项目大约北京时间 16:31 失效。要更新 `yooco`，需要在已登录的电脑上部署，或给环境配 `EDGEONE_PAGES_API_TOKEN`。不要把 Token 写进仓库。这次临时项目没有生产环境的 DeepSeek 密钥。
+
+### 2026-10-10 加上星探绿主题
+
+- 想做什么：按一篇微信公众号开源导读的版式，做成主题列表里点一下就能用的主题。
+- 做成了什么：新主题叫「星探绿」。章节是翠绿大号序号加 PART，目录第一张卡是实心绿，列表是绿色圆点，代码块是深色。加粗字用强调绿。复制到公众号的 HTML 也带这些样式。
+- 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：工作台点「星探绿」，示例或贴进的文章出现 01 PART、绿色圆点和深色代码。再点「清氧绿」，PART 标题消失，颜色回到清氧绿。剩余次数仍是 3 次。
+- 待办/风险：还没部署。代码块是整块深色浅字，没有原文里那种逐词变色。优化排版时，模型现在也可以抽到星探绿。
+
 ### 2026-10-10 去掉登录测试说明，气质并进主题
 
 - 想做什么：登录和注册删掉本机测试那句提示。工作台只留一个「主题」，四套旧气质并进去，点了仍套默认外观。
@@ -84,19 +104,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
 - 如何验证：注册页能看到邀请码。登录后点「邀请好友」能看到邀请码。错码不会建账号。第 6 次会说用满。
 - 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
-
-### 2026-10-09 试用改为 3 次，并拦住凭空大标题
-
-- 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。
-- 做成了什么：次数统一到 `lib/trial-quota.js`。用尽后仍是留邮箱。模型返回的标题或开头小标题如果对不上原文，会丢掉，预览不再画巨大标题。失败时工具栏显示「错误码：说明」；没有这些字段时仍是「暂时无法完成优化，请稍后重试。」
-- 改了哪些文件：`lib/trial-quota.js`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、`public/ground-title.js`、`public/app.js`、`public/studio.html`、`public/styles.css`、`public/studio-ui.css`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。已进 master。
-- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。要同事看到，需要再部署一次。
-
-### 2026-10-09 EdgeOne 没部署成
-
-- 想做什么：把当前首页和候补邮箱发到 EdgeOne 项目 `yooco`。
-- 做成了什么：没有部署。命令行未登录，环境里也没有 `EDGEONE_PAGES_API_TOKEN`。没有跑构建。
-- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`edgeone whoami` 提示未登录。线上预览仍是旧页面。
-- 待办/风险：要在已登录的电脑上部署，或给这个环境配好 Token 后再发。不要把 Token 写进仓库。

@@ -1099,6 +1099,9 @@ function renderHeadingBlock(item, index, editable) {
   if (level === 2 && kind === "oval") {
     return `<h3 class="section-title level-2 heading-oval" data-type="heading" data-level="2" ${idx} contenteditable="false"><span class="heading-oval-badge" aria-hidden="true"><span class="heading-oval-num"></span></span><span class="heading-oval-text" contenteditable="${editable}">${inlineMarkdown(parts.title)}</span></h3>`;
   }
+  if (level === 2 && state.theme === "scout") {
+    return `<h3 class="section-title level-2 heading-scout" data-type="heading" data-level="2" ${idx} contenteditable="false"><span class="heading-scout-index" contenteditable="false" aria-hidden="true"></span><span class="heading-scout-text" contenteditable="${editable}">${inlineMarkdown(item.text)}</span></h3>`;
+  }
   return `<h3 class="section-title level-${level}" data-type="heading" data-level="${level}" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</h3>`;
 }
 
@@ -1147,7 +1150,8 @@ function renderBody() {
       .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
       .slice(0, 3);
     if (tocItems.length >= 2) {
-      const tocHtml = `<section class="toc-card" data-type="toc" contenteditable="false"><p class="toc-title">本文脉络</p><div class="toc-list">${tocItems.map((block, tocIndex) =>
+      const tocLabel = state.theme === "scout" ? "PARTS" : "本文脉络";
+      const tocHtml = `<section class="toc-card" data-type="toc" contenteditable="false"><p class="toc-title">${tocLabel}</p><div class="toc-list">${tocItems.map((block, tocIndex) =>
         `<p><b>${String(tocIndex + 1).padStart(2, "0")}</b><span>${escapeHtml(block.text)}</span></p>`).join("")}</div></section>`;
       const leadIndex = parts.findIndex((html) => html.includes('<p class="lead"'));
       parts.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtml);
@@ -1184,7 +1188,7 @@ function serializePreviewToMarkdown() {
     if (type === "toc" || type === "signature") return;
     if (type === "heading") {
       const level = Math.min(6, Math.max(2, Number(el.dataset.level) || 2));
-      const main = el.querySelector(".heading-panel-main, .heading-oval-text, .heading-atlas-main");
+      const main = el.querySelector(".heading-panel-main, .heading-oval-text, .heading-atlas-main, .heading-scout-text");
       const sub = el.querySelector(".heading-panel-sub, .heading-atlas-sub");
       let text;
       if (main) {
@@ -1628,6 +1632,9 @@ function buildCopyHtml() {
   ).replace(
     /<code class="inline-code">([\s\S]*?)<\/code>/g,
     `<code style="${inlineCodeCss}">$1</code>`,
+  ).replace(
+    /<strong>/g,
+    state.theme === "scout" ? `<strong style="color:${state.accentColor};font-weight:700;">` : "<strong>",
   );
   const model = getArticleModel();
   const headingKind = state.headingStyle || "bar";
@@ -1717,8 +1724,16 @@ function buildCopyHtml() {
     .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
     .slice(0, 3);
   const tocHtmlBlock = isTheme() && tocHeadings.length >= 2
-    ? `<section style="margin:0 0 30px;padding:16px 18px;border:1px solid ${state.borderColor};border-radius:10px;background-color:${state.cardColor};"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;">本文脉络</p>${tocHeadings.map((block, index) =>
-      `<p style="margin:0 0 8px;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
+    ? (state.theme === "scout"
+      ? `<section style="margin:0 0 28px;"><p style="margin:0 0 10px;color:#059669;font-size:10px;font-weight:800;letter-spacing:.16em;">PARTS</p>${tocHeadings.map((block, index) => {
+        const on = index === 0;
+        const cardBg = on ? "#059669" : "#ffffff";
+        const cardColor = on ? "#ffffff" : "#111827";
+        const labelColor = on ? "rgba(255,255,255,.7)" : "#9ca3af";
+        return `<section style="display:inline-block;width:30%;margin:0 1.5% 8px 0;padding:12px;vertical-align:top;border:1px solid ${on ? "#059669" : "#e5e7eb"};border-radius:12px;background-color:${cardBg};"><p style="margin:0 0 5px;color:${labelColor};font-size:9px;font-weight:700;letter-spacing:.08em;">${String(index + 1).padStart(2, "0")}</p><p style="margin:0;color:${cardColor};font-size:12px;font-weight:700;line-height:1.5;">${escapeHtml(block.text)}</p></section>`;
+      }).join("")}</section>`
+      : `<section style="margin:0 0 30px;padding:16px 18px;border:1px solid ${state.borderColor};border-radius:10px;background-color:${state.cardColor};"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;">本文脉络</p>${tocHeadings.map((block, index) =>
+        `<p style="margin:0 0 8px;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`)
     : "";
   const signatureHtmlBlock = isTheme() && state.showSignature
     ? `<section style="margin:28px 0 0;padding:20px 0 0;border-top:1px solid ${state.dividerColor};text-align:right;"><p style="margin:0;color:${titleColor};font-size:14px;font-weight:700;">—— {{作者名}}</p></section>`
@@ -1732,6 +1747,7 @@ function buildCopyHtml() {
     if (t === "serene") return `${base}padding:34px 16px;margin:8px 0 44px;border-top:1px solid ${state.dividerColor};border-bottom:1px solid ${state.dividerColor};text-align:center;color:${titleColor};font-size:${Math.round(state.headingSize * 0.72)}px;font-weight:600;line-height:1.85;`;
     if (t === "stub") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${state.accentColor};border-radius:12px;background-color:${state.pageColor};box-shadow:0 6px 18px -8px ${colorWithAlpha(state.accentColor, 0.55)};color:${titleColor};font-weight:700;`;
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
+    if (t === "scout") return baseTextStyle;
     return `${baseTextStyle}color:${state.accentColor};font-weight:750;`;
   };
   // 精选主题分隔线：票据卡用虚线装订，静山加大留白，其余沿用通用分隔线。
@@ -1763,6 +1779,14 @@ function buildCopyHtml() {
       if (level === 2 && headingKind === "oval") {
         return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}<span style="display:block;">${copyInlineMarkdown(parts.title)}</span></h3>`;
       }
+      if (state.theme === "scout" && level === 2) {
+        sectionCounter += 1;
+        const num = String(sectionCounter).padStart(2, "0");
+        return `<h3 style="margin:48px 0 16px;"><span style="display:inline-block;width:36px;margin-right:12px;vertical-align:middle;text-align:center;"><span style="display:block;color:#059669;font-size:28px;font-weight:700;line-height:1;">${num}</span><span style="display:block;color:#d1d5db;font-size:8px;font-weight:700;letter-spacing:.12em;line-height:1.4;">PART</span></span><span style="display:inline-block;max-width:78%;vertical-align:middle;color:#111827;font-size:17px;font-weight:700;line-height:1.5;">${copyInlineMarkdown(item.text)}</span></h3>`;
+      }
+      if (state.theme === "scout" && level > 2) {
+        return `<h3 style="margin:16px 0;color:#111827;font-size:15px;font-weight:700;line-height:1.6;">${copyInlineMarkdown(item.text)}</h3>`;
+      }
       return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}${copyInlineMarkdown(item.text)}</h3>`;
     }
     if (item.type === "paragraph") return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
@@ -1775,7 +1799,9 @@ function buildCopyHtml() {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
         const n = index + 1;
-        const badge = `<span style="display:inline-block;min-width:28px;margin-right:10px;color:${softAccent};font-size:${Math.round(state.fontSize * 1.15)}px;font-weight:${state.headingWeight};">${String(n).padStart(2, "0")}</span>`;
+        const badge = state.theme === "scout"
+          ? `<span style="display:inline-block;width:22px;height:22px;margin-right:10px;border-radius:50%;background-color:#059669;color:#ffffff;font-size:12px;font-weight:700;line-height:22px;text-align:center;vertical-align:middle;">${n}</span>`
+          : `<span style="display:inline-block;min-width:28px;margin-right:10px;color:${softAccent};font-size:${Math.round(state.fontSize * 1.15)}px;font-weight:${state.headingWeight};">${String(n).padStart(2, "0")}</span>`;
         return `<p style="margin:0 0 ${state.listItemSpacing}px;padding:0;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};">${badge}<span>${copyInlineMarkdown(entry)}</span></p>`;
       }).join("");
       return `<section style="${cardBoxStyle("soft", state.cardColor)}"><p style="margin:0 0 12px;padding:0;${contentCardTitleStyle}">${title}</p>${rows}</section>`;
@@ -1823,6 +1849,9 @@ function buildCopyHtml() {
       return `<section style="margin:0 0 ${state.paragraphSpacing}px;">${itemsHtml}</section>`;
     }
     if (item.type === "code") {
+      if (state.theme === "scout") {
+        return `<section style="margin:20px 0;padding:16px;border:1px solid #e5e7eb;border-radius:8px;background-color:#1e293b;"><p style="margin:0;padding:0;color:#e2e8f0;font-size:13px;line-height:1.7;">${formatCodeForWechat(item.text)}</p></section>`;
+      }
       return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};">${formatCodeForWechat(item.text)}</p></section>`;
     }
     return "";

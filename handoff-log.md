@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+邀请好友（2026-10-10，本地，未部署）：登录后，作品页和直接打开的工作台账号菜单里有「邀请好友」。弹窗正文是「你的邀请码：XXX。一码最多用 5 次。好友注册填码，可多 5 次免费。」注册页有「邀请码（选填）」，提示「填了多 5 次免费」。填对的新账号多 5 次优化，挂在账号上，加在当天免费次数外面。一码最多 5 次，不能用自己的码。没改每天 10 次（#16 还没合并）。不收款。
+
 本地预览（2026-10-09）：开发服务在 5174。非本机域名也能打开页面，不再被拦住。
 
 EdgeOne 部署（2026-10-09，未发出）：想发到项目 `yooco`。命令行没有登录，也没有 `EDGEONE_PAGES_API_TOKEN`，所以没有构建、没有部署。线上仍是旧版本。
@@ -55,6 +57,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-10 邀请好友
+
+- 想做什么：账号菜单加「邀请好友」，注册可以填邀请码。一码最多用 5 次，好友多 5 次免费优化。
+- 做成了什么：作品页和工作台菜单能打开发码弹窗，文案用张默那句。注册页有选填邀请码。码和次数存在 EdgeOne 那一类存储里；本机没有 Blob 时记在这次运行的内存里。剩余次数 = 当天这个 IP 还剩的免费次数 + 账号上的邀请加成。先扣当天的，再扣加成。
+- 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
+- 如何验证：`node --experimental-strip-types scripts/check-invite.ts`。注册页能看到邀请码输入框。登录后点「邀请好友」能看到邀请码。用这个码再注册一个号，接口里的剩余次数会多 5。错码、用满、自己的码都会被拒绝。
+- 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
+
 ### 2026-10-09 EdgeOne 没部署成
 
 - 想做什么：把当前首页和候补邮箱发到 EdgeOne 项目 `yooco`。
@@ -86,12 +96,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/studio.html`、`public/app.js`、`public/styles.css`、`public/studio-ui.css`、`public/content-components.js`（删除）、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：本地打开工作台。右侧没有「内容组件」。气质与皮肤展开后只有四张卡，没有皮肤胶囊。四张卡分别套上墨黑米白、复古墨绿、橙粉活力、深空荧光，示例文章还在。点精选主题再回经典，气质卡还在。没有页面报错。未部署。
 - 待办/风险：要同事看到，需要再部署一次。以前存过的组件选择会丢掉，文章回到普通排版。
-
-### 2026-10-09 首页眼睛放回标题中间
-
-- 想做什么：荧光绿眼睛不要放在句末，要回到「好文章」和「值得好排版」中间。
-- 做成了什么：标题仍是一行「好文章值得好排版」，没有逗号。眼睛在两句中间，整行仍在页面中间。一屏和半露卡片没动。
-- 改了哪些文件：`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地 1440×900，眼睛左边是「好文章」，右边是「值得好排版」。页面没有滚动条。正中间那张卡仍露出一半。未部署。
-- 待办/风险：要同事看到，需要再部署一次。
-

@@ -52,6 +52,7 @@ export async function POST(request: Request) {
         message: string;
         remaining?: number;
         limit?: number;
+        bonus?: number;
         upgrade?: typeof UPGRADE_OFFER;
       };
     } = { ok: false, error: { code, message } };
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
       headers["retry-after"] = String(error.retryAfter);
       payload.error.remaining = error.remaining;
       payload.error.limit = error.limit;
+      payload.error.bonus = error.bonus;
       if (error.code === "TRIAL_EXHAUSTED") {
         payload.error.upgrade = UPGRADE_OFFER;
       }

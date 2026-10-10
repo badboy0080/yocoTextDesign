@@ -1,4 +1,7 @@
 import { AppError } from "./deepseek-normalizer";
+import { planNormalizeSpend, quotaRemaining } from "./invite-quota";
+import { consumeInviteBonus, peekInviteBonus } from "./invite-store";
+import { currentAccount } from "./local-accounts";
 
 export const TRIAL_LIMIT = 10;
 const IP_DAILY_LIMIT = TRIAL_LIMIT;
@@ -21,6 +24,8 @@ export type TrialQuota = {
   remaining: number | null;
   limit: number;
   enforced: boolean;
+  /** 账号上还没用完的邀请加成。已经算进 remaining。访客是 0。 */
+  bonus: number;
 };
 
 export class RateLimitError extends AppError {
@@ -28,17 +33,21 @@ export class RateLimitError extends AppError {
   remaining: number;
   limit: number;
 
+  bonus: number;
+
   constructor(
     code: string,
     message: string,
     retryAfter: number,
     remaining = 0,
     limit = TRIAL_LIMIT,
+    bonus = 0,
   ) {
     super(code, message, 429);
     this.retryAfter = retryAfter;
     this.remaining = remaining;
     this.limit = limit;
+    this.bonus = bonus;
   }
 }
 
@@ -93,8 +102,34 @@ function isRateLimitEnabled(): boolean {
   return true;
 }
 
-function skippedQuota(): TrialQuota {
-  return { remaining: null, limit: TRIAL_LIMIT, enforced: false };
+function skippedQuota(bonus = 0): TrialQuota {
+  return { remaining: null, limit: TRIAL_LIMIT, enforced: false, bonus };
+}
+
+function memoryCounterStore(): CounterStore {
+  const g = globalThis as typeof globalThis & { __yoocoRateLimit?: Map<string, number> };
+  if (!g.__yoocoRateLimit) g.__yoocoRateLimit = new Map();
+  const counts = g.__yoocoRateLimit;
+  return {
+    async read(key) {
+      return counts.get(key) || 0;
+    },
+    async write(key, count) {
+      counts.set(key, count);
+    },
+  };
+}
+
+async function readAccountBonus(): Promise<{ userId: number | null; bonus: number }> {
+  try {
+    const account = await currentAccount();
+    if (!account) return { userId: null, bonus: 0 };
+    const bonus = await peekInviteBonus(account.id);
+    return { userId: account.id, bonus };
+  } catch (error) {
+    console.warn("[rate-limit] account bonus unavailable", error);
+    return { userId: null, bonus: 0 };
+  }
 }
 
 function cacheRequest(key: string): Request {
@@ -154,6 +189,8 @@ async function openStore(): Promise<CounterStore | null> {
     return await openBlobStore();
   } catch (error) {
     console.warn("[rate-limit] Blob store unavailable, skip quota", error);
+    // 本机没有 Blob 时记在内存里，邀请加成才能跟每天次数加在一起验。线上 Blob 失败仍放行。
+    if (process.env.NODE_ENV !== "production") return memoryCounterStore();
     return null;
   }
 }
@@ -182,37 +219,36 @@ async function readQuota(store: CounterStore, request: Request) {
   return { keys, minuteCount, dayCount, globalCount };
 }
 
-function remainingFromDayCount(dayCount: number): number {
-  return Math.max(0, IP_DAILY_LIMIT - dayCount);
-}
-
 /**
  * Read remaining free AI-normalize uses without consuming a slot.
+ * Guest daily uses plus this account's invite bonus.
  * No-op when the backing store is unavailable.
  */
 export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> {
   if (!isRateLimitEnabled()) return skippedQuota();
+  const accountBonus = await readAccountBonus();
 
   let store: CounterStore | null;
   try {
     store = await openStore();
   } catch (error) {
     console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota();
+    return skippedQuota(accountBonus.bonus);
   }
-  if (!store) return skippedQuota();
+  if (!store) return skippedQuota(accountBonus.bonus);
 
   try {
     const { dayCount } = await readQuota(store, request);
     return {
-      remaining: remainingFromDayCount(dayCount),
+      remaining: quotaRemaining(dayCount, IP_DAILY_LIMIT, accountBonus.bonus),
       limit: TRIAL_LIMIT,
       enforced: true,
+      bonus: accountBonus.bonus,
     };
   } catch (error) {
     if (error instanceof AppError) throw error;
     console.warn("[rate-limit] quota peek failed, skip", error);
-    return skippedQuota();
+    return skippedQuota(accountBonus.bonus);
   }
 }
 
@@ -221,19 +257,22 @@ export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> 
  */
 export async function consumeNormalizeQuota(request: Request): Promise<TrialQuota> {
   if (!isRateLimitEnabled()) return skippedQuota();
+  const accountBonus = await readAccountBonus();
 
   let store: CounterStore | null;
   try {
     store = await openStore();
   } catch (error) {
     console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota();
+    return skippedQuota(accountBonus.bonus);
   }
-  if (!store) return skippedQuota();
+  if (!store) return skippedQuota(accountBonus.bonus);
 
   try {
     const { keys, minuteCount, dayCount, globalCount } = await readQuota(store, request);
-    const remaining = remainingFromDayCount(dayCount);
+    const bonus = accountBonus.userId ? accountBonus.bonus : 0;
+    const remaining = quotaRemaining(dayCount, IP_DAILY_LIMIT, bonus);
+    const plan = planNormalizeSpend(dayCount, IP_DAILY_LIMIT, bonus);
 
     if (minuteCount >= IP_PER_MINUTE_LIMIT) {
       throw new RateLimitError(
@@ -241,14 +280,8 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
         "操作太频繁，请稍等一分钟再试。",
         secondsUntilNextMinute(keys.now),
         remaining,
-      );
-    }
-    if (dayCount >= IP_DAILY_LIMIT) {
-      throw new RateLimitError(
-        "TRIAL_EXHAUSTED",
-        UPGRADE_PROMPT,
-        secondsUntilBeijingTomorrow(keys.now),
-        0,
+        TRIAL_LIMIT,
+        bonus,
       );
     }
     if (globalCount >= GLOBAL_DAILY_LIMIT) {
@@ -257,7 +290,54 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
         "今天全站试用名额已满，请明天再来。",
         secondsUntilBeijingTomorrow(keys.now),
         remaining,
+        TRIAL_LIMIT,
+        bonus,
       );
+    }
+    if (plan.action === "exhausted") {
+      throw new RateLimitError(
+        "TRIAL_EXHAUSTED",
+        UPGRADE_PROMPT,
+        secondsUntilBeijingTomorrow(keys.now),
+        0,
+        TRIAL_LIMIT,
+        0,
+      );
+    }
+
+    if (plan.action === "bonus") {
+      if (!accountBonus.userId) {
+        throw new RateLimitError(
+          "TRIAL_EXHAUSTED",
+          UPGRADE_PROMPT,
+          secondsUntilBeijingTomorrow(keys.now),
+          0,
+        );
+      }
+      const spent = await consumeInviteBonus(accountBonus.userId);
+      if (!spent.ok) {
+        throw new AppError("QUOTA_UNAVAILABLE", "这次没扣成次数，请稍后再试。", 503);
+      }
+      if (!spent.spent) {
+        throw new RateLimitError(
+          "TRIAL_EXHAUSTED",
+          UPGRADE_PROMPT,
+          secondsUntilBeijingTomorrow(keys.now),
+          0,
+          TRIAL_LIMIT,
+          0,
+        );
+      }
+      await Promise.all([
+        store.write(keys.minuteKey, minuteCount + 1, keys.minuteTtl),
+        store.write(keys.globalKey, globalCount + 1, keys.dayTtl),
+      ]);
+      return {
+        remaining: spent.bonusRemaining,
+        limit: TRIAL_LIMIT,
+        enforced: true,
+        bonus: spent.bonusRemaining,
+      };
     }
 
     await Promise.all([
@@ -267,13 +347,14 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
     ]);
 
     return {
-      remaining: remainingFromDayCount(dayCount + 1),
+      remaining: plan.remaining,
       limit: TRIAL_LIMIT,
       enforced: true,
+      bonus,
     };
   } catch (error) {
     if (error instanceof AppError) throw error;
     console.warn("[rate-limit] quota check failed, skip", error);
-    return skippedQuota();
+    return skippedQuota(accountBonus.bonus);
   }
 }

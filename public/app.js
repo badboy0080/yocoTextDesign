@@ -151,6 +151,7 @@ const TRIAL_STORAGE_KEY = "yooco-trial";
 const WAITLIST_COPY = "免费次数用完了。留下邮箱，开放订阅我通知你。";
 const UPGRADE_PROMPT = WAITLIST_COPY;
 let serverTrialRemaining = null;
+let serverTrialBonus = 0;
 let serverTrialEnforced = false;
 const articleTitle = document.querySelector("#articleTitle");
 const stylePane = document.querySelector("#stylePane");
@@ -207,7 +208,10 @@ function remainingTrialCount() {
 function renderTrialMeter() {
   const remaining = remainingTrialCount();
   if (trialMeter) {
-    trialMeter.textContent = remaining > 0 ? `剩余 ${remaining} 次` : "试用已用完";
+    trialMeter.hidden = false;
+    if (remaining <= 0) trialMeter.textContent = "试用已用完";
+    else if (serverTrialBonus > 0) trialMeter.textContent = `剩余 ${remaining} 次（含邀请加成 ${serverTrialBonus}）`;
+    else trialMeter.textContent = `剩余 ${remaining} 次`;
     trialMeter.classList.toggle("is-empty", remaining <= 0);
   }
   if (trialBanner) trialBanner.hidden = remaining > 0;
@@ -219,9 +223,11 @@ function renderTrialMeter() {
 function applyTrialFromServer(trial) {
   if (!trial || typeof trial !== "object") return;
   if (typeof trial.enforced === "boolean") serverTrialEnforced = trial.enforced;
+  serverTrialBonus = typeof trial.bonus === "number" && Number.isFinite(trial.bonus) ? Math.max(0, trial.bonus) : 0;
   if (typeof trial.remaining === "number" && Number.isFinite(trial.remaining)) {
     serverTrialRemaining = Math.max(0, trial.remaining);
-    writeLocalTrialUsed(TRIAL_LIMIT - serverTrialRemaining);
+    const dailyRemaining = Math.max(0, serverTrialRemaining - serverTrialBonus);
+    writeLocalTrialUsed(TRIAL_LIMIT - dailyRemaining);
   }
   renderTrialMeter();
 }
@@ -1523,11 +1529,13 @@ async function normalizeWithDeepSeek() {
       const message = payload?.error?.message || "暂时无法完成优化，请稍后重试。";
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
         serverTrialRemaining = 0;
+        serverTrialBonus = 0;
         writeLocalTrialUsed(TRIAL_LIMIT);
         showUpgradePrompt();
         return;
       }
       if (response.status === 429) {
+        if (typeof payload?.error?.bonus === "number") serverTrialBonus = Math.max(0, payload.error.bonus);
         if (typeof payload?.error?.remaining === "number") {
           serverTrialRemaining = payload.error.remaining;
           renderTrialMeter();
@@ -2332,13 +2340,63 @@ async function showLocalAccount() {
     more.setAttribute("aria-expanded", open ? "true" : "false");
   });
   document.querySelector("#studioProfile")?.addEventListener("click", closeMenu);
+  const inviteModal = document.querySelector("#inviteModal");
+  const inviteBody = document.querySelector("#inviteModalBody");
+  const inviteStatus = document.querySelector("#inviteModalStatus");
+  const inviteCopy = document.querySelector("#inviteCopy");
+  let inviteCode = "";
+  const closeInvite = () => {
+    if (!inviteModal) return;
+    inviteModal.hidden = true;
+  };
+  const openInvite = async () => {
+    closeMenu();
+    if (!inviteModal || !inviteBody) return;
+    inviteCode = "";
+    if (inviteCopy) inviteCopy.disabled = true;
+    if (inviteStatus) inviteStatus.textContent = "";
+    inviteBody.textContent = "正在取出邀请码…";
+    inviteModal.hidden = false;
+    inviteModal.querySelector(".invite-modal-card")?.focus();
+    try {
+      const response = await fetch("/api/invite", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.code || !data?.sentence) {
+        inviteBody.textContent = data?.message || "暂时取不出邀请码，请稍后再试。";
+        return;
+      }
+      inviteCode = data.code;
+      inviteBody.textContent = data.sentence;
+      if (inviteCopy) inviteCopy.disabled = false;
+      if (typeof window.yoocoTrack === "function") window.yoocoTrack("invite_share");
+    } catch {
+      inviteBody.textContent = "暂时取不出邀请码，请稍后再试。";
+    }
+  };
+  document.querySelector("#studioInvite")?.addEventListener("click", openInvite);
+  document.querySelector("#inviteClose")?.addEventListener("click", closeInvite);
+  inviteModal?.addEventListener("click", (event) => {
+    if (event.target === inviteModal) closeInvite();
+  });
+  inviteCopy?.addEventListener("click", async () => {
+    if (!inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(inviteCode);
+      if (inviteStatus) inviteStatus.textContent = "已复制。";
+    } catch {
+      if (inviteStatus) inviteStatus.textContent = "复制没成功，请手动选中邀请码。";
+    }
+    if (typeof window.yoocoTrack === "function") window.yoocoTrack("invite_share");
+  });
   document.addEventListener("click", (event) => {
     if (popover?.hidden !== false) return;
     if (event.target instanceof Element && event.target.closest(".studio-account-menu")) return;
     closeMenu();
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeMenu();
+    if (event.key !== "Escape") return;
+    if (inviteModal && !inviteModal.hidden) closeInvite();
+    else closeMenu();
   });
   logout?.addEventListener("click", async () => {
     await fetch("/api/auth/logout", { method: "POST" });

@@ -1,6 +1,13 @@
 import { getAnalyticsToken } from "./runtime-env";
 
-export const FUNNEL_EVENTS = ["visit", "trial_click", "optimize_ok", "waitlist_email_submit"] as const;
+export const FUNNEL_EVENTS = [
+  "visit",
+  "trial_click",
+  "optimize_ok",
+  "waitlist_email_submit",
+  "invite_share",
+  "invite_redeem",
+] as const;
 export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];
 
 export type EventCounts = { pv: number; uv: number };
@@ -11,6 +18,8 @@ export type FunnelDay = {
   trial_click: EventCounts;
   optimize_ok: EventCounts;
   waitlist_email_submit: EventCounts;
+  invite_share: EventCounts;
+  invite_redeem: EventCounts;
 };
 
 export type FunnelMetrics = {
@@ -21,6 +30,8 @@ export type FunnelMetrics = {
     trial_click: EventCounts;
     optimize_ok: EventCounts;
     waitlist_email_submit: EventCounts;
+    invite_share: EventCounts;
+    invite_redeem: EventCounts;
   };
 };
 
@@ -55,6 +66,8 @@ function emptyDay(): DayRecord {
     trial_click: emptyBucket(),
     optimize_ok: emptyBucket(),
     waitlist_email_submit: emptyBucket(),
+    invite_share: emptyBucket(),
+    invite_redeem: emptyBucket(),
   };
 }
 
@@ -170,6 +183,8 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
       trial_click: countsOf(record.trial_click),
       optimize_ok: countsOf(record.optimize_ok),
       waitlist_email_submit: countsOf(record.waitlist_email_submit),
+      invite_share: countsOf(record.invite_share),
+      invite_redeem: countsOf(record.invite_redeem),
     };
   });
 
@@ -178,12 +193,16 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
     trial_click: 0,
     optimize_ok: 0,
     waitlist_email_submit: 0,
+    invite_share: 0,
+    invite_redeem: 0,
   };
   const totalsUv: Record<FunnelEvent, Set<string>> = {
     visit: new Set(),
     trial_click: new Set(),
     optimize_ok: new Set(),
     waitlist_email_submit: new Set(),
+    invite_share: new Set(),
+    invite_redeem: new Set(),
   };
   for (const date of dates) {
     const record = doc.days[date];
@@ -205,6 +224,8 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
         pv: totalsPv.waitlist_email_submit,
         uv: totalsUv.waitlist_email_submit.size,
       },
+      invite_share: { pv: totalsPv.invite_share, uv: totalsUv.invite_share.size },
+      invite_redeem: { pv: totalsPv.invite_redeem, uv: totalsUv.invite_redeem.size },
     },
   };
 }

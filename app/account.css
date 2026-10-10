@@ -220,6 +220,13 @@ body:has(.account-app.is-obsidian) { background: #000; }
   background: rgba(0,0,0,.35);
   color: rgba(255,255,255,.6);
 }
+.account-app.is-obsidian .auth-page.is-register .auth-grid { min-height: 0; padding: 20px 0 24px; }
+.account-app.is-obsidian .auth-page.is-register .auth-editorial { min-height: 0; }
+.account-app.is-obsidian .auth-page.is-register .auth-panel { padding: 20px 22px; }
+.account-app.is-obsidian .auth-page.is-register .auth-preview-note { margin-top: 12px; }
+.account-app.is-obsidian .auth-page.is-register .auth-form { gap: 12px; margin-top: 14px; }
+.account-app.is-obsidian .auth-page.is-register .auth-field input,
+.account-app.is-obsidian .auth-page.is-register .account-primary-button { height: 44px; min-height: 44px; }
 .account-app.is-obsidian .auth-field input {
   height: 52px;
   border-color: rgba(255,255,255,.14);

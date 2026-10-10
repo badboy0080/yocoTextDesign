@@ -62,7 +62,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 想做什么：账号菜单加「邀请好友」，注册可以填邀请码。一码最多用 5 次，好友多 5 次免费优化。
 - 做成了什么：作品页和工作台菜单能打开发码弹窗，文案用张默那句。注册页有选填邀请码。码和次数存在 EdgeOne 那一类存储里；本机没有 Blob 时记在这次运行的内存里。剩余次数 = 当天这个 IP 还剩的免费次数 + 账号上的邀请加成。先扣当天的，再扣加成。
 - 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
-- 如何验证：`node --experimental-strip-types scripts/check-invite.ts`。注册页能看到邀请码输入框。登录后点「邀请好友」能看到邀请码。用这个码再注册一个号，接口里的剩余次数会多 5。错码、用满、自己的码都会被拒绝。
+- 如何验证：`node --experimental-strip-types scripts/check-invite.ts`。本地接口：访客剩余 10 次；填对码的新账号剩余 15 次，其中加成 5。错码不会建账号。第 6 次会说用满。1440×900 注册页能看到邀请码。作品页和工作台弹窗都是张默那句。
 - 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
 
 ### 2026-10-09 EdgeOne 没部署成

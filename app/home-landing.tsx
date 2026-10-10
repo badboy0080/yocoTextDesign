@@ -310,6 +310,10 @@ export function HomeLanding() {
           <a className="ol-footer-link" href={STUDIO_URL}>进入工作台</a>
           <span className="ol-copy">YOOCO © 2026</span>
         </div>
+        <p className="ol-beian">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备2026141208号</a>
+          {/* 公安备案号核发后，放在这个链接旁边。 */}
+        </p>
       </footer>
       <p className="ol-watermark" aria-hidden="true">YOOCO</p>
       </div>

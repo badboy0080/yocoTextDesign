@@ -16,7 +16,7 @@ const TEMPLATE_DEFAULTS = {
   theme: "classic", articleType: "auto", showSignature: false,
 };
 
-// 四个气质方向决定标题、卡片和列表造型。界面只露出这四张卡，点卡片套用该方向的第一套皮肤。
+// 四个旧气质现在和精选主题放在同一个「主题」列表里。点某一项，套用该方向的第一套皮肤。
 const MOODS = {
   minimal: {
     label: "克制高级", hint: "冷静 · 留白", headingStyle: "line", cardStyle: "outline", listStyle: "dot",
@@ -132,10 +132,6 @@ const complianceList = document.querySelector("#complianceList");
 const darkPreviewToggle = document.querySelector("#darkPreviewToggle");
 const lockBrandColor = document.querySelector("#lockBrandColor");
 const copyFeedback = document.querySelector("#copyFeedback");
-const moodGrid = document.querySelector("#moodGrid");
-const moodPicker = document.querySelector("#moodPicker");
-const moodPickerGroup = document.querySelector("#moodPickerGroup");
-const skinCurrent = document.querySelector("#skinCurrent");
 const themeGrid = document.querySelector("#themeGrid");
 const articleInput = document.querySelector("#articleInput");
 const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
@@ -371,7 +367,7 @@ function isTheme() {
   return Boolean(state.theme && state.theme !== "classic" && THEMES[state.theme]);
 }
 
-// 切换精选主题，或回到 classic（四套气质方向，每套用自己的默认皮肤）。
+// 切换五套精选主题。旧气质不走这里，点列表里的气质项会套该方向的默认皮肤。
 function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   if (themeId !== "classic" && !THEMES[themeId]) return;
   const previousArticleType = state.articleType;
@@ -390,48 +386,32 @@ function applyTheme(themeId, { fromUser = true, articleType } = {}) {
 }
 
 function syncMoodUI() {
-  moodGrid?.querySelectorAll("[data-mood]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.mood === currentMood);
+  const onClassic = !isTheme();
+  themeGrid?.querySelectorAll("[data-mood]").forEach((button) => {
+    button.classList.toggle("is-active", onClassic && button.dataset.mood === currentMood);
   });
   themeGrid?.querySelectorAll("[data-theme]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.theme === state.theme);
   });
-  // 精选主题激活时收起旧的气质/皮肤分组，避免两套选择器并存造成困惑。
-  if (moodPicker) moodPicker.hidden = isTheme();
-  if (moodPickerGroup) {
-    moodPickerGroup.hidden = isTheme();
-    if (isTheme() && moodPickerGroup.classList.contains("is-open")) {
-      moodPickerGroup.classList.remove("is-open");
-      const btn = moodPickerGroup.querySelector(".group-toggle");
-      if (btn) btn.setAttribute("aria-expanded", "false");
-    }
-  }
-  if (skinCurrent) {
-    skinCurrent.textContent = isTheme()
-      ? `精选主题 · ${THEMES[state.theme].label}`
-      : `${MOODS[currentMood].label} · ${SKINS[currentSkin].label}`;
-  }
 }
 
 function renderMoodUI() {
-  if (themeGrid) {
-    const classicButton = `<button type="button" class="theme-chip is-classic" data-theme="classic" title="四套气质方向"><b>经典</b></button>`;
-    const themeButtons = THEME_ORDER.map((id) => {
-      const theme = THEMES[id];
-      return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
-    }).join("");
-    themeGrid.innerHTML = classicButton + themeButtons;
-    themeGrid.querySelectorAll("[data-theme]").forEach((button) => {
-      button.addEventListener("click", () => applyTheme(button.dataset.theme));
-    });
-  }
-  if (moodGrid) {
-    moodGrid.innerHTML = Object.entries(MOODS).map(([id, mood]) =>
-      `<button type="button" class="mood-card" data-mood="${id}"><b>${mood.label}</b><span>${mood.hint}</span></button>`).join("");
-    moodGrid.querySelectorAll("[data-mood]").forEach((button) => {
-      button.addEventListener("click", () => applySkin(MOODS[button.dataset.mood].skins[0]));
-    });
-  }
+  if (!themeGrid) return;
+  const moodButtons = Object.entries(MOODS).map(([id, mood]) => {
+    const primary = SKINS[mood.skins[0]]?.accentColor || "#71717a";
+    return `<button type="button" class="theme-chip" data-mood="${id}" style="--theme-primary:${primary}" title="${mood.hint}"><b>${mood.label}</b></button>`;
+  }).join("");
+  const themeButtons = THEME_ORDER.map((id) => {
+    const theme = THEMES[id];
+    return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
+  }).join("");
+  themeGrid.innerHTML = moodButtons + themeButtons;
+  themeGrid.querySelectorAll("[data-mood]").forEach((button) => {
+    button.addEventListener("click", () => applySkin(MOODS[button.dataset.mood].skins[0]));
+  });
+  themeGrid.querySelectorAll("[data-theme]").forEach((button) => {
+    button.addEventListener("click", () => applyTheme(button.dataset.theme));
+  });
   syncMoodUI();
 }
 

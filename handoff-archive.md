@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-09 试用改为 3 次，并拦住凭空大标题
+
+- 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。
+- 做成了什么：次数统一到 `lib/trial-quota.js`。用尽后仍是留邮箱。模型返回的标题或开头小标题如果对不上原文，会丢掉，预览不再画巨大标题。失败时工具栏显示「错误码：说明」；没有这些字段时仍是「暂时无法完成优化，请稍后重试。」
+- 改了哪些文件：`lib/trial-quota.js`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、`public/ground-title.js`、`public/app.js`、`public/studio.html`、`public/styles.css`、`public/studio-ui.css`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。已进 master。
+- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。要同事看到，需要再部署一次。
+
 ### 2026-10-09 EdgeOne 没部署成
 
 - 想做什么：把当前首页和候补邮箱发到 EdgeOne 项目 `yooco`。

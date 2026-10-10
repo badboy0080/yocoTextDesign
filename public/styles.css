@@ -1052,6 +1052,62 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-page[data-theme="editorial"] .stat-block { border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-color); }
 .article-page[data-theme="editorial"] .article-divider { opacity: .7; margin-top: 28px; margin-bottom: 24px; }
 
+/* ---------- 星探绿 scout：翠绿序号 + PART，深色代码，圆点列表 ---------- */
+.article-page[data-theme="scout"] .lead {
+  margin: 0 0 16px; padding: 0; border: 0; background: transparent;
+  color: var(--text-color); font-weight: 400; text-indent: 0;
+}
+.article-page[data-theme="scout"] .article-content strong { color: var(--accent-color); font-weight: 700; }
+.article-page[data-theme="scout"] .section-title.level-2.heading-scout {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--title-color); font-size: 17px; font-weight: 700; line-height: 1.5; letter-spacing: 0;
+}
+.article-page[data-theme="scout"] .section-title.level-2::before,
+.article-page[data-theme="scout"] .section-title.level-2::after { content: none !important; }
+.article-page[data-theme="scout"] .heading-scout-index {
+  display: flex; flex-direction: column; align-items: center; width: 36px; flex: none;
+}
+.article-page[data-theme="scout"] .heading-scout-index::before {
+  content: counter(section, decimal-leading-zero);
+  color: #059669; font-size: 28px; font-weight: 700; line-height: 1;
+}
+.article-page[data-theme="scout"] .heading-scout-index::after {
+  content: "PART"; color: #d1d5db; font-size: 8px; font-weight: 700; letter-spacing: .12em; line-height: 1.4;
+}
+.article-page[data-theme="scout"] .heading-scout-text { color: var(--title-color); font-size: 17px; font-weight: 700; line-height: 1.5; }
+.article-page[data-theme="scout"] .section-title.level-3,
+.article-page[data-theme="scout"] .section-title.level-4 { color: var(--title-color); font-size: 15px; font-weight: 700; letter-spacing: 0; }
+.article-page[data-theme="scout"] .inline-code {
+  padding: 2px 6px; border-radius: 4px; background: #f3f4f6; color: #1f2937; font-weight: 600;
+}
+.article-page[data-theme="scout"] .article-code {
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #1e293b; color: #e2e8f0;
+}
+.article-page[data-theme="scout"] .content-card,
+.article-page[data-theme="scout"] .quote-card {
+  border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+}
+.article-page[data-theme="scout"] .quote-card { border-left: 3px solid #059669; background: #f0fdf4; }
+.article-page[data-theme="scout"] .steps-block { padding: 0; border: 0; background: transparent; }
+.article-page[data-theme="scout"] .steps-index {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; min-width: 22px; border-radius: 50%;
+  background: #059669; color: #fff; font-size: 12px; font-weight: 700; line-height: 1;
+}
+.article-page[data-theme="scout"] .toc-card { padding: 0; border: 0; background: transparent; }
+.article-page[data-theme="scout"] .toc-title { color: #059669; letter-spacing: .16em; }
+.article-page[data-theme="scout"] .toc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.article-page[data-theme="scout"] .toc-list p {
+  flex-direction: column; gap: 4px; margin: 0; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px;
+  background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+}
+.article-page[data-theme="scout"] .toc-list p:first-child { border-color: #059669; background: #059669; }
+.article-page[data-theme="scout"] .toc-list p:first-child b,
+.article-page[data-theme="scout"] .toc-list p:first-child span { color: #fff; }
+.article-page[data-theme="scout"] .toc-list b { font-size: 9px; letter-spacing: .08em; }
+.article-page[data-theme="scout"] .article-divider { opacity: .8; margin-top: 28px; margin-bottom: 24px; }
+
 /* ---------- 精选主题通用：自动目录与结尾签名（颜色跟随 CSS 变量） ---------- */
 .toc-card { margin: 0 0 32px; padding: 18px 20px; border: 1px solid var(--border-color); border-radius: 10px; background: color-mix(in srgb, var(--card-color) 70%, transparent); }
 .toc-title { margin: 0 0 12px; color: var(--muted-color); font-size: 10px; font-weight: 800; letter-spacing: .25em; text-transform: uppercase; }

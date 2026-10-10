@@ -181,9 +181,42 @@ const THEMES = {
       caseStudy: { core: ["list", "card"], accent: ["stat", "quote"] },
     },
   },
+
+  // 星探绿：开源导读。翠绿序号、PART 眉题、深色代码、圆点列表。
+  scout: {
+    label: "星探绿",
+    en: "SCOUT",
+    primary: "#059669",
+    fit: "开源导读 · 项目拆解 · 上手步骤",
+    params: {
+      styleVariant: "standard",
+      textColor: "#374151", accentColor: "#059669",
+      highlightColor: "#e7f56a", highlightTextColor: "#111827",
+      cardColor: "#ffffff", quoteColor: "#f0fdf4", cardTitleColor: "#059669",
+      pageColor: "#ffffff", linkColor: "#059669",
+      codeBackground: "#f3f4f6", codeColor: "#1f2937", dividerColor: "#e5e7eb",
+      mutedColor: "#9ca3af", titleColor: "#111827", borderColor: "#e5e7eb",
+      bodyFont: "system", headingFont: "system", textAlign: "justify",
+      fontSize: 14, lineHeight: 1.9, letterSpacing: 0.5, paragraphSpacing: 16,
+      titleSize: 22, headingSize: 17, subheadingSize: 15, minorHeadingSize: 15,
+      headingWeight: 700, headingLineHeight: 1.5, headingSpacingBefore: 48, headingSpacingAfter: 16,
+      headingStyle: "index", cardStyle: "soft", listStyle: "circle",
+      highlightStyle: "marker", cardRadius: 12, imageRadius: 8, cardPadding: 16,
+      showDivider: true,
+    },
+    recipe: {
+      tutorial: { core: ["steps", "code", "list"], accent: ["paragraph", "card"] },
+      checklist: { core: ["list", "paragraph"], accent: ["card"] },
+      opinion: { core: ["paragraph", "list"], accent: ["quote", "card"] },
+      interview: { core: ["paragraph", "quote"], accent: ["list"] },
+      dataReport: { core: ["list", "stat"], accent: ["paragraph", "card"] },
+      lifestyle: { core: ["paragraph"], accent: ["quote"] },
+      caseStudy: { core: ["paragraph", "list", "code"], accent: ["steps", "card"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "scout"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

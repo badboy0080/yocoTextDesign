@@ -1,14 +1,13 @@
 import { AppError } from "./deepseek-normalizer";
+import { TRIAL_LIMIT, UPGRADE_PROMPT } from "./trial-quota";
 
-export const TRIAL_LIMIT = 10;
+export { TRIAL_LIMIT, UPGRADE_PROMPT };
+
 const IP_DAILY_LIMIT = TRIAL_LIMIT;
 const GLOBAL_DAILY_LIMIT = 500;
 const IP_PER_MINUTE_LIMIT = 2;
 const STORE_NAME = "yooco-rate-limit";
 const CACHE_ORIGIN = "https://yooco-rate-limit.invalid";
-
-export const UPGRADE_PROMPT =
-  "免费试用次数已用完（每天 10 次）。升级专业版：¥9.9/月 或 ¥59.9/年。";
 
 export const UPGRADE_OFFER = {
   monthly: "¥9.9/月",

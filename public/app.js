@@ -146,7 +146,11 @@ const trialBannerText = document.querySelector("#trialBannerText");
 const waitlistForm = document.querySelector("#waitlistForm");
 const waitlistEmail = document.querySelector("#waitlistEmail");
 const waitlistFeedback = document.querySelector("#waitlistFeedback");
-const TRIAL_LIMIT = 10;
+// 与 lib/trial-quota.js 的 TRIAL_LIMIT 一致。接口返回 trial.limit 后改用接口的数字。
+let trialLimit = 3;
+function guestTrialLimit() {
+  return trialLimit;
+}
 const TRIAL_STORAGE_KEY = "yooco-trial";
 const WAITLIST_COPY = "免费次数用完了。留下邮箱，开放订阅我通知你。";
 const UPGRADE_PROMPT = WAITLIST_COPY;
@@ -168,7 +172,10 @@ function setStatus(message) {
 }
 
 function setFeedback(message) {
-  if (copyFeedback) copyFeedback.textContent = message;
+  if (!copyFeedback) return;
+  copyFeedback.textContent = message || "";
+  if (message) copyFeedback.title = message;
+  else copyFeedback.removeAttribute("title");
 }
 
 function beijingDateKey(now = Date.now()) {
@@ -180,7 +187,7 @@ function readLocalTrialUsed() {
     const raw = JSON.parse(localStorage.getItem(TRIAL_STORAGE_KEY) || "null");
     if (raw?.date === beijingDateKey()) {
       const used = Number(raw.used);
-      return Number.isFinite(used) && used > 0 ? Math.min(TRIAL_LIMIT, used) : 0;
+      return Number.isFinite(used) && used > 0 ? Math.min(guestTrialLimit(), used) : 0;
     }
   } catch {
     /* ignore quota / private mode */
@@ -192,7 +199,7 @@ function writeLocalTrialUsed(used) {
   try {
     localStorage.setItem(TRIAL_STORAGE_KEY, JSON.stringify({
       date: beijingDateKey(),
-      used: Math.max(0, Math.min(TRIAL_LIMIT, used)),
+      used: Math.max(0, Math.min(guestTrialLimit(), used)),
     }));
   } catch {
     /* ignore quota / private mode */
@@ -201,7 +208,7 @@ function writeLocalTrialUsed(used) {
 
 function remainingTrialCount() {
   if (serverTrialRemaining !== null) return Math.max(0, serverTrialRemaining);
-  return Math.max(0, TRIAL_LIMIT - readLocalTrialUsed());
+  return Math.max(0, guestTrialLimit() - readLocalTrialUsed());
 }
 
 function renderTrialMeter() {
@@ -218,10 +225,13 @@ function renderTrialMeter() {
 
 function applyTrialFromServer(trial) {
   if (!trial || typeof trial !== "object") return;
+  if (typeof trial.limit === "number" && Number.isFinite(trial.limit) && trial.limit > 0) {
+    trialLimit = Math.round(trial.limit);
+  }
   if (typeof trial.enforced === "boolean") serverTrialEnforced = trial.enforced;
   if (typeof trial.remaining === "number" && Number.isFinite(trial.remaining)) {
     serverTrialRemaining = Math.max(0, trial.remaining);
-    writeLocalTrialUsed(TRIAL_LIMIT - serverTrialRemaining);
+    writeLocalTrialUsed(guestTrialLimit() - serverTrialRemaining);
   }
   renderTrialMeter();
 }
@@ -1031,7 +1041,7 @@ function getArticleModel() {
     : inferTitleFromFirstBlock(parsed);
   return {
     ...parsed,
-    title: articleTitleOverride.trim() || parsed.title || inferred.title || "你的文章预览",
+    title: articleTitleOverride.trim() || parsed.title || inferred.title || "",
     blocks: inferred.blocks,
     isSample: false,
   };
@@ -1162,8 +1172,12 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
-  articleTitle.textContent = model.title;
-  articleTitle.contentEditable = "true";
+  const titleText = String(model.title || "").trim();
+  articleTitle.textContent = titleText;
+  articleTitle.hidden = !titleText;
+  articleTitle.contentEditable = titleText ? "true" : "false";
+  if (titleText) articleTitle.removeAttribute("aria-hidden");
+  else articleTitle.setAttribute("aria-hidden", "true");
 }
 
 function serializePreviewToMarkdown() {
@@ -1470,20 +1484,59 @@ function applyAiLook(aiParams, assignment) {
   state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
 }
 
-function applyAiNormalization(data, assignment) {
-  const markdown = structuredDocumentToMarkdown(data?.document);
+const NORMALIZE_ERROR_FALLBACK = "暂时无法完成优化，请稍后重试。";
+
+function formatNormalizeError(payload) {
+  const code = typeof payload?.error?.code === "string" ? payload.error.code.trim() : "";
+  const message = typeof payload?.error?.message === "string" ? payload.error.message.trim() : "";
+  if (code && message) return `${code}：${message}`;
+  if (message) return message;
+  if (code) return `${code}：${NORMALIZE_ERROR_FALLBACK}`;
+  return NORMALIZE_ERROR_FALLBACK;
+}
+
+let groundAiDocumentFn = null;
+
+function fallbackGroundAiDocument(document, source) {
+  if (!document || typeof document !== "object") return document;
+  const compact = (value) => String(value || "").toLowerCase().replace(/[\s\u00a0\u3000「」『』“”"'‘’《》〈〉（）()【】\[\]{}：:，,。．.！!？?；;、·…—–\-_~～|/／\\#*`=+]+/g, "");
+  const grounded = (candidate) => {
+    const needle = compact(candidate);
+    return needle.length >= 2 && compact(source).includes(needle);
+  };
+  const blocks = Array.isArray(document.blocks) ? document.blocks.slice() : [];
+  const rawTitle = typeof document.title === "string" ? document.title.trim() : "";
+  while (blocks.length && blocks[0]?.type === "heading" && !grounded(blocks[0].text)) blocks.shift();
+  return { ...document, title: grounded(rawTitle) ? rawTitle : "", blocks };
+}
+
+async function groundReturnedDocument(document, source) {
+  try {
+    if (!groundAiDocumentFn) {
+      const mod = await import("/ground-title.js");
+      groundAiDocumentFn = mod.groundAiDocument;
+    }
+    return groundAiDocumentFn(document, source);
+  } catch {
+    return fallbackGroundAiDocument(document, source);
+  }
+}
+
+async function applyAiNormalization(data, assignment, source) {
+  const document = await groundReturnedDocument(data?.document, source);
+  const markdown = structuredDocumentToMarkdown(document);
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
   const aiParams = normalizeTemplateParams(data?.template?.params || data?.params || {});
   applyAiLook(aiParams, assignment);
   syncMoodUI();
   articleTitleOverride = "";
   blockTypeOverrides = {};
-  lastAiResult = data;
+  lastAiResult = { ...data, document };
   if (articleInput) articleInput.value = markdown;
   else articleSource = markdown;
   syncControls();
   applyArticleSource(false);
-  const blockCountFromAi = data.document.blocks.length;
+  const blockCountFromAi = Array.isArray(document?.blocks) ? document.blocks.length : 0;
   setStatus(`已优化 ${blockCountFromAi} 个内容块`);
   setFeedback("排版已更新");
 }
@@ -1520,10 +1573,10 @@ async function normalizeWithDeepSeek() {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
-      const message = payload?.error?.message || "暂时无法完成优化，请稍后重试。";
+      const message = formatNormalizeError(payload);
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
         serverTrialRemaining = 0;
-        writeLocalTrialUsed(TRIAL_LIMIT);
+        writeLocalTrialUsed(guestTrialLimit());
         showUpgradePrompt();
         return;
       }
@@ -1543,7 +1596,7 @@ async function normalizeWithDeepSeek() {
       writeLocalTrialUsed(readLocalTrialUsed() + 1);
       renderTrialMeter();
     }
-    applyAiNormalization(payload.data, assignment);
+    await applyAiNormalization(payload.data, assignment, source);
     awaitingContentPick = false;
     try {
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
@@ -1552,7 +1605,7 @@ async function normalizeWithDeepSeek() {
     }
   } catch (error) {
     setStatus("已套用本地排版");
-    setFeedback(error instanceof Error ? error.message : "暂时无法完成优化，请稍后重试。");
+    setFeedback(error instanceof Error && error.message ? error.message : NORMALIZE_ERROR_FALLBACK);
   } finally {
     if (aiNormalizeButton) {
       delete aiNormalizeButton.dataset.busy;

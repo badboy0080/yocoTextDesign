@@ -201,7 +201,6 @@ export function HomeLanding() {
         <nav className="ol-nav" aria-label="页面">
           <a href="#works-heading">作品</a>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
-          <Link href="/subscribe">订阅</Link>
           <a href={STUDIO_URL}>工作室</a>
         </nav>
         <div className="ol-header-end">

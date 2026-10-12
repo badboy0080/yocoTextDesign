@@ -522,6 +522,12 @@ function relativeLuminance(rgb) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** 夜间皮肤，或页面底色很暗。复制时用来垫高炭黑块，并提示公众号后台可能仍是白壳。 */
+function isDarkCopyPage() {
+  if (state.styleVariant === "deep-night" || state.theme === "nocturne") return true;
+  return relativeLuminance(hexToRgb(safeColor(state.pageColor, "#ffffff"))) < 0.18;
+}
+
 function contrastRatio(foreground, background) {
   const light = Math.max(relativeLuminance(hexToRgb(foreground)), relativeLuminance(hexToRgb(background)));
   const dark = Math.min(relativeLuminance(hexToRgb(foreground)), relativeLuminance(hexToRgb(background)));
@@ -1884,9 +1890,18 @@ function buildCopyHtml() {
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
   const titleHtml = model.title ? `<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>` : "";
-  let html = `<section style="width:100%;max-width:100%;margin:0;background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
+  // 外层留白对齐工作室预览（.article-page 上下 40px，左右落在 24–40px）。浅色也用同一圈，避免只有深色突然变宽。
+  // 深色再给最小高度，公众号后台白壳里炭黑块才不会贴边缩成一条。对齐仍写 left，不用 start/end。
+  const frameStyle = isDarkCopyPage() ? "padding:40px 32px;min-height:240px;" : "padding:40px 32px;";
+  let html = `<section style="width:100%;max-width:100%;margin:0;${frameStyle}background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
   if (lockBrandColor?.checked) html = applyDataNoDark(html);
   return stripLogicalTextAlign(html);
+}
+
+function darkCopyHint() {
+  if (!isDarkCopyPage()) return "";
+  const brand = lockBrandColor && !lockBrandColor.checked ? "建议勾选「保留品牌色」。" : "";
+  return `后台预览区可能仍白底，以正文炭黑块为准。${brand}`;
 }
 
 function buildCopyPlain(html) {
@@ -1952,12 +1967,19 @@ async function copyRichText() {
       const safeHtml = stripLogicalTextAlign(html);
       await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([safeHtml], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
     }
-    copyFeedback.textContent = tips.length ? "已复制 · 发布前请检查提醒" : "已复制";
+    const darkHint = darkCopyHint();
+    let copiedMessage = tips.length ? "已复制 · 发布前请检查提醒" : "已复制";
+    if (darkHint) {
+      copiedMessage = tips.length
+        ? `已复制。${darkHint}发布前请检查提醒。`
+        : `已复制。${darkHint}`;
+    }
+    setFeedback(copiedMessage);
     setStatus("文章已复制，可粘贴到公众号发布页。");
   } catch {
-    copyFeedback.textContent = "复制失败，请检查剪贴板权限";
+    setFeedback("复制失败，请检查剪贴板权限");
   }
-  window.setTimeout(() => { copyFeedback.textContent = ""; }, tips.length ? 8000 : 5000);
+  window.setTimeout(() => { setFeedback(""); }, (tips.length || isDarkCopyPage()) ? 8000 : 5000);
 }
 
 function exportConfig() {

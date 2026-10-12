@@ -688,11 +688,15 @@ function clampClientNumber(value, min, max, step, fallback) {
 
 function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   const next = { ...fallback };
+  if (input && typeof input.textAlign === "string") {
+    const raw = input.textAlign.trim().toLowerCase();
+    if (raw === "start" || raw === "end") input = { ...input, textAlign: wechatTextAlign(raw) };
+  }
   const colors = ["textColor", "accentColor", "highlightColor", "highlightTextColor", "cardColor", "quoteColor", "cardTitleColor", "pageColor", "linkColor", "codeBackground", "codeColor", "dividerColor"];
   colors.forEach((key) => { if (input?.[key] !== undefined) next[key] = safeColor(input[key], next[key]); });
   const enums = {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
-    textAlign: ["left", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
+    textAlign: ["left", "right", "center", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold"],
     headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
     cardStyle: ["border", "outline", "soft", "band"],
@@ -1309,7 +1313,7 @@ function applyStyleVars() {
   articlePage.style.setProperty("--line-height", state.lineHeight);
   articlePage.style.setProperty("--letter-spacing", `${state.letterSpacing}px`);
   articlePage.style.setProperty("--paragraph-spacing", `${state.paragraphSpacing}px`);
-  articlePage.style.setProperty("--text-align", state.textAlign || "left");
+  articlePage.style.setProperty("--text-align", wechatTextAlign(state.textAlign));
   articlePage.style.setProperty("--text-indent", `${state.textIndent}em`);
   articlePage.style.setProperty("--title-size", `${state.titleSize}px`);
   articlePage.style.setProperty("--heading-size", `${state.headingSize}px`);
@@ -1612,6 +1616,24 @@ async function normalizeWithDeepSeek() {
   }
 }
 
+/** 微信 §2.6 只认 left / right / center / justify。从左到右阅读时 start 当 left，end 当 right。 */
+function wechatTextAlign(value, fallback = "left") {
+  const pick = (raw) => {
+    const token = String(raw ?? "").trim().toLowerCase();
+    if (token === "start") return "left";
+    if (token === "end") return "right";
+    if (token === "left" || token === "right" || token === "center" || token === "justify") return token;
+    return "";
+  };
+  return pick(value) || pick(fallback) || "left";
+}
+
+function stripLogicalTextAlign(html) {
+  return String(html || "").replace(/text-align\s*:\s*(start|end)\b/gi, (_full, value) => (
+    `text-align:${String(value).toLowerCase() === "end" ? "right" : "left"}`
+  ));
+}
+
 function buildCopyHtml() {
   const isDeepNight = state.styleVariant === "deep-night";
   const mutedColor = state.mutedColor || "#8e9389";
@@ -1651,23 +1673,26 @@ function buildCopyHtml() {
   const cardKind = state.cardStyle || "border";
   const listKind = state.listStyle || "dot";
   let sectionCounter = 0;
-  // 复制 HTML 按公众号规范：不写 font-family；宽度用 100%；不用 opacity / 过小行高藏分隔线
+  // 复制 HTML 按公众号规范：不写 font-family；宽度用 100%；不用 opacity / 过小行高藏分隔线；text-align 不用 start/end
   const softAccent = colorWithAlpha(state.accentColor, 0.55);
   const ghostAccent = colorWithAlpha(state.accentColor, 0.38);
-  const textStyle = `margin:0 0 ${state.paragraphSpacing}px;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:${state.textAlign};text-indent:${state.textIndent}em;`;
+  const bodyAlign = wechatTextAlign(state.textAlign);
+  const textStyle = `margin:0 0 ${state.paragraphSpacing}px;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:${bodyAlign};text-indent:${state.textIndent}em;`;
   const headingStyle = (level) => {
     const size = getHeadingSize(level);
     const headingInk = state.theme === "nocturne" ? titleColor : state.textColor;
     const nightItalic = isDeepNight && state.theme !== "nocturne" ? "font-style:italic;" : "";
     const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;${nightItalic}`;
-    if (headingKind === "line") return `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
-    if (headingKind === "block" && level === 2) return `${base}display:inline-block;padding:6px 14px;border-radius:8px;background-color:${state.accentColor};color:${state.pageColor};`;
-    if (headingKind === "index" && level === 2) return `${base}`;
-    if (headingKind === "poster" && level === 2) return `${base}padding:0;border:0;`;
-    if (headingKind === "panel" && level === 2) return `${base}padding:0;border:0;`;
-    if (headingKind === "oval" && level === 2) return `${base}padding:0;border:0;text-align:center;`;
-    if (ATLAS_HEADING_STYLES.includes(headingKind) && level === 2) return `${base}padding:0;border:0;overflow-wrap:anywhere;`;
-    return `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
+    let style = `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
+    if (headingKind === "line") style = `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
+    else if (headingKind === "block" && level === 2) style = `${base}display:inline-block;padding:6px 14px;border-radius:8px;background-color:${state.accentColor};color:${state.pageColor};`;
+    else if (headingKind === "index" && level === 2) style = base;
+    else if (headingKind === "poster" && level === 2) style = `${base}padding:0;border:0;`;
+    else if (headingKind === "panel" && level === 2) style = `${base}padding:0;border:0;`;
+    else if (headingKind === "oval" && level === 2) style = `${base}padding:0;border:0;`;
+    else if (ATLAS_HEADING_STYLES.includes(headingKind) && level === 2) style = `${base}padding:0;border:0;overflow-wrap:anywhere;`;
+    const align = headingKind === "oval" && level === 2 ? "center" : "left";
+    return `${style}text-align:${align};`;
   };
   const headingPrefix = (level) => {
     if (level !== 2) return "";
@@ -1712,7 +1737,7 @@ function buildCopyHtml() {
     return `<h3 style="${base}"><span style="display:block;font-weight:900;">${copyInlineMarkdown(first)}</span>${second ? `<span style="display:block;font-weight:300;letter-spacing:.1em;">${copyInlineMarkdown(second)}</span>` : ""}${sub ? `<span style="display:block;margin-top:12px;${quiet}">${label}</span>` : ""}</h3>`;
   };
   const cardBoxStyle = (kind, bgColor) => {
-    const base = `margin:18px 0 22px;color:${state.textColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};`;
+    const base = `margin:18px 0 22px;color:${state.textColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:${bodyAlign};`;
     if (kind === "outline") return `${base}padding:${state.cardPadding}px;border:${state.cardBorderWidth}px solid ${state.accentColor};border-radius:${state.cardRadius}px;background-color:transparent;`;
     if (kind === "soft") {
       const edge = state.theme === "nocturne" ? `border:1px solid ${state.borderColor};` : "border:0;";
@@ -1729,22 +1754,22 @@ function buildCopyHtml() {
   const cardStyle = cardBoxStyle(cardKind, state.cardColor);
   const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
   const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
-  const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;`;
+  const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;text-align:left;`;
   const imageBoxStyle = isDeepNight
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.pageColor};color:${mutedColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : `margin:22px 0 26px;padding:48px 12px;text-align:center;border-radius:${state.imageRadius}px;background-color:${state.accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.13em;`;
-  const codeStyle = `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;`;
+  const codeStyle = `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;text-align:left;`;
   const listPad = `${Math.max(1, Number(state.listIndent) || 1.5)}em`;
   // 精选主题复制版：自动目录（取前 3 个二级标题，纯派生）。
   const tocHeadings = model.blocks
     .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
     .slice(0, 3);
   const tocHtmlBlock = isTheme() && tocHeadings.length >= 2
-    ? `<section style="margin:0 0 30px;padding:16px 18px;border:1px solid ${state.borderColor};border-radius:10px;background-color:${state.cardColor};"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;">本文脉络</p>${tocHeadings.map((block, index) =>
-      `<p style="margin:0 0 8px;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
+    ? `<section style="margin:0 0 30px;padding:16px 18px;border:1px solid ${state.borderColor};border-radius:10px;background-color:${state.cardColor};text-align:left;"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;text-align:left;">本文脉络</p>${tocHeadings.map((block, index) =>
+      `<p style="margin:0 0 8px;text-align:left;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
     : "";
   const signatureHtmlBlock = isTheme() && state.showSignature
-    ? `<section style="margin:28px 0 0;padding:20px 0 0;border-top:1px solid ${state.dividerColor};text-align:right;"><p style="margin:0;color:${titleColor};font-size:14px;font-weight:700;">—— {{作者名}}</p></section>`
+    ? `<section style="margin:28px 0 0;padding:20px 0 0;border-top:1px solid ${state.dividerColor};text-align:right;"><p style="margin:0;color:${titleColor};font-size:14px;font-weight:700;text-align:right;">—— {{作者名}}</p></section>`
     : "";
   // 精选主题的引导段（引言卡）内联版，与 styles.css 的 data-theme 盖层保持一致。
   const themeLeadStyle = (baseTextStyle) => {
@@ -1752,7 +1777,7 @@ function buildCopyHtml() {
     const base = `${baseTextStyle}text-indent:0;`;
     if (t === "fresh") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${colorWithAlpha(state.accentColor, 0.18)};border-radius:16px;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
     if (t === "mono") return `${base}padding:0 0 18px;margin-bottom:24px;border-bottom:1px solid ${state.dividerColor};color:${titleColor};font-weight:600;`;
-    if (t === "serene") return `${base}padding:34px 16px;margin:8px 0 44px;border-top:1px solid ${state.dividerColor};border-bottom:1px solid ${state.dividerColor};text-align:center;color:${titleColor};font-size:${Math.round(state.headingSize * 0.72)}px;font-weight:600;line-height:1.85;`;
+    if (t === "serene") return `${base.replace(/text-align\s*:\s*[^;]+;?/gi, "")}padding:34px 16px;margin:8px 0 44px;border-top:1px solid ${state.dividerColor};border-bottom:1px solid ${state.dividerColor};text-align:center;color:${titleColor};font-size:${Math.round(state.headingSize * 0.72)}px;font-weight:600;line-height:1.85;`;
     if (t === "stub") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${state.accentColor};border-radius:12px;background-color:${state.pageColor};box-shadow:0 6px 18px -8px ${colorWithAlpha(state.accentColor, 0.55)};color:${titleColor};font-weight:700;`;
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
     if (t === "nocturne") return `${base}margin-bottom:22px;color:${state.accentColor};font-weight:700;`;
@@ -1761,9 +1786,9 @@ function buildCopyHtml() {
   // 精选主题分隔线：票据卡用虚线装订，静山加大留白，其余沿用通用分隔线。
   const themeDividerHtml = () => {
     const t = isTheme() ? state.theme : "classic";
-    if (t === "stub") return `<section style="margin:34px 0 30px;border-top:2px dashed ${state.dividerColor};"></section>`;
-    if (t === "serene") return `<section style="margin:56px 0;border-top:1px solid ${state.dividerColor};"></section>`;
-    return `<section style="margin:${state.dividerMargin}px 0;border-top:${state.dividerThickness}px solid ${state.dividerColor};"></section>`;
+    if (t === "stub") return `<section style="margin:34px 0 30px;border-top:2px dashed ${state.dividerColor};text-align:left;"></section>`;
+    if (t === "serene") return `<section style="margin:56px 0;border-top:1px solid ${state.dividerColor};text-align:left;"></section>`;
+    return `<section style="margin:${state.dividerMargin}px 0;border-top:${state.dividerThickness}px solid ${state.dividerColor};text-align:left;"></section>`;
   };
   let body = model.blocks.map((item) => {
     if (item.type === "lead") {
@@ -1791,27 +1816,27 @@ function buildCopyHtml() {
     }
     if (item.type === "paragraph") return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
     if (item.type === "quote") {
-      if (state.showQuote) return `<section style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;${cardKind === "band" ? "" : ""}${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};">${copyInlineMarkdown(item.text)}</p></section>`;
+      if (state.showQuote) return `<section style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
       return `<p style="${textStyle}font-style:italic;">${copyInlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<section style="${cardStyle}"><p style="margin:0 0 7px;padding:0;${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};">${copyInlineMarkdown(item.text)}</p></section>`;
+    if (item.type === "card") return `<section style="${cardStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
         const n = index + 1;
         const badge = `<span style="display:inline-block;min-width:28px;margin-right:10px;color:${softAccent};font-size:${Math.round(state.fontSize * 1.15)}px;font-weight:${state.headingWeight};">${String(n).padStart(2, "0")}</span>`;
-        return `<p style="margin:0 0 ${state.listItemSpacing}px;padding:0;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};">${badge}<span>${copyInlineMarkdown(entry)}</span></p>`;
+        return `<p style="margin:0 0 ${state.listItemSpacing}px;padding:0;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:${bodyAlign};">${badge}<span>${copyInlineMarkdown(entry)}</span></p>`;
       }).join("");
-      return `<section style="${cardBoxStyle("soft", state.cardColor)}"><p style="margin:0 0 12px;padding:0;${contentCardTitleStyle}">${title}</p>${rows}</section>`;
+      return `<section style="${cardBoxStyle("soft", state.cardColor)}"><p style="margin:0 0 12px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${title}</p>${rows}</section>`;
     }
     if (item.type === "stat") {
       const title = escapeHtml(item.title || "关键数据");
       const cells = (item.items || []).map((entry) => {
         const value = escapeHtml(entry.value || "");
         const label = escapeHtml(entry.label || "");
-        return `<section style="display:inline-block;width:46%;margin:6px 2% 8px 0;vertical-align:top;text-align:center;"><p style="margin:0;padding:0;color:${state.accentColor};font-size:${Math.max(22, state.headingSize - 2)}px;font-weight:${state.headingWeight};line-height:1.2;">${value}</p><p style="margin:4px 0 0;padding:0;color:${mutedColor};font-size:${Math.max(11, state.captionSize)}px;line-height:1.5;">${label}</p></section>`;
+        return `<section style="display:inline-block;width:46%;margin:6px 2% 8px 0;vertical-align:top;text-align:center;"><p style="margin:0;padding:0;color:${state.accentColor};font-size:${Math.max(22, state.headingSize - 2)}px;font-weight:${state.headingWeight};line-height:1.2;text-align:center;">${value}</p><p style="margin:4px 0 0;padding:0;color:${mutedColor};font-size:${Math.max(11, state.captionSize)}px;line-height:1.5;text-align:center;">${label}</p></section>`;
       }).join("");
-      return `<section style="${cardBoxStyle("outline", state.cardColor)}"><p style="margin:0 0 12px;padding:0;${contentCardTitleStyle}">${title}</p><section style="margin:0;padding:0;text-align:left;">${cells}</section></section>`;
+      return `<section style="${cardBoxStyle("outline", state.cardColor)}"><p style="margin:0 0 12px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${title}</p><section style="margin:0;padding:0;text-align:left;">${cells}</section></section>`;
     }
     if (item.type === "divider" && state.showDivider) return themeDividerHtml();
     if (item.type === "image") {
@@ -1820,10 +1845,10 @@ function buildCopyHtml() {
         const dataAttrs = meta
           ? ` data-w="${meta.width}"${meta.ratio ? ` data-ratio="${meta.ratio}"` : ""}`
           : "";
-        return `<section style="margin:22px 0 26px;text-align:center;"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}"${dataAttrs} style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:${state.imageRadius}px;" /><p style="margin:7px 0 0;color:${mutedColor};font-size:${state.captionSize}px;line-height:1.6;">${escapeHtml(item.alt || "文章配图")}</p></section>`;
+        return `<section style="margin:22px 0 26px;text-align:center;"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}"${dataAttrs} style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:${state.imageRadius}px;" /><p style="margin:7px 0 0;color:${mutedColor};font-size:${state.captionSize}px;line-height:1.6;text-align:center;">${escapeHtml(item.alt || "文章配图")}</p></section>`;
       }
       if (state.showImage) {
-        return `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;">${escapeHtml(item.alt || "图片待补")}</p></section>`;
+        return `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;text-align:center;">${escapeHtml(item.alt || "图片待补")}</p></section>`;
       }
       return `<p style="${textStyle}color:${mutedColor};">[图片：${escapeHtml(item.alt || "待补")}]</p>`;
     }
@@ -1844,10 +1869,10 @@ function buildCopyHtml() {
       const itemStyle = `margin:0 0 ${state.listItemSpacing}px;padding-left:${listPad};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:left;text-indent:0;`;
       const itemsHtml = (item.items || []).map((entry, index) =>
         `<p style="${itemStyle}">${marker(index)}<span>${copyInlineMarkdown(entry)}</span></p>`).join("");
-      return `<section style="margin:0 0 ${state.paragraphSpacing}px;">${itemsHtml}</section>`;
+      return `<section style="margin:0 0 ${state.paragraphSpacing}px;text-align:left;">${itemsHtml}</section>`;
     }
     if (item.type === "code") {
-      return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};">${formatCodeForWechat(item.text)}</p></section>`;
+      return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};text-align:left;">${formatCodeForWechat(item.text)}</p></section>`;
     }
     return "";
   });
@@ -1859,8 +1884,9 @@ function buildCopyHtml() {
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
   const titleHtml = model.title ? `<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>` : "";
-  const html = `<section style="width:100%;max-width:100%;margin:0;background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};">${titleHtml}${bodyHtml}</section>`;
-  return lockBrandColor?.checked ? applyDataNoDark(html) : html;
+  let html = `<section style="width:100%;max-width:100%;margin:0;background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
+  if (lockBrandColor?.checked) html = applyDataNoDark(html);
+  return stripLogicalTextAlign(html);
 }
 
 function buildCopyPlain(html) {
@@ -1877,10 +1903,11 @@ function buildCopyPlain(html) {
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function copyHtmlWithExecCommand(html) {
+function copyHtmlWithExecCommand(html, plain) {
+  const safeHtml = stripLogicalTextAlign(html);
   const holder = document.createElement("section");
   holder.contentEditable = "true";
-  holder.innerHTML = html;
+  holder.innerHTML = safeHtml;
   holder.style.cssText = "position:fixed;left:-10000px;top:0;width:640px;height:auto;opacity:0;";
   document.body.appendChild(holder);
   holder.focus();
@@ -1889,9 +1916,22 @@ function copyHtmlWithExecCommand(html) {
   range.selectNodeContents(holder);
   selection.removeAllRanges();
   selection.addRange(range);
-  const copied = document.execCommand("copy");
-  selection.removeAllRanges();
-  holder.remove();
+  // 浏览器复制时会把没写对齐的块算成 text-align:start。这里改用我们自己的 HTML。
+  const onCopy = (event) => {
+    if (!event.clipboardData) return;
+    event.preventDefault();
+    event.clipboardData.setData("text/html", safeHtml);
+    event.clipboardData.setData("text/plain", plain || "");
+  };
+  document.addEventListener("copy", onCopy, true);
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } finally {
+    document.removeEventListener("copy", onCopy, true);
+    selection.removeAllRanges();
+    holder.remove();
+  }
   return copied;
 }
 
@@ -1906,10 +1946,11 @@ async function copyRichText() {
     .slice(0, 3)
     .map((item) => item.title);
   try {
-    const copied = copyHtmlWithExecCommand(html);
+    const copied = copyHtmlWithExecCommand(html, plain);
     if (!copied) {
       if (!window.ClipboardItem || !navigator.clipboard?.write) throw new Error("copy-unsupported");
-      await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
+      const safeHtml = stripLogicalTextAlign(html);
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([safeHtml], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
     }
     copyFeedback.textContent = tips.length ? "已复制 · 发布前请检查提醒" : "已复制";
     setStatus("文章已复制，可粘贴到公众号发布页。");

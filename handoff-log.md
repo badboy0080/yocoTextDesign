@@ -77,7 +77,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：主题芯片里有「深空青」。配色、造型和七类文章配方按规格写进主题表。夜间样式沿用 deep-night。次数用尽横幅仍是黑底玻璃条，文案没改。
 - 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio-ui.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`handoff-log.md`、`handoff-archive.md`。
 - 冲突怎么解：`studio.html` 的样式和脚本版本号合成 `nocturne-glass-v1`，玻璃横幅的 HTML 用 master 的。`app.js`、`styles.css`、`studio-ui.css` 自动合并，玻璃横幅样式留着，深空青样式加在后面。
-- 如何验证：打开 `/studio.html`，在「主题」里点「深空青」。预览底是 #1a1a1a，标题近白，亮点是黄条黑字。次数用尽横幅仍是黑底玻璃条。
+- 如何验证：打开 `/studio.html`，在「主题」里点「深空青」。已核对芯片能选中；预览底 #1a1a1a，标题 #f3f4f6，序号和加粗关键词 #3ddc97，黄条 #f6d35a 配黑字 #1a1a1a，代码底 #141414、浅绿字。复制稿外层是炭黑底。390 宽没有横向溢出。次数用尽横幅仍是黑底玻璃条。没有部署，也没有贴进公众号后台。
 - 待办/风险：还没部署。公众号后台实贴仍要人去贴一次。暗黑科技那两套旧皮肤的代码色没改。
 
 ### 2026-10-12 次数用尽横幅改成黑底玻璃条

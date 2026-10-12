@@ -104,6 +104,7 @@ html.studio-embedded .studio-navigation { display:none; }
 .preview-stage { min-height:0; flex:1; padding:0; background:var(--preview-page-color,#fff); }
 .web-preview { width:100%; min-height:100%; margin:0; }
 .article-page { min-height:100%; padding:40px clamp(24px,4vw,64px); background:var(--page-color,#fff); color:var(--text-color,#20231f); box-shadow:none; color-scheme:light; }
+.article-page[data-style="deep-night"] { color-scheme: dark; }
 .preview-footer { min-height:48px; flex:none; gap:12px; padding:12px 24px; border-top:1px solid var(--line); background:var(--panel); }
 #articleStatus { color:var(--muted); font-size:12px; line-height:1.5; }
 .preview-tool-toggle { color:var(--muted); font-size:12px; }

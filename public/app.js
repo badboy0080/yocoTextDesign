@@ -376,7 +376,7 @@ function isTheme() {
   return Boolean(state.theme && state.theme !== "classic" && THEMES[state.theme]);
 }
 
-// 切换五套精选主题。旧气质不走这里，点列表里的气质项会套该方向的默认皮肤。
+// 切换精选主题。旧气质不走这里，点列表里的气质项会套该方向的默认皮肤。
 function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   if (themeId !== "classic" && !THEMES[themeId]) return;
   const previousArticleType = state.articleType;
@@ -1446,7 +1446,7 @@ function nextNormalizeAssignment() {
   if (awaitingContentPick) return { mode: "choose" };
   const pool = typeof THEME_IDS !== "undefined"
     ? THEME_IDS
-    : ["fresh", "mono", "serene", "stub", "editorial", "classic"];
+    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "classic"];
   const theme = pool[Math.floor(Math.random() * pool.length)];
   return { mode: "fixed", theme };
 }
@@ -1619,8 +1619,10 @@ function buildCopyHtml() {
   const highlightColor = safeColor(state.highlightColor, safeColor(state.accentColor, "#d7fa5c"));
   const highlightTextColor = safeColor(state.highlightTextColor, state.textColor);
   const highlightStyle = state.highlightStyle || "background";
-  const codeBackground = isDeepNight ? "#202727" : state.codeBackground;
-  const codeColor = isDeepNight ? "#d7e0f2" : state.codeColor;
+  // 旧夜间皮肤仍用写死的代码色。深空青按主题参数走，深底浅绿字。
+  const useRegisteredCode = !isDeepNight || state.theme === "nocturne";
+  const codeBackground = useRegisteredCode ? state.codeBackground : "#202727";
+  const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
   const highlightCss = highlightStyle === "underline"
     ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;border-bottom:3px solid ${highlightColor};`
     : highlightStyle === "bold"
@@ -1628,16 +1630,22 @@ function buildCopyHtml() {
       : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
   const linkCss = `color:${state.linkColor};${state.linkUnderline ? "text-decoration:underline;" : "text-decoration:none;"}`;
   const inlineCodeCss = `padding:0 .28em;border-radius:4px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;`;
-  const copyInlineMarkdown = (value) => inlineMarkdown(value).replace(
-    /<mark class="inline-highlight">([\s\S]*?)<\/mark>/g,
-    `<span style="${highlightCss}">$1</span>`,
-  ).replace(
-    /<a class="inline-link" href="([^"]+)" target="_blank" rel="noreferrer">([\s\S]*?)<\/a>/g,
-    `<a href="$1" style="${linkCss}" target="_blank">$2</a>`,
-  ).replace(
-    /<code class="inline-code">([\s\S]*?)<\/code>/g,
-    `<code style="${inlineCodeCss}">$1</code>`,
-  );
+  const copyInlineMarkdown = (value) => {
+    let html = inlineMarkdown(value).replace(
+      /<mark class="inline-highlight">([\s\S]*?)<\/mark>/g,
+      `<span style="${highlightCss}">$1</span>`,
+    ).replace(
+      /<a class="inline-link" href="([^"]+)" target="_blank" rel="noreferrer">([\s\S]*?)<\/a>/g,
+      `<a href="$1" style="${linkCss}" target="_blank">$2</a>`,
+    ).replace(
+      /<code class="inline-code">([\s\S]*?)<\/code>/g,
+      `<code style="${inlineCodeCss}">$1</code>`,
+    );
+    if (state.theme === "nocturne") {
+      html = html.replace(/<strong>/g, `<strong style="color:${state.accentColor};font-weight:700;">`);
+    }
+    return html;
+  };
   const model = getArticleModel();
   const headingKind = state.headingStyle || "bar";
   const cardKind = state.cardStyle || "border";
@@ -1649,7 +1657,9 @@ function buildCopyHtml() {
   const textStyle = `margin:0 0 ${state.paragraphSpacing}px;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:${state.textAlign};text-indent:${state.textIndent}em;`;
   const headingStyle = (level) => {
     const size = getHeadingSize(level);
-    const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${state.textColor};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;${isDeepNight ? "font-style:italic;" : ""}`;
+    const headingInk = state.theme === "nocturne" ? titleColor : state.textColor;
+    const nightItalic = isDeepNight && state.theme !== "nocturne" ? "font-style:italic;" : "";
+    const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;${nightItalic}`;
     if (headingKind === "line") return `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
     if (headingKind === "block" && level === 2) return `${base}display:inline-block;padding:6px 14px;border-radius:8px;background-color:${state.accentColor};color:${state.pageColor};`;
     if (headingKind === "index" && level === 2) return `${base}`;
@@ -1665,7 +1675,8 @@ function buildCopyHtml() {
       sectionCounter += 1;
       const num = String(sectionCounter).padStart(2, "0");
       if (headingKind === "index") {
-        return `<span style="display:inline-block;margin-right:12px;color:${softAccent};font-size:1.35em;font-weight:${state.headingWeight};">${num}</span>`;
+        const numColor = state.theme === "nocturne" ? state.accentColor : softAccent;
+        return `<span style="display:inline-block;margin-right:12px;color:${numColor};font-size:1.35em;font-weight:${state.headingWeight};">${num}</span>`;
       }
       if (headingKind === "poster") {
         return `<span style="display:block;margin:0 0 6px;color:${state.textColor};font-size:1.75em;font-weight:800;line-height:1;letter-spacing:0;">${num}</span>`;
@@ -1703,7 +1714,10 @@ function buildCopyHtml() {
   const cardBoxStyle = (kind, bgColor) => {
     const base = `margin:18px 0 22px;color:${state.textColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};`;
     if (kind === "outline") return `${base}padding:${state.cardPadding}px;border:${state.cardBorderWidth}px solid ${state.accentColor};border-radius:${state.cardRadius}px;background-color:transparent;`;
-    if (kind === "soft") return `${base}padding:${state.cardPadding}px;border:0;border-radius:${state.cardRadius}px;background-color:${bgColor};`;
+    if (kind === "soft") {
+      const edge = state.theme === "nocturne" ? `border:1px solid ${state.borderColor};` : "border:0;";
+      return `${base}padding:${state.cardPadding}px;${edge}border-radius:${state.cardRadius}px;background-color:${bgColor};`;
+    }
     if (kind === "band") return `${base}padding:0 0 ${state.cardPadding}px;border:0;border-radius:${state.cardRadius}px;overflow:hidden;background-color:${bgColor};`;
     return `${base}padding:${state.cardPadding}px;border:0;border-left:${Math.max(3, state.cardBorderWidth + 2)}px solid ${state.accentColor};border-radius:0 ${state.cardRadius}px ${state.cardRadius}px 0;background-color:${bgColor};`;
   };
@@ -1741,6 +1755,7 @@ function buildCopyHtml() {
     if (t === "serene") return `${base}padding:34px 16px;margin:8px 0 44px;border-top:1px solid ${state.dividerColor};border-bottom:1px solid ${state.dividerColor};text-align:center;color:${titleColor};font-size:${Math.round(state.headingSize * 0.72)}px;font-weight:600;line-height:1.85;`;
     if (t === "stub") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${state.accentColor};border-radius:12px;background-color:${state.pageColor};box-shadow:0 6px 18px -8px ${colorWithAlpha(state.accentColor, 0.55)};color:${titleColor};font-weight:700;`;
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
+    if (t === "nocturne") return `${base}margin-bottom:22px;color:${state.accentColor};font-weight:700;`;
     return `${baseTextStyle}color:${state.accentColor};font-weight:750;`;
   };
   // 精选主题分隔线：票据卡用虚线装订，静山加大留白，其余沿用通用分隔线。

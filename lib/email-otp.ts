@@ -334,7 +334,11 @@ export async function verifyEmailCode(input: { email: string; code: string; now?
         await store.write(doc);
         return { ok: false, status: 400, message: "验证码不正确。" };
       }
-      doc.codes = doc.codes.filter((item) => item.email !== email);
+      // 码作废，但留下发送时间，避免刚用完又能立刻再发。
+      record.codeHash = "";
+      record.expiresAt = 0;
+      record.attempts = 0;
+      record.lockedUntil = 0;
       await store.write(doc);
       return { ok: true };
     } catch (error) {

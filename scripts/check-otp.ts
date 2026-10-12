@@ -55,6 +55,8 @@ assert(!tooSoon.ok && tooSoon.status === 429, "同一邮箱 1 分钟内不能再
 
 const verified = await verifyEmailCode({ email: "ADA@example.com", code: issued.code, now: t0 + 2_000 });
 assert(verified.ok, "大小写不同的邮箱也能对上验证码");
+const stillCooling = await issueEmailCode({ email: issued.email, ip: "203.0.113.9", now: t0 + 3_000 });
+assert(!stillCooling.ok && stillCooling.status === 429, "用掉验证码后 1 分钟内不能再发");
 const again = await verifyEmailCode({ email: issued.email, code: issued.code, now: t0 + 3_000 });
 assert(!again.ok && again.message === "请先获取验证码。", "用过的验证码要删掉");
 

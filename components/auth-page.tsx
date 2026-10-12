@@ -77,8 +77,6 @@ export function AuthPage({ mode }: { mode: Mode }) {
               <p>{isRegister ? "为每一次创作，留一个专属位置。" : "让排版从上次的灵感继续。"}</p>
             </div>
 
-            <div className="auth-preview-note" role="note">本机测试时，账号只在这次打开的服务里有效。部署到 Edge 之后，同事才能用同一套账号登录。</div>
-
             <div className="auth-form">
               {isRegister && (
                 <label className="auth-field">

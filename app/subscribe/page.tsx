@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import { SubscribePage } from "@/components/subscribe-page";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "订阅 · Yooco",
-  description: "查看 Yooco 免费试用与专业版方案。专业版订阅尚未开放。",
-};
-
+// 订阅先不对外展示。方案页组件还留在 components/subscribe-page.tsx，开通时再接回来。不收款。
 export default function SubscribeRoute() {
-  return <SubscribePage />;
+  redirect("/");
 }

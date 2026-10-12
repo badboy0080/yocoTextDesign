@@ -201,7 +201,6 @@ export function HomeLanding() {
         <nav className="ol-nav" aria-label="页面">
           <a href="#works-heading">作品</a>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
-          <Link href="/subscribe">订阅</Link>
           <a href={STUDIO_URL}>工作室</a>
         </nav>
         <div className="ol-header-end">
@@ -310,6 +309,10 @@ export function HomeLanding() {
           <a className="ol-footer-link" href={STUDIO_URL}>进入工作台</a>
           <span className="ol-copy">YOOCO © 2026</span>
         </div>
+        <p className="ol-beian">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备2026141208号</a>
+          {/* 公安备案号核发后，放在这个链接旁边。 */}
+        </p>
       </footer>
       <p className="ol-watermark" aria-hidden="true">YOOCO</p>
       </div>

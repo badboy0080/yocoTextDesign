@@ -220,8 +220,15 @@ const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 
 /* 主题态：在通用默认值上铺整套主题参数；theme 字段记录当前盖层。 */
+function themeTextAlign(value) {
+  if (value === "start") return "left";
+  if (value === "end") return "right";
+  if (value === "left" || value === "right" || value === "center" || value === "justify") return value;
+  return "left";
+}
+
 function buildThemeState(themeId) {
   const theme = THEMES[themeId];
   if (!theme) return null;
-  return { ...TEMPLATE_DEFAULTS, ...theme.params, theme: themeId, articleType: "auto" };
+  return { ...TEMPLATE_DEFAULTS, ...theme.params, textAlign: themeTextAlign(theme.params.textAlign), theme: themeId, articleType: "auto" };
 }

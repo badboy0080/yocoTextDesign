@@ -43,7 +43,7 @@ export function SubscribePage() {
               <div className="subscribe-price"><strong>¥0</strong><span>/ 当前免费试用</span></div>
               <ul className="subscribe-features">
                 <li><Check size={16} aria-hidden="true" />每天 {TRIAL_LIMIT} 次 AI 排版优化</li>
-                <li><Check size={16} aria-hidden="true" />查看作品与排版灵感</li>
+                <li><Check size={16} aria-hidden="true" />查看精品模板与排版灵感</li>
                 <li><Check size={16} aria-hidden="true" />调整版式、复制与导出配置</li>
               </ul>
               <Link className="account-secondary-button" href="/works?panel=studio">开始免费试用 <ArrowRight size={18} aria-hidden="true" /></Link>
@@ -68,7 +68,7 @@ export function SubscribePage() {
           <h2 id="subscribe-bottom-heading">好的阅读，<br />从第一眼开始。</h2>
           <div className="subscribe-bottom-details">
             <p>文章的价值在内容里，阅读的意愿从版式开始。Yooco 帮你把结构、留白与节奏安排得更舒服。</p>
-            <Link href="/works">去看作品 <MoveUpRight size={18} aria-hidden="true" /></Link>
+            <Link href="/works">去看精品模板 <MoveUpRight size={18} aria-hidden="true" /></Link>
           </div>
         </section>
         <div className="account-tail"><span>01 / 先体验</span><span>02 / 再创作</span><span>03 / 等待订阅开放</span></div>

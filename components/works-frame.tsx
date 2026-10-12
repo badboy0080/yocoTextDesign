@@ -134,9 +134,9 @@ export function WorksFrame() {
             <IconStudio />
             <span>工作台</span>
           </button>
-          <button type="button" aria-label="作品" className={panel === "works" ? "is-active" : ""} aria-current={panel === "works" ? "page" : undefined} onClick={() => choose("works")}>
+          <button type="button" aria-label="精品模板" className={panel === "works" ? "is-active" : ""} aria-current={panel === "works" ? "page" : undefined} onClick={() => choose("works")}>
             <IconWorks />
-            <span>作品</span>
+            <span>精品模板</span>
           </button>
         </nav>
         {account ? (

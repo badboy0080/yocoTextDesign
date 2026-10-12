@@ -96,6 +96,34 @@
 .work-sheet--editorial .work-sheet-lead::first-letter { float:left; padding:.05em .14em 0 0; font-family:Georgia,serif; font-size:3.7rem; line-height:.9; color:#d47325; }
 .work-sheet--editorial h4 { padding-left:.8rem; border-left:4px solid #e07b2c; font-family:"Songti SC","SimSun",serif; }
 .work-sheet--editorial blockquote { border:0!important; padding:1rem 1.2rem; background:#f4ebdc; font-family:"Songti SC","SimSun",serif; font-size:1.16rem; }
+.work-sheet--minimal .work-sheet-header { margin-bottom:2.2rem; padding-block:1.4rem 1.2rem; border-block:1px solid #2b2a28; }
+.work-sheet--minimal .work-sheet-meta { border:0; margin-bottom:1.2rem; }
+.work-sheet-rule { display:block; margin-bottom:1.1rem; font:600 .62rem Arial,sans-serif; letter-spacing:.22em; color:#8c8a84; }
+.work-sheet--minimal h3 { font-weight:500; letter-spacing:.16em; font-size:2.15rem; }
+.work-sheet--minimal h4 { font-weight:500; letter-spacing:.08em; border-bottom:1px solid #e3e0d8; padding-bottom:.45rem; }
+.work-sheet--minimal blockquote { border-left-width:1px!important; font-family:"Songti SC","SimSun",serif; }
+.work-sheet--magazine { border-top:10px solid #2f5d4f; }
+.work-sheet--magazine .work-sheet-header { margin:-2.2rem -2rem 1.8rem; padding:1.5rem 2rem 1.3rem; background:#edf2e8; }
+.work-sheet-issue--green { color:#2f5d4f; }
+.work-sheet--magazine h4 { color:#2f5d4f!important; }
+.work-sheet--magazine h4::before { content:"§ "; }
+.work-sheet--magazine ul { padding:.9rem 1rem .9rem 1.6rem; background:#f3f6ee; }
+.work-sheet--lively h3 { font-family:Arial,"Microsoft YaHei",sans-serif; font-weight:900; letter-spacing:-.04em; font-size:2.5rem; }
+.work-sheet-pill { display:inline-block; margin-bottom:.8rem; padding:.28rem .75rem; border-radius:999px; background:#ff6a3d; color:#fff; font:700 .72rem Arial,sans-serif; letter-spacing:.06em; }
+.work-sheet--lively h4 { display:inline-flex; margin-top:1.2rem; padding:.28rem .8rem; border-radius:999px; background:#ff6a3d; color:#fff!important; font-family:Arial,"Microsoft YaHei",sans-serif; }
+.work-sheet--lively ul { padding:1rem 1rem 1rem 1.8rem; background:#fff0e8; border-radius:18px; }
+.work-sheet--lively blockquote { border:0!important; padding:.9rem 1rem; background:#fff6f0; border-radius:16px; }
+.work-sheet--deep { border:1px solid #2c3d30; box-shadow:inset 4px 0 #34f07a; }
+.work-sheet-signal { display:block; margin-bottom:.9rem; color:#34f07a; font:700 .68rem Arial,sans-serif; letter-spacing:.18em; }
+.work-sheet--deep h3 { font-family:Arial,"Microsoft YaHei",sans-serif; letter-spacing:-.03em; }
+.work-sheet--deep h4 { padding-left:.7rem; border-left:3px solid #34f07a; color:#eafff0!important; }
+.work-sheet--deep ul { padding:.2rem 0 .2rem 1.2rem; }
+.work-sheet--deep blockquote { background:#172019; padding:.8rem 1rem; }
+.work-sheet--nocturne { border-top:4px solid #3ddc97; }
+.work-sheet-night { display:inline-block; margin-bottom:.85rem; padding:.22rem .55rem; border-radius:4px; background:#f6d35a; color:#1a1a1a; font:800 .75rem Arial,sans-serif; }
+.work-sheet--nocturne h4 { color:#3ddc97!important; }
+.work-sheet--nocturne blockquote { background:#242424; padding:.85rem 1rem; }
+.work-sheet--nocturne .work-sheet-end { border-top-color:#333; }
 .work-sheet--figure h3 { max-width:12em; font-size:2rem; line-height:1.25; }
 .work-figure { margin:0 0 1.1rem; }
 .work-figure img { display:block; width:100%; height:12rem; object-fit:cover; border-radius:2px; }

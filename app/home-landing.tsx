@@ -199,7 +199,7 @@ export function HomeLanding() {
           <BrandLogo onDark />
         </Link>
         <nav className="ol-nav" aria-label="页面">
-          <a href="#works-heading">作品</a>
+          <a href="#works-heading">精品模板</a>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
           <a href={STUDIO_URL}>工作室</a>
         </nav>

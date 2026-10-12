@@ -6,6 +6,7 @@ import {
   readInviteInput,
   redeemInviteCode,
 } from "@/lib/invite-store";
+import { verifyEmailCode } from "@/lib/email-otp";
 import { deleteAccount, registerAccount } from "@/lib/local-accounts";
 
 function accountDeviceId(userId: number, raw: unknown): string {
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
     name?: string;
     email?: string;
     password?: string;
+    code?: string;
     inviteCode?: string;
     deviceId?: string;
   } | null;
@@ -35,6 +37,17 @@ export async function POST(request: Request) {
         { status: inviteFailureStatus(inspected.reason), headers: { "cache-control": "no-store" } },
       );
     }
+  }
+
+  const verified = await verifyEmailCode({
+    email: String(body?.email || ""),
+    code: String(body?.code || ""),
+  });
+  if (!verified.ok) {
+    return Response.json(
+      { ok: false, message: verified.message },
+      { status: verified.status, headers: { "cache-control": "no-store" } },
+    );
   }
 
   const result = await registerAccount({

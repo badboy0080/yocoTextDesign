@@ -56,6 +56,16 @@ DEEPSEEK_API_KEY=你的密钥
 DEEPSEEK_MODEL=deepseek-flash
 ```
 
+注册要先收邮箱里的 6 位验证码。发信使用 [Resend](https://resend.com)，密钥不要写进仓库：
+
+```bash
+RESEND_API_KEY=你的密钥
+# 可选。不填时用 Resend 的测试发件地址，只能发给该账号自己的邮箱。
+EMAIL_FROM=Yooco <noreply@yoooco.com>
+```
+
+本地 `npm run dev` 没配 `RESEND_API_KEY` 时，验证码会出现在接口响应和服务器日志里，方便自己注册。生产环境不会回显。其他非生产预览若也要这样，设置 `OTP_DEV_ECHO=1`。线上把 `RESEND_API_KEY`（和可选的 `EMAIL_FROM`）配到 EdgeOne 环境变量。
+
 启动开发服务：
 
 ```bash
@@ -119,7 +129,7 @@ lib/
 
 ## 注意事项
 
-- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`  
+- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`、`RESEND_API_KEY`（注册验证码）  
 - 「优化排版」依赖外网可达的 DeepSeek；若部署在海外节点，可能出现超时，需要单独处理网络可达性  
 - 本仓库由 vinext / Sites 脚手架承载前端与 Worker；产品入口是 `/studio.html`，不是默认首页模板文案
 

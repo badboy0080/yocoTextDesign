@@ -1,5 +1,8 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { normalizeEmail, validEmail } from "./email-address";
+
+export { normalizeEmail, validEmail };
 
 const SESSION_COOKIE = "yooco_session";
 const SESSION_DAYS = 30;
@@ -77,14 +80,6 @@ function passwordMatches(password: string, stored: string) {
   const actual = scryptSync(password, salt, 32);
   const expected = Buffer.from(hash, "hex");
   return actual.length === expected.length && timingSafeEqual(actual, expected);
-}
-
-export function normalizeEmail(value: string) {
-  return value.trim().toLowerCase();
-}
-
-export function validEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 async function startSession(doc: AccountDoc, userId: number) {

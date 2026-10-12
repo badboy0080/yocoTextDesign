@@ -23,7 +23,7 @@ export function AccountLayout({
             <BrandLogo onDark={obsidian} />
           </Link>
           <nav className="account-nav" aria-label="页面导航">
-            <Link href="/works">作品</Link>
+            <Link href="/works">精品模板</Link>
             <AccountMenu />
             <Link href="/works?panel=studio">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
           </nav>

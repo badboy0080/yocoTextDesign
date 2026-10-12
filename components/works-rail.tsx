@@ -16,7 +16,7 @@ export function WorksRail() {
       <div className="yooco-shell">
         <div className="works-head works-head-fan">
           <h2 id="works-heading">没有创意？试试下方的版式</h2>
-          <a className="works-more" href="/works">全部作品 ↗</a>
+          <a className="works-more" href="/works">全部精品模板 ↗</a>
         </div>
         <div className="works-fan" aria-label="版式示例">
           {WORKS.slice(0, 5).map((work, index) => (

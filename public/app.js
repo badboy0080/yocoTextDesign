@@ -2331,11 +2331,13 @@ if (saved) {
       state.theme = storedTheme;
       styleTouched = true;
     } else {
-      let storedSkin = "";
-      try {
-        const moodSaved = JSON.parse(localStorage.getItem("yooco-style-mood") || "{}");
-        if (SKINS[moodSaved.skin]) storedSkin = moodSaved.skin;
-      } catch { /* no mood record */ }
+      let storedSkin = SKINS[stored.skin] ? stored.skin : "";
+      if (!storedSkin) {
+        try {
+          const moodSaved = JSON.parse(localStorage.getItem("yooco-style-mood") || "{}");
+          if (SKINS[moodSaved.skin]) storedSkin = moodSaved.skin;
+        } catch { /* no mood record */ }
+      }
       if (storedSkin) {
         // 新版：皮肤 + 用户微调都恢复，并视为用户已手动定调。
         currentSkin = storedSkin;

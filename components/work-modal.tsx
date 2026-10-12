@@ -5,65 +5,24 @@ import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { applyWork, downloadWorkConfig, type WorkPiece } from "@/lib/works";
 
-function WorkFigure({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
-  return (
-    <figure className="work-figure">
-      <img src={src} alt={alt} />
-      {caption ? <figcaption>{caption}</figcaption> : null}
-    </figure>
-  );
-}
-
 export function WorkPreview({ work }: { work: WorkPiece }) {
-  const stamp = work.sheetNo ?? `0${["fresh", "mono", "serene", "stub", "editorial"].indexOf(work.themeId) + 1}`;
-  const images = work.blocks.filter((block) => block.type === "image");
-  const steps = work.blocks.filter((block) => block.type === "step");
-  const prose = work.blocks.filter((block) => block.type === "p" || block.type === "quote");
   return (
-    <article className={`work-sheet work-sheet--${work.layout ? "figure" : work.themeId}${work.layout ? ` work-layout-${work.layout}` : ""}`} style={{ background: work.pageColor, color: work.textColor }}>
+    <article className={`work-sheet work-sheet--${work.sheet}`} style={{ background: work.pageColor, color: work.textColor }}>
       <header className="work-sheet-header">
-        <div className="work-sheet-meta"><span>YOOCO / SELECTED WORK</span><span>{work.themeLabel} · {stamp}</span></div>
-        {!work.layout && work.themeId === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
-        {!work.layout && work.themeId === "mono" && <span className="work-sheet-vertical" aria-hidden="true">SPACE / FORM / RHYTHM</span>}
-        {!work.layout && work.themeId === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ 004</span></span>}
-        {!work.layout && work.themeId === "editorial" && <span className="work-sheet-issue">ISSUE 05 <span>EDITOR&apos;S NOTE</span></span>}
+        <div className="work-sheet-meta"><span>YOOCO / TEMPLATE</span><span>{work.themeLabel} · {work.sheetNo}</span></div>
+        {work.sheet === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
+        {work.sheet === "mono" && <span className="work-sheet-vertical" aria-hidden="true">SPACE / FORM / RHYTHM</span>}
+        {work.sheet === "stub" && <span className="work-sheet-ticket-label">FIELD CHECKLIST <span>№ {work.sheetNo}</span></span>}
+        {work.sheet === "editorial" && <span className="work-sheet-issue">ISSUE {work.sheetNo} <span>EDITOR&apos;S NOTE</span></span>}
+        {work.sheet === "magazine" && <span className="work-sheet-issue work-sheet-issue--green">{work.sheetNo} <span>CONTENTS</span></span>}
+        {work.sheet === "lively" && <span className="work-sheet-pill">周末清单</span>}
+        {work.sheet === "deep" && <span className="work-sheet-signal">SIGNAL / {work.sheetNo}</span>}
+        {work.sheet === "nocturne" && <span className="work-sheet-night">结论</span>}
+        {work.sheet === "minimal" && <span className="work-sheet-rule">{work.sheetNo} — QUIET</span>}
         <h3 style={{ color: work.titleColor }}>{work.title}</h3>
         <p className="work-sheet-deck">{work.fit} <span>／</span> {work.deck}</p>
       </header>
-      {work.layout === "hero" && images[0]?.type === "image" ? <WorkFigure src={images[0].src} alt={images[0].alt} caption={images[0].caption} /> : null}
-      {work.layout === "beside" && images[0]?.type === "image" ? (
-        <div className="work-beside">
-          <WorkFigure src={images[0].src} alt={images[0].alt} caption={images[0].caption} />
-          <div>{prose.map((block, index) => block.type === "quote"
-            ? <blockquote key={index} style={{ borderColor: work.accentColor }}>{block.text}</blockquote>
-            : <p key={index}>{block.type === "p" ? block.text : ""}</p>)}</div>
-        </div>
-      ) : null}
-      {work.layout === "compare" ? (
-        <div className="work-compare">
-          {images.map((block) => block.type === "image" ? <WorkFigure key={block.src} src={block.src} alt={block.alt} caption={block.caption} /> : null)}
-        </div>
-      ) : null}
-      {work.layout === "steps" ? (
-        <ol className="work-steps">
-          {steps.map((block, index) => block.type === "step" ? (
-            <li key={block.src}>
-              <img src={block.src} alt={block.alt} />
-              <div>
-                <strong style={{ color: work.titleColor }}>{index + 1}. {block.title}</strong>
-                <p>{block.text}</p>
-              </div>
-            </li>
-          ) : null)}
-        </ol>
-      ) : null}
-      <div className="work-sheet-content">{work.layout ? prose.filter(() => work.layout !== "beside").map((block, index) => {
-        if (block.type === "quote") {
-          return <blockquote key={index} style={{ borderColor: work.accentColor }}>{block.text}</blockquote>;
-        }
-        if (block.type === "p") return <p key={index}>{block.text}</p>;
-        return null;
-      }) : work.blocks.map((block, index) => {
+      <div className="work-sheet-content">{work.blocks.map((block, index) => {
         if (block.type === "h2") {
           return (
             <h4 key={index} style={{ color: work.titleColor }}>
@@ -174,7 +133,7 @@ export function WorkModal({
         aria-labelledby="work-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="work-dialog-body" tabIndex={0} aria-label="作品文章预览">
+        <div className="work-dialog-body" tabIndex={0} aria-label="精品模板预览">
           <WorkPreview work={work} />
         </div>
         <aside className="work-dialog-info">
@@ -185,13 +144,13 @@ export function WorkModal({
             </p>
             <h2 id="work-dialog-title">{work.title}</h2>
           </div>
-          <button type="button" className="work-close" onClick={() => closeRef.current()} aria-label="关闭作品预览">
+          <button type="button" className="work-close" onClick={() => closeRef.current()} aria-label="关闭精品模板预览">
             X
           </button>
         </header>
         <p className="work-description">{work.fit}</p>
         <p className="work-detail-note">从这套排版开始，换上你的文章，再调整成自己的样子。</p>
-        <div className="work-swatches" aria-label="作品配色">{[work.pageColor, work.titleColor, work.accentColor].map((color, index) => <span key={index} style={{ background: color }} />)}</div>
+        <div className="work-swatches" aria-label="模板配色">{[work.pageColor, work.titleColor, work.accentColor].map((color, index) => <span key={index} style={{ background: color }} />)}</div>
         <footer className="work-dialog-actions">
           <button type="button" className="work-btn work-btn-primary" onClick={() => applyWork(work)}>
             做同款

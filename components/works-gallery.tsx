@@ -23,13 +23,13 @@ export function WorksGallery() {
   return (
     <div className="works-page">
       <header className="works-page-bar">
-        <p className="works-eyebrow">THE EDIT / 排版作品集</p>
+        <p className="works-eyebrow">THE EDIT / 精品模板</p>
         <h1>让好内容，<br />有好看的样子。</h1>
-        <p className="works-intro">挑一套喜欢的排版，打开阅读，或用它开始你的下一篇。</p>
+        <p className="works-intro">挑一套精品模板，打开阅读，或用它开始你的下一篇。</p>
       </header>
       <div className="works-filter-bar">
         <div className="works-filters" role="group" aria-label="按排版风格筛选">{filters.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>
-        <span className="works-count" aria-live="polite">{visible.length} 件作品</span>
+        <span className="works-count" aria-live="polite">{visible.length} 个精品模板</span>
       </div>
       <ul className="works-grid" ref={grid}>
         {visible.map((work) => (

@@ -2,31 +2,119 @@ export type WorkBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
   | { type: "quote"; text: string }
-  | { type: "list"; items: string[] }
-  | { type: "image"; src: string; alt: string; caption?: string }
-  | { type: "step"; title: string; text: string; src: string; alt: string };
+  | { type: "list"; items: string[] };
 
 export type WorkPiece = {
   id: string;
   title: string;
+  /** 工作台主题列表上的标识。前四项是气质 id，后六项是 themes.js 的主题 id。 */
   themeId: string;
+  /** mood：气质，存盘时 theme 仍是 classic，并带上默认皮肤。theme：精选主题。 */
+  bind: "mood" | "theme";
+  /** 预览卡片样式，避免「杂志编辑部」和「手札橙」都叫 editorial 时撞样式。 */
+  sheet: string;
   themeLabel: string;
   fit: string;
-  deck?: string;
+  deck: string;
   primary: string;
   pageColor: string;
   titleColor: string;
   textColor: string;
   accentColor: string;
+  sheetNo: string;
   source: string;
   blocks: WorkBlock[];
   params: Record<string, string | number | boolean>;
-  layout?: "hero" | "beside" | "compare" | "steps";
-  sheetNo?: string;
+};
+
+const MOOD_SKIN: Record<string, string> = {
+  minimal: "ink-cream",
+  editorial: "retro-green",
+  lively: "orange-pop",
+  deep: "deep-matrix",
+};
+
+const minimalParams = {
+  textColor: "#2b2a28",
+  accentColor: "#2b2a28",
+  highlightColor: "#e8e5dd",
+  highlightTextColor: "#2b2a28",
+  cardColor: "#f3f1ea",
+  quoteColor: "#f7f5ef",
+  cardTitleColor: "#2b2a28",
+  pageColor: "#fbfaf7",
+  linkColor: "#4c6b79",
+  dividerColor: "#2b2a28",
+  headingStyle: "line",
+  cardStyle: "outline",
+  listStyle: "dot",
+  cardRadius: 2,
+  imageRadius: 2,
+  showDivider: true,
+};
+
+const magazineParams = {
+  textColor: "#20302a",
+  accentColor: "#2f5d4f",
+  highlightColor: "#d8e6d4",
+  highlightTextColor: "#20302a",
+  cardColor: "#edf2e8",
+  quoteColor: "#f3f6ee",
+  cardTitleColor: "#2f5d4f",
+  pageColor: "#fffef9",
+  linkColor: "#35604e",
+  dividerColor: "#2f5d4f",
+  headingStyle: "index",
+  cardStyle: "band",
+  listStyle: "circle",
+  cardRadius: 2,
+  imageRadius: 2,
+  showDivider: true,
+};
+
+const livelyParams = {
+  textColor: "#3a3230",
+  accentColor: "#ff6a3d",
+  highlightColor: "#ffd9c7",
+  highlightTextColor: "#3a2a22",
+  cardColor: "#fff0e8",
+  quoteColor: "#fff6f0",
+  cardTitleColor: "#ff6a3d",
+  pageColor: "#fffdfb",
+  linkColor: "#d94f2b",
+  dividerColor: "#ff6a3d",
+  headingStyle: "block",
+  cardStyle: "soft",
+  listStyle: "check",
+  cardRadius: 16,
+  imageRadius: 16,
+  lineHeight: 1.8,
+  paragraphSpacing: 20,
+  showDivider: true,
+};
+
+const deepParams = {
+  textColor: "#c7d6c2",
+  accentColor: "#34f07a",
+  highlightColor: "#34f07a",
+  highlightTextColor: "#06140b",
+  cardColor: "#1a241d",
+  quoteColor: "#172019",
+  cardTitleColor: "#34f07a",
+  pageColor: "#121512",
+  linkColor: "#5fd9a0",
+  dividerColor: "#34f07a",
+  headingStyle: "bar",
+  cardStyle: "soft",
+  listStyle: "ghost",
+  cardRadius: 14,
+  imageRadius: 14,
+  lineHeight: 1.9,
+  paragraphSpacing: 22,
+  showDivider: false,
 };
 
 const freshParams = {
-  theme: "fresh",
   textColor: "#374151",
   accentColor: "#0a9d75",
   highlightColor: "#d6f5ea",
@@ -37,409 +125,390 @@ const freshParams = {
   pageColor: "#ffffff",
   linkColor: "#0a9d75",
   dividerColor: "#d1d5db",
-  titleColor: "#111827",
-  fontSize: 14,
-  lineHeight: 1.9,
-  headingSize: 26,
   headingStyle: "index",
   cardStyle: "soft",
   listStyle: "circle",
+  cardRadius: 20,
   showDivider: true,
 };
 
 const monoParams = {
-  theme: "mono",
   textColor: "#52525b",
   accentColor: "#52525b",
+  highlightColor: "#f4f4f5",
+  highlightTextColor: "#27272a",
   cardColor: "#fafafa",
   quoteColor: "#fafafa",
+  cardTitleColor: "#3f3f46",
   pageColor: "#ffffff",
-  titleColor: "#27272a",
-  fontSize: 15,
-  lineHeight: 1.8,
-  headingSize: 27,
+  linkColor: "#52525b",
+  dividerColor: "#e4e4e7",
   headingStyle: "line",
   cardStyle: "outline",
   listStyle: "dot",
+  cardRadius: 4,
   showDivider: true,
 };
 
 const sereneParams = {
-  theme: "serene",
   textColor: "#4f5550",
   accentColor: "#476055",
+  highlightColor: "#edf2ef",
+  highlightTextColor: "#385045",
   cardColor: "#ffffff",
   quoteColor: "#ffffff",
+  cardTitleColor: "#476055",
   pageColor: "#ffffff",
-  titleColor: "#2b2b2b",
-  fontSize: 15,
-  lineHeight: 1.92,
-  headingSize: 26,
+  linkColor: "#476055",
+  dividerColor: "#e9eae6",
   headingStyle: "line",
   cardStyle: "outline",
   listStyle: "dot",
+  cardRadius: 0,
   showDivider: true,
 };
 
 const stubParams = {
-  theme: "stub",
   textColor: "#555555",
   accentColor: "#0f9d8a",
+  highlightColor: "#d6f3ee",
+  highlightTextColor: "#0b5e52",
   cardColor: "#f0faf8",
   quoteColor: "#fffef9",
+  cardTitleColor: "#26231f",
   pageColor: "#fffef9",
-  titleColor: "#26231f",
-  fontSize: 15,
-  lineHeight: 1.75,
-  headingSize: 24,
+  linkColor: "#0f9d8a",
+  dividerColor: "#a9e3d9",
   headingStyle: "block",
   cardStyle: "outline",
   listStyle: "circle",
+  cardRadius: 10,
   showDivider: true,
 };
 
-const editorialParams = {
-  theme: "editorial",
+const journalParams = {
   textColor: "#4d4f46",
   accentColor: "#e07b2c",
+  highlightColor: "#e7e8e1",
+  highlightTextColor: "#23251d",
   cardColor: "#eff0ea",
   quoteColor: "#fdfdf8",
+  cardTitleColor: "#1e1f23",
   pageColor: "#fdfdf8",
-  titleColor: "#23251d",
-  fontSize: 15,
-  lineHeight: 1.8,
-  headingSize: 26,
-  headingStyle: "line",
-  cardStyle: "outline",
-  listStyle: "dot",
+  linkColor: "#b17816",
+  dividerColor: "#bfc1b7",
+  headingStyle: "bar",
+  cardStyle: "border",
+  listStyle: "circle",
+  cardRadius: 6,
   showDivider: true,
 };
 
-function article(title: string, body: string) {
-  return `# ${title}\n\n${body.trim()}\n`;
+const nocturneParams = {
+  textColor: "#d1d5db",
+  accentColor: "#3ddc97",
+  highlightColor: "#f6d35a",
+  highlightTextColor: "#1a1a1a",
+  cardColor: "#242424",
+  quoteColor: "#1f1f1f",
+  cardTitleColor: "#3ddc97",
+  pageColor: "#1a1a1a",
+  linkColor: "#4fd1c5",
+  dividerColor: "#333333",
+  headingStyle: "index",
+  cardStyle: "soft",
+  listStyle: "circle",
+  cardRadius: 12,
+  showDivider: true,
+};
+
+function article(title: string, blocks: WorkBlock[]) {
+  const body = blocks.map((block) => {
+    if (block.type === "h2") return `## ${block.text}`;
+    if (block.type === "quote") return `> ${block.text}`;
+    if (block.type === "list") return block.items.map((item) => `- ${item}`).join("\n");
+    return block.text;
+  }).join("\n\n");
+  return `# ${title}\n\n${body}\n`;
 }
 
-const BASE_WORKS: WorkPiece[] = [
-  {
-    id: "fresh-walk",
-    title: "周末去爬山",
+function piece(
+  input: Omit<WorkPiece, "source"> & { blocks: WorkBlock[] },
+): WorkPiece {
+  return { ...input, source: article(input.title, input.blocks) };
+}
+
+export const WORKS: WorkPiece[] = [
+  piece({
+    id: "minimal-quiet",
+    title: "少说一句",
+    themeId: "minimal",
+    bind: "mood",
+    sheet: "minimal",
+    themeLabel: "克制高级",
+    fit: "观点 · 留白",
+    deck: "把判断留在空白里",
+    primary: "#2b2a28",
+    pageColor: "#fbfaf7",
+    titleColor: "#2b2a28",
+    textColor: "#2b2a28",
+    accentColor: "#2b2a28",
+    sheetNo: "01",
+    blocks: [
+      { type: "p", text: "一篇评论不必把每个判断都加粗。标题放下，空一行，读者自己会停。" },
+      { type: "h2", text: "只留一处强调" },
+      { type: "list", items: ["标题和正文拉开", "正文只用一种字重", "引用单独成段"] },
+      { type: "quote", text: "颜色少，句子才站得住。" },
+    ],
+    params: minimalParams,
+  }),
+  piece({
+    id: "magazine-contents",
+    title: "本期目录",
+    themeId: "editorial",
+    bind: "mood",
+    sheet: "magazine",
+    themeLabel: "杂志编辑部",
+    fit: "栏目 · 编号",
+    deck: "先给编号，再给解释",
+    primary: "#2f5d4f",
+    pageColor: "#fffef9",
+    titleColor: "#20302a",
+    textColor: "#20302a",
+    accentColor: "#2f5d4f",
+    sheetNo: "02",
+    blocks: [
+      { type: "p", text: "这一期只做三栏。目录先把顺序排好，读者才知道从哪一栏读起。" },
+      { type: "h2", text: "封面故事" },
+      { type: "list", items: ["封面只留一句", "目录用编号", "栏目标题对齐"] },
+      { type: "quote", text: "编号是给眼睛的路标。" },
+    ],
+    params: magazineParams,
+  }),
+  piece({
+    id: "lively-weekend",
+    title: "周末去哪儿",
+    themeId: "lively",
+    bind: "mood",
+    sheet: "lively",
+    themeLabel: "活泼小红书",
+    fit: "种草 · 清单",
+    deck: "三句就能照着出门",
+    primary: "#ff6a3d",
+    pageColor: "#fffdfb",
+    titleColor: "#3a2a22",
+    textColor: "#3a3230",
+    accentColor: "#ff6a3d",
+    sheetNo: "03",
+    blocks: [
+      { type: "p", text: "不用长攻略。把三张图的位置，换成三句朋友能照着做的话。" },
+      { type: "h2", text: "先记这三件" },
+      { type: "list", items: ["早上的店不用排队", "下午找有窗的座位", "晚上早点回"] },
+      { type: "quote", text: "写短一点，朋友才愿意存。" },
+    ],
+    params: livelyParams,
+  }),
+  piece({
+    id: "deep-build",
+    title: "夜间构建",
+    themeId: "deep",
+    bind: "mood",
+    sheet: "deep",
+    themeLabel: "暗黑科技",
+    fit: "工具 · 深色",
+    deck: "亮的只有该看的那一行",
+    primary: "#34f07a",
+    pageColor: "#121512",
+    titleColor: "#eafff0",
+    textColor: "#c7d6c2",
+    accentColor: "#34f07a",
+    sheetNo: "04",
+    blocks: [
+      { type: "p", text: "日志刷过之后，只留下失败的那一行。深色页面里，绿色是唯一要看的信号。" },
+      { type: "h2", text: "先看这一行" },
+      { type: "list", items: ["构建编号", "失败步骤", "下次重试前先看错误"] },
+      { type: "quote", text: "亮的只有该被看见的字。" },
+    ],
+    params: deepParams,
+  }),
+  piece({
+    id: "fresh-setup",
+    title: "十分钟装好",
     themeId: "fresh",
+    bind: "theme",
+    sheet: "fresh",
     themeLabel: "清氧绿",
     fit: "教程 · 清单",
+    deck: "先跑起来，再谈设置",
     primary: "#0a9d75",
     pageColor: "#ffffff",
     titleColor: "#111827",
     textColor: "#374151",
     accentColor: "#0a9d75",
-    source: article(
-      "周末去爬山",
-      `早上出门，风很轻。走到半山，城市就安静了。\n\n## 出发前\n\n- 带水\n- 看路\n- 慢一点\n\n> 先把路走完，再谈风景。`,
-    ),
+    sheetNo: "05",
     blocks: [
-      { type: "p", text: "早上出门，风很轻。走到半山，城市就安静了。" },
-      { type: "h2", text: "出发前" },
-      { type: "list", items: ["带水", "看路", "慢一点"] },
-      { type: "quote", text: "先把路走完，再谈风景。" },
+      { type: "p", text: "先做能跑起来的一步。绿字标出你现在该点哪里，其余设置先放下。" },
+      { type: "h2", text: "按这个顺序" },
+      { type: "list", items: ["打开项目", "只填一项配置", "看到成功提示再往下"] },
+      { type: "quote", text: "教程写给正在动手的人。" },
     ],
     params: freshParams,
-  },
-  {
-    id: "mono-grid",
-    title: "留白也是结构",
+  }),
+  piece({
+    id: "mono-structure",
+    title: "只留结构",
     themeId: "mono",
+    bind: "theme",
+    sheet: "mono",
     themeLabel: "素墨",
     fit: "设计 · 评论",
+    deck: "灰阶里靠距离分开",
     primary: "#52525b",
     pageColor: "#ffffff",
     titleColor: "#27272a",
     textColor: "#52525b",
     accentColor: "#52525b",
-    source: article(
-      "留白也是结构",
-      `版面挤满的时候，句子会互相抢。空一行，读者才知道哪里该停。\n\n## 三处留白\n\n- 标题下面\n- 引用两边\n- 段落之间\n\n> 少一块颜色，多一口气。`,
-    ),
+    sheetNo: "06",
     blocks: [
-      { type: "p", text: "版面挤满的时候，句子会互相抢。空一行，读者才知道哪里该停。" },
-      { type: "h2", text: "三处留白" },
-      { type: "list", items: ["标题下面", "引用两边", "段落之间"] },
+      { type: "p", text: "灰阶里没有第二种强调。标题、正文、引用，靠距离分开。" },
+      { type: "h2", text: "三处距离" },
+      { type: "list", items: ["标题下面空开", "引用离开正文", "段与段之间不挤"] },
       { type: "quote", text: "少一块颜色，多一口气。" },
     ],
     params: monoParams,
-  },
-  {
+  }),
+  piece({
     id: "serene-hill",
-    title: "半山的风",
+    title: "半山没有钟",
     themeId: "serene",
+    bind: "theme",
+    sheet: "serene",
     themeLabel: "静山",
     fit: "随笔 · 读书",
+    deck: "走到能听见呼吸的地方",
     primary: "#476055",
     pageColor: "#ffffff",
     titleColor: "#2b2b2b",
     textColor: "#4f5550",
     accentColor: "#476055",
-    source: article(
-      "半山的风",
-      `路不陡。树荫一块一块移过来，脚步就慢了。\n\n## 记住的\n\n- 风从左边来\n- 城市在脚底下\n- 没有人催\n\n> 走到能听见自己呼吸的地方就够了。`,
-    ),
+    sheetNo: "07",
     blocks: [
-      { type: "p", text: "路不陡。树荫一块一块移过来，脚步就慢了。" },
-      { type: "h2", text: "记住的" },
-      { type: "list", items: ["风从左边来", "城市在脚底下", "没有人催"] },
-      { type: "quote", text: "走到能听见自己呼吸的地方就够了。" },
+      { type: "p", text: "石阶不陡。云从山脊上移开的时候，谁也没有催。" },
+      { type: "h2", text: "坐下的地方" },
+      { type: "list", items: ["风从左边来", "城市在脚底下", "橘子分给同行的人"] },
+      { type: "quote", text: "走到能听见呼吸的地方就够了。" },
     ],
     params: sereneParams,
-  },
-  {
-    id: "stub-list",
-    title: "三件要带的",
+  }),
+  piece({
+    id: "stub-checklist",
+    title: "出门核对单",
     themeId: "stub",
+    bind: "theme",
+    sheet: "stub",
     themeLabel: "票据卡",
     fit: "测评 · 清单",
+    deck: "只核三样，多了不会看",
     primary: "#0f9d8a",
     pageColor: "#fffef9",
     titleColor: "#26231f",
     textColor: "#555555",
     accentColor: "#0f9d8a",
-    source: article(
-      "三件要带的",
-      `出门前对一下口袋。少带一件，路上就会想。\n\n## 清单\n\n- 水\n- 薄外套\n- 一张纸\n\n> 清单写短，才用得上。`,
-    ),
+    sheetNo: "08",
     blocks: [
-      { type: "p", text: "出门前对一下口袋。少带一件，路上就会想。" },
-      { type: "h2", text: "清单" },
-      { type: "list", items: ["水", "薄外套", "一张纸"] },
-      { type: "quote", text: "清单写短，才用得上。" },
+      { type: "p", text: "门口停一下。这张单子只核三样，写长了出门时就不会看。" },
+      { type: "h2", text: "核对" },
+      { type: "list", items: ["水还剩回程的一半", "外套在包的最上层", "纸上有回程的车次"] },
+      { type: "quote", text: "单子写短，才用得上。" },
     ],
     params: stubParams,
-  },
-  {
-    id: "editorial-journal",
-    title: "内刊里的一页",
+  }),
+  piece({
+    id: "journal-line",
+    title: "改过的那一句",
     themeId: "editorial",
+    bind: "theme",
+    sheet: "editorial",
     themeLabel: "手札橙",
     fit: "手记 · 复盘",
+    deck: "标题从空话改成动作",
     primary: "#e07b2c",
     pageColor: "#fdfdf8",
     titleColor: "#23251d",
     textColor: "#4d4f46",
     accentColor: "#e07b2c",
-    source: article(
-      "内刊里的一页",
-      `这一页不讲大词。只记一件做成的小事，和一次改口。\n\n## 记下\n\n- 原来的说法\n- 改过的一句\n- 为什么改\n\n> 手记写给下次的自己。`,
-    ),
-    blocks: [
-      { type: "p", text: "这一页不讲大词。只记一件做成的小事，和一次改口。" },
-      { type: "h2", text: "记下" },
-      { type: "list", items: ["原来的说法", "改过的一句", "为什么改"] },
-      { type: "quote", text: "手记写给下次的自己。" },
-    ],
-    params: editorialParams,
-  },
-  {
-    id: "figure-hero",
-    title: "山路上的一张照片",
-    themeId: "serene",
-    themeLabel: "大图叙事",
-    fit: "图文 · 大图叙事",
-    sheetNo: "06",
-    layout: "hero",
-    primary: "#355d27",
-    pageColor: "#f7f8f3",
-    titleColor: "#243028",
-    textColor: "#3c463c",
-    accentColor: "#355d27",
-    source: article(
-      "山路上的一张照片",
-      `![半山的路](/works/plate-hill.svg)\n\n走到第二个岔路口，我没有再往上。风从树叶后面过来，山下的车声只剩一层很轻的声音。\n\n> 照片记下的是停下的地方，不是山顶。`,
-    ),
-    blocks: [
-      { type: "image", src: "/works/plate-hill.svg", alt: "半山的路", caption: "半山，第二个岔路口" },
-      { type: "p", text: "走到第二个岔路口，我没有再往上。风从树叶后面过来，山下的车声只剩一层很轻的声音。" },
-      { type: "quote", text: "照片记下的是停下的地方，不是山顶。" },
-    ],
-    params: sereneParams,
-  },
-  {
-    id: "figure-beside",
-    title: "封面旁边的一句说明",
-    themeId: "editorial",
-    themeLabel: "图文并置",
-    fit: "图文 · 图文并置",
-    sheetNo: "07",
-    layout: "beside",
-    primary: "#355d27",
-    pageColor: "#fbf7ef",
-    titleColor: "#243028",
-    textColor: "#3c463c",
-    accentColor: "#355d27",
-    source: article(
-      "封面旁边的一句说明",
-      `![一页说明](/works/plate-page.svg)\n\n封面只放一件事。旁边那句说明告诉读者，点开之后能做什么。\n\n不要在图的旁边再堆一段理念。一句就够。`,
-    ),
-    blocks: [
-      { type: "image", src: "/works/plate-page.svg", alt: "一页说明", caption: "封面" },
-      { type: "p", text: "封面只放一件事。旁边那句说明告诉读者，点开之后能做什么。" },
-      { type: "p", text: "不要在图的旁边再堆一段理念。一句就够。" },
-    ],
-    params: editorialParams,
-  },
-  {
-    id: "figure-compare",
-    title: "挤满，和留白",
-    themeId: "mono",
-    themeLabel: "双图对照",
-    fit: "图文 · 双图对照",
-    sheetNo: "08",
-    layout: "compare",
-    primary: "#20251f",
-    pageColor: "#ffffff",
-    titleColor: "#20251f",
-    textColor: "#3c463c",
-    accentColor: "#20251f",
-    source: article(
-      "挤满，和留白",
-      `![改前，格子挤在一起](/works/plate-full.svg)\n\n![改后，只留一句](/works/plate-air.svg)\n\n左边什么都想讲，右边只留读者第一眼该看的。删掉之后，句子才有地方停。`,
-    ),
-    blocks: [
-      { type: "image", src: "/works/plate-full.svg", alt: "改前，格子挤在一起", caption: "改前" },
-      { type: "image", src: "/works/plate-air.svg", alt: "改后，只留一句", caption: "改后" },
-      { type: "p", text: "左边什么都想讲，右边只留读者第一眼该看的。删掉之后，句子才有地方停。" },
-    ],
-    params: monoParams,
-  },
-  {
-    id: "figure-steps",
-    title: "出门前的三步",
-    themeId: "fresh",
-    themeLabel: "步骤图解",
-    fit: "图文 · 步骤图解",
     sheetNo: "09",
-    layout: "steps",
-    primary: "#0a9d75",
-    pageColor: "#ffffff",
-    titleColor: "#111827",
-    textColor: "#374151",
-    accentColor: "#0a9d75",
-    source: article(
-      "出门前的三步",
-      `![装上水](/works/step-water.svg)\n\n![看清路](/works/step-path.svg)\n\n![走到能歇的地方](/works/step-rest.svg)\n\n:::steps 出门\n1. 把水瓶装满，回程也留一点。\n2. 看清路线，和最后一班车。\n3. 走到愿意停下的地方，就可以回头。\n:::`,
-    ),
     blocks: [
-      { type: "step", title: "装上水", text: "把水瓶装满，回程也留一点。", src: "/works/step-water.svg", alt: "装上水" },
-      { type: "step", title: "看清路", text: "看清路线，和最后一班车。", src: "/works/step-path.svg", alt: "看清路" },
-      { type: "step", title: "走到能歇的地方", text: "走到愿意停下的地方，就可以回头。", src: "/works/step-rest.svg", alt: "走到能歇的地方" },
+      { type: "p", text: "内刊这一页不讲口号。只记标题怎么从一句空话，改成一个动作。" },
+      { type: "h2", text: "留下的" },
+      { type: "list", items: ["删掉空泛的形容词", "改成读者能做的事", "第一屏只留一个按钮"] },
+      { type: "quote", text: "手记写给下次改稿的自己。" },
     ],
-    params: freshParams,
-  },
+    params: journalParams,
+  }),
+  piece({
+    id: "nocturne-model",
+    title: "模型怎么选",
+    themeId: "nocturne",
+    bind: "theme",
+    sheet: "nocturne",
+    themeLabel: "深空青",
+    fit: "AI 评测 · 科技",
+    deck: "青绿标关键词，黄条留结论",
+    primary: "#3ddc97",
+    pageColor: "#1a1a1a",
+    titleColor: "#f3f4f6",
+    textColor: "#d1d5db",
+    accentColor: "#3ddc97",
+    sheetNo: "10",
+    blocks: [
+      { type: "p", text: "夜间页上，青绿标出关键词，黄条只留给一句结论。其余留在炭黑里。" },
+      { type: "h2", text: "先看结论" },
+      { type: "list", items: ["任务对得上再用", "上下文写清楚", "失败时记下错误码"] },
+      { type: "quote", text: "亮的是结论，不是装饰。" },
+    ],
+    params: nocturneParams,
+  }),
 ];
-
-// Gallery articles are real, editable Markdown so "做同款" opens the same full story.
-const STORIES: Record<string, WorkBlock[]> = {
-  "fresh-walk": [
-    { type: "p", text: "上周六早上七点，我把手机调成静音，带着一瓶水从城北出发。地铁口还有人赶着上班，山脚下却已经能闻到湿泥和松针。原本只是想走一小段路，最后在山里待了整整四个小时。" },
-    { type: "h2", text: "出发之前，少带一点" },
-    { type: "p", text: "第一次爬这条路线时，我装满了背包，后来发现真正会用到的东西很少。水、薄外套和一小包食物足够应付半天的行程。鞋比相机重要，天气预报比路线照片重要。把这些确认好，早晨就能轻松出门。" },
-    { type: "list", items: ["水要够，返程时也留一半", "查清路线和最后一班车", "穿已经走习惯的鞋，不穿新鞋"] },
-    { type: "h2", text: "半山的十分钟" },
-    { type: "p", text: "走到第二个岔路口，树变密了。路边一位老人正慢慢整理登山杖，我也停下来喝水。风从树叶背后过来，山下的车声只剩一层很轻的嗡鸣。那十分钟没有拍照，也没有记录步数，却是这趟路上记得最清楚的部分。" },
-    { type: "quote", text: "爬山不一定要走到最高处。找到自己愿意停下来的地方，也算到了。" },
-    { type: "h2", text: "下山之后" },
-    { type: "p", text: "回到地铁站时，城市的声音又一下子涌了回来。腿有点酸，但脑子比出门前清楚。我把这条路线存在地图里，没有给它打分；下次有空，再沿着另一条小路走上去。" },
-  ],
-  "mono-grid": [
-    { type: "p", text: "打开一张塞满颜色、注释和边框的页面，眼睛会先寻找出口，而不是寻找内容。留白不是把设计做少；它给标题、图片与正文划出各自的边界，让阅读有顺序。" },
-    { type: "h2", text: "空白决定先后" },
-    { type: "p", text: "同样的十行文字，如果标题紧贴正文、正文又紧贴引用，读者很难看出哪一部分最重要。把标题下方空开一行，再让引用离开正文，层级就出现了。空间本身没有说话，却让内容的声音变清楚。" },
-    { type: "quote", text: "页面的呼吸感，来自信息之间有经过考虑的距离。" },
-    { type: "h2", text: "只用一种强调" },
-    { type: "p", text: "一篇文章里同时出现粗体、荧光色、底纹和描边，强调就会互相抵消。我更愿意先选择一种：比如只把关键句加粗，其余地方交给字号和间距。需要第二种强调时，先检查第一种是否真的不够。" },
-    { type: "list", items: ["标题与正文之间，留出完整的视觉停顿", "段落以内容转折为界，不按固定字数切开", "引用只出现一次，并给它宽一点的上下边距"] },
-    { type: "h2", text: "删掉最后一个装饰" },
-    { type: "p", text: "完成排版后，我常常再删掉一条线、一个色块或一个图标。如果删掉以后读起来更顺，那它本来就没有帮助。留白并非风格标签，而是反复判断之后留下来的结构。" },
-  ],
-  "serene-hill": [
-    { type: "p", text: "去山上的那天没有安排目的地。早晨的云很低，山脊像被一层很薄的纸盖住。我们沿着石阶往上走，谁都没有催谁。走到半山时，一阵风把云往旁边推开，远处的楼才慢慢显出来。" },
-    { type: "h2", text: "听见脚步" },
-    { type: "p", text: "刚出门时，我还在想没有回完的消息。走过一段平路以后，手机收进了包里，耳边只剩鞋底碰到石头的声音。树叶在左边响，偶尔有鸟从路的另一头飞过去。原来安静不是没有声音，而是终于听得见身边的东西。" },
-    { type: "quote", text: "走到能听见自己呼吸的地方，就已经走得很远了。" },
-    { type: "h2", text: "在长椅上坐一会儿" },
-    { type: "p", text: "半山有一张旧木椅，漆被雨水磨掉了大半。我们在那里分了一只橘子，看云影从对面的坡上过去。没有发生值得发朋友圈的事，但那段时间很完整：阳光有一点暖，手指上留着橘皮的味道。" },
-    { type: "h2", text: "把路留给下次" },
-    { type: "p", text: "下山时经过一个岔口，路牌指向另一座山。我们没有临时加一段行程，只把路牌拍下来。不是每次出门都要把地图走完。留一段没走过的路，下一次出发就有了理由。" },
-  ],
-  "stub-list": [
-    { type: "p", text: "周末出门前，我总会在门口停一下，摸一遍口袋。带多了肩膀累，带少了路上麻烦。后来我把常用物品写成一张三项清单，贴在玄关的墙上，准备时间反而缩短了。" },
-    { type: "h2", text: "01 / 一瓶水" },
-    { type: "p", text: "不要等渴了才找便利店。出门前装满一只轻一点的水瓶，路上可以少做一次临时决定。天气热时再多带一小瓶；回程前留一点水，不用硬撑到地铁站。" },
-    { type: "h2", text: "02 / 一件薄外套" },
-    { type: "p", text: "天气预报告诉你温度，却不会告诉你坐在树荫里会不会冷。能折小的外套比厚衣服实用，早晚、山顶和车厢里都用得上。放在背包最上层，需要时不用把包翻到底。" },
-    { type: "h2", text: "03 / 一张纸" },
-    { type: "p", text: "纸不一定是地图。它可以写路线、记停车位置，也可以随手记下想回家再查的一件事。我试过完全依赖手机，结果电量和信号成了新的负担。一张折起来的纸，反而让人安心。" },
-    { type: "quote", text: "清单写短，才有机会真的被用上。" },
-    { type: "p", text: "这三样东西并不适合所有行程。雨天要加伞，长途要看补给点，带孩子时又有另一套安排。但对普通半日出行，它们足够让我放心地关门出发。" },
-  ],
-  "editorial-journal": [
-    { type: "p", text: "这周我们把一篇产品介绍改了三次。最大的变化不在字数，而在第一屏：原先整段都在讲“为什么我们重视内容”，最后改成直接展示读者能完成什么。标题也从一句口号，改成了一个具体动作。" },
-    { type: "h2", text: "第一次：说得太满" },
-    { type: "p", text: "初稿几乎每段都在解释理念。“专业”“高效”“有质感”出现了很多次，却没有一处告诉读者点开之后会看到什么。我们请同事只看第一屏，再问他记住了哪一句。答案是：一句也没记住。" },
-    { type: "h2", text: "第二次：换成动作" },
-    { type: "p", text: "改稿时，先写下产品里最直接的三个动作：贴入文章、挑选排版、复制结果。页面只留其中最重要的一步，其他两步放到下面的解释里。这样一来，视觉层级也容易决定：一句大标题、一个输入框、一个清楚的按钮。" },
-    { type: "quote", text: "当一句话能说明下一步该做什么，设计就不必替它大声解释。" },
-    { type: "h2", text: "第三次：让页面停下来" },
-    { type: "p", text: "最后一次修改只动了间距。我们把第一屏与作品区之间的距离拉开，删掉两处重复的说明。读者在完成输入之前，不会被更多选项打断；想看案例时，往下一滚就能看到。" },
-    { type: "list", items: ["把空泛形容词换成可见的动作", "先决定读者第一眼看什么", "删掉重复说明，留出行动后的空间"] },
-    { type: "p", text: "这次改动很小，却提醒我们一个常见问题：页面想讲的越多，读者越难做决定。下次写新页面，我们会先用一句话说清楚动作，再讨论装饰和动画。" },
-  ],
-};
-
-function markdownFromBlocks(title: string, blocks: WorkBlock[]) {
-  return article(title, blocks.map((block) => {
-    if (block.type === "h2") return `## ${block.text}`;
-    if (block.type === "quote") return `> ${block.text}`;
-    if (block.type === "list") return block.items.map((item) => `- ${item}`).join("\n");
-    if (block.type === "image") return `![${block.alt}](${block.src})`;
-    if (block.type === "step") return `![${block.alt}](${block.src})\n\n**${block.title}** ${block.text}`;
-    return block.text;
-  }).join("\n\n"));
-}
-
-export const WORKS: WorkPiece[] = BASE_WORKS.map((work) => ({
-  ...work,
-  deck: ({
-    "fresh-walk": "把周末走成一张路书",
-    "mono-grid": "让文字之间有距离",
-    "serene-hill": "一次没有终点的散步",
-    "stub-list": "轻装出门的三项清单",
-    "editorial-journal": "一次改稿，三次转向",
-    "figure-hero": "一张照片，带着一段停下的话",
-    "figure-beside": "图在左，说明在右",
-    "figure-compare": "同一件事的两种排法",
-    "figure-steps": "一步一张小图",
-  } as Record<string, string>)[work.id],
-  blocks: STORIES[work.id] ?? work.blocks,
-  source: STORIES[work.id] ? markdownFromBlocks(work.title, STORIES[work.id]) : work.source,
-}));
 
 export function findWork(id: string) {
   return WORKS.find((work) => work.id === id);
 }
 
+export function studioConfig(work: WorkPiece) {
+  if (work.bind === "mood") {
+    return {
+      ...work.params,
+      theme: "classic",
+      mood: work.themeId,
+      skin: MOOD_SKIN[work.themeId],
+    };
+  }
+  return { ...work.params, theme: work.themeId };
+}
+
 export function applyWork(work: WorkPiece) {
   const title = work.source.match(/^#\s+(.+)$/m)?.[1] || work.title;
+  const config = studioConfig(work);
   localStorage.setItem("yooco-article-source", work.source.trim());
   localStorage.setItem("yooco-article-title", title);
-  localStorage.setItem("wechat-style-lab-config", JSON.stringify({ theme: work.themeId, ...work.params }));
+  localStorage.setItem("wechat-style-lab-config", JSON.stringify(config));
+  if (work.bind === "mood") {
+    const skin = MOOD_SKIN[work.themeId];
+    if (skin) localStorage.setItem("yooco-style-mood", JSON.stringify({ mood: work.themeId, skin }));
+  }
   window.location.assign("/works?panel=studio");
 }
 
 export function downloadWorkConfig(work: WorkPiece) {
+  const config = studioConfig(work);
   const payload = {
     version: 2,
     updatedAt: new Date().toISOString(),
     template: {
       type: "universal",
-      name: `精选主题 · ${work.themeLabel}`,
-      params: { ...work.params, theme: work.themeId },
+      name: work.bind === "theme" ? `精选主题 · ${work.themeLabel}` : work.themeLabel,
+      params: config,
     },
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });

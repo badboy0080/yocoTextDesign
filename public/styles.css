@@ -77,7 +77,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   -webkit-backdrop-filter: blur(16px);
 }
 .trial-banner[hidden] { display: none !important; }
-.trial-banner-lead { flex: 1 1 16rem; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.trial-banner-lead { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .trial-banner-copy { margin: 0; color: #ebebeb; font-size: 16px; font-weight: 500; line-height: 1.6; }
 .trial-banner.is-saved { border-color: rgba(255, 255, 255, 0.1); }
 .trial-banner.is-saved .trial-banner-copy { color: rgba(255, 255, 255, 0.6); opacity: 0.5; }

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-10 邀请好友
+
+- 想做什么：账号菜单加「邀请好友」，注册可以填邀请码。一码最多用 5 次，好友多 5 次免费优化。
+- 做成了什么：作品页和工作台菜单能打开发码弹窗，文案用张默那句。注册页有选填邀请码。码和次数存在 EdgeOne 那一类存储里；本机没有 Blob 时记在这次运行的内存里。剩余次数 = 当天这个 IP 还剩的免费次数 + 账号上的邀请加成。先扣当天的，再扣加成。
+- 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
+- 如何验证：注册页能看到邀请码。登录后点「邀请好友」能看到邀请码。错码不会建账号。第 6 次会说用满。
+- 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
+
 ### 2026-10-09 试用改为 3 次，并拦住凭空大标题
 
 - 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。

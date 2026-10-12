@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
-    <link rel="stylesheet" href="./styles.css?v=invite-trial3-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=invite-trial3-v1" />
+    <link rel="stylesheet" href="./styles.css?v=waitlist-glass-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=waitlist-glass-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -50,12 +50,14 @@
       </div>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
-      <p class="trial-banner-copy" id="trialBannerText">免费次数用完了。留下邮箱，开放订阅我通知你。</p>
+      <div class="trial-banner-lead">
+        <p class="trial-banner-copy" id="trialBannerText">免费次数用完了。留下邮箱，开放订阅我通知你。</p>
+        <p class="trial-waitlist-feedback" id="waitlistFeedback" role="status"></p>
+      </div>
       <form class="trial-waitlist" id="waitlistForm" novalidate>
         <input id="waitlistEmail" name="email" type="email" inputmode="email" autocomplete="email" maxlength="120" required aria-label="邮箱" placeholder="name@example.com" />
         <button type="submit">留下邮箱</button>
       </form>
-      <p class="trial-waitlist-feedback" id="waitlistFeedback" role="status"></p>
     </div>
 
     <main id="top" class="app-shell">
@@ -304,6 +306,6 @@
 
     <script src="./analytics.js?v=invite-v1"></script>
     <script src="./themes.js?v=themes-trim-v1"></script>
-    <script src="./app.js?v=invite-copy-v1"></script>
+    <script src="./app.js?v=waitlist-glass-v1"></script>
   </body>
 </html>

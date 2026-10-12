@@ -59,45 +59,82 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 }
 .trial-meter.is-empty { color: #b45309; }
 .trial-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px 32px;
   width: min(1120px, calc(100% - 48px));
-  margin: 8px auto 0;
-  padding: 10px 14px;
-  border: 1px solid #fed7aa;
-  border-radius: var(--di-radius-sm);
-  background: #fff7ed;
-  color: #9a3412;
-  font-size: 13px;
-  line-height: 1.55;
+  margin: 12px auto 0;
+  padding: 24px 28px;
+  border: 1px solid rgba(204, 255, 0, 0.35);
+  border-radius: 1.5rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ebebeb;
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .trial-banner[hidden] { display: none !important; }
-.trial-banner-copy { margin: 0; }
-.trial-waitlist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.trial-banner-lead { flex: 1 1 16rem; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.trial-banner-copy { margin: 0; color: #ebebeb; font-size: 16px; font-weight: 500; line-height: 1.6; }
+.trial-banner.is-saved { border-color: rgba(255, 255, 255, 0.1); }
+.trial-banner.is-saved .trial-banner-copy { color: rgba(255, 255, 255, 0.6); opacity: 0.5; }
+.trial-waitlist { display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; }
 .trial-waitlist input {
-  flex: 1 1 180px;
+  flex: 1 1 16rem;
+  width: 16rem;
+  max-width: 100%;
   min-width: 0;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ebebeb;
+  font: 14px/1.4 "Space Grotesk", "Noto Sans SC", sans-serif;
 }
+.trial-waitlist input::placeholder { color: rgba(255, 255, 255, 0.42); }
+.trial-waitlist input:focus { border-color: #ccff00; background: #000; }
 .trial-waitlist button {
-  min-height: 36px;
-  padding: 6px 12px;
+  flex: none;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 24px;
   border: 0;
-  border-radius: 999px;
-  background: #17331b;
-  color: #fff;
-  font-weight: 700;
+  border-radius: 12px;
+  background: #ccff00;
+  color: #000;
+  font: 700 14px/1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  white-space: nowrap;
   cursor: pointer;
+  box-shadow: 0 0 24px rgba(204, 255, 0, 0.28);
 }
-.trial-waitlist button:disabled { opacity: .6; cursor: wait; }
-.trial-waitlist-feedback { margin: 8px 0 0; font-size: 12px; }
+.trial-waitlist button:hover:not(:disabled) { background: #d6ff4d; color: #000; }
+.trial-waitlist button:disabled { opacity: .55; cursor: wait; box-shadow: none; }
+.trial-waitlist-feedback { margin: 0; color: #ccff00; font-size: 13px; line-height: 1.5; }
 .trial-waitlist-feedback:empty { display: none; }
-.trial-banner a { margin-left: 8px; color: #516450; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.trial-banner a:hover { color: #235d3b; }
+.trial-waitlist-feedback.is-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccff00;
+  font-size: 15px;
+  font-weight: 700;
+}
+.trial-waitlist-feedback.is-success::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.trial-banner a { margin-left: 8px; color: #ccff00; font-weight: 700; text-decoration: none; }
+.trial-banner a:hover { color: #d6ff4d; }
 .ghost-button, .accent-button, .ai-button {
   border-radius: var(--di-radius-full);
   padding: 8px 14px;

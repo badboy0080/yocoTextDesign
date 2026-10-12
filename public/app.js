@@ -253,17 +253,26 @@ function validWaitlistEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function setWaitlistFeedback(message) {
+  if (!waitlistFeedback) return;
+  const text = message || "";
+  waitlistFeedback.textContent = text;
+  const saved = text === "已记下。开放订阅后通知你。";
+  waitlistFeedback.classList.toggle("is-success", saved);
+  if (trialBanner) trialBanner.classList.toggle("is-saved", saved);
+}
+
 if (waitlistForm) {
   waitlistForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = (waitlistEmail?.value || "").trim();
     const button = waitlistForm.querySelector("button");
     if (!validWaitlistEmail(email)) {
-      if (waitlistFeedback) waitlistFeedback.textContent = "请填写有效的邮箱。";
+      setWaitlistFeedback("请填写有效的邮箱。");
       return;
     }
     if (button) button.disabled = true;
-    if (waitlistFeedback) waitlistFeedback.textContent = "正在保存…";
+    setWaitlistFeedback("正在保存…");
     try {
       let deviceId = "";
       try { deviceId = localStorage.getItem("yooco-device-id") || ""; } catch { /* ignore */ }
@@ -275,13 +284,13 @@ if (waitlistForm) {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload?.ok) {
-        if (waitlistFeedback) waitlistFeedback.textContent = payload?.error?.message || "暂时没记下，请稍后再试。";
+        setWaitlistFeedback(payload?.error?.message || "暂时没记下，请稍后再试。");
         return;
       }
       if (waitlistEmail) waitlistEmail.value = "";
-      if (waitlistFeedback) waitlistFeedback.textContent = "已记下。开放订阅后通知你。";
+      setWaitlistFeedback("已记下。开放订阅后通知你。");
     } catch {
-      if (waitlistFeedback) waitlistFeedback.textContent = "暂时没记下，请稍后再试。";
+      setWaitlistFeedback("暂时没记下，请稍后再试。");
     } finally {
       if (button) button.disabled = false;
     }

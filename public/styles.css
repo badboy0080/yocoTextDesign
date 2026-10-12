@@ -980,8 +980,52 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-page[data-style="deep-night"] .content-card { border-color: var(--accent-color, #00a878); background: var(--card-color, #202727); }
 .article-page[data-style="deep-night"] .plain-quote { border-left-color: var(--accent-color, #00a878); color: var(--text-color, #91a6cc); }
 
+/* ---------- 深空青 nocturne：炭黑底、近白标题、青绿关键词、黄条黑字 ---------- */
+.article-page[data-theme="nocturne"] {
+  color-scheme: dark;
+}
+.article-page[data-theme="nocturne"] h2,
+.article-page[data-theme="nocturne"] .section-title {
+  color: var(--title-color, #f3f4f6);
+  font-style: normal;
+}
+.article-page[data-theme="nocturne"][data-heading-style="index"] .section-title.level-2::before {
+  display: inline-block;
+  color: var(--accent-color, #3ddc97);
+}
+.article-page[data-theme="nocturne"] .article-content strong {
+  color: var(--accent-color, #3ddc97);
+}
+.article-page[data-theme="nocturne"] .content-card,
+.article-page[data-theme="nocturne"] .quote-card,
+.article-page[data-theme="nocturne"] .steps-block,
+.article-page[data-theme="nocturne"] .stat-block {
+  border: 1px solid var(--border-color, #333333);
+  color: var(--text-color, #d1d5db);
+}
+.article-page[data-theme="nocturne"] .content-card,
+.article-page[data-theme="nocturne"] .steps-block {
+  background: var(--card-color, #242424);
+}
+.article-page[data-theme="nocturne"] .quote-card {
+  background: var(--quote-color, #1f1f1f);
+}
+.article-page[data-theme="nocturne"] .highlight-line mark,
+.article-page[data-theme="nocturne"] .inline-highlight {
+  background: var(--highlight-color, #f6d35a);
+  color: var(--highlight-text-color, #1a1a1a);
+}
+.article-page[data-theme="nocturne"] .article-content .inline-code,
+.article-page[data-theme="nocturne"] .article-content .article-code {
+  background: var(--code-background, #141414);
+  color: var(--code-color, #a7f3d0);
+}
+.article-page[data-theme="nocturne"] .steps-index {
+  color: var(--accent-color, #3ddc97);
+}
+
 /* =====================================================================
-   Yooco 五套精选主题盖层（data-theme）
+   Yooco 六套精选主题盖层（data-theme）
    颜色/字号由 state 的 CSS 变量注入，这里只定义各主题自己的组件外观。
    ===================================================================== */
 

@@ -2,6 +2,10 @@
 
 ## 当前接手摘要
 
+订阅先藏起来（2026-10-12，本地，未部署）：首页、登录、注册的导航不再有「订阅」。打开 `/subscribe` 会回到首页。方案页组件还留着，没有收款。次数用尽时那句「开放订阅我通知你」还在，那是留邮箱，不是订阅入口。
+
+复制邀请码（2026-10-12，本地，未部署）：点「复制邀请码」时，剪贴板是三行：好的文章就应该有好的排版；快来https://yoooco.com/一起体验；最后一行是邀请码加真实码。弹窗里原来的说明没改。仍记 invite_share。
+
 首页备案号（2026-10-10，本地，未部署）：首页页脚有「粤ICP备2026141208号」，链到工信部备案站点，新标签打开。宽屏只留这一行小字，原来的页脚那一行仍收着，免得挡住第一屏的「免费试用」。公安备案还没号，位置留在这个链接旁边。
 
 登录提示和主题列表（2026-10-10，本地，未部署）：登录和注册不再显示「本机测试时，账号只在这次打开的服务里有效」。工作台文章属性只剩一个「主题」。四套旧气质（克制高级、杂志编辑部、活泼小红书、暗黑科技）和五套精选主题在同一列表里。点旧气质仍套该方向的默认外观。没有「气质与皮肤」，也没有皮肤色块。邀请和每天 3 次没动。
@@ -63,6 +67,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-12 藏起订阅，并改邀请码复制文案
+
+- 想做什么：导航里先不要「订阅」。复制邀请码时带上固定的三行介绍。
+- 做成了什么：首页、登录、注册导航去掉「订阅」。`/subscribe` 打开后回到首页。方案页文件还在。作品页和工作台点「复制邀请码」，剪贴板是三行文案，中间那行是「快来https://yoooco.com/一起体验排版的乐趣吧！」，最后一行是真实邀请码。弹窗原文没改。
+- 改了哪些文件：`app/home-landing.tsx`、`components/account-layout.tsx`、`app/subscribe/page.tsx`、`components/invite-modal.tsx`、`public/app.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：1440 宽首页导航是「作品」「工作室」，没有「订阅」，免费试用还在。登录、注册、作品、工作台导航也没有「订阅」。打开 `/subscribe` 回到首页。工作台脚本里复制的是那三行。没有部署。
+- 待办/风险：要重新露出订阅，把导航链接接回去，并让 `/subscribe` 再渲染原来的方案页。
+
 ### 2026-10-10 首页加上备案号
 
 - 想做什么：首页页脚加上广东主体的 ICP 备案号，不要抢第一屏的试用按钮。
@@ -94,11 +106,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/invite-store.ts`、`lib/invite-quota.ts`、`lib/edgeone-rate-limit.ts`、`lib/local-accounts.ts`、`lib/analytics-store.ts`、`app/api/invite/route.ts`、`app/api/auth/register/route.ts`、`components/invite-modal.tsx`、`components/account-menu.tsx`、`components/auth-page.tsx`、`components/works-frame.tsx`、`public/studio.html`、`public/app.js`、`public/analytics.js`、`app/metrics/page.tsx`，以及对应样式。
 - 如何验证：注册页能看到邀请码。登录后点「邀请好友」能看到邀请码。错码不会建账号。第 6 次会说用满。
 - 待办/风险：还没部署。本机重启后，内存里的邀请码会丢。没登录的人没有加成。注册时没填码，之后不能再补填。
-
-### 2026-10-09 试用改为 3 次，并拦住凭空大标题
-
-- 想做什么：未登录免费优化从 10 次改成 3 次。原文里没有的大标题不要出现在预览上。优化失败时把接口的错误码和说明显示出来。
-- 做成了什么：次数统一到 `lib/trial-quota.js`。用尽后仍是留邮箱。模型返回的标题或开头小标题如果对不上原文，会丢掉，预览不再画巨大标题。失败时工具栏显示「错误码：说明」；没有这些字段时仍是「暂时无法完成优化，请稍后重试。」
-- 改了哪些文件：`lib/trial-quota.js`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、`public/ground-title.js`、`public/app.js`、`public/studio.html`、`public/styles.css`、`public/studio-ui.css`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：无标题正文预览没有大标题；原文里的 `# 周末去爬山` 仍会显示。模拟接口返回不存在的 OpenAI 标题，预览和原文都没有这句话。失败时能看到 `DEEPSEEK_TIMEOUT：…`。次数用尽出现邮箱框和指定那句话。已进 master。
-- 待办/风险：次数仍是每个 IP 每个北京日 3 次，不是一辈子只给 3 次。要同事看到，需要再部署一次。

@@ -74,8 +74,9 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
 
   async function copyCode() {
     if (!code) return;
+    const text = `好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${code}`;
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(text);
       setStatus("已复制。");
     } catch {
       setStatus("复制没成功，请手动选中邀请码。");

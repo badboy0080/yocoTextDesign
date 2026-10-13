@@ -153,6 +153,7 @@ const UPGRADE_PROMPT = WAITLIST_COPY;
 let serverTrialRemaining = null;
 let serverTrialBonus = 0;
 let serverTrialEnforced = false;
+let serverTrialUnlimited = false;
 const articleTitle = document.querySelector("#articleTitle");
 const stylePane = document.querySelector("#stylePane");
 const styleMount = document.querySelector("#styleMount");
@@ -204,11 +205,24 @@ function writeLocalTrialUsed(used) {
 }
 
 function remainingTrialCount() {
+  if (serverTrialUnlimited) return Number.POSITIVE_INFINITY;
   if (serverTrialRemaining !== null) return Math.max(0, serverTrialRemaining);
   return Math.max(0, guestTrialLimit() - readLocalTrialUsed());
 }
 
 function renderTrialMeter() {
+  if (serverTrialUnlimited) {
+    if (trialMeter) {
+      trialMeter.hidden = false;
+      trialMeter.textContent = "不限次数";
+      trialMeter.classList.remove("is-empty");
+    }
+    if (trialBanner) trialBanner.hidden = true;
+    if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
+      aiNormalizeButton.disabled = false;
+    }
+    return;
+  }
   const remaining = remainingTrialCount();
   if (trialMeter) {
     trialMeter.hidden = false;
@@ -225,6 +239,13 @@ function renderTrialMeter() {
 
 function applyTrialFromServer(trial) {
   if (!trial || typeof trial !== "object") return;
+  serverTrialUnlimited = trial.unlimited === true;
+  if (serverTrialUnlimited) {
+    serverTrialRemaining = null;
+    serverTrialBonus = 0;
+    renderTrialMeter();
+    return;
+  }
   if (typeof trial.limit === "number" && Number.isFinite(trial.limit) && trial.limit > 0) {
     trialLimit = Math.round(trial.limit);
   }
@@ -1580,6 +1601,7 @@ async function normalizeWithDeepSeek() {
     if (!response.ok || !payload?.ok) {
       const message = formatNormalizeError(payload);
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
+        serverTrialUnlimited = false;
         serverTrialRemaining = 0;
         serverTrialBonus = 0;
         writeLocalTrialUsed(guestTrialLimit());

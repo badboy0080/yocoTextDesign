@@ -25,6 +25,8 @@ export type TrialQuota = {
   enforced: boolean;
   /** 账号上还没用完的邀请加成。已经算进 remaining。访客是 0。 */
   bonus: number;
+  /** 当前登录账号不限排版次数。为 true 时这次没有扣试用，也没有扣邀请加成。 */
+  unlimited?: boolean;
 };
 
 export class RateLimitError extends AppError {
@@ -103,6 +105,29 @@ function isRateLimitEnabled(): boolean {
 
 function skippedQuota(bonus = 0): TrialQuota {
   return { remaining: null, limit: TRIAL_LIMIT, enforced: false, bonus };
+}
+
+function unlimitedQuota(): TrialQuota {
+  return { remaining: null, limit: TRIAL_LIMIT, enforced: false, bonus: 0, unlimited: true };
+}
+
+type AccountQuotaReader = () => Promise<{ unlimitedUses?: boolean } | null>;
+
+let readAccountForQuota: AccountQuotaReader = () => currentAccount();
+
+/** 检查脚本用来换掉当前登录账号。传入 null 则恢复读真实会话。 */
+export function useAccountReaderForTests(reader: AccountQuotaReader | null) {
+  readAccountForQuota = reader ?? (() => currentAccount());
+}
+
+async function readUnlimitedAccount(): Promise<boolean> {
+  try {
+    const account = await readAccountForQuota();
+    return account?.unlimitedUses === true;
+  } catch (error) {
+    console.warn("[rate-limit] unlimited account check failed", error);
+    return false;
+  }
 }
 
 function memoryCounterStore(): CounterStore {
@@ -224,6 +249,7 @@ async function readQuota(store: CounterStore, request: Request) {
  * No-op when the backing store is unavailable.
  */
 export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> {
+  if (await readUnlimitedAccount()) return unlimitedQuota();
   if (!isRateLimitEnabled()) return skippedQuota();
   const accountBonus = await readAccountBonus();
 
@@ -255,6 +281,7 @@ export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> 
  * Consume one AI-normalize quota. No-op when the backing store is unavailable.
  */
 export async function consumeNormalizeQuota(request: Request): Promise<TrialQuota> {
+  if (await readUnlimitedAccount()) return unlimitedQuota();
   if (!isRateLimitEnabled()) return skippedQuota();
   const accountBonus = await readAccountBonus();
 

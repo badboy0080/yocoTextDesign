@@ -15,6 +15,15 @@ type UserRecord = {
   name: string;
   passwordHash: string;
   createdAt: string;
+  /** 为 true 时，排版不扣每天试用次数，也不扣邀请加成。只给运维账号。 */
+  unlimitedUses?: boolean;
+};
+
+export type PublicAccount = {
+  id: number;
+  email: string;
+  name: string;
+  unlimitedUses?: true;
 };
 
 type SessionRecord = {
@@ -34,12 +43,39 @@ function emptyDoc(): AccountDoc {
   return { users: [], sessions: [] };
 }
 
-function normalizeDoc(value: unknown): AccountDoc {
+function normalizeUser(value: unknown): UserRecord | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as UserRecord;
+  if (raw.unlimitedUses === true) return { ...raw, unlimitedUses: true };
+  if (!Object.prototype.hasOwnProperty.call(raw, "unlimitedUses")) return raw;
+  const next = { ...raw };
+  delete next.unlimitedUses;
+  return next;
+}
+
+/** 从 blob 读出账号文档。保留已有字段；只有严格的 true 才留下 unlimitedUses。 */
+export function accountDocFromStored(value: unknown): AccountDoc {
   if (!value || typeof value !== "object") return emptyDoc();
   const doc = value as Partial<AccountDoc>;
+  const users: UserRecord[] = [];
+  if (Array.isArray(doc.users)) {
+    for (const item of doc.users) {
+      const user = normalizeUser(item);
+      if (user) users.push(user);
+    }
+  }
   return {
-    users: Array.isArray(doc.users) ? doc.users : [],
+    users,
     sessions: Array.isArray(doc.sessions) ? doc.sessions : [],
+  };
+}
+
+export function toPublicAccount(user: UserRecord): PublicAccount {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    ...(user.unlimitedUses === true ? { unlimitedUses: true as const } : {}),
   };
 }
 
@@ -49,7 +85,7 @@ async function openDoc(): Promise<{ doc: AccountDoc; save: (next: AccountDoc) =>
     const store = await getStore(STORE_NAME);
     const value = await store.get(DOC_KEY, { type: "json", consistency: "strong" });
     return {
-      doc: normalizeDoc(value),
+      doc: accountDocFromStored(value),
       save: async (next) => {
         await store.setJSON(DOC_KEY, next);
       },
@@ -135,7 +171,7 @@ export async function currentAccount() {
   const session = doc.sessions.find((item) => item.tokenHash === hashToken(token) && item.expiresAt > Date.now());
   if (!session) return null;
   const user = doc.users.find((item) => item.id === session.userId);
-  return user ? { id: user.id, email: user.email, name: user.name } : null;
+  return user ? toPublicAccount(user) : null;
 }
 
 export async function deleteAccount(userId: number) {

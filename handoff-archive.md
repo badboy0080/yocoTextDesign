@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-12 作品改成精品模板，十个主题各一套
+
+- 想做什么：用户能看到的「作品」改成「精品模板」。清掉旧样张，按工作台现在的 10 个主题各做 1 个精品模板。
+- 做成了什么：侧栏、首页、登录注册、直接打开的工作台都写成「精品模板」。路径还是 `/works`。样张正好 10 个，标题和短说明是可读中文。前四个气质点「做同款」会选中克制高级、杂志编辑部、活泼小红书、暗黑科技，不会误套成手札橙。后六个套对应主题，含深空青。
+- 改了哪些文件：`lib/works.ts`、`components/work-modal.tsx`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`components/works-rail.tsx`、`components/account-layout.tsx`、`components/subscribe-page.tsx`、`app/home-landing.tsx`、`app/works/page.tsx`、`app/works.css`、`public/app.js`、`public/studio.html`、`public/brand-vi.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx vinext dev --port 5174`，打开 http://localhost:5174/works 。侧栏是「精品模板」，列表 10 张，顺序与主题列表一致。筛「深空青」只剩「模型怎么选」。做同款后工作台选中对应主题。首页导航是「精品模板」，链接是「全部精品模板」。390 宽没有横向溢出。没有部署。
+- 待办/风险：首页扇形仍只展示前 5 张。`public/works/` 里 7 张旧图没有删，页面已经不用。窄屏登录顶栏会藏起第一项「精品模板」，这是原来的窄屏规则。
+
 ### 2026-10-12 注册深空青主题，并接到最新 master
 
 - 想做什么：工作台加上夜间主题「深空青」（nocturne）。#20 合进 master 后，这支要接到最新 master，玻璃横幅和深空青都留下。

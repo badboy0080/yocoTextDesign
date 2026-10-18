@@ -1,5 +1,14 @@
 # 历史交接记录
 
+### 2026-10-12 深色复制稿接到最新 master
+
+- 想做什么：#22、#23 已经合进 master。这支要接到最新 master。精品模板和微信文字对齐留下，深色复制的留白和成功提示也留下。
+- 做成了什么：外层仍是上下 40px、左右 32px。深色再加最小高度 240px，并对齐写成 `left`。复制成功时仍提示后台可能白底。`start` / `end` 仍会收成左对齐或右对齐。侧栏仍是「精品模板」。
+- 改了哪些文件：`public/app.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
+- 冲突怎么解：外层样式把留白、最小高度和 `text-align:left` 写在一起，复制前仍走 `stripLogicalTextAlign`。脚本版本号用 `text-align-dark-pad-v1`，主题脚本仍是 `text-align-v1`。导航文案仍是「精品模板」。
+- 如何验证：深空青复制 HTML 外层含 `padding:40px 32px`、`min-height:240px`、`background-color:#1a1a1a` 和 `text-align:left`。清氧绿有留白，没有最小高度。复制稿里没有 `text-align:start` 或 `text-align:end`。没有部署。
+- 待办/风险：公众号后台会不会剥掉最外层留白，还要人去贴一次。
+
 ### 2026-10-12 公众号复制不再使用 start/end 对齐
 
 - 想做什么：复制排版到公众号时，不再被「文字对齐异常」拦住。微信不接受 `text-align: start` / `end`。#22 进 master 后，这支接到最新 master，精品模板一起留下。

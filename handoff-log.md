@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+指定邮箱保底（2026-10-18，未部署）：`ycheng0208@foxmail.com` 写在账号保底名单里。读账号库时如果还没有这个人，会建会员账号，每天 30 次，密码只存哈希。已经注册的不改密码；等级或额度低于这份保底才抬上去。不打开不限次数。更高的等级、额度和已有的不限次数保持原样。
+
 账号权限后台（2026-10-18，未部署）：`/admin` 只有不限次数的账号，或 `ADMIN_EMAILS` 里的邮箱，登录后能进。可以按邮箱搜用户，人工改等级（免费 / 会员 / 管理员）、每日额度和不限次数。不收款。改等级或不限次数要再确认一次。已登录排版按账号计每天次数；没填额度仍是全站每天 3 次；访客仍按 IP。邀请加成还叠在外面。种子 `admin@yoooco.com` 靠已有的不限次数能进。等级「管理员」只是标记，不会自动打开后台。
 
 配置台滑动条（2026-10-14，未部署）：工作室右侧滑动条不再是纯白细线配暗色圆点。轨道是柔和中灰，已拖过的一段略亮、带一点青柠灰，圆点是浅色，深底上能看清。悬停或键盘聚焦时圆点边变成青柠绿。数值、导出和主题都没改。
@@ -85,6 +87,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-18 指定邮箱写入会员保底
+
+- 想做什么：把 `ycheng0208@foxmail.com` 先写进代码。没有这个账号就建一个会员，每天 30 次；已经有了就把权益补到这份保底。不要不限次数。初始密码用和注册一样的哈希，明文不进仓库。
+- 做成了什么：读账号库（登录、注册、后台）时补保底。新建带密码哈希。已有账号不改密码。等级低于会员或额度低于 30 才抬。管理员、更高额度、不限次数保持原样。再注册同一邮箱会提示已经注册过，用初始密码登录。
+- 改了哪些文件：`lib/local-accounts.ts`、`scripts/check-known-accounts.ts`、`tsconfig.json`、`README.md`、`CONTEXT.md`、`docs/adr/0001-manual-account-entitlements.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-known-accounts.ts` 通过。原有的账号后台和不限次数检查也通过。没有部署，也没有把明文密码写进提交或说明。
+- 待办/风险：还没部署。线上要等下次读到账号库才会把这个人写进 Blob。后台如果把这个人改低，下次读取仍会抬回保底。
+
 ### 2026-10-18 账号权限后台
 
 - 想做什么：站长能在后台给已注册用户人工开等级和每天排版次数。普通用户进不去。不收款。
@@ -116,13 +126,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/email-otp.ts`、`lib/otp-mail.ts`、`lib/email-address.ts`、`lib/local-accounts.ts`、`app/api/auth/send-code/route.ts`、`app/api/auth/register/route.ts`、`components/auth-page.tsx`、`app/account.css`、`README.md`、`scripts/check-otp.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npx tsx scripts/check-otp.ts` 通过。本地 5174：不填码、错码不能建号；不填邀请码能注册；填对邀请码多 5 次；填错邀请码不建号，码还在，去掉邀请码仍能注册。1 分钟内重发被拒绝。浏览器打开 `/register`，390 宽没有横向溢出，开发环境提示里能看到验证码，填完跳到 `/studio.html`。登录页没有「获取验证码」。没有部署。
 - 待办/风险：线上要配 `RESEND_API_KEY`，可选 `EMAIL_FROM`。没配密钥的生产环境发不出验证码，注册会停在这一步。
-
-### 2026-10-12 深色复制稿接到最新 master
-
-- 想做什么：#22、#23 已经合进 master。这支要接到最新 master。精品模板和微信文字对齐留下，深色复制的留白和成功提示也留下。
-- 做成了什么：外层仍是上下 40px、左右 32px。深色再加最小高度 240px，并对齐写成 `left`。复制成功时仍提示后台可能白底。`start` / `end` 仍会收成左对齐或右对齐。侧栏仍是「精品模板」。
-- 改了哪些文件：`public/app.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
-- 冲突怎么解：外层样式把留白、最小高度和 `text-align:left` 写在一起，复制前仍走 `stripLogicalTextAlign`。脚本版本号用 `text-align-dark-pad-v1`，主题脚本仍是 `text-align-v1`。导航文案仍是「精品模板」。
-- 如何验证：深空青复制 HTML 外层含 `padding:40px 32px`、`min-height:240px`、`background-color:#1a1a1a` 和 `text-align:left`。清氧绿有留白，没有最小高度。复制稿里没有 `text-align:start` 或 `text-align:end`。没有部署。
-- 待办/风险：公众号后台会不会剥掉最外层留白，还要人去贴一次。
 

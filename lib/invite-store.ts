@@ -353,6 +353,23 @@ export async function peekInviteBonus(userId: number): Promise<number> {
   }
 }
 
+/** 后台列表一次读出各账号还剩的邀请加成。读失败时当 0，不阻断列表。 */
+export async function readInviteBonusMap(): Promise<Map<number, number>> {
+  const opened = await openStore();
+  if (!opened) return new Map();
+  try {
+    const doc = await opened.store.read();
+    const bonuses = new Map<number, number>();
+    for (const user of doc.users) {
+      if (user.bonusRemaining > 0) bonuses.set(user.userId, user.bonusRemaining);
+    }
+    return bonuses;
+  } catch (error) {
+    console.warn("[invite] list bonus failed", error);
+    return new Map();
+  }
+}
+
 export async function consumeInviteBonus(
   userId: number,
 ): Promise<{ ok: true; spent: boolean; bonusRemaining: number } | { ok: false }> {

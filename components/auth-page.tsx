@@ -9,6 +9,16 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 
 type Mode = "login" | "register";
 
+function nextAfterLogin(): string {
+  try {
+    const next = new URLSearchParams(window.location.search).get("next") || "";
+    if (next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") && !next.includes("://")) return next;
+  } catch {
+    /* 非法回跳就回工作台 */
+  }
+  return "/studio.html";
+}
+
 export function AuthPage({ mode }: { mode: Mode }) {
   const isRegister = mode === "register";
   const [showPassword, setShowPassword] = useState(false);
@@ -97,7 +107,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
         setNotice(data.message || "暂时无法完成，请稍后再试。");
         return;
       }
-      location.href = "/studio.html";
+      location.href = isRegister ? "/studio.html" : nextAfterLogin();
     } catch {
       setNotice("暂时无法连接本机账号服务。");
     } finally {

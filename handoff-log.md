@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+账号权限后台（2026-10-18，未部署）：`/admin` 只有不限次数的账号，或 `ADMIN_EMAILS` 里的邮箱，登录后能进。可以按邮箱搜用户，人工改等级（免费 / 会员 / 管理员）、每日额度和不限次数。不收款。改等级或不限次数要再确认一次。已登录排版按账号计每天次数；没填额度仍是全站每天 3 次；访客仍按 IP。邀请加成还叠在外面。种子 `admin@yoooco.com` 靠已有的不限次数能进。等级「管理员」只是标记，不会自动打开后台。
+
 配置台滑动条（2026-10-14，未部署）：工作室右侧滑动条不再是纯白细线配暗色圆点。轨道是柔和中灰，已拖过的一段略亮、带一点青柠灰，圆点是浅色，深底上能看清。悬停或键盘聚焦时圆点边变成青柠绿。数值、导出和主题都没改。
 
 管理员不限次数（2026-10-13，未部署）：账号可以带 `unlimitedUses: true`。这样的账号登录后，排版不扣每天 3 次，也不扣邀请加成。工作台顶栏显示「不限次数」。未登录和普通账号仍是每天 3 次、邀请 +5。线上 `admin@yoooco.com` 已经在账号库里标过这个字段，代码现在会认。
@@ -83,6 +85,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-18 账号权限后台
+
+- 想做什么：站长能在后台给已注册用户人工开等级和每天排版次数。普通用户进不去。不收款。
+- 做成了什么：`/admin` 列出邮箱、称呼、等级、每日额度、不限次数、邀请加成和创建时间，可按邮箱搜索。保存写回账号库。改等级或不限次数要再确认。审计写 Blob，写不上就打日志。登录用户按账号计每天次数，访客仍按 IP。
+- 改了哪些文件：`lib/local-accounts.ts`、`lib/admin-audit.ts`、`lib/edgeone-rate-limit.ts`、`lib/invite-store.ts`、`app/api/admin/accounts/route.ts`、`app/admin/page.tsx`、`app/admin/admin-accounts.tsx`、`app/admin/admin.css`、`components/auth-page.tsx`、`scripts/check-account-admin.ts`、`tsconfig.json`、`README.md`、`CONTEXT.md`、`docs/adr/0001-manual-account-entitlements.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-account-admin.ts` 和 `npx tsx scripts/check-unlimited-uses.ts` 通过。页面和接口的浏览器核对写在提交说明里。
+- 待办/风险：还没部署。线上要让名单里的人进后台，需在 EdgeOne 配 `ADMIN_EMAILS`。种子站长不配也能进。同一分钟每个 IP 仍最多排版 2 次，这是原来的防刷，每日额度改不掉它。
+
 ### 2026-10-14 配置台滑动条改成低对比深灰
 
 - 想做什么：工作室右侧滑动条不要再是刺眼白线配几乎看不见的暗色圆点，看起来要接近 Superdesign 那种深灰侧栏。
@@ -115,13 +125,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 冲突怎么解：外层样式把留白、最小高度和 `text-align:left` 写在一起，复制前仍走 `stripLogicalTextAlign`。脚本版本号用 `text-align-dark-pad-v1`，主题脚本仍是 `text-align-v1`。导航文案仍是「精品模板」。
 - 如何验证：深空青复制 HTML 外层含 `padding:40px 32px`、`min-height:240px`、`background-color:#1a1a1a` 和 `text-align:left`。清氧绿有留白，没有最小高度。复制稿里没有 `text-align:start` 或 `text-align:end`。没有部署。
 - 待办/风险：公众号后台会不会剥掉最外层留白，还要人去贴一次。
-
-### 2026-10-12 公众号复制不再使用 start/end 对齐
-
-- 想做什么：复制排版到公众号时，不再被「文字对齐异常」拦住。微信不接受 `text-align: start` / `end`。#22 进 master 后，这支接到最新 master，精品模板一起留下。
-- 做成了什么：标题、目录、引用、代码这些块都写上具体对齐。正文的 `start` 收成左对齐，`end` 收成右对齐。复制时把我们生成的 HTML 放进剪贴板。配置台正文对齐可以选左、中、右、两端。侧栏仍是「精品模板」，做同款仍按主题恢复皮肤。
-- 改了哪些文件：`public/app.js`、`public/themes.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`handoff-log.md`、`handoff-archive.md`。
-- 冲突怎么解：`app.js` 里 #22 的皮肤恢复留着，文字对齐的导出和剪贴板留着。`studio.html` 导航仍是「精品模板」，正文对齐多了居中和右对齐。
-- 如何验证：工作台贴一段带小标题的文章，点「复制排版」。剪贴板 HTML 里的 `text-align` 只有 left、right、center、justify。把正文对齐临时改成 start、end 再导出，也没有这两个词。侧栏链接仍是「精品模板」。没有部署。
-- 待办/风险：还没在公众号后台粘贴确认弹窗消失。
 

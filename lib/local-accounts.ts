@@ -25,6 +25,33 @@ const PLAN_LABEL: Record<AccountPlan, string> = {
   admin: "管理员",
 };
 
+const PLAN_RANK: Record<AccountPlan, number> = {
+  free: 0,
+  member: 1,
+  admin: 2,
+};
+
+/**
+ * 代码里点名的邮箱。明文密码不在仓库里，只留和注册相同的 scrypt 哈希。
+ * 哈希只在第一次建号时写入；已经有账号的不改密码。
+ */
+const KNOWN_ACCOUNT_SEEDS: readonly {
+  email: string;
+  name: string;
+  passwordHash: string;
+  plan: AccountPlan;
+  dailyLimit: number;
+}[] = [
+  {
+    email: "ycheng0208@foxmail.com",
+    name: "ycheng0208",
+    passwordHash:
+      "scrypt$6fd2d007d7fb9bfb5055e094132ffd14$43776c10e128bfae131b83c0a8b19ecbda5eacf50c8be57abcdad68ca85abf45",
+    plan: "member",
+    dailyLimit: 30,
+  },
+];
+
 type UserRecord = {
   id: number;
   email: string;
@@ -113,6 +140,52 @@ function normalizeUser(value: unknown): UserRecord | null {
   return next;
 }
 
+/**
+ * 读账号库时补上点名邮箱的保底。
+ * 没有这个人就建占位账号（会员、每天 30 次、上面的密码哈希），不设不限次数。
+ * 已经有的：不改密码。等级低于保底才抬高，每日额度低于保底才抬高。
+ * 已经是更高的等级或额度，或已经不限次数，保持原样。不会打开不限次数。
+ * 有改动返回 true。
+ */
+export function applyKnownAccountSeeds(doc: AccountDoc): boolean {
+  let changed = false;
+  for (const seed of KNOWN_ACCOUNT_SEEDS) {
+    const email = normalizeEmail(seed.email);
+    if (!validEmail(email)) continue;
+    const index = doc.users.findIndex((user) => normalizeEmail(user.email) === email);
+    if (index < 0) {
+      const id = doc.users.reduce((max, user) => Math.max(max, user.id), 0) + 1;
+      doc.users.push({
+        id,
+        email,
+        name: seed.name,
+        passwordHash: seed.passwordHash,
+        createdAt: new Date().toISOString(),
+        plan: seed.plan,
+        dailyLimit: seed.dailyLimit,
+      });
+      changed = true;
+      continue;
+    }
+    const current = doc.users[index]!;
+    const next: UserRecord = { ...current };
+    let userChanged = false;
+    const plan = next.plan ?? "free";
+    if (PLAN_RANK[plan] < PLAN_RANK[seed.plan]) {
+      next.plan = seed.plan;
+      userChanged = true;
+    }
+    if (next.dailyLimit === undefined || next.dailyLimit < seed.dailyLimit) {
+      next.dailyLimit = seed.dailyLimit;
+      userChanged = true;
+    }
+    if (!userChanged) continue;
+    doc.users[index] = next;
+    changed = true;
+  }
+  return changed;
+}
+
 /** 从 blob 读出账号文档。保留已有字段；只有严格的 true 才留下 unlimitedUses。等级和每日额度不合法就丢掉。 */
 export function accountDocFromStored(value: unknown): AccountDoc {
   if (!value || typeof value !== "object") return emptyDoc();
@@ -140,6 +213,12 @@ export function toPublicAccount(user: UserRecord): PublicAccount {
 }
 
 async function openDoc(): Promise<{ doc: AccountDoc; save: (next: AccountDoc) => Promise<void> }> {
+  const opened = await readAccountDoc();
+  if (applyKnownAccountSeeds(opened.doc)) await opened.save(opened.doc);
+  return opened;
+}
+
+async function readAccountDoc(): Promise<{ doc: AccountDoc; save: (next: AccountDoc) => Promise<void> }> {
   try {
     const { getStore } = await import("@edgeone/pages-blob");
     const store = await getStore(STORE_NAME);

@@ -445,11 +445,21 @@ function renderMoodUI() {
   syncMoodUI();
 }
 
+function paintRangeFill(control) {
+  const min = Number(control.min);
+  const max = Number(control.max);
+  const value = Number(control.value);
+  const span = max - min;
+  const pct = span ? Math.min(100, Math.max(0, ((value - min) / span) * 100)) : 0;
+  control.style.setProperty("--range-pct", `${pct}%`);
+}
+
 function syncControls() {
   controls.forEach((control) => {
     const key = control.dataset.key;
     if (control.type === "checkbox") control.checked = Boolean(state[key]);
     else control.value = state[key];
+    if (control.type === "range") paintRangeFill(control);
   });
 }
 

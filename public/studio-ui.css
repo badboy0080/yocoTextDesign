@@ -302,7 +302,77 @@ html.studio-embedded .studio-navigation { display:none; }
 }
 .preview-tool-toggle { color:rgba(255,255,255,.72); font-family:"JetBrains Mono",monospace; letter-spacing:.04em; }
 .preview-tool-toggle input, input[type="checkbox"] { accent-color:#ccff00; }
-input[type="range"] { accent-color:#ccff00; }
+
+/* 配置台滑动条：柔和灰轨道 + 浅色圆点。不要纯白细线，也不要暗球融进黑底。 */
+.studio-main input[type="range"] {
+  --range-track: rgba(255, 255, 255, 0.16);
+  --range-fill: #a3aa86;
+  --range-thumb: #f4f4f1;
+  --range-pct: 0%;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  accent-color: #a3aa86;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.studio-main input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--range-fill) 0,
+    var(--range-fill) var(--range-pct),
+    var(--range-track) var(--range-pct),
+    var(--range-track) 100%
+  );
+}
+.studio-main input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border: 1.5px solid #f7f7f4;
+  border-radius: 50%;
+  background: var(--range-thumb);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+.studio-main input[type="range"]::-moz-range-track {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--range-track);
+}
+.studio-main input[type="range"]::-moz-range-progress {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--range-fill);
+}
+.studio-main input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #f7f7f4;
+  border-radius: 50%;
+  background: var(--range-thumb);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+.studio-main input[type="range"]:hover::-webkit-slider-thumb,
+.studio-main input[type="range"]:focus-visible::-webkit-slider-thumb,
+.studio-main input[type="range"]:hover::-moz-range-thumb,
+.studio-main input[type="range"]:focus-visible::-moz-range-thumb {
+  border-color: #d1ff52;
+}
 .studio-account-popover { background:#141414; border-color:rgba(255,255,255,.1); }
 .studio-account-popover button { color:#ebebeb; font-family:"Space Grotesk","Noto Sans SC",sans-serif; }
 .studio-account-text small { color:rgba(255,255,255,.55); }

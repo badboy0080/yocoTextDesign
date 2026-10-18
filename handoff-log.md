@@ -90,8 +90,8 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 想做什么：注册验证改走腾讯云 OneID。同一次注册只选邮箱或手机其中一种。登录仍用密码；手机账号也能用手机号加密码登录。邀请码和不限次数不要丢。
 - 做成了什么：发码代理 `POST /otp/send`，注册代理 `POST /signup`，密钥只在服务端。本地仍落账号。没配 OneID 时邮箱回退旧验证码，不会两份一起发。控制台要启用注册流程，两种都开放，但不要都设成必填。
 - 改了哪些文件：`lib/oneid.ts`、`lib/phone-number.ts`、`lib/local-accounts.ts`、`app/api/auth/send-code/route.ts`、`app/api/auth/register/route.ts`、`app/api/auth/login/route.ts`、`app/api/auth/me/route.ts`、`components/auth-page.tsx`、`app/account.css`、`README.md`、`scripts/check-oneid.ts`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npx tsx scripts/check-oneid.ts`、`scripts/check-otp.ts`、`scripts/check-unlimited-uses.ts` 通过。没有真实密钥，没有部署。
-- 待办/风险：EdgeOne 要配那三个变量，控制台要打开注册流程并关联密码登录。邀请码若在 OneID 已成功后本地核销失败，本地账号会删掉，OneID 里的用户还在，需要到控制台处理。浏览器页面还要再看一眼。
+- 如何验证：`npx tsx scripts/check-oneid.ts`、`scripts/check-otp.ts`、`scripts/check-unlimited-uses.ts` 通过。本地 5174：没配 OneID 时，手机发码返回中文缺配置说明；邮箱开发环境能看到验证码，填对能建号并登录。浏览器里切邮箱/手机、390 宽没有横向溢出，用开发环境验证码注册后进入工作台，再登录也进工作台。没有真实密钥，没有部署。
+- 待办/风险：EdgeOne 要配那三个变量，控制台要打开注册流程并关联密码登录。邀请码若在 OneID 已成功后本地核销失败，本地账号会删掉，OneID 里的用户还在，需要到控制台处理。
 
 ### 2026-10-14 配置台滑动条改成低对比深灰
 

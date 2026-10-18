@@ -6,8 +6,15 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AccountLayout } from "@/components/account-layout";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { normalizeEmail, validEmail } from "@/lib/email-address";
+import { normalizePhone, validPhone } from "@/lib/phone-number";
 
 type Mode = "login" | "register";
+type Channel = "email" | "phone";
+
+function currentTarget(channel: Channel, raw: string): string {
+  return channel === "phone" ? normalizePhone(raw) : normalizeEmail(raw);
+}
 
 export function AuthPage({ mode }: { mode: Mode }) {
   const isRegister = mode === "register";
@@ -17,12 +24,19 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [code, setCode] = useState("");
   const [sendingCode, setSendingCode] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [channel, setChannel] = useState<Channel>("email");
+  const [contact, setContact] = useState("");
+  const [otpToken, setOtpToken] = useState("");
+  const [sentTarget, setSentTarget] = useState("");
+  const [provider, setProvider] = useState<"" | "oneid" | "local">("");
   const nameRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
+  const contactRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLInputElement>(null);
   const inviteRef = useRef<HTMLInputElement>(null);
-  const codeReady = code.length === 6;
+  const targetNow = isRegister ? currentTarget(channel, contact) : "";
+  const contactChanged = Boolean(sentTarget) && targetNow !== sentTarget;
+  const codeReady = code.length === 6 && !contactChanged && (provider !== "oneid" || Boolean(otpToken));
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -30,11 +44,30 @@ export function AuthPage({ mode }: { mode: Mode }) {
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
+  function switchChannel(next: Channel) {
+    if (next === channel) return;
+    setChannel(next);
+    setContact("");
+    setCode("");
+    setOtpToken("");
+    setSentTarget("");
+    setProvider("");
+    setCooldown(0);
+    setNotice("");
+    contactRef.current?.focus();
+  }
+
   async function sendCode() {
-    const email = emailRef.current?.value.trim() || "";
-    if (!email) {
+    const raw = contact.trim();
+    if (channel === "phone") {
+      if (!validPhone(normalizePhone(raw))) {
+        setNotice("请填写国内 11 位手机号。");
+        contactRef.current?.focus();
+        return;
+      }
+    } else if (!validEmail(normalizeEmail(raw))) {
       setNotice("请先填写邮箱。");
-      emailRef.current?.focus();
+      contactRef.current?.focus();
       return;
     }
     setSendingCode(true);
@@ -43,19 +76,29 @@ export function AuthPage({ mode }: { mode: Mode }) {
       const response = await fetch("/api/auth/send-code", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(channel === "phone" ? { channel: "phone", phone: raw } : { channel: "email", email: raw }),
       });
-      const data = await response.json().catch(() => ({})) as { message?: string; devCode?: string };
+      const data = await response.json().catch(() => ({})) as {
+        message?: string;
+        devCode?: string;
+        otpToken?: string;
+        provider?: string;
+        target?: string;
+      };
       if (!response.ok) {
         setNotice(data.message || "验证码发送失败，请稍后再试。");
         return;
       }
       setCooldown(60);
+      setCode("");
+      setSentTarget(typeof data.target === "string" && data.target ? data.target : currentTarget(channel, raw));
+      setProvider(data.provider === "oneid" ? "oneid" : "local");
+      setOtpToken(typeof data.otpToken === "string" ? data.otpToken : "");
       if (typeof data.devCode === "string" && /^\d{6}$/.test(data.devCode)) {
         setNotice(`验证码已发送。这是开发环境，验证码是 ${data.devCode}。`);
         return;
       }
-      setNotice(data.message || "验证码已发送，请查收邮箱。");
+      setNotice(data.message || (channel === "phone" ? "验证码已发送，请查收短信。" : "验证码已发送，请查收邮箱。"));
     } catch {
       setNotice("暂时无法连接本机账号服务。");
     } finally {
@@ -64,15 +107,42 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }
 
   async function handleSubmit() {
-    for (const field of [nameRef.current, emailRef.current, passwordRef.current, confirmRef.current]) {
+    for (const field of [nameRef.current, contactRef.current, passwordRef.current, confirmRef.current]) {
       if (field && !field.reportValidity()) return;
+    }
+    if (!isRegister) {
+      const lookupEmail = validEmail(normalizeEmail(contact));
+      const lookupPhone = validPhone(normalizePhone(contact));
+      if (!lookupEmail && !lookupPhone) {
+        setNotice("请填写邮箱或国内 11 位手机号。");
+        contactRef.current?.focus();
+        return;
+      }
+    }
+    if (isRegister && channel === "phone" && !validPhone(normalizePhone(contact))) {
+      setNotice("请填写国内 11 位手机号。");
+      contactRef.current?.focus();
+      return;
+    }
+    if (isRegister && channel === "email" && !validEmail(normalizeEmail(contact))) {
+      setNotice("请填写有效的邮箱。");
+      contactRef.current?.focus();
+      return;
     }
     if (isRegister && passwordRef.current?.value !== confirmRef.current?.value) {
       setNotice("两次输入的密码不一致，请重新确认。");
       return;
     }
+    if (isRegister && contactChanged) {
+      setNotice(channel === "phone" ? "手机号已改，请重新获取验证码。" : "邮箱已改，请重新获取验证码。");
+      return;
+    }
+    if (isRegister && provider === "oneid" && !otpToken) {
+      setNotice("请先获取验证码。");
+      return;
+    }
     if (isRegister && !codeReady) {
-      setNotice("请填写 6 位邮箱验证码。");
+      setNotice(channel === "phone" ? "请填写 6 位短信验证码。" : "请填写 6 位邮箱验证码。");
       return;
     }
     setBusy(true);
@@ -83,10 +153,18 @@ export function AuthPage({ mode }: { mode: Mode }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name: nameRef.current?.value || "",
-          email: emailRef.current?.value || "",
           password: passwordRef.current?.value || "",
           inviteCode: inviteRef.current?.value || "",
-          ...(isRegister ? { code } : {}),
+          ...(isRegister
+            ? {
+                channel,
+                code,
+                ...(otpToken ? { otpToken } : {}),
+                ...(channel === "phone" ? { phone: contact } : { email: contact }),
+              }
+            : validPhone(normalizePhone(contact)) && !validEmail(normalizeEmail(contact))
+              ? { phone: contact }
+              : { email: contact }),
           deviceId: (() => {
             try { return localStorage.getItem("yooco-device-id") || ""; } catch { return ""; }
           })(),
@@ -104,6 +182,15 @@ export function AuthPage({ mode }: { mode: Mode }) {
       setBusy(false);
     }
   }
+
+  const contactLabel = isRegister ? (channel === "phone" ? "手机号" : "邮箱") : "邮箱或手机号";
+  const codeHint = contactChanged
+    ? (channel === "phone" ? "手机号已改，请重新获取验证码。" : "邮箱已改，请重新获取验证码。")
+    : sentTarget
+      ? `验证码发到 ${sentTarget}，${provider === "oneid" ? "大约 1 分钟内有效" : "5 分钟内有效"}`
+      : channel === "phone"
+        ? "发到上面的手机号。先获取验证码"
+        : "发到上面的邮箱。先获取验证码";
 
   return (
     <AccountLayout section={isRegister ? "创建账户" : "欢迎回来"} skin="obsidian">
@@ -124,7 +211,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
             <div className="auth-panel-heading">
               <p className="auth-eyebrow">{isRegister ? "JOIN THE STUDIO / 02" : "MEMBER ACCESS / 01"}</p>
               <h2 id="auth-title">{isRegister ? "创建你的账户" : "欢迎回来"}</h2>
-              <p>{isRegister ? "为每一次创作，留一个专属位置。" : "让排版从上次的灵感继续。"}</p>
+              <p>{isRegister ? "用邮箱或手机号注册，每次只选一种。" : "邮箱或手机号都可以登录。"}</p>
             </div>
 
             <div className="auth-form">
@@ -134,14 +221,32 @@ export function AuthPage({ mode }: { mode: Mode }) {
                   <input ref={nameRef} type="text" placeholder="怎么称呼你" autoComplete="off" required />
                 </label>
               )}
+              {isRegister && (
+                <div className="auth-field">
+                  <span>验证方式 <span className="auth-field-index">02</span></span>
+                  <div className="auth-channel" role="group" aria-label="验证方式">
+                    <button type="button" aria-pressed={channel === "email"} onClick={() => switchChannel("email")}>邮箱</button>
+                    <button type="button" aria-pressed={channel === "phone"} onClick={() => switchChannel("phone")}>手机</button>
+                  </div>
+                </div>
+              )}
               <label className="auth-field">
-                <span>邮箱 <span className="auth-field-index">{isRegister ? "02" : "01"}</span></span>
-                <input ref={emailRef} type="email" placeholder="name@example.com" autoComplete="off" required />
+                <span>{contactLabel} <span className="auth-field-index">{isRegister ? "03" : "01"}</span></span>
+                <input
+                  ref={contactRef}
+                  type={isRegister && channel === "email" ? "email" : "text"}
+                  inputMode={(!isRegister || channel === "phone") ? "text" : undefined}
+                  placeholder={isRegister ? (channel === "phone" ? "11 位手机号" : "name@example.com") : "邮箱或 11 位手机号"}
+                  autoComplete="off"
+                  required
+                  value={contact}
+                  onChange={(event) => setContact(event.target.value)}
+                />
               </label>
               {isRegister && (
                 <div className="auth-field">
                   <span>
-                    <span>验证码 <span className="auth-field-index">03</span></span>
+                    <span>验证码 <span className="auth-field-index">04</span></span>
                     <button type="button" className="auth-code-button" onClick={sendCode} disabled={sendingCode || cooldown > 0}>
                       {sendingCode ? "正在发送…" : cooldown > 0 ? `${cooldown} 秒后重发` : "获取验证码"}
                     </button>
@@ -154,7 +259,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                       pattern={REGEXP_ONLY_DIGITS}
                       inputMode="numeric"
                       pushPasswordManagerStrategy="none"
-                      aria-label="邮箱验证码"
+                      aria-label={channel === "phone" ? "短信验证码" : "邮箱验证码"}
                     >
                       <InputOTPGroup>
                         {Array.from({ length: 6 }, (_, index) => (
@@ -163,11 +268,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
                       </InputOTPGroup>
                     </InputOTP>
                   </div>
-                  <small className="auth-field-hint">发到上面的邮箱，5 分钟内有效</small>
+                  <small className="auth-field-hint">{codeHint}</small>
                 </div>
               )}
               <label className="auth-field">
-                <span>密码 <span className="auth-field-index">{isRegister ? "04" : "02"}</span></span>
+                <span>密码 <span className="auth-field-index">{isRegister ? "05" : "02"}</span></span>
                 <span className="auth-password-wrap">
                   <input ref={passwordRef} type={showPassword ? "text" : "password"} placeholder={isRegister ? "至少 8 位字符" : "输入密码"} autoComplete="off" minLength={isRegister ? 8 : undefined} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "隐藏密码" : "显示密码"} aria-pressed={showPassword}>
@@ -177,13 +282,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
               </label>
               {isRegister && (
                 <label className="auth-field">
-                  <span>确认密码 <span className="auth-field-index">05</span></span>
+                  <span>确认密码 <span className="auth-field-index">06</span></span>
                   <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
                 </label>
               )}
               {isRegister && (
                 <label className="auth-field">
-                  <span>邀请码（选填） <span className="auth-field-index">06</span></span>
+                  <span>邀请码（选填） <span className="auth-field-index">07</span></span>
                   <input ref={inviteRef} type="text" placeholder="没有也可以注册" autoComplete="off" maxLength={16} spellCheck={false} />
                   <small className="auth-field-hint">填了多 5 次免费</small>
                 </label>

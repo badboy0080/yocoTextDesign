@@ -1,9 +1,15 @@
 import { loginAccount } from "@/lib/local-accounts";
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null) as { email?: string; password?: string } | null;
+  const body = await request.json().catch(() => null) as {
+    email?: string;
+    phone?: string;
+    account?: string;
+    password?: string;
+  } | null;
   const result = await loginAccount({
-    email: String(body?.email || ""),
+    email: String(body?.email || body?.account || ""),
+    phone: String(body?.phone || ""),
     password: String(body?.password || ""),
   });
   if (!result.ok) {

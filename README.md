@@ -56,7 +56,23 @@ DEEPSEEK_API_KEY=你的密钥
 DEEPSEEK_MODEL=deepseek-flash
 ```
 
-注册要先收邮箱里的 6 位验证码。发信使用 [Resend](https://resend.com)，密钥不要写进仓库：
+注册每次只选一种验证方式：邮箱，或国内 11 位手机号。优先走腾讯云 OneID。三个变量都配上才启用，密钥不要写进仓库：
+
+```bash
+# 门户域名。可以写成 xxx.portal.tencentciam.com，也可以带 https://
+ONEID_PORTAL_HOST=xxx.portal.tencentciam.com
+ONEID_CLIENT_ID=你的应用 ID
+ONEID_CLIENT_SECRET=你的应用密钥
+```
+
+线上把这三个名字配到 EdgeOne 环境变量。OneID 控制台还要做两件事：
+
+1. 打开这个应用的注册流程。邮箱和手机都要能用，但同一次注册只提交用户选中的那一种，不要把另一种设成必填。
+2. 登录流程里关联账号密码认证源。我们会把密码交给 OneID，本地也会再存一份密码哈希，所以邮箱密码登录、手机号密码登录都能用。
+
+称呼只存在 Yooco 本地，不要在 OneID 注册流程里把昵称设成必填。邀请码仍是选填，只在本地加次数，不会传给 OneID。
+
+没配这三个变量时，邮箱注册回退到原来的 [Resend](https://resend.com) 验证码，手机注册会提示先配 OneID。不要只配其中一两个，那样不会偷偷改回 Resend，也不会同时发两份码。
 
 ```bash
 RESEND_API_KEY=你的密钥
@@ -64,7 +80,15 @@ RESEND_API_KEY=你的密钥
 EMAIL_FROM=Yooco <noreply@yoooco.com>
 ```
 
-本地 `npm run dev` 没配 `RESEND_API_KEY` 时，验证码会出现在接口响应和服务器日志里，方便自己注册。生产环境不会回显。其他非生产预览若也要这样，设置 `OTP_DEV_ECHO=1`。线上把 `RESEND_API_KEY`（和可选的 `EMAIL_FROM`）配到 EdgeOne 环境变量。
+本地 `npm run dev` 既没配 OneID、也没配 `RESEND_API_KEY` 时，邮箱验证码会出现在接口响应和服务器日志里，方便自己注册。生产环境不会回显。其他非生产预览若也要这样，设置 `OTP_DEV_ECHO=1`。手机验证码没有本地回显，必须配 OneID。
+
+没有真实密钥时，可以先跑：
+
+```bash
+npx tsx scripts/check-oneid.ts
+```
+
+它会用假接口检查：邮箱和手机不会同时提交、密钥不会出现在错误文案里、没配变量时不会发请求、管理员账号的 `unlimitedUses` 还在、手机号能对上本地登录。配了真实密钥后，再打开 `/register`：选邮箱或手机其中一种，获取验证码，填 6 位码后创建账户；再用同一邮箱或手机号加密码去 `/login`。
 
 启动开发服务：
 
@@ -129,7 +153,7 @@ lib/
 
 ## 注意事项
 
-- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`、`RESEND_API_KEY`（注册验证码）  
+- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`、`ONEID_PORTAL_HOST` / `ONEID_CLIENT_ID` / `ONEID_CLIENT_SECRET`（注册验证码）。没配 OneID 时，邮箱回退还需要 `RESEND_API_KEY`  
 - 「优化排版」依赖外网可达的 DeepSeek；若部署在海外节点，可能出现超时，需要单独处理网络可达性  
 - 本仓库由 vinext / Sites 脚手架承载前端与 Worker；产品入口是 `/studio.html`，不是默认首页模板文案
 

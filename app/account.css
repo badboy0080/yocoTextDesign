@@ -53,6 +53,9 @@
 .auth-field > span:first-child { display: flex; justify-content: space-between; align-items: center; }
 .auth-field-index { color: var(--account-muted); font-size: 11px; font-weight: 500; }
 .auth-field-hint { color: var(--account-muted); font-size: 12px; font-weight: 500; }
+.auth-channel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.auth-channel button { height: 40px; border: 1px solid var(--account-line); border-radius: 999px; background: transparent; color: var(--account-ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.auth-channel button[aria-pressed="true"] { border-color: var(--account-link); background: var(--yooco-color-soft, #edf2e8); }
 .auth-code-button { flex: none; height: 32px; padding: 0 12px; border: 1px solid var(--account-line); border-radius: 999px; background: transparent; color: var(--account-ink); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .auth-code-button:disabled { opacity: .5; cursor: not-allowed; }
 .auth-otp { width: 100%; }
@@ -235,6 +238,9 @@ body:has(.account-app.is-obsidian) { background: #000; }
 }
 .account-app.is-obsidian .auth-field input::placeholder { color: rgba(255,255,255,.3); }
 .account-app.is-obsidian .auth-field input:focus { border-color: #ccff00; box-shadow: 0 0 0 3px rgba(204,255,0,.18); }
+.account-app.is-obsidian .auth-channel button { border-color: rgba(255,255,255,.2); background: transparent; color: #ebebeb; }
+.account-app.is-obsidian .auth-channel button[aria-pressed="true"] { border-color: #ccff00; background: #ccff00; color: #111; }
+.account-app.is-obsidian .auth-page.is-register .auth-channel button { height: 36px; }
 .account-app.is-obsidian .auth-code-button { border-color: rgba(255,255,255,.2); color: #ebebeb; }
 .account-app.is-obsidian .auth-code-button:hover:not(:disabled) { border-color: #ccff00; color: #ccff00; }
 .account-app.is-obsidian .auth-otp [data-slot="input-otp-slot"] { border-color: rgba(255,255,255,.2) !important; background: #111; color: #ebebeb; }

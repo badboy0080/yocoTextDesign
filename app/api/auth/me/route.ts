@@ -5,5 +5,10 @@ export async function GET() {
   if (!account) {
     return Response.json({ ok: false }, { status: 401, headers: { "cache-control": "no-store" } });
   }
-  return Response.json({ ok: true, email: account.email, name: account.name }, { headers: { "cache-control": "no-store" } });
+  return Response.json({
+    ok: true,
+    email: account.email,
+    name: account.name,
+    ...(account.phone ? { phone: account.phone } : {}),
+  }, { headers: { "cache-control": "no-store" } });
 }

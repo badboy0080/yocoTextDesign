@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+注册验证码改走腾讯云 OneID（2026-10-18，未部署）：注册页在「邮箱」和「手机」之间切换，同一次只提交选中的那一种。配齐 `ONEID_PORTAL_HOST`、`ONEID_CLIENT_ID`、`ONEID_CLIENT_SECRET` 才发 OneID 验证码；一个都没配时，邮箱仍走原来的 Resend，手机会提示先配。OneID 成功后仍在本地账号库记密码哈希、邀请码加次和 `unlimitedUses`。没有邮箱的账号用 11 位手机号当主键，登录可以用手机号加密码。`admin@yoooco.com` 没改。
+
 配置台滑动条（2026-10-14，未部署）：工作室右侧滑动条不再是纯白细线配暗色圆点。轨道是柔和中灰，已拖过的一段略亮、带一点青柠灰，圆点是浅色，深底上能看清。悬停或键盘聚焦时圆点边变成青柠绿。数值、导出和主题都没改。
 
 管理员不限次数（2026-10-13，未部署）：账号可以带 `unlimitedUses: true`。这样的账号登录后，排版不扣每天 3 次，也不扣邀请加成。工作台顶栏显示「不限次数」。未登录和普通账号仍是每天 3 次、邀请 +5。线上 `admin@yoooco.com` 已经在账号库里标过这个字段，代码现在会认。
@@ -83,6 +85,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-18 注册改为腾讯云 OneID，邮箱或手机二选一
+
+- 想做什么：注册验证改走腾讯云 OneID。同一次注册只选邮箱或手机其中一种。登录仍用密码；手机账号也能用手机号加密码登录。邀请码和不限次数不要丢。
+- 做成了什么：发码代理 `POST /otp/send`，注册代理 `POST /signup`，密钥只在服务端。本地仍落账号。没配 OneID 时邮箱回退旧验证码，不会两份一起发。控制台要启用注册流程，两种都开放，但不要都设成必填。
+- 改了哪些文件：`lib/oneid.ts`、`lib/phone-number.ts`、`lib/local-accounts.ts`、`app/api/auth/send-code/route.ts`、`app/api/auth/register/route.ts`、`app/api/auth/login/route.ts`、`app/api/auth/me/route.ts`、`components/auth-page.tsx`、`app/account.css`、`README.md`、`scripts/check-oneid.ts`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-oneid.ts`、`scripts/check-otp.ts`、`scripts/check-unlimited-uses.ts` 通过。没有真实密钥，没有部署。
+- 待办/风险：EdgeOne 要配那三个变量，控制台要打开注册流程并关联密码登录。邀请码若在 OneID 已成功后本地核销失败，本地账号会删掉，OneID 里的用户还在，需要到控制台处理。浏览器页面还要再看一眼。
+
 ### 2026-10-14 配置台滑动条改成低对比深灰
 
 - 想做什么：工作室右侧滑动条不要再是刺眼白线配几乎看不见的暗色圆点，看起来要接近 Superdesign 那种深灰侧栏。
@@ -115,13 +125,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 冲突怎么解：外层样式把留白、最小高度和 `text-align:left` 写在一起，复制前仍走 `stripLogicalTextAlign`。脚本版本号用 `text-align-dark-pad-v1`，主题脚本仍是 `text-align-v1`。导航文案仍是「精品模板」。
 - 如何验证：深空青复制 HTML 外层含 `padding:40px 32px`、`min-height:240px`、`background-color:#1a1a1a` 和 `text-align:left`。清氧绿有留白，没有最小高度。复制稿里没有 `text-align:start` 或 `text-align:end`。没有部署。
 - 待办/风险：公众号后台会不会剥掉最外层留白，还要人去贴一次。
-
-### 2026-10-12 公众号复制不再使用 start/end 对齐
-
-- 想做什么：复制排版到公众号时，不再被「文字对齐异常」拦住。微信不接受 `text-align: start` / `end`。#22 进 master 后，这支接到最新 master，精品模板一起留下。
-- 做成了什么：标题、目录、引用、代码这些块都写上具体对齐。正文的 `start` 收成左对齐，`end` 收成右对齐。复制时把我们生成的 HTML 放进剪贴板。配置台正文对齐可以选左、中、右、两端。侧栏仍是「精品模板」，做同款仍按主题恢复皮肤。
-- 改了哪些文件：`public/app.js`、`public/themes.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`handoff-log.md`、`handoff-archive.md`。
-- 冲突怎么解：`app.js` 里 #22 的皮肤恢复留着，文字对齐的导出和剪贴板留着。`studio.html` 导航仍是「精品模板」，正文对齐多了居中和右对齐。
-- 如何验证：工作台贴一段带小标题的文章，点「复制排版」。剪贴板 HTML 里的 `text-align` 只有 left、right、center、justify。把正文对齐临时改成 start、end 再导出，也没有这两个词。侧栏链接仍是「精品模板」。没有部署。
-- 待办/风险：还没在公众号后台粘贴确认弹窗消失。
 

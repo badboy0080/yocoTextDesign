@@ -66,7 +66,7 @@ EMAIL_FROM=Yooco <noreply@yoooco.com>
 
 本地 `npm run dev` 没配 `RESEND_API_KEY` 时，验证码会出现在接口响应和服务器日志里，方便自己注册。生产环境不会回显。其他非生产预览若也要这样，设置 `OTP_DEV_ECHO=1`。线上把 `RESEND_API_KEY`（和可选的 `EMAIL_FROM`）配到 EdgeOne 环境变量。
 
-账号权限在 `/admin`。只有「不限次数」的账号，或写在 `ADMIN_EMAILS` 里的邮箱，登录后能进。名单是逗号分隔的邮箱，例如 `ADMIN_EMAILS=owner@yoooco.com,editor@yoooco.com`。种子 `admin@yoooco.com` 已经标了不限次数，不写名单也能进。这里人工改等级（`free` / `member` / `admin`）和每天排版次数，不收款。等级 `admin` 只是标记，不会自动打开后台，也不会自动不限次数。
+账号权限在 `/admin`。只有「不限次数」的账号，或写在 `ADMIN_EMAILS` 里的邮箱，登录后能进。名单是逗号分隔的邮箱，例如 `ADMIN_EMAILS=owner@yoooco.com,editor@yoooco.com`。本地开发把这行放进 `.env`，或写在启动命令前面。线上配到 EdgeOne 环境变量，不要写进仓库。种子 `admin@yoooco.com` 已经标了不限次数，不写名单也能进。这里人工改等级（`free` / `member` / `admin`）和每天排版次数，不收款。等级 `admin` 只是标记，不会自动打开后台，也不会自动不限次数。
 
 启动开发服务：
 

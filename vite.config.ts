@@ -84,6 +84,7 @@ export default defineConfig(async ({ mode }) => {
             DEEPSEEK_API_KEY: localEnv.DEEPSEEK_API_KEY || "",
             DEEPSEEK_MODEL: localEnv.DEEPSEEK_MODEL || "deepseek-flash",
             ANALYTICS_TOKEN: localEnv.ANALYTICS_TOKEN || "",
+            ADMIN_EMAILS: process.env.ADMIN_EMAILS || localEnv.ADMIN_EMAILS || "",
           },
         },
       }),

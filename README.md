@@ -56,15 +56,26 @@ DEEPSEEK_API_KEY=你的密钥
 DEEPSEEK_MODEL=deepseek-flash
 ```
 
-注册要先收邮箱里的 6 位验证码。发信使用 [Resend](https://resend.com)，密钥不要写进仓库：
+注册要先收邮箱里的 6 位验证码。发信走腾讯云邮件推送（SES）的模板接口，密钥不要写进仓库。手机验证码先不做。
+
+在 [邮件推送控制台](https://console.cloud.tencent.com/ses) 先做完这些，再填下面的变量：
+
+1. 开通邮件推送。地域选香港（`ap-hongkong`）或广州（`ap-guangzhou`），后面的发信域名必须建在同一个地域。
+2. 添加发信域名，按页面提示配好解析，等验证通过。
+3. 创建发信地址，例如 `noreply@你的域名`。
+4. 新建邮件模板并等审核通过。正文里要有变量 `{{code}}`，建议写成：`Yooco 验证码：{{code}}，5 分钟内有效。` 记下模板 ID。
+5. 在访问管理里新建 API 密钥，得到 SecretId 和 SecretKey。
 
 ```bash
-RESEND_API_KEY=你的密钥
-# 可选。不填时用 Resend 的测试发件地址，只能发给该账号自己的邮箱。
-EMAIL_FROM=Yooco <noreply@yoooco.com>
+TENCENT_SECRET_ID=你的SecretId
+TENCENT_SECRET_KEY=你的SecretKey
+SES_FROM_EMAIL=Yooco <noreply@你的域名>
+SES_TEMPLATE_ID=模板ID
+# 可选。不填时用 ap-hongkong，必须和发信域名所在地域一致。
+SES_REGION=ap-hongkong
 ```
 
-本地 `npm run dev` 没配 `RESEND_API_KEY` 时，验证码会出现在接口响应和服务器日志里，方便自己注册。生产环境不会回显。其他非生产预览若也要这样，设置 `OTP_DEV_ECHO=1`。线上把 `RESEND_API_KEY`（和可选的 `EMAIL_FROM`）配到 EdgeOne 环境变量。
+`SES_FROM_EMAIL` 可以只写邮箱，也可以写成 `Yooco <noreply@你的域名>`。本地 `npm run dev` 在这四项都没配时，验证码会出现在接口响应和服务器日志里，方便自己注册。只配了一部分时不会回显，免得配错了还以为发出去了。生产环境不会回显。其他非生产预览若也要回显，设置 `OTP_DEV_ECHO=1`。线上把上面这些配到 EdgeOne 环境变量。以前的 `RESEND_API_KEY` 不再使用。
 
 账号权限在 `/admin`。只有「不限次数」的账号，或写在 `ADMIN_EMAILS` 里的邮箱，登录后能进。名单是逗号分隔的邮箱，例如 `ADMIN_EMAILS=owner@yoooco.com,editor@yoooco.com`。本地开发把这行放进 `.env`，或写在启动命令前面。线上配到 EdgeOne 环境变量，不要写进仓库。种子 `admin@yoooco.com` 已经标了不限次数，不写名单也能进。这里人工改等级（`free` / `member` / `admin`）和每天排版次数，不收款。等级 `admin` 只是标记，不会自动打开后台，也不会自动不限次数。
 
@@ -133,7 +144,7 @@ lib/
 
 ## 注意事项
 
-- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`、`RESEND_API_KEY`（注册验证码）  
+- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`，以及注册验证码用的 `TENCENT_SECRET_ID`、`TENCENT_SECRET_KEY`、`SES_FROM_EMAIL`、`SES_TEMPLATE_ID`  
 - 「优化排版」依赖外网可达的 DeepSeek；若部署在海外节点，可能出现超时，需要单独处理网络可达性  
 - 本仓库由 vinext / Sites 脚手架承载前端与 Worker；产品入口是 `/studio.html`，不是默认首页模板文案
 

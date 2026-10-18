@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-12 注册加上邮箱验证码
+
+- 想做什么：注册必须先收到 6 位邮箱验证码，对上才建号。邀请码仍选填。
+- 做成了什么：`POST /api/auth/send-code` 发码，约 1 分钟 1 次、同一 IP 约 1 小时 10 次。码存哈希，约 5 分钟过期。错 5 次锁约 15 分钟。注册接口要带 `code`。有 `RESEND_API_KEY` 走 Resend；没有时只有开发环境或非生产的 `OTP_DEV_ECHO=1` 才回显。生产不回显。
+- 改了哪些文件：`lib/email-otp.ts`、`lib/otp-mail.ts`、`lib/email-address.ts`、`lib/local-accounts.ts`、`app/api/auth/send-code/route.ts`、`app/api/auth/register/route.ts`、`components/auth-page.tsx`、`app/account.css`、`README.md`、`scripts/check-otp.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-otp.ts` 通过。本地 5174：不填码、错码不能建号；不填邀请码能注册；填对邀请码多 5 次；填错邀请码不建号，码还在，去掉邀请码仍能注册。1 分钟内重发被拒绝。浏览器打开 `/register`，390 宽没有横向溢出，开发环境提示里能看到验证码，填完跳到 `/studio.html`。登录页没有「获取验证码」。没有部署。
+- 待办/风险：发信后来改成腾讯云 SES。线上要配 SES 的密钥、发信地址和模板，不再用 `RESEND_API_KEY`。
+
 ### 2026-10-12 深色复制稿接到最新 master
 
 - 想做什么：#22、#23 已经合进 master。这支要接到最新 master。精品模板和微信文字对齐留下，深色复制的留白和成功提示也留下。

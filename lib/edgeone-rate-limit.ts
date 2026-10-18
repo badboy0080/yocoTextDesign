@@ -1,12 +1,11 @@
 import { AppError } from "./deepseek-normalizer";
 import { planNormalizeSpend, quotaRemaining } from "./invite-quota";
 import { consumeInviteBonus, peekInviteBonus } from "./invite-store";
-import { currentAccount } from "./local-accounts";
+import { currentQuotaAccount, parseDailyLimit, type QuotaAccount } from "./local-accounts";
 import { TRIAL_LIMIT, UPGRADE_PROMPT } from "./trial-quota";
 
 export { TRIAL_LIMIT, UPGRADE_PROMPT };
 
-const IP_DAILY_LIMIT = TRIAL_LIMIT;
 const GLOBAL_DAILY_LIMIT = 500;
 const IP_PER_MINUTE_LIMIT = 2;
 const STORE_NAME = "yooco-rate-limit";
@@ -111,22 +110,36 @@ function unlimitedQuota(): TrialQuota {
   return { remaining: null, limit: TRIAL_LIMIT, enforced: false, bonus: 0, unlimited: true };
 }
 
-type AccountQuotaReader = () => Promise<{ unlimitedUses?: boolean } | null>;
+type AccountQuotaReader = () => Promise<Partial<QuotaAccount> | null>;
 
-let readAccountForQuota: AccountQuotaReader = () => currentAccount();
+let readAccountForQuota: AccountQuotaReader = () => currentQuotaAccount();
 
 /** 检查脚本用来换掉当前登录账号。传入 null 则恢复读真实会话。 */
 export function useAccountReaderForTests(reader: AccountQuotaReader | null) {
-  readAccountForQuota = reader ?? (() => currentAccount());
+  readAccountForQuota = reader ?? (() => currentQuotaAccount());
 }
 
-async function readUnlimitedAccount(): Promise<boolean> {
+function effectiveDailyLimit(account: Partial<QuotaAccount> | null): number {
+  const custom = parseDailyLimit(account?.dailyLimit);
+  return custom === undefined ? TRIAL_LIMIT : custom;
+}
+
+async function readQuotaAccount(): Promise<Partial<QuotaAccount> | null> {
   try {
-    const account = await readAccountForQuota();
-    return account?.unlimitedUses === true;
+    return await readAccountForQuota();
   } catch (error) {
-    console.warn("[rate-limit] unlimited account check failed", error);
-    return false;
+    console.warn("[rate-limit] account check failed", error);
+    return null;
+  }
+}
+
+async function readBonus(userId: number | null): Promise<number> {
+  if (!userId) return 0;
+  try {
+    return await peekInviteBonus(userId);
+  } catch (error) {
+    console.warn("[rate-limit] account bonus unavailable", error);
+    return 0;
   }
 }
 
@@ -142,18 +155,6 @@ function memoryCounterStore(): CounterStore {
       counts.set(key, count);
     },
   };
-}
-
-async function readAccountBonus(): Promise<{ userId: number | null; bonus: number }> {
-  try {
-    const account = await currentAccount();
-    if (!account) return { userId: null, bonus: 0 };
-    const bonus = await peekInviteBonus(account.id);
-    return { userId: account.id, bonus };
-  } catch (error) {
-    console.warn("[rate-limit] account bonus unavailable", error);
-    return { userId: null, bonus: 0 };
-  }
 }
 
 function cacheRequest(key: string): Request {
@@ -219,22 +220,22 @@ async function openStore(): Promise<CounterStore | null> {
   }
 }
 
-function quotaKeys(request: Request, now = Date.now()) {
+function quotaKeys(request: Request, userId: number | null, now = Date.now()) {
   const day = beijingDateKey(now);
   const slot = minuteSlot(now);
   const ip = ipKeyPart(clientIp(request));
   return {
     now,
     minuteKey: `ip/${day}/${ip}/m/${slot}`,
-    dayKey: `ip/${day}/${ip}/d`,
+    dayKey: userId ? `user/${day}/${userId}/d` : `ip/${day}/${ip}/d`,
     globalKey: `global/${day}`,
     dayTtl: secondsUntilBeijingTomorrow(now),
     minuteTtl: secondsUntilNextMinute(now),
   };
 }
 
-async function readQuota(store: CounterStore, request: Request) {
-  const keys = quotaKeys(request);
+async function readQuota(store: CounterStore, request: Request, userId: number | null) {
+  const keys = quotaKeys(request, userId);
   const [minuteCount, dayCount, globalCount] = await Promise.all([
     store.read(keys.minuteKey),
     store.read(keys.dayKey),
@@ -243,37 +244,60 @@ async function readQuota(store: CounterStore, request: Request) {
   return { keys, minuteCount, dayCount, globalCount };
 }
 
+type QuotaSubject = {
+  userId: number | null;
+  limit: number;
+  bonus: number;
+};
+
+/** 不限次数直接返回。已登录用账号每天额度和 userId 计数；访客仍按 IP 和全站 3 次。 */
+async function readQuotaSubject(): Promise<{ unlimited: true } | { unlimited: false; subject: QuotaSubject }> {
+  const account = await readQuotaAccount();
+  if (account?.unlimitedUses === true) return { unlimited: true };
+  const userId = typeof account?.id === "number" && Number.isInteger(account.id) && account.id > 0 ? account.id : null;
+  return {
+    unlimited: false,
+    subject: {
+      userId,
+      limit: userId ? effectiveDailyLimit(account) : TRIAL_LIMIT,
+      bonus: await readBonus(userId),
+    },
+  };
+}
+
 /**
  * Read remaining free AI-normalize uses without consuming a slot.
- * Guest daily uses plus this account's invite bonus.
+ * Logged-in accounts use their own daily limit and user id.
+ * Guests stay on the IP counter plus no invite bonus.
  * No-op when the backing store is unavailable.
  */
 export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> {
-  if (await readUnlimitedAccount()) return unlimitedQuota();
+  const subject = await readQuotaSubject();
+  if (subject.unlimited) return unlimitedQuota();
   if (!isRateLimitEnabled()) return skippedQuota();
-  const accountBonus = await readAccountBonus();
+  const { limit, bonus } = subject.subject;
 
   let store: CounterStore | null;
   try {
     store = await openStore();
   } catch (error) {
     console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota(accountBonus.bonus);
+    return skippedQuota(bonus);
   }
-  if (!store) return skippedQuota(accountBonus.bonus);
+  if (!store) return skippedQuota(bonus);
 
   try {
-    const { dayCount } = await readQuota(store, request);
+    const { dayCount } = await readQuota(store, request, subject.subject.userId);
     return {
-      remaining: quotaRemaining(dayCount, IP_DAILY_LIMIT, accountBonus.bonus),
-      limit: TRIAL_LIMIT,
+      remaining: quotaRemaining(dayCount, limit, bonus),
+      limit,
       enforced: true,
-      bonus: accountBonus.bonus,
+      bonus,
     };
   } catch (error) {
     if (error instanceof AppError) throw error;
     console.warn("[rate-limit] quota peek failed, skip", error);
-    return skippedQuota(accountBonus.bonus);
+    return skippedQuota(bonus);
   }
 }
 
@@ -281,24 +305,24 @@ export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> 
  * Consume one AI-normalize quota. No-op when the backing store is unavailable.
  */
 export async function consumeNormalizeQuota(request: Request): Promise<TrialQuota> {
-  if (await readUnlimitedAccount()) return unlimitedQuota();
+  const subject = await readQuotaSubject();
+  if (subject.unlimited) return unlimitedQuota();
   if (!isRateLimitEnabled()) return skippedQuota();
-  const accountBonus = await readAccountBonus();
+  const { userId, limit, bonus } = subject.subject;
 
   let store: CounterStore | null;
   try {
     store = await openStore();
   } catch (error) {
     console.warn("[rate-limit] store unavailable, skip quota", error);
-    return skippedQuota(accountBonus.bonus);
+    return skippedQuota(bonus);
   }
-  if (!store) return skippedQuota(accountBonus.bonus);
+  if (!store) return skippedQuota(bonus);
 
   try {
-    const { keys, minuteCount, dayCount, globalCount } = await readQuota(store, request);
-    const bonus = accountBonus.userId ? accountBonus.bonus : 0;
-    const remaining = quotaRemaining(dayCount, IP_DAILY_LIMIT, bonus);
-    const plan = planNormalizeSpend(dayCount, IP_DAILY_LIMIT, bonus);
+    const { keys, minuteCount, dayCount, globalCount } = await readQuota(store, request, userId);
+    const remaining = quotaRemaining(dayCount, limit, bonus);
+    const plan = planNormalizeSpend(dayCount, limit, bonus);
 
     if (minuteCount >= IP_PER_MINUTE_LIMIT) {
       throw new RateLimitError(
@@ -306,7 +330,7 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
         "操作太频繁，请稍等一分钟再试。",
         secondsUntilNextMinute(keys.now),
         remaining,
-        TRIAL_LIMIT,
+        limit,
         bonus,
       );
     }
@@ -316,7 +340,7 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
         "今天全站试用名额已满，请明天再来。",
         secondsUntilBeijingTomorrow(keys.now),
         remaining,
-        TRIAL_LIMIT,
+        limit,
         bonus,
       );
     }
@@ -326,21 +350,23 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
         UPGRADE_PROMPT,
         secondsUntilBeijingTomorrow(keys.now),
         0,
-        TRIAL_LIMIT,
+        limit,
         0,
       );
     }
 
     if (plan.action === "bonus") {
-      if (!accountBonus.userId) {
+      if (!userId) {
         throw new RateLimitError(
           "TRIAL_EXHAUSTED",
           UPGRADE_PROMPT,
           secondsUntilBeijingTomorrow(keys.now),
           0,
+          limit,
+          0,
         );
       }
-      const spent = await consumeInviteBonus(accountBonus.userId);
+      const spent = await consumeInviteBonus(userId);
       if (!spent.ok) {
         throw new AppError("QUOTA_UNAVAILABLE", "这次没扣成次数，请稍后再试。", 503);
       }
@@ -350,7 +376,7 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
           UPGRADE_PROMPT,
           secondsUntilBeijingTomorrow(keys.now),
           0,
-          TRIAL_LIMIT,
+          limit,
           0,
         );
       }
@@ -360,7 +386,7 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
       ]);
       return {
         remaining: spent.bonusRemaining,
-        limit: TRIAL_LIMIT,
+        limit,
         enforced: true,
         bonus: spent.bonusRemaining,
       };
@@ -374,13 +400,13 @@ export async function consumeNormalizeQuota(request: Request): Promise<TrialQuot
 
     return {
       remaining: plan.remaining,
-      limit: TRIAL_LIMIT,
+      limit,
       enforced: true,
       bonus,
     };
   } catch (error) {
     if (error instanceof AppError) throw error;
     console.warn("[rate-limit] quota check failed, skip", error);
-    return skippedQuota(accountBonus.bonus);
+    return skippedQuota(bonus);
   }
 }

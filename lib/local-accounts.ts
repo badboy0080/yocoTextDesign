@@ -1,6 +1,9 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { appendAdminAudit, type AdminAuditEvent } from "./admin-audit";
 import { normalizeEmail, validEmail } from "./email-address";
+import { readInviteBonusMap, peekInviteBonus } from "./invite-store";
+import { TRIAL_LIMIT } from "./trial-quota";
 
 export { normalizeEmail, validEmail };
 
@@ -9,14 +12,31 @@ const SESSION_DAYS = 30;
 const STORE_NAME = "yooco-accounts";
 const DOC_KEY = "accounts";
 
+/** 人工开通的等级。没有收款。缺省当 free，旧文档不补写。 */
+export const ACCOUNT_PLANS = ["free", "member", "admin"] as const;
+export type AccountPlan = (typeof ACCOUNT_PLANS)[number];
+
+/** 单个账号每天最多能手填的排版次数。留空则走全站 TRIAL_LIMIT。 */
+export const MAX_ACCOUNT_DAILY_LIMIT = 10000;
+
+const PLAN_LABEL: Record<AccountPlan, string> = {
+  free: "免费",
+  member: "会员",
+  admin: "管理员",
+};
+
 type UserRecord = {
   id: number;
   email: string;
   name: string;
   passwordHash: string;
   createdAt: string;
-  /** 为 true 时，排版不扣每天试用次数，也不扣邀请加成。只给运维账号。 */
+  /** 为 true 时，排版不扣每天试用次数，也不扣邀请加成。这样的账号也能进后台。 */
   unlimitedUses?: boolean;
+  /** 人工开通的等级。不自动打开后台，也不自动不限次数。 */
+  plan?: AccountPlan;
+  /** 该账号每天排版次数。缺省时走全站 TRIAL_LIMIT。 */
+  dailyLimit?: number;
 };
 
 export type PublicAccount = {
@@ -43,17 +63,57 @@ function emptyDoc(): AccountDoc {
   return { users: [], sessions: [] };
 }
 
+export function parsePlan(value: unknown): AccountPlan | undefined {
+  if (value === "free" || value === "member" || value === "admin") return value;
+  return undefined;
+}
+
+export function planLabel(plan: AccountPlan): string {
+  return PLAN_LABEL[plan];
+}
+
+/** 合法的每日额度。空、null 和非整数都不算已设置。 */
+export function parseDailyLimit(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isInteger(value)) return undefined;
+  if (value < 0 || value > MAX_ACCOUNT_DAILY_LIMIT) return undefined;
+  return value;
+}
+
+export function adminEmailSet(raw = process.env.ADMIN_EMAILS || ""): Set<string> {
+  const emails = new Set<string>();
+  for (const part of raw.split(",")) {
+    const email = normalizeEmail(part);
+    if (validEmail(email)) emails.add(email);
+  }
+  return emails;
+}
+
+/** 不限次数，或邮箱在 ADMIN_EMAILS 里。种子 admin@yoooco.com 靠已有的 unlimitedUses。 */
+export function isAdminAccount(
+  user: { email?: string; unlimitedUses?: boolean } | null | undefined,
+  emails: Set<string> = adminEmailSet(),
+): boolean {
+  if (!user) return false;
+  if (user.unlimitedUses === true) return true;
+  const email = normalizeEmail(user.email || "");
+  return validEmail(email) && emails.has(email);
+}
+
 function normalizeUser(value: unknown): UserRecord | null {
   if (!value || typeof value !== "object") return null;
-  const raw = value as UserRecord;
-  if (raw.unlimitedUses === true) return { ...raw, unlimitedUses: true };
-  if (!Object.prototype.hasOwnProperty.call(raw, "unlimitedUses")) return raw;
-  const next = { ...raw };
-  delete next.unlimitedUses;
+  const raw = value as UserRecord & { plan?: unknown; dailyLimit?: unknown };
+  const next: UserRecord = { ...raw };
+  if (next.unlimitedUses !== true) delete next.unlimitedUses;
+  const plan = parsePlan(raw.plan);
+  if (plan) next.plan = plan;
+  else delete next.plan;
+  const limit = parseDailyLimit(raw.dailyLimit);
+  if (limit === undefined) delete next.dailyLimit;
+  else next.dailyLimit = limit;
   return next;
 }
 
-/** 从 blob 读出账号文档。保留已有字段；只有严格的 true 才留下 unlimitedUses。 */
+/** 从 blob 读出账号文档。保留已有字段；只有严格的 true 才留下 unlimitedUses。等级和每日额度不合法就丢掉。 */
 export function accountDocFromStored(value: unknown): AccountDoc {
   if (!value || typeof value !== "object") return emptyDoc();
   const doc = value as Partial<AccountDoc>;
@@ -163,15 +223,199 @@ export async function loginAccount(input: { email: string; password: string }) {
   return { ok: true as const, email: user.email, name: user.name };
 }
 
-export async function currentAccount() {
+async function currentUserRecord(): Promise<UserRecord | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const { doc } = await openDoc();
   const session = doc.sessions.find((item) => item.tokenHash === hashToken(token) && item.expiresAt > Date.now());
   if (!session) return null;
-  const user = doc.users.find((item) => item.id === session.userId);
+  return doc.users.find((item) => item.id === session.userId) ?? null;
+}
+
+export async function currentAccount() {
+  const user = await currentUserRecord();
   return user ? toPublicAccount(user) : null;
+}
+
+export type QuotaAccount = {
+  id: number;
+  unlimitedUses?: boolean;
+  dailyLimit?: number | null;
+};
+
+/** 排版配额用。带上每日额度，不带密码。 */
+export async function currentQuotaAccount(): Promise<QuotaAccount | null> {
+  const user = await currentUserRecord();
+  if (!user) return null;
+  return {
+    id: user.id,
+    ...(user.unlimitedUses === true ? { unlimitedUses: true } : {}),
+    ...(user.dailyLimit !== undefined ? { dailyLimit: user.dailyLimit } : {}),
+  };
+}
+
+export type ManagedAccount = {
+  id: number;
+  email: string;
+  name: string;
+  plan: AccountPlan;
+  dailyLimit: number | null;
+  unlimitedUses: boolean;
+  inviteBonus: number;
+  createdAt: string;
+  adminAccess: boolean;
+};
+
+export function toManagedAccount(user: UserRecord, inviteBonus = 0): ManagedAccount {
+  const unlimitedUses = user.unlimitedUses === true;
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    plan: user.plan ?? "free",
+    dailyLimit: user.dailyLimit ?? null,
+    unlimitedUses,
+    inviteBonus: Math.max(0, Math.floor(inviteBonus)),
+    createdAt: user.createdAt,
+    adminAccess: isAdminAccount({ email: user.email, unlimitedUses }),
+  };
+}
+
+export function emailMatchesQuery(email: string, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return email.toLowerCase().includes(needle);
+}
+
+export type EntitlementPatch = {
+  plan?: AccountPlan;
+  dailyLimit?: number | null;
+  unlimitedUses?: boolean;
+};
+
+export function parseEntitlementPatch(
+  body: unknown,
+): { ok: true; userId: number; patch: EntitlementPatch; confirm: boolean } | { ok: false; status: 400; message: string } {
+  if (!body || typeof body !== "object") {
+    return { ok: false, status: 400, message: "请提交要改的内容。" };
+  }
+  const raw = body as Record<string, unknown>;
+  const userId = Number(raw.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return { ok: false, status: 400, message: "没有这个账号。" };
+  }
+  const patch: EntitlementPatch = {};
+  if ("plan" in raw) {
+    const plan = parsePlan(raw.plan);
+    if (!plan) return { ok: false, status: 400, message: "等级只能是免费、会员或管理员。" };
+    patch.plan = plan;
+  }
+  if ("dailyLimit" in raw) {
+    if (raw.dailyLimit === null) patch.dailyLimit = null;
+    else {
+      const limit = parseDailyLimit(raw.dailyLimit);
+      if (limit === undefined) {
+        return {
+          ok: false,
+          status: 400,
+          message: `每日额度请填 0 到 ${MAX_ACCOUNT_DAILY_LIMIT} 的整数，留空则用全站每天 ${TRIAL_LIMIT} 次。`,
+        };
+      }
+      patch.dailyLimit = limit;
+    }
+  }
+  if ("unlimitedUses" in raw) {
+    if (typeof raw.unlimitedUses !== "boolean") {
+      return { ok: false, status: 400, message: "不限次数只能是开或关。" };
+    }
+    patch.unlimitedUses = raw.unlimitedUses;
+  }
+  if (patch.plan === undefined && patch.dailyLimit === undefined && patch.unlimitedUses === undefined) {
+    return { ok: false, status: 400, message: "没有要保存的改动。" };
+  }
+  return { ok: true, userId, patch, confirm: raw.confirm === true };
+}
+
+export function entitlementNeedsConfirm(user: UserRecord, patch: EntitlementPatch): boolean {
+  if (patch.plan !== undefined && patch.plan !== (user.plan ?? "free")) return true;
+  if (patch.unlimitedUses !== undefined && patch.unlimitedUses !== (user.unlimitedUses === true)) return true;
+  return false;
+}
+
+function entitlementChanged(user: UserRecord, patch: EntitlementPatch): boolean {
+  if (patch.plan !== undefined && patch.plan !== (user.plan ?? "free")) return true;
+  if (patch.dailyLimit !== undefined && patch.dailyLimit !== (user.dailyLimit ?? null)) return true;
+  if (patch.unlimitedUses !== undefined && patch.unlimitedUses !== (user.unlimitedUses === true)) return true;
+  return false;
+}
+
+export function applyEntitlement(user: UserRecord, patch: EntitlementPatch): UserRecord {
+  const next: UserRecord = { ...user };
+  if (patch.plan) next.plan = patch.plan;
+  if (patch.dailyLimit === null) delete next.dailyLimit;
+  else if (typeof patch.dailyLimit === "number") next.dailyLimit = patch.dailyLimit;
+  if (patch.unlimitedUses === true) next.unlimitedUses = true;
+  else if (patch.unlimitedUses === false) delete next.unlimitedUses;
+  return next;
+}
+
+function entitlementChanges(before: UserRecord, after: UserRecord): AdminAuditEvent["changes"] {
+  const changes: AdminAuditEvent["changes"] = {};
+  const fromPlan = before.plan ?? "free";
+  const toPlan = after.plan ?? "free";
+  if (fromPlan !== toPlan) changes.plan = { from: fromPlan, to: toPlan };
+  const fromLimit = before.dailyLimit ?? null;
+  const toLimit = after.dailyLimit ?? null;
+  if (fromLimit !== toLimit) changes.dailyLimit = { from: fromLimit, to: toLimit };
+  const fromUnlimited = before.unlimitedUses === true;
+  const toUnlimited = after.unlimitedUses === true;
+  if (fromUnlimited !== toUnlimited) changes.unlimitedUses = { from: fromUnlimited, to: toUnlimited };
+  return changes;
+}
+
+export async function listManagedAccounts(query = ""): Promise<{ siteDailyLimit: number; accounts: ManagedAccount[] }> {
+  const { doc } = await openDoc();
+  const bonuses = await readInviteBonusMap();
+  const accounts = doc.users
+    .filter((user) => emailMatchesQuery(user.email, query))
+    .map((user) => toManagedAccount(user, bonuses.get(user.id) ?? 0))
+    .sort((a, b) => a.email.localeCompare(b.email, "en"));
+  return { siteDailyLimit: TRIAL_LIMIT, accounts };
+}
+
+export async function updateManagedAccount(
+  actor: { id: number; email: string },
+  body: unknown,
+): Promise<
+  | { ok: true; account: ManagedAccount; audit: "stored" | "console" }
+  | { ok: false; status: number; message: string }
+> {
+  const parsed = parseEntitlementPatch(body);
+  if (!parsed.ok) return parsed;
+  const { doc, save } = await openDoc();
+  const index = doc.users.findIndex((user) => user.id === parsed.userId);
+  if (index < 0) return { ok: false, status: 404, message: "没有这个账号。" };
+  const before = doc.users[index]!;
+  if (!entitlementChanged(before, parsed.patch)) {
+    return { ok: false, status: 400, message: "没有要保存的改动。" };
+  }
+  if (entitlementNeedsConfirm(before, parsed.patch) && !parsed.confirm) {
+    return { ok: false, status: 400, message: "改等级或不限次数需要再确认一次。" };
+  }
+  const after = applyEntitlement(before, parsed.patch);
+  doc.users[index] = after;
+  await save(doc);
+  const audit = await appendAdminAudit({
+    at: new Date().toISOString(),
+    actorId: actor.id,
+    actorEmail: actor.email,
+    userId: after.id,
+    email: after.email,
+    changes: entitlementChanges(before, after),
+  });
+  const bonus = await peekInviteBonus(after.id);
+  return { ok: true, account: toManagedAccount(after, bonus), audit };
 }
 
 export async function deleteAccount(userId: number) {

@@ -256,6 +256,70 @@ const quietPlain = [
   "颜色少，句子才站得住。",
 ].join("\n");
 
+const magazinePlain = [
+  "本期目录",
+  "",
+  "栏目 · 编号 / 先给编号，再给解释",
+  "",
+  "这一期只做三栏。目录先把顺序排好，读者才知道从哪一栏读起。",
+  "",
+  "封面故事",
+  "",
+  "封面只留一句",
+  "目录用编号",
+  "栏目标题对齐",
+  "",
+  "编号是给眼睛的路标。",
+].join("\n");
+
+const livelyPlain = [
+  "周末去哪儿",
+  "",
+  "种草 · 清单 / 三句就能照着出门",
+  "",
+  "不用长攻略。把三张图的位置，换成三句朋友能照着做的话。",
+  "",
+  "先记这三件",
+  "",
+  "早上的店不用排队",
+  "下午找有窗的座位",
+  "晚上早点回",
+  "",
+  "写短一点，朋友才愿意存。",
+].join("\n");
+
+const deepPlain = [
+  "夜间构建",
+  "",
+  "工具 · 深色 / 亮的只有该看的那一行",
+  "",
+  "日志刷过之后，只留下失败的那一行。深色页面里，绿色是唯一要看的信号。",
+  "",
+  "先看这一行",
+  "",
+  "构建编号",
+  "失败步骤",
+  "下次重试前先看错误",
+  "",
+  "亮的只有该被看见的字。",
+].join("\n");
+
+const freshPlain = [
+  "十分钟装好",
+  "",
+  "教程 · 清单 / 先跑起来，再谈设置",
+  "",
+  "先做能跑起来的一步。绿字标出你现在该点哪里，其余设置先放下。",
+  "",
+  "按这个顺序",
+  "",
+  "打开项目",
+  "只填一项配置",
+  "看到成功提示再往下",
+  "",
+  "教程写给正在动手的人。",
+].join("\n");
+
 export const WORKS: WorkPiece[] = [
   piece({
     id: "minimal-quiet",
@@ -296,6 +360,7 @@ export const WORKS: WorkPiece[] = [
     textColor: "#20302a",
     accentColor: "#2f5d4f",
     sheetNo: "02",
+    plain: magazinePlain,
     blocks: [
       { type: "p", text: "这一期只做三栏。目录先把顺序排好，读者才知道从哪一栏读起。" },
       { type: "h2", text: "封面故事" },
@@ -319,6 +384,7 @@ export const WORKS: WorkPiece[] = [
     textColor: "#3a3230",
     accentColor: "#ff6a3d",
     sheetNo: "03",
+    plain: livelyPlain,
     blocks: [
       { type: "p", text: "不用长攻略。把三张图的位置，换成三句朋友能照着做的话。" },
       { type: "h2", text: "先记这三件" },
@@ -342,6 +408,7 @@ export const WORKS: WorkPiece[] = [
     textColor: "#c7d6c2",
     accentColor: "#34f07a",
     sheetNo: "04",
+    plain: deepPlain,
     blocks: [
       { type: "p", text: "日志刷过之后，只留下失败的那一行。深色页面里，绿色是唯一要看的信号。" },
       { type: "h2", text: "先看这一行" },
@@ -365,6 +432,7 @@ export const WORKS: WorkPiece[] = [
     textColor: "#374151",
     accentColor: "#0a9d75",
     sheetNo: "05",
+    plain: freshPlain,
     blocks: [
       { type: "p", text: "先做能跑起来的一步。绿字标出你现在该点哪里，其余设置先放下。" },
       { type: "h2", text: "按这个顺序" },

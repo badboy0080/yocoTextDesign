@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-18 账号权限后台
+
+- 想做什么：站长能在后台给已注册用户人工开等级和每天排版次数。普通用户进不去。不收款。
+- 做成了什么：`/admin` 列出邮箱、称呼、等级、每日额度、不限次数、邀请加成和创建时间，可按邮箱搜索。保存写回账号库。改等级或不限次数要再确认。审计写 Blob，写不上就打日志。登录用户按账号计每天次数，访客仍按 IP。
+- 改了哪些文件：`lib/local-accounts.ts`、`lib/admin-audit.ts`、`lib/edgeone-rate-limit.ts`、`lib/invite-store.ts`、`app/api/admin/accounts/route.ts`、`app/admin/page.tsx`、`app/admin/admin-accounts.tsx`、`app/admin/admin.css`、`components/auth-page.tsx`、`vite.config.ts`、`scripts/check-account-admin.ts`、`tsconfig.json`、`README.md`、`CONTEXT.md`、`docs/adr/0001-manual-account-entitlements.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-account-admin.ts` 和 `npx tsx scripts/check-unlimited-uses.ts` 通过。本地 `ADMIN_EMAILS=owner@example.com npm run dev`（5174）：未登录跳登录；普通用户页面写「进不了后台」，接口 403；站长能搜索并改每日额度。额度改成 1 后，该账号第一次剩余 1，用掉一次后剩余 0，同一 IP 的访客仍是 3。打开不限次数并确认后，配额变成不限。浏览器里登录站长，搜索、改等级后点取消、390 宽没有横向溢出，都对过。
+- 待办/风险：还没部署。线上要让名单里的人进后台，需在 EdgeOne 配 `ADMIN_EMAILS`。种子站长不配也能进。本地预览只把写进启动配置的环境变量交给页面服务，所以 `ADMIN_EMAILS` 要在 `vite.config.ts` 里转一手。同一分钟每个 IP 仍最多排版 2 次，这是原来的防刷，每日额度改不掉它。
+
 ### 2026-10-14 配置台滑动条改成低对比深灰
 
 - 想做什么：工作室右侧滑动条不要再是刺眼白线配几乎看不见的暗色圆点，看起来要接近 Superdesign 那种深灰侧栏。

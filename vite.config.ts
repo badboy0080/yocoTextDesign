@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import vinext from "vinext";
-import { defineConfig, loadEnv, type ViteDevServer } from "vite";
+import { defineConfig, loadEnv, type UserConfig, type ViteDevServer } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./scripts/sites-vite-plugin";
 
@@ -66,7 +66,7 @@ function firstNonEmpty(...values: Array<string | undefined>): string {
   return "";
 }
 
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(async ({ mode }): Promise<UserConfig> => {
   const localEnv = loadEnv(mode, process.cwd(), "");
   const devVars = readDevVars(join(process.cwd(), ".dev.vars"));
 

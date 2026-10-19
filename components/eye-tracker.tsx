@@ -333,16 +333,23 @@ export function EyeTracker({
       window.clearTimeout(hold);
       const wait = knobs.current.restAfter;
       if (wait > 0) hold = window.setTimeout(rest, wait);
-      const f = frame.getBoundingClientRect();
-      if (e.clientX < f.left || e.clientX > f.right || e.clientY < f.top || e.clientY > f.bottom) {
-        rest();
-        return;
-      }
       const r = el.getBoundingClientRect();
       const dx = e.clientX - (r.left + r.width / 2);
       const dy = e.clientY - (r.top + r.height / 2);
       const d = Math.hypot(dx, dy) || 1;
       const limit = knobs.current.near;
+      /* The card edge is the sensor. Pad it so a small mark (the
+         homepage bubble) notices the pointer 100px farther out.
+         near, when set, is still a hard radius from the mark. */
+      const sensorPad = 100;
+      const f = frame.getBoundingClientRect();
+      if (
+        e.clientX < f.left - sensorPad || e.clientX > f.right + sensorPad ||
+        e.clientY < f.top - sensorPad || e.clientY > f.bottom + sensorPad
+      ) {
+        rest();
+        return;
+      }
       if (limit > 0 && d > limit) {
         rest();
         return;

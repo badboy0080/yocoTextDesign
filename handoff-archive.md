@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-13 管理员账号排版不限次数
+
+- 想做什么：`admin@yoooco.com` 这类已经标了 `unlimitedUses` 的账号，登录后排版不扣次数。工作台不要再显示剩余 3 次。
+- 做成了什么：读写账号时留下这个字段。查看和扣减配额时，若当前登录账号是不限次数，直接返回 `unlimited: true`，不写试用计数，也不扣邀请加成。顶栏显示「不限次数」。
+- 改了哪些文件：`lib/local-accounts.ts`、`lib/edgeone-rate-limit.ts`、`public/app.js`、`public/studio.html`、`scripts/check-unlimited-uses.ts`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node_modules/.bin/tsx scripts/check-unlimited-uses.ts` 通过。未登录打开工作台仍是「剩余 3 次」。接口返回不限次数时顶栏是「不限次数」，优化仍会发出请求。邀请加成文案和用尽横幅没坏。没有部署，也没有用线上密码登录。
+- 待办/风险：要同事看到，需要再部署一次。部署前用管理员账号登录确认顶栏。普通账号逻辑没改，但线上 blob 下次登录保存时会按原样写回 `unlimitedUses: true`。
+
 ### 2026-10-12 注册加上邮箱验证码
 
 - 想做什么：注册必须先收到 6 位邮箱验证码，对上才建号。邀请码仍选填。

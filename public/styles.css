@@ -568,6 +568,29 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .article-page[data-highlight-style="bold"] .inline-highlight { padding: 0; background: transparent; font-weight: 800; }
 .article-content .inline-link { color: var(--link-color, #3f6f9f); text-decoration: underline; text-underline-offset: .14em; }
+.article-content .inline-strike { text-decoration: line-through; }
+.article-content .inline-underline { text-decoration: underline; text-underline-offset: .14em; }
+.article-page[data-highlight-style="underline"] .inline-underline {
+  padding: 0; background: transparent; border-radius: 0; text-decoration: none;
+  border-bottom: 3px solid var(--highlight-color, #d7fa5c); font-weight: 700;
+}
+.article-content .inline-wavy {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: .16em;
+  text-decoration-color: var(--accent-color, #718c25);
+}
+.article-content .article-table {
+  width: 100%; border-collapse: collapse; margin: 0 0 var(--paragraph-spacing, 18px);
+  font-size: var(--font-size, 16px); line-height: var(--line-height, 1.75); text-align: left;
+}
+.article-content .article-table th,
+.article-content .article-table td {
+  border: 1px solid var(--divider-color, #718c25); padding: 8px 10px; text-indent: 0; vertical-align: top;
+}
+.article-content .article-table th {
+  background: var(--card-color, #f3f5eb); color: var(--title-color, var(--text-color, #3f3f3f)); font-weight: 700;
+}
 .article-page[data-link-underline="false"] .inline-link { text-decoration: none; }
 .article-content .article-code { overflow: auto; margin: 22px 0 26px; padding: var(--card-padding, 20px); border-radius: var(--card-radius, 12px); background: var(--code-background, #f0f4e5); color: var(--code-color, #3f3f3f); font: var(--code-font-size, 13px)/var(--code-line-height, 1.6) ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
 .article-content .article-image { margin: 22px 0 26px; text-align: center; }
@@ -837,6 +860,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 
 /* ===== 造型层：列表样式 ===== */
 .article-content .article-list { list-style: none; padding-left: 0; counter-reset: listitem; }
+.article-content li > .article-list { margin: 2px 0 0; }
 .article-content .article-list li { position: relative; padding-left: calc(var(--list-indent, 1.5em) + .4em); counter-increment: listitem; }
 .article-content .article-list li::before { position: absolute; left: 0; top: 0; }
 .article-page[data-list-style="dot"] .article-list ul,

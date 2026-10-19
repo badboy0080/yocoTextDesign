@@ -485,15 +485,42 @@ function escapeHtml(value) {
   }[character]));
 }
 
+/* 公众号行内冒烟样例（先长记号，再短记号，避免 ~~ 被 ~ 吃掉）：
+~~删除~~ ++下划线++ ~波浪~ **加粗** *斜体* `代码` ==重点== [链接](https://yoooco.com)
+*/
+function holdInlineSlot(slots, html) {
+  const token = `\u0000${slots.length}\u0000`;
+  slots.push(html);
+  return token;
+}
+
+function restoreInlineSlots(html, slots) {
+  return String(html).replace(/\u0000(\d+)\u0000/g, (_, index) => restoreInlineSlots(slots[Number(index)] || "", slots));
+}
+
+function renderInline(text, slots) {
+  let out = String(text);
+  const protect = (pattern, build) => {
+    out = out.replace(pattern, (...args) => holdInlineSlot(slots, build(args[1], args[2])));
+  };
+  protect(/`([^`\n]+)`/g, (code) => `<code class="inline-code">${code}</code>`);
+  protect(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (label, href) => (
+    `<a class="inline-link" href="${String(href).replace(/"/g, "%22")}" target="_blank" rel="noreferrer">${renderInline(label, slots)}</a>`
+  ));
+  protect(/~~([^~\n]+?)~~/g, (inner) => `<del class="inline-strike">${renderInline(inner, slots)}</del>`);
+  protect(/\+\+([^+\n]+?)\+\+/g, (inner) => `<u class="inline-underline">${renderInline(inner, slots)}</u>`);
+  protect(/==([^=\n]+)==/g, (inner) => `<mark class="inline-highlight">${renderInline(inner, slots)}</mark>`);
+  protect(/\*\*([^*\n]+)\*\*/g, (inner) => `<strong>${renderInline(inner, slots)}</strong>`);
+  protect(/__([^_\n]+)__/g, (inner) => `<strong>${renderInline(inner, slots)}</strong>`);
+  protect(/\*([^*\n]+)\*/g, (inner) => `<em>${renderInline(inner, slots)}</em>`);
+  protect(/~([^~\n]+?)~/g, (inner) => `<span class="inline-wavy">${renderInline(inner, slots)}</span>`);
+  return out;
+}
+
 function inlineMarkdown(value) {
-  return escapeHtml(value)
-    .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
-    .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/__([^_\n]+)__/g, "<strong>$1</strong>")
-    .replace(/==([^=\n]+)==/g, '<mark class="inline-highlight">$1</mark>')
-    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, '<a class="inline-link" href="$2" target="_blank" rel="noreferrer">$1</a>')
-    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
-    .replace(/\n/g, "<br />");
+  const slots = [];
+  const html = renderInline(escapeHtml(value), slots).replace(/\n/g, "<br />");
+  return restoreInlineSlots(html, slots);
 }
 
 const EMBEDDED_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
@@ -841,6 +868,113 @@ function insertMarkdownAtCursor(markdown, { append = false } = {}) {
   articleInput.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function splitTableRow(line) {
+  let raw = String(line || "").trim();
+  if (raw.startsWith("|")) raw = raw.slice(1);
+  if (raw.endsWith("|")) raw = raw.slice(0, -1);
+  const cells = [];
+  let current = "";
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (char === "\\" && raw[index + 1] === "|") {
+      current += "|";
+      index += 1;
+      continue;
+    }
+    if (char === "|") {
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function isSeparatorRow(line) {
+  const cells = splitTableRow(line);
+  return cells.length >= 2 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function isPipeRow(line) {
+  const trimmed = String(line || "").trim();
+  if (!trimmed.includes("|") || isSeparatorRow(trimmed)) return false;
+  return splitTableRow(trimmed).length >= 2;
+}
+
+function tableAlign(cell) {
+  const text = String(cell || "");
+  const left = text.startsWith(":");
+  const right = text.endsWith(":");
+  if (left && right) return "center";
+  if (right) return "right";
+  return "left";
+}
+
+function readPipeTable(lines, start) {
+  if (start + 1 >= lines.length) return null;
+  if (!isPipeRow(lines[start]) || !isSeparatorRow(lines[start + 1])) return null;
+  const headers = splitTableRow(lines[start]);
+  const separators = splitTableRow(lines[start + 1]);
+  if (headers.length < 2 || headers.length !== separators.length) return null;
+  const aligns = separators.map(tableAlign);
+  const rows = [];
+  let cursor = start + 2;
+  while (cursor < lines.length && String(lines[cursor] || "").trim()) {
+    if (!isPipeRow(lines[cursor])) break;
+    const cells = splitTableRow(lines[cursor]);
+    while (cells.length < headers.length) cells.push("");
+    rows.push(cells.slice(0, headers.length));
+    cursor += 1;
+  }
+  return { block: { type: "table", headers, aligns, rows }, next: cursor };
+}
+
+function listItemText(entry) {
+  if (entry && typeof entry === "object") return String(entry.text || "");
+  return String(entry || "");
+}
+
+function nestListItems(items) {
+  const root = { depth: -1, children: [] };
+  const stack = [root];
+  (items || []).forEach((entry) => {
+    const text = listItemText(entry);
+    if (!text) return;
+    let depth = entry && typeof entry === "object" ? Math.max(0, Math.min(1, Number(entry.depth) || 0)) : 0;
+    if (depth > stack[stack.length - 1].depth + 1) depth = stack[stack.length - 1].depth + 1;
+    while (stack.length > 1 && stack[stack.length - 1].depth >= depth) stack.pop();
+    const node = {
+      text,
+      depth,
+      ordered: Boolean(entry && typeof entry === "object" ? entry.ordered : false),
+      children: [],
+    };
+    stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  });
+  return root.children;
+}
+
+function groupListChildren(children) {
+  const groups = [];
+  (children || []).forEach((child) => {
+    const ordered = Boolean(child.ordered);
+    const last = groups[groups.length - 1];
+    if (!last || last.ordered !== ordered) groups.push({ ordered, nodes: [child] });
+    else last.nodes.push(child);
+  });
+  return groups;
+}
+
+/* 块级冒烟：表格要有表头和 | --- | 分隔行；子列表缩进至少两个空格，中间不要空行。
+| 名称 | 作用 |
+| --- | ---: |
+| 删除线 | ~~不再强调~~ |
+- 先做这一步
+  - 再做里面这一步
+*/
 function parseArticle(source) {
   const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
   const blocks = [];
@@ -848,6 +982,7 @@ function parseArticle(source) {
   let paragraphLines = [];
   let listItems = [];
   let listOrdered = false;
+  let listBaseIndent = 0;
   let codeLines = [];
   let codeLanguage = "";
   let inCode = false;
@@ -870,6 +1005,7 @@ function parseArticle(source) {
       blocks.push({ type: "list", items: listItems, ordered: listOrdered });
       listItems = [];
       listOrdered = false;
+      listBaseIndent = 0;
     }
   };
   const flushCode = () => {
@@ -893,7 +1029,8 @@ function parseArticle(source) {
     fenceLines = [];
   };
 
-  lines.forEach((line) => {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
     const trimmed = line.trim();
     if (trimmed.startsWith("```")) {
       if (inCode) flushCode();
@@ -903,16 +1040,16 @@ function parseArticle(source) {
         codeLanguage = trimmed.slice(3).trim();
       }
       inCode = !inCode;
-      return;
+      continue;
     }
     if (inCode) {
       codeLines.push(line);
-      return;
+      continue;
     }
     if (fenceKind) {
       if (trimmed === ":::") flushFence();
       else fenceLines.push(line);
-      return;
+      continue;
     }
     const fence = trimmed.match(/^:::(card|steps|stat|stats)(?:\s+(.+))?$/i);
     if (fence) {
@@ -922,12 +1059,12 @@ function parseArticle(source) {
       fenceKind = kind === "stats" ? "stat" : kind;
       fenceTitle = (fence[2] || "").trim()
         || (fenceKind === "card" ? "重点提示" : fenceKind === "steps" ? "操作步骤" : "关键数据");
-      return;
+      continue;
     }
     if (!trimmed) {
       flushParagraph();
       flushList();
-      return;
+      continue;
     }
 
     const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
@@ -937,29 +1074,43 @@ function parseArticle(source) {
       const level = heading[1].length;
       if (level === 1 && !title) title = heading[2];
       else blocks.push({ type: "heading", level, text: heading[2] });
-      return;
+      continue;
     }
     const image = trimmed.match(/^!\[([^\]]*)\]\(([^)\s]*)(?:\s+"[^"]*")?\)$/);
     if (image) {
       flushParagraph();
       flushList();
       blocks.push({ type: "image", alt: image[1] || "文章配图", url: safeImageUrl(image[2]) });
-      return;
+      continue;
     }
     if (/^(---+|\*\*\*+)$/.test(trimmed)) {
       flushParagraph();
       flushList();
       blocks.push({ type: "divider" });
-      return;
+      continue;
     }
-    const list = trimmed.match(/^([-*+]|\d+[.)])\s+(.+)$/);
+    const list = line.match(/^(\s*)([-*+]|\d+[.)])\s+(.+)$/);
     if (list) {
       flushParagraph();
-      const ordered = /^\d/.test(list[1]);
-      if (listItems.length && ordered !== listOrdered) flushList();
-      listOrdered = ordered;
-      listItems.push(list[2]);
-      return;
+      const indent = list[1].replace(/\t/g, "  ").length;
+      const ordered = /^\d/.test(list[2]);
+      let depth = listItems.length && indent - listBaseIndent >= 2 ? 1 : 0;
+      if (depth === 0 && listItems.length && ordered !== listOrdered) flushList();
+      if (!listItems.length) {
+        listOrdered = ordered;
+        listBaseIndent = indent;
+        depth = 0;
+      }
+      listItems.push({ text: list[3], depth, ordered: depth === 0 ? listOrdered : ordered });
+      continue;
+    }
+    const table = readPipeTable(lines, lineIndex);
+    if (table) {
+      flushParagraph();
+      flushList();
+      blocks.push(table.block);
+      lineIndex = table.next - 1;
+      continue;
     }
     if (/^>\s?/.test(trimmed)) {
       flushParagraph();
@@ -967,11 +1118,11 @@ function parseArticle(source) {
       const quoteText = trimmed.replace(/^>\s?/, "");
       const labeledQuote = quoteText.match(/^\*\*([^*\n]+)\*\*[：:]\s*(.+)$/);
       blocks.push({ type: "quote", title: labeledQuote?.[1] || "引用", text: labeledQuote?.[2] || quoteText });
-      return;
+      continue;
     }
     flushList();
     paragraphLines.push(line);
-  });
+  }
 
   if (inCode) flushCode();
   if (fenceKind) flushFence();
@@ -1025,7 +1176,13 @@ function inferTitleFromFirstBlock(parsed) {
 }
 
 function getBlockText(block) {
-  if (block.type === "list" || block.type === "steps") return (block.items || []).join("；");
+  if (block.type === "list") return (block.items || []).map((entry) => listItemText(entry)).filter(Boolean).join("；");
+  if (block.type === "table") {
+    const head = (block.headers || []).join(" | ");
+    const body = (block.rows || []).map((row) => (row || []).join(" | ")).join("；");
+    return [head, body].filter(Boolean).join("；");
+  }
+  if (block.type === "steps") return (block.items || []).join("；");
   if (block.type === "stat") {
     return (block.items || []).map((item) => `${item.value || ""}${item.label ? ` ${item.label}` : ""}`).join("；");
   }
@@ -1152,6 +1309,33 @@ function renderHeadingBlock(item, index, editable) {
   return `<h3 class="section-title level-${level}" data-type="heading" data-level="${level}" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</h3>`;
 }
 
+function renderListMarkup(nodes, ordered, { root = false, idx = "", editable = "true" } = {}) {
+  const tag = ordered ? "ol" : "ul";
+  const rootAttr = root ? ` data-type="list" ${idx}` : "";
+  const body = (nodes || []).map((node) => {
+    const nested = groupListChildren(node.children).map((group) => renderListMarkup(group.nodes, group.ordered, { editable })).join("");
+    if (nested) {
+      return `<li><span class="list-item-text" contenteditable="${editable}">${inlineMarkdown(node.text)}</span>${nested}</li>`;
+    }
+    return `<li contenteditable="${editable}">${inlineMarkdown(node.text)}</li>`;
+  }).join("");
+  return `<${tag} class="article-list" data-ordered="${ordered ? "true" : "false"}"${rootAttr}>${body}</${tag}>`;
+}
+
+function renderTableMarkup(item, idx, editable) {
+  const headers = item.headers || [];
+  const aligns = item.aligns || [];
+  const head = headers.map((cell, cellIndex) => {
+    const textAlign = aligns[cellIndex] === "center" || aligns[cellIndex] === "right" ? aligns[cellIndex] : "left";
+    return `<th contenteditable="${editable}" style="text-align:${textAlign}">${inlineMarkdown(cell)}</th>`;
+  }).join("");
+  const body = (item.rows || []).map((row) => `<tr>${(row || []).map((cell, cellIndex) => {
+    const textAlign = aligns[cellIndex] === "center" || aligns[cellIndex] === "right" ? aligns[cellIndex] : "left";
+    return `<td contenteditable="${editable}" style="text-align:${textAlign}">${inlineMarkdown(cell)}</td>`;
+  }).join("")}</tr>`).join("");
+  return `<table class="article-table" data-type="table" ${idx}><thead><tr>${head}</tr></thead>${body ? `<tbody>${body}</tbody>` : ""}</table>`;
+}
+
 function renderBody() {
   const model = getArticleModel();
   const editable = "true";
@@ -1184,9 +1368,9 @@ function renderBody() {
       return `<p class="image-note" data-type="image" ${idx} contenteditable="${editable}">[图片：${escapeHtml(item.alt || "文章配图")}]</p>`;
     }
     if (item.type === "list") {
-      const listTag = item.ordered ? "ol" : "ul";
-      return `<${listTag} class="article-list" data-type="list" data-ordered="${item.ordered ? "true" : "false"}" ${idx}>${item.items.map((entry) => `<li contenteditable="${editable}">${inlineMarkdown(entry)}</li>`).join("")}</${listTag}>`;
+      return renderListMarkup(nestListItems(item.items), Boolean(item.ordered), { root: true, idx, editable });
     }
+    if (item.type === "table") return renderTableMarkup(item, idx, editable);
     if (item.type === "code") return `<pre class="article-code" data-type="code" data-language="${escapeHtml(item.language || "code")}" ${idx}><code contenteditable="${editable}">${escapeHtml(item.text)}</code></pre>`;
     if (item.type === "paragraph") return `<p data-type="paragraph" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     return "";
@@ -1216,17 +1400,70 @@ function renderBody() {
   else articleTitle.setAttribute("aria-hidden", "true");
 }
 
+function inlineNodeToMarkdown(node) {
+  if (!node) return "";
+  if (node.nodeType === 3) return node.textContent || "";
+  if (node.nodeType !== 1) return "";
+  const tag = node.tagName;
+  if (tag === "BR") return "\n";
+  const inner = [...node.childNodes].map(inlineNodeToMarkdown).join("");
+  if (tag === "STRONG" || tag === "B") return `**${inner}**`;
+  if (tag === "EM" || tag === "I") return `*${inner}*`;
+  if (tag === "MARK") return `==${inner}==`;
+  if (tag === "DEL" || tag === "S" || node.classList?.contains("inline-strike")) return `~~${inner}~~`;
+  if (tag === "U" || node.classList?.contains("inline-underline")) return `++${inner}++`;
+  if (node.classList?.contains("inline-wavy")) return `~${inner}~`;
+  if (tag === "CODE") return `\`${inner}\``;
+  if (tag === "A") return `[${inner}](${node.getAttribute("href") || ""})`;
+  return inner;
+}
+
+function serializeListElement(el, depth = 0) {
+  const ordered = el.dataset.ordered === "true" || el.tagName === "OL";
+  const items = [...el.children].filter((node) => node.tagName === "LI");
+  return items.map((li, index) => {
+    const nested = [...li.children].filter((node) => node.tagName === "UL" || node.tagName === "OL");
+    const clone = li.cloneNode(true);
+    [...clone.children].forEach((node) => {
+      if (node.tagName === "UL" || node.tagName === "OL") node.remove();
+    });
+    const text = inlineNodeToMarkdown(clone).replace(/\u00a0/g, " ").trim();
+    const indent = "  ".repeat(depth);
+    const marker = ordered ? `${index + 1}.` : "-";
+    const lines = [`${indent}${marker} ${text}`];
+    nested.forEach((list) => {
+      const child = serializeListElement(list, depth + 1);
+      if (child) lines.push(child);
+    });
+    return lines.join("\n");
+  }).join("\n");
+}
+
+function serializeTableElement(el) {
+  const rows = [...el.querySelectorAll("tr")];
+  if (!rows.length) return "";
+  const cellsOf = (row) => [...row.children]
+    .filter((cell) => cell.tagName === "TH" || cell.tagName === "TD")
+    .map((cell) => inlineNodeToMarkdown(cell).replace(/\u00a0/g, " ").trim().replace(/\|/g, "\\|"));
+  const header = cellsOf(rows[0]);
+  if (header.length < 2) return "";
+  const separator = header.map((_, index) => {
+    const sample = rows[0].children[index];
+    const align = sample?.style?.textAlign || "";
+    if (align === "center") return ":---:";
+    if (align === "right") return "---:";
+    return "---";
+  });
+  const body = rows.slice(1).map((row) => {
+    const cells = cellsOf(row);
+    while (cells.length < header.length) cells.push("");
+    return `| ${cells.slice(0, header.length).join(" | ")} |`;
+  });
+  return [`| ${header.join(" | ")} |`, `| ${separator.join(" | ")} |`, ...body].join("\n");
+}
+
 function serializePreviewToMarkdown() {
-  const htmlToMd = (node) => {
-    const clone = node.cloneNode(true);
-    clone.querySelectorAll("strong").forEach((el) => { el.replaceWith(`**${el.textContent}**`); });
-    clone.querySelectorAll("mark").forEach((el) => { el.replaceWith(`==${el.textContent}==`); });
-    clone.querySelectorAll("a").forEach((el) => { el.replaceWith(`[${el.textContent}](${el.getAttribute("href") || ""})`); });
-    clone.querySelectorAll("code").forEach((el) => { el.replaceWith(`\`${el.textContent}\``); });
-    clone.querySelectorAll("em").forEach((el) => { el.replaceWith(`*${el.textContent}*`); });
-    clone.querySelectorAll("br").forEach((el) => { el.replaceWith("\n"); });
-    return (clone.textContent || "").replace(/\u00a0/g, " ").trim();
-  };
+  const htmlToMd = (node) => inlineNodeToMarkdown(node).replace(/\u00a0/g, " ").trim();
   const parts = [];
   [...articleBody.children].forEach((el) => {
     const type = el.dataset.type || "";
@@ -1295,9 +1532,13 @@ function serializePreviewToMarkdown() {
       return;
     }
     if (type === "list") {
-      const ordered = el.dataset.ordered === "true" || el.tagName === "OL";
-      const items = [...el.querySelectorAll("li")].map((item, index) => `${ordered ? `${index + 1}.` : "-"} ${htmlToMd(item)}`);
-      if (items.length) parts.push(items.join("\n"));
+      const markdown = serializeListElement(el);
+      if (markdown) parts.push(markdown);
+      return;
+    }
+    if (type === "table") {
+      const markdown = serializeTableElement(el);
+      if (markdown) parts.push(markdown);
       return;
     }
     if (type === "code") {
@@ -1435,8 +1676,16 @@ function structuredDocumentToMarkdown(document) {
       return;
     }
     if (type === "list" && Array.isArray(block.items)) {
-      const prefix = block.ordered ? (index) => `${index + 1}. ` : () => "- ";
-      const list = block.items.map((item, index) => `${prefix(index)}${String(item || "").trim()}`).filter(Boolean);
+      let rootIndex = 0;
+      const list = block.items.map((item) => {
+        const raw = String(item ?? "");
+        const nested = /^\s{2,}/.test(raw);
+        const body = nested ? raw.trim().replace(/^(?:[-*+]|\d+[.)])\s+/, "") : raw.trim();
+        if (!body) return "";
+        if (nested) return `  - ${body}`;
+        rootIndex += 1;
+        return `${block.ordered ? `${rootIndex}. ` : "- "}${body}`;
+      }).filter(Boolean);
       if (list.length) lines.push(list.join("\n"));
       return;
     }
@@ -1691,8 +1940,21 @@ function buildCopyHtml() {
       : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
   const linkCss = `color:${state.linkColor};${state.linkUnderline ? "text-decoration:underline;" : "text-decoration:none;"}`;
   const inlineCodeCss = `padding:0 .28em;border-radius:4px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;`;
+  const underlineCss = highlightStyle === "underline"
+    ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;text-decoration:none;border-bottom:3px solid ${highlightColor};`
+    : "text-decoration:underline;text-underline-offset:.14em;";
+  const wavyCss = `text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${state.accentColor};`;
   const copyInlineMarkdown = (value) => {
     let html = inlineMarkdown(value).replace(
+      /<span class="inline-wavy">([\s\S]*?)<\/span>/g,
+      `<span style="${wavyCss}">$1</span>`,
+    ).replace(
+      /<del class="inline-strike">([\s\S]*?)<\/del>/g,
+      `<span style="text-decoration:line-through;">$1</span>`,
+    ).replace(
+      /<u class="inline-underline">([\s\S]*?)<\/u>/g,
+      `<span style="${underlineCss}">$1</span>`,
+    ).replace(
       /<mark class="inline-highlight">([\s\S]*?)<\/mark>/g,
       `<span style="${highlightCss}">$1</span>`,
     ).replace(
@@ -1798,7 +2060,7 @@ function buildCopyHtml() {
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.pageColor};color:${mutedColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : `margin:22px 0 26px;padding:48px 12px;text-align:center;border-radius:${state.imageRadius}px;background-color:${state.accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.13em;`;
   const codeStyle = `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;text-align:left;`;
-  const listPad = `${Math.max(1, Number(state.listIndent) || 1.5)}em`;
+  const listBase = Math.max(1, Number(state.listIndent) || 1.5);
   // 精选主题复制版：自动目录（取前 3 个二级标题，纯派生）。
   const tocHeadings = model.blocks
     .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
@@ -1892,9 +2154,9 @@ function buildCopyHtml() {
       return `<p style="${textStyle}color:${mutedColor};">[图片：${escapeHtml(item.alt || "待补")}]</p>`;
     }
     if (item.type === "list") {
-      const marker = (index) => {
+      const marker = (ordered, index) => {
         const n = index + 1;
-        if (item.ordered) {
+        if (ordered) {
           if (listKind === "circle") return `<span style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background-color:${state.accentColor};color:${state.pageColor};font-size:${Math.max(11, state.fontSize - 4)}px;font-weight:800;margin-right:8px;">${n}</span>`;
           if (listKind === "ghost") return `<span style="display:inline-block;min-width:30px;color:${ghostAccent};font-size:${Math.round(state.fontSize * 1.4)}px;font-weight:${state.headingWeight};vertical-align:-2px;margin-right:6px;">${String(n).padStart(2, "0")}</span>`;
           if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">→</span>`;
@@ -1905,10 +2167,27 @@ function buildCopyHtml() {
         if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">✓</span>`;
         return `<span style="color:${state.accentColor};margin-right:6px;">•</span>`;
       };
-      const itemStyle = `margin:0 0 ${state.listItemSpacing}px;padding-left:${listPad};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:left;text-indent:0;`;
-      const itemsHtml = (item.items || []).map((entry, index) =>
-        `<p style="${itemStyle}">${marker(index)}<span>${copyInlineMarkdown(entry)}</span></p>`).join("");
+      const itemStyleFor = (depth) => {
+        const pad = depth ? (listBase + depth * 1.25).toFixed(2) : listBase;
+        return `margin:0 0 ${state.listItemSpacing}px;padding-left:${pad}em;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:left;text-indent:0;`;
+      };
+      const renderNodes = (nodes, ordered, depth) => (nodes || []).map((node, index) => {
+        const nested = groupListChildren(node.children).map((group) => renderNodes(group.nodes, group.ordered, depth + 1)).join("");
+        return `<p style="${itemStyleFor(depth)}">${marker(ordered, index)}<span>${copyInlineMarkdown(node.text)}</span></p>${nested}`;
+      }).join("");
+      const itemsHtml = renderNodes(nestListItems(item.items), Boolean(item.ordered), 0);
       return `<section style="margin:0 0 ${state.paragraphSpacing}px;text-align:left;">${itemsHtml}</section>`;
+    }
+    if (item.type === "table") {
+      const border = state.dividerColor || state.borderColor || "#dedfd8";
+      const tableStyle = `width:100%;border-collapse:collapse;margin:0 0 ${state.paragraphSpacing}px;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;`;
+      const cellBase = `border:1px solid ${border};padding:8px 10px;line-height:${state.lineHeight};font-size:${state.fontSize}px;`;
+      const headers = item.headers || [];
+      const aligns = item.aligns || [];
+      const alignOf = (index) => (aligns[index] === "center" || aligns[index] === "right" ? aligns[index] : "left");
+      const head = headers.map((cell, index) => `<th style="${cellBase}background-color:${state.cardColor};color:${titleColor};font-weight:700;text-align:${alignOf(index)};">${copyInlineMarkdown(cell)}</th>`).join("");
+      const rows = (item.rows || []).map((row) => `<tr>${(row || []).map((cell, index) => `<td style="${cellBase}background-color:${state.pageColor};color:${state.textColor};font-weight:400;text-align:${alignOf(index)};">${copyInlineMarkdown(cell)}</td>`).join("")}</tr>`).join("");
+      return `<table style="${tableStyle}"><thead><tr>${head}</tr></thead>${rows ? `<tbody>${rows}</tbody>` : ""}</table>`;
     }
     if (item.type === "code") {
       return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};text-align:left;">${formatCodeForWechat(item.text)}</p></section>`;
@@ -1940,7 +2219,12 @@ function darkCopyHint() {
 function buildCopyPlain(html) {
   const model = getArticleModel();
   const blocks = model.blocks.map((item) => {
-    if (item.type === "list") return (item.items || []).join("\n");
+    if (item.type === "list") return (item.items || []).map((entry) => `${entry && typeof entry === "object" && entry.depth ? "  " : ""}${listItemText(entry)}`).filter((line) => line.trim()).join("\n");
+    if (item.type === "table") {
+      const head = (item.headers || []).join(" | ");
+      const rows = (item.rows || []).map((row) => (row || []).join(" | "));
+      return [head, ...rows].filter(Boolean).join("\n");
+    }
     if (item.type === "steps") return [item.title, ...(item.items || [])].filter(Boolean).join("\n");
     if (item.type === "stat") return [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
     if (item.type === "divider") return "——";

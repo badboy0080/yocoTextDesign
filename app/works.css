@@ -142,8 +142,15 @@
 .work-cover .work-sheet--mono .work-sheet-header { min-height:17rem; }
 .work-cover .work-sheet--stub h4 { margin-top:1rem; }
 .work-modal { position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:rgba(17,17,17,.48); padding:clamp(.6rem,2.5vw,2rem); color:var(--yooco-color-ink); color-scheme:light; }
-.work-dialog { display:grid; grid-template-columns:minmax(0,1fr) 19rem; width:min(76rem,100%); height:100%; max-height:56rem; overflow:hidden; border-radius:12px; background:var(--yooco-color-surface); box-shadow:var(--yooco-shadow-lg); }
-.work-dialog-body { min-width:0; overflow:auto; overscroll-behavior:contain; padding:clamp(1rem,4vw,3.5rem); background:var(--yooco-color-paper); }
+.work-dialog { display:grid; grid-template-columns:minmax(0,1fr) 19rem; width:min(92rem,100%); height:100%; max-height:56rem; overflow:hidden; border-radius:12px; background:var(--yooco-color-surface); box-shadow:var(--yooco-shadow-lg); }
+.work-dialog-body { min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:clamp(.85rem,1.6vw,1.25rem); background:var(--yooco-color-paper); }
+.work-source-compare { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap:1rem; }
+.work-source-col { min-width:0; min-height:0; display:flex; flex-direction:column; gap:.55rem; }
+.work-source-label { flex:none; margin:0; font-size:.75rem; font-weight:650; letter-spacing:.14em; color:rgba(255,255,255,.62); }
+.work-source-scroll { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; display:flex; flex-direction:column; }
+.work-source-scroll .work-sheet { width:100%; max-width:none; margin:0; flex:1 0 auto; box-shadow:none; }
+.work-plain { box-sizing:border-box; flex:1 0 auto; width:100%; margin:0; padding:2.2rem 2rem 3rem; border:0; background:#fbfaf7; color:#2b2a28; white-space:pre-wrap; overflow-wrap:anywhere; font-family:"Songti SC","SimSun","Noto Serif SC",Georgia,serif; font-size:1.02rem; line-height:1.9; }
+.work-plain-empty { display:grid; place-items:center; padding:2rem; text-align:center; color:#8c8880; font-size:.95rem; line-height:1.7; white-space:normal; }
 .work-dialog-info { min-height:0; overflow:auto; display:flex; flex-direction:column; padding:1.6rem; border-left:1px solid var(--yooco-color-border); }
 .work-dialog-bar { display:flex; flex-direction:column-reverse; gap:3rem; }
 .work-dialog-bar h2 { margin:.6rem 0 0; font-family:"Songti SC","SimSun",Georgia,serif; font-size:1.65rem; line-height:1.5; }
@@ -208,7 +215,7 @@
 .works-grid .work-cover { height:24rem; }
 .work-modal :focus-visible,.works-app :focus-visible,.works-band :focus-visible { outline:2px solid var(--yooco-color-link); outline-offset:4px; }
 @media(min-width:1500px) { .works-track .work-card { width:17rem; } }
-@media(max-width:1100px) { .works-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .works-side { width:200px; padding-inline:16px; } .work-dialog { grid-template-columns:minmax(0,1fr) 16rem; } }
+@media(max-width:1100px) { .works-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .works-side { width:200px; padding-inline:16px; } .work-dialog { grid-template-columns:minmax(0,1fr) 16rem; } .work-source-compare { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1fr); } }
 @media(max-width:700px) {
   .work-beside { grid-template-columns:1fr; }
   .work-beside .work-figure img { height:12rem; }

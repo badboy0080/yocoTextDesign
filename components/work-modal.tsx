@@ -133,8 +133,25 @@ export function WorkModal({
         aria-labelledby="work-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="work-dialog-body" tabIndex={0} aria-label="精品模板预览">
-          <WorkPreview work={work} />
+        <div className="work-dialog-body">
+          <div className="work-source-compare">
+            <section className="work-source-col" aria-labelledby="work-source-label">
+              <p id="work-source-label" className="work-source-label">原文</p>
+              <div className="work-source-scroll" tabIndex={0}>
+                {work.plain?.trim() ? (
+                  <pre className="work-plain">{work.plain}</pre>
+                ) : (
+                  <p className="work-plain work-plain-empty">这套模板还没有配套原文。</p>
+                )}
+              </div>
+            </section>
+            <section className="work-source-col" aria-labelledby="work-result-label">
+              <p id="work-result-label" className="work-source-label">排版后</p>
+              <div className="work-source-scroll" tabIndex={0}>
+                <WorkPreview work={work} />
+              </div>
+            </section>
+          </div>
         </div>
         <aside className="work-dialog-info">
         <header className="work-dialog-bar">

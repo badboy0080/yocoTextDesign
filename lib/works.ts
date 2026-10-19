@@ -23,6 +23,8 @@ export type WorkPiece = {
   accentColor: string;
   sheetNo: string;
   source: string;
+  /** 排版前的纯文本。只有配了原文的模板才写，没有就留空，弹窗左栏会显示占位说明。 */
+  plain?: string;
   blocks: WorkBlock[];
   params: Record<string, string | number | boolean>;
 };
@@ -238,6 +240,22 @@ function piece(
   return { ...input, source: article(input.title, input.blocks) };
 }
 
+const quietPlain = [
+  "少说一句",
+  "",
+  "观点 · 留白 / 把判断留在空白里",
+  "",
+  "一篇评论不必把每个判断都加粗。标题放下，空一行，读者自己会停。",
+  "",
+  "只留一处强调",
+  "",
+  "标题和正文拉开",
+  "正文只用一种字重",
+  "引用单独成段",
+  "",
+  "颜色少，句子才站得住。",
+].join("\n");
+
 export const WORKS: WorkPiece[] = [
   piece({
     id: "minimal-quiet",
@@ -254,6 +272,7 @@ export const WORKS: WorkPiece[] = [
     textColor: "#2b2a28",
     accentColor: "#2b2a28",
     sheetNo: "01",
+    plain: quietPlain,
     blocks: [
       { type: "p", text: "一篇评论不必把每个判断都加粗。标题放下，空一行，读者自己会停。" },
       { type: "h2", text: "只留一处强调" },

@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+生产构建类型检查（2026-10-19，未部署）：`scripts/check-otp.ts` 不再参加 `next build` 的类型检查，和其它本地检查脚本一样。验证码怎么发、怎么验，都没改。还没合并，也没部署。
+
 卡片详情两列对比（2026-10-19，未部署）：精品模板弹窗中间改成左右两列。左栏「原文」，右栏「排版后」。最右侧信息栏没动。「少说一句」左栏是阿超给的纯文本，写在模板的 `plain` 字段。另外 9 套没有原文，左栏只显示一句占位，不编长文。窄屏两列上下叠，右侧栏宽度还在。首页标题、眼睛和卡片悬停是另一条改动，这次没动那些文件。
 
 首页标题和卡片（2026-10-19，未部署）：「值得好排版」不再把「版」的右侧裁掉。眼睛在 logo 外面大约再跟 100 像素，停两秒或离得更远仍回正。底部卡片悬停时摆正并浮起，旁边的卡片轻轻让开。手机不靠悬停，布局不动。没有合并，没有部署。
@@ -93,6 +95,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-19 生产构建不再被验证码检查脚本挡住
+
+- 想做什么：EdgeOne 的 `npm run build:edgeone` 卡在类型检查。不要改注册和发信。
+- 做成了什么：`scripts/check-otp.ts` 跟其它本地检查脚本一样，不参加 Next 的类型检查。脚本本身没改。本地开发用的 vite 配置函数补了返回类型，否则构建会停在下一个类型错误。
+- 改了哪些文件：`tsconfig.json`、`vite.config.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npm run build:edgeone` 通过，类型检查完成，页面也生成了。`npx tsx scripts/check-otp.ts` 仍通过。没有部署。
+- 待办/风险：还没合并，也没部署。这条检查脚本仍用 `npx tsx scripts/check-otp.ts` 单独跑。
+
 ### 2026-10-19 卡片详情改成原文和排版后两列
 
 - 想做什么：精品模板弹窗中间大预览改成两列，左栏原文，右栏排版后。最右侧标题、说明、色板、做同款、下载配置、关闭都不动。首页大标题不要动。
@@ -124,11 +134,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/local-accounts.ts`、`scripts/check-known-accounts.ts`、`tsconfig.json`、`README.md`、`CONTEXT.md`、`docs/adr/0001-manual-account-entitlements.md`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-known-accounts.ts` 通过。原有的账号后台和不限次数检查也通过。没有部署，也没有把明文密码写进提交或说明。
 - 待办/风险：还没部署。线上要等下次读到账号库才会把这个人写进 Blob。后台如果把这个人改低，下次读取仍会抬回保底。
-
-### 2026-10-18 账号权限后台
-
-- 想做什么：站长能在后台给已注册用户人工开等级和每天排版次数。普通用户进不去。不收款。
-- 做成了什么：`/admin` 列出邮箱、称呼、等级、每日额度、不限次数、邀请加成和创建时间，可按邮箱搜索。保存写回账号库。改等级或不限次数要再确认。审计写 Blob，写不上就打日志。登录用户按账号计每天次数，访客仍按 IP。
-- 改了哪些文件：`lib/local-accounts.ts`、`lib/admin-audit.ts`、`lib/edgeone-rate-limit.ts`、`lib/invite-store.ts`、`app/api/admin/accounts/route.ts`、`app/admin/page.tsx`、`app/admin/admin-accounts.tsx`、`app/admin/admin.css`、`components/auth-page.tsx`、`vite.config.ts`、`scripts/check-account-admin.ts`、`tsconfig.json`、`README.md`、`CONTEXT.md`、`docs/adr/0001-manual-account-entitlements.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npx tsx scripts/check-account-admin.ts` 和 `npx tsx scripts/check-unlimited-uses.ts` 通过。本地 `ADMIN_EMAILS=owner@example.com npm run dev`（5174）：未登录跳登录；普通用户页面写「进不了后台」，接口 403；站长能搜索并改每日额度。额度改成 1 后，该账号第一次剩余 1，用掉一次后剩余 0，同一 IP 的访客仍是 3。打开不限次数并确认后，配额变成不限。浏览器里登录站长，搜索、改等级后点取消、390 宽没有横向溢出，都对过。
-- 待办/风险：还没部署。线上要让名单里的人进后台，需在 EdgeOne 配 `ADMIN_EMAILS`。种子站长不配也能进。本地预览只把写进启动配置的环境变量交给页面服务，所以 `ADMIN_EMAILS` 要在 `vite.config.ts` 里转一手。同一分钟每个 IP 仍最多排版 2 次，这是原来的防刷，每日额度改不掉它。

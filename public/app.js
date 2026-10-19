@@ -761,7 +761,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   const enums = {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
     textAlign: ["left", "right", "center", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
-    highlightStyle: ["background", "marker", "underline", "bold"],
+    highlightStyle: ["background", "marker", "underline", "bold", "strikethrough", "text-underline", "wavy"],
     headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
     cardStyle: ["border", "outline", "soft", "band"],
     listStyle: ["dot", "circle", "ghost", "check"],
@@ -1933,11 +1933,18 @@ function buildCopyHtml() {
   const useRegisteredCode = !isDeepNight || state.theme === "nocturne";
   const codeBackground = useRegisteredCode ? state.codeBackground : "#202727";
   const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
+  const highlightPlain = `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;`;
   const highlightCss = highlightStyle === "underline"
-    ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;border-bottom:3px solid ${highlightColor};`
+    ? `${highlightPlain}border-bottom:3px solid ${highlightColor};`
     : highlightStyle === "bold"
       ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:800;`
-      : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
+      : highlightStyle === "strikethrough"
+        ? `${highlightPlain}text-decoration:line-through;text-decoration-color:${highlightColor};`
+        : highlightStyle === "text-underline"
+          ? `${highlightPlain}text-decoration:underline;text-underline-offset:.14em;text-decoration-color:${highlightColor};`
+          : highlightStyle === "wavy"
+            ? `${highlightPlain}text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${highlightColor};`
+            : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
   const linkCss = `color:${state.linkColor};${state.linkUnderline ? "text-decoration:underline;" : "text-decoration:none;"}`;
   const inlineCodeCss = `padding:0 .28em;border-radius:4px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;`;
   const underlineCss = highlightStyle === "underline"

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-19 生产构建不再被验证码检查脚本挡住
+
+- 想做什么：EdgeOne 的 `npm run build:edgeone` 卡在类型检查。不要改注册和发信。
+- 做成了什么：`scripts/check-otp.ts` 跟其它本地检查脚本一样，不参加 Next 的类型检查。脚本本身没改。本地开发用的 vite 配置函数补了返回类型，否则构建会停在下一个类型错误。
+- 改了哪些文件：`tsconfig.json`、`vite.config.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npm run build:edgeone` 通过，类型检查完成，页面也生成了。`npx tsx scripts/check-otp.ts` 仍通过。没有部署。
+- 待办/风险：还没合并，也没部署。这条检查脚本仍用 `npx tsx scripts/check-otp.ts` 单独跑。
+
 ### 2026-10-19 卡片详情改成原文和排版后两列
 
 - 想做什么：精品模板弹窗中间大预览改成两列，左栏原文，右栏排版后。最右侧标题、说明、色板、做同款、下载配置、关闭都不动。首页大标题不要动。

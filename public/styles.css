@@ -562,11 +562,37 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   background: var(--highlight-color, #d7fa5c);
   box-shadow: none;
 }
-.article-page[data-highlight-style="underline"] .inline-highlight {
+.article-page[data-highlight-style="underline"] .inline-highlight,
+.article-page[data-theme="nocturne"][data-highlight-style="underline"] .inline-highlight {
   padding: 0; background: transparent; border-radius: 0;
   border-bottom: 3px solid var(--highlight-color, #d7fa5c); box-shadow: none; font-weight: 700;
 }
-.article-page[data-highlight-style="bold"] .inline-highlight { padding: 0; background: transparent; font-weight: 800; }
+.article-page[data-highlight-style="bold"] .inline-highlight,
+.article-page[data-theme="nocturne"][data-highlight-style="bold"] .inline-highlight { padding: 0; background: transparent; font-weight: 800; }
+.article-page[data-highlight-style="strikethrough"] .inline-highlight,
+.article-page[data-theme="nocturne"][data-highlight-style="strikethrough"] .inline-highlight {
+  padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
+  color: var(--highlight-text-color, inherit);
+  text-decoration: line-through;
+  text-decoration-color: var(--highlight-color, #d7fa5c);
+}
+.article-page[data-highlight-style="text-underline"] .inline-highlight,
+.article-page[data-theme="nocturne"][data-highlight-style="text-underline"] .inline-highlight {
+  padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
+  color: var(--highlight-text-color, inherit);
+  text-decoration: underline;
+  text-underline-offset: .14em;
+  text-decoration-color: var(--highlight-color, #d7fa5c);
+}
+.article-page[data-highlight-style="wavy"] .inline-highlight,
+.article-page[data-theme="nocturne"][data-highlight-style="wavy"] .inline-highlight {
+  padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
+  color: var(--highlight-text-color, inherit);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: .16em;
+  text-decoration-color: var(--highlight-color, #d7fa5c);
+}
 .article-content .inline-link { color: var(--link-color, #3f6f9f); text-decoration: underline; text-underline-offset: .14em; }
 .article-content .inline-strike { text-decoration: line-through; }
 .article-content .inline-underline { text-decoration: underline; text-underline-offset: .14em; }

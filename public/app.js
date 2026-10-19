@@ -2702,7 +2702,7 @@ async function showLocalAccount() {
   inviteCopy?.addEventListener("click", async () => {
     if (!inviteCode) return;
     try {
-      await navigator.clipboard.writeText(`好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${inviteCode}`);
+      await navigator.clipboard.writeText(`好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${inviteCode}\n好友注册成功后，双方各 +5 次。`);
       if (inviteStatus) inviteStatus.textContent = "已复制。";
     } catch {
       if (inviteStatus) inviteStatus.textContent = "复制没成功，请手动选中邀请码。";

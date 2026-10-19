@@ -1,4 +1,7 @@
+import { readFileSync } from "node:fs";
+import { inviteShareText } from "../lib/invite-copy.ts";
 import { planNormalizeSpend, quotaRemaining } from "../lib/invite-quota.ts";
+import { SITE_FAQ } from "../lib/site-faq.ts";
 import { TRIAL_LIMIT } from "../lib/trial-quota.js";
 import {
   consumeInviteBonus,
@@ -6,6 +9,8 @@ import {
   inspectInviteCode,
   inviteFailureMessage,
   inviteSentence,
+  INVITE_BONUS_USES,
+  peekInviteBonus,
   readInviteInput,
   redeemInviteCode,
   resetInviteMemory,
@@ -15,8 +20,35 @@ function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
 }
 
-const expectedSentence = "你的邀请码：ABC234。一码最多用 5 次。好友注册填码，可多 5 次免费。";
-assert(inviteSentence("ABC234") === expectedSentence, "文案必须跟张默原句一致");
+const expectedSentence = "你的邀请码：ABC234。好友注册成功后，双方各 +5 次。一码最多用 5 次。";
+assert(inviteSentence("ABC234") === expectedSentence, "弹窗要写双方各加 5 次");
+const expectedShare = "好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：ABC234\n好友注册成功后，双方各 +5 次。";
+assert(inviteShareText("ABC234") === expectedShare, "复制模板要在原三行后写双方各加 5 次");
+assert(expectedShare.includes(`双方各 +${INVITE_BONUS_USES} 次`), "复制模板的加次要跟常量一致");
+const studioCopy = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
+const registerCopy = readFileSync(new URL("../components/auth-page.tsx", import.meta.url), "utf8");
+assert(studioCopy.includes("好友注册成功后，双方各 +5 次。"), "工作室复制模板也要写双方各加 5 次");
+assert(!studioCopy.includes("可多 5 次免费"), "工作室不要留只给好友加次的旧句");
+assert(registerCopy.includes("注册成功后，双方各 +5 次"), "注册页要写双方各加 5 次");
+assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
+assert(SITE_FAQ.length === 4, "常见问题正好四条");
+assert(SITE_FAQ.map((item) => item.title).join("|") === "试用次数|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题用客服定稿");
+assert(
+  SITE_FAQ[0].body === "未登录每天免费 3 次，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加次。请勿重复注册刷次。",
+  "试用次数用客服定稿",
+);
+assert(
+  SITE_FAQ[1].body === "① 查垃圾箱/广告邮件；② 确认邮箱后重发，等 1–2 分钟；③ 仍没有，把注册邮箱发给客服人工协助。（只有邮箱验证码。）",
+  "验证码说明用客服定稿",
+);
+assert(
+  SITE_FAQ[2].body === "个人信息里拿邀请码。好友注册时填码并注册成功后，邀请人与被邀请人各 +5 次。一码最多核销 5 次；同一账号只能核销一次。",
+  "邀请说明用客服定稿",
+);
+assert(
+  SITE_FAQ[3].body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",
+  "邀请码失败说明用客服定稿",
+);
 assert(readInviteInput("  ").kind === "absent", "空邀请码应当没填");
 assert(readInviteInput("abc234").kind === "code", "小写邀请码要能认");
 assert(readInviteInput("000000").kind === "invalid", "不合法的码要拒绝");
@@ -43,13 +75,18 @@ assert(inviteFailureMessage("own") === "不能使用自己的邀请码。", "自
 for (let userId = 2; userId <= 6; userId += 1) {
   const redeemed = await redeemInviteCode({ code: owner.card.code, userId });
   assert(redeemed.ok && redeemed.bonusRemaining === 5, `第 ${userId - 1} 次兑换应成功`);
+  assert(await peekInviteBonus(1) === (userId - 1) * 5, "每成功核销一次，邀请人再加 5 次");
 }
+assert(await peekInviteBonus(1) === 25, "五个人核销后，邀请人一共加 25 次");
 const sixth = await redeemInviteCode({ code: owner.card.code, userId: 7 });
 assert(!sixth.ok && sixth.reason === "exhausted", "第 6 次必须用满");
+assert(await peekInviteBonus(1) === 25, "用满之后邀请人不再加");
 assert(inviteFailureMessage("exhausted") === "这个邀请码已经用满 5 次。", "用满要说清楚");
 
 const again = await redeemInviteCode({ code: owner.card.code, userId: 2 });
 assert(!again.ok && again.reason === "already", "同一个账号不能再领一次");
+assert(await peekInviteBonus(1) === 25, "同一被邀请人再核销，邀请人不能再加");
+assert(await peekInviteBonus(2) === 5, "被邀请人仍是加过的那 5 次");
 
 const missing = await inspectInviteCode("ABCDEF");
 assert(!missing.ok && missing.reason === "invalid", "不存在的码要说不对");
@@ -58,16 +95,38 @@ const friend = await ensureInviteCode(2);
 assert(friend.ok, "被邀请的人自己也有码");
 if (!friend.ok) throw new Error("unreachable");
 const nested = await redeemInviteCode({ code: friend.card.code, userId: 8 });
-assert(nested.ok, "好友可以再邀请别人，但每张码仍然最多 5 次");
+assert(nested.ok && nested.bonusRemaining === 5, "好友可以再邀请别人，但每张码仍然最多 5 次");
+assert(await peekInviteBonus(2) === 10, "被邀请人自己再邀到人时，在原来的 5 次上再加 5 次");
+
+const other = await ensureInviteCode(9);
+assert(other.ok, "另一张码要能生成");
+if (!other.ok) throw new Error("unreachable");
+const repeatOther = await redeemInviteCode({ code: other.card.code, userId: 2 });
+assert(!repeatOther.ok && repeatOther.reason === "already", "已经领过的人不能再用另一张码");
+assert(await peekInviteBonus(2) === 10, "失败的第二次核销不能再给这个人加次");
+assert(await peekInviteBonus(9) === 0, "没核销成功时，这张码的邀请人不能加次");
 
 let left = 5;
 for (let i = 0; i < 5; i += 1) {
-  const spent = await consumeInviteBonus(2);
+  const spent = await consumeInviteBonus(8);
   assert(spent.ok && spent.spent, "加成要能一次次扣掉");
   if (spent.ok) left = spent.bonusRemaining;
 }
 assert(left === 0, "5 次加成用完就是 0");
-const extra = await consumeInviteBonus(2);
+const extra = await consumeInviteBonus(8);
 assert(extra.ok && extra.spent === false, "没有加成时不能再扣");
+
+const host = await ensureInviteCode(40);
+assert(host.ok, "另一位邀请人要能领码");
+if (!host.ok) throw new Error("unreachable");
+const firstGuest = await redeemInviteCode({ code: host.card.code, userId: 41 });
+assert(firstGuest.ok && (await peekInviteBonus(40)) === 5, "第一位好友注册成功，邀请人加 5 次");
+const spentOwner = await consumeInviteBonus(40);
+assert(spentOwner.ok && spentOwner.spent && spentOwner.bonusRemaining === 4, "邀请人用掉 1 次后剩 4");
+const secondGuest = await redeemInviteCode({ code: host.card.code, userId: 42 });
+assert(secondGuest.ok && (await peekInviteBonus(40)) === 9, "再用掉之后的新核销，是在剩下的次数上加 5，不是封回 5");
+const sameGuest = await redeemInviteCode({ code: host.card.code, userId: 41 });
+assert(!sameGuest.ok && sameGuest.reason === "already", "同一对被邀请人不能再给邀请人加一次");
+assert(await peekInviteBonus(40) === 9, "重复核销后邀请人次数不变");
 
 console.log("invite checks ok");

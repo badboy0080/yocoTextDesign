@@ -734,7 +734,7 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 }
 .ol-footer-link:hover { color: rgba(255, 255, 255, 0.72); }
 .ol-copy { font-family: var(--ol-mono); font-size: 11px; letter-spacing: 0.14em; }
-.ol-beian { margin: 12px 0 0; text-align: center; }
+.ol-beian { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 12px 0 0; text-align: center; }
 .ol-beian a {
   color: rgba(255, 255, 255, 0.38);
   font-family: var(--ol-mono);

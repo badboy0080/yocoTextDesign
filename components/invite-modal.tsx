@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { inviteShareText } from "@/lib/invite-copy";
 import "@/components/invite-modal.css";
 
 type InvitePayload = {
@@ -74,7 +75,7 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
 
   async function copyCode() {
     if (!code) return;
-    const text = `好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${code}`;
+    const text = inviteShareText(code);
     try {
       await navigator.clipboard.writeText(text);
       setStatus("已复制。");

@@ -551,7 +551,12 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   white-space: nowrap;
 }
 .ol-hero h1 .ol-hero-accent {
-  display: inline;
+  /* 中文斜体是浏览器斜过去的，右侧笔画会伸出字盒。
+     渐变用 background-clip:text 时，伸出的部分画不上，看起来像被裁掉。
+     左右留出字盒，负边距把多出来的空拉回去，标题仍居中。 */
+  display: inline-block;
+  padding: 0.04em 0.36em 0.06em 0.14em;
+  margin-inline: -0.08em -0.16em;
   font-style: italic;
   font-weight: 400;
   background: linear-gradient(100deg, #ccff00 10%, #ffffff 80%);
@@ -661,8 +666,41 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   padding: 26px 0 0;
   overflow: hidden;
 }
-.ol-home .works-fan .work-card { transition: transform 0.25s ease; }
-.ol-home .works-fan .work-cover { border-radius: 1.5rem; }
+.ol-home .works-fan .work-card {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ol-home .works-fan .work-cover {
+  border-radius: 1.5rem;
+  transition: box-shadow 0.42s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ol-home .works-fan .work-card:hover {
+    z-index: 5;
+    transform: rotate(0deg) translateY(-16px);
+  }
+  .ol-home .works-fan .work-card:hover .work-cover {
+    transform: none;
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.42);
+  }
+  .ol-home .works-fan .work-card:has(~ .work-card:hover) {
+    transform: rotate(var(--tilt, 0deg)) translateX(-14px);
+  }
+  .ol-home .works-fan .work-card:hover ~ .work-card {
+    transform: rotate(var(--tilt, 0deg)) translateX(14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ol-home .works-fan .work-card,
+  .ol-home .works-fan .work-cover,
+  .ol-home .works-fan .work-card:hover,
+  .ol-home .works-fan .work-card:has(~ .work-card:hover),
+  .ol-home .works-fan .work-card:hover ~ .work-card {
+    transition: none;
+    transform: none;
+  }
+}
 .ol-pricing { padding: 12px 48px 56px; }
 .ol-pricing-intro { text-align: center; }
 .ol-pricing-intro h2 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.06em; }

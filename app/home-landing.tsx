@@ -226,7 +226,7 @@ export function HomeLanding() {
                     bounce={26}
                     size={72}
                     restAfter={2000}
-                    near={320}
+                    near={420}
                   />
                 </span>
                 <span className="ol-hero-accent">值得好排版</span>

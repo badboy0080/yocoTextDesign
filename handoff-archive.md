@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-18 注册验证码改用腾讯云邮件推送
+
+- 想做什么：注册邮箱验证码不再走 Resend，改走腾讯云邮件推送。手机验证码先不做。不要动注册、本地账号、邀请加成和管理员后台。
+- 做成了什么：配齐密钥、发信地址和模板 ID 后，`POST /api/auth/send-code` 用 SendEmail 发模板邮件，变量名是 `code`，触发类型是验证码。地域默认香港。四项都没配时，开发环境仍回显验证码。只配一部分、或地域不对，不会回显也不会发信。`RESEND_API_KEY` 不再读取。接到 #32 之后，会员保底名单还在。
+- 改了哪些文件：`lib/tencent-ses.ts`、`lib/otp-mail.ts`、`scripts/check-otp.ts`、`vite.config.ts`、`README.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-otp.ts` 通过。脚本模拟了腾讯云接口，核对了官方签名示例，并走了发码接口：没配邮件时开发环境回显的码能通过校验；发信失败会作废这张码。没有真发信，没有部署。
+- 待办/风险：线上要在腾讯云建好发信域名、发信地址和带 `{{code}}` 的模板，再在 EdgeOne 配 `TENCENT_SECRET_ID`、`TENCENT_SECRET_KEY`、`SES_FROM_EMAIL`、`SES_TEMPLATE_ID`。`SES_REGION` 不填就是香港，必须和域名所在地域一致。模板没审核、地址没验证，注册会停在发码这一步。
+
 ### 2026-10-18 指定邮箱写入会员保底
 
 - 想做什么：把 `ycheng0208@foxmail.com` 先写进代码。没有这个账号就建一个会员，每天 30 次；已经有了就把权益补到这份保底。不要不限次数。初始密码用和注册一样的哈希，明文不进仓库。

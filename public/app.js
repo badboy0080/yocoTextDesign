@@ -1642,6 +1642,7 @@ async function normalizeWithDeepSeek() {
     } catch {
       /* analytics must never break typesetting */
     }
+    void rememberLayoutHistory(source);
   } catch (error) {
     setStatus("已套用本地排版");
     setFeedback(error instanceof Error && error.message ? error.message : NORMALIZE_ERROR_FALLBACK);
@@ -2033,6 +2034,33 @@ function exportConfig() {
   URL.revokeObjectURL(url);
 }
 
+function applyStoredParams(incoming) {
+  const allowed = Object.keys(TEMPLATE_DEFAULTS);
+  const normalized = normalizeTemplateParams(incoming);
+  const importedTheme = THEMES[normalized.theme] ? normalized.theme : "";
+  const retiredTheme = Boolean(incoming?.theme && incoming.theme !== "classic" && !THEMES[incoming.theme]);
+  if (retiredTheme) {
+    currentSkin = DEFAULT_SKIN;
+    currentMood = DEFAULT_MOOD;
+    Object.assign(state, buildSkinState(DEFAULT_SKIN));
+  } else if (importedTheme) {
+    Object.assign(state, buildThemeState(importedTheme));
+    allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
+    state.theme = importedTheme;
+  } else {
+    const importedSkin = SKINS[normalized.skin] ? normalized.skin
+      : SKINS[incoming?.skin] ? incoming.skin : "";
+    if (importedSkin) {
+      currentSkin = importedSkin;
+      currentMood = skinMood(importedSkin);
+      Object.assign(state, buildSkinState(importedSkin));
+    }
+    state.theme = "classic";
+    allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
+  }
+  return retiredTheme;
+}
+
 function importConfig(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -2040,29 +2068,7 @@ function importConfig(file) {
     try {
       const payload = JSON.parse(String(reader.result));
       const incoming = payload.template?.params || payload.params || payload;
-      const allowed = Object.keys(TEMPLATE_DEFAULTS);
-      const normalized = normalizeTemplateParams(incoming);
-      const importedTheme = THEMES[normalized.theme] ? normalized.theme : "";
-      const retiredTheme = incoming.theme && incoming.theme !== "classic" && !THEMES[incoming.theme];
-      if (retiredTheme) {
-        currentSkin = DEFAULT_SKIN;
-        currentMood = DEFAULT_MOOD;
-        Object.assign(state, buildSkinState(DEFAULT_SKIN));
-      } else if (importedTheme) {
-        Object.assign(state, buildThemeState(importedTheme));
-        allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
-        state.theme = importedTheme;
-      } else {
-        const importedSkin = SKINS[normalized.skin] ? normalized.skin
-          : SKINS[incoming.skin] ? incoming.skin : "";
-        if (importedSkin) {
-          currentSkin = importedSkin;
-          currentMood = skinMood(importedSkin);
-          Object.assign(state, buildSkinState(importedSkin));
-        }
-        state.theme = "classic";
-        allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
-      }
+      const retiredTheme = applyStoredParams(incoming);
       if (typeof payload.article?.source === "string") {
         articleSource = payload.article.source;
         articleTitleOverride = typeof payload.article.title === "string" ? payload.article.title : "";
@@ -2476,6 +2482,167 @@ renderTrialMeter();
 refreshTrialFromServer();
 showLocalAccount();
 
+function historyThemeLabel() {
+  if (isTheme() && THEMES[state.theme]) return THEMES[state.theme].label;
+  return MOODS[currentMood]?.label || "经典";
+}
+
+function formatHistoryTime(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+}
+
+function oneLineExcerpt(text) {
+  return String(text || "").replace(/\s+/g, " ").trim().slice(0, 80);
+}
+
+async function rememberLayoutHistory(originalSource) {
+  const source = (articleInput ? articleInput.value : articleSource).trim().slice(0, 40000);
+  if (!source) return;
+  try {
+    const response = await fetch("/api/history", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        source,
+        excerpt: oneLineExcerpt(originalSource),
+        theme: state.theme || "classic",
+        themeLabel: historyThemeLabel(),
+        params: { ...getTemplateParams(), mood: currentMood, skin: currentSkin },
+      }),
+    });
+    if (response.status === 401) return;
+    if (!response.ok) setFeedback("排版好了，但这条没能记进历史。");
+    else if (document.querySelector("#historyDrawer")?.hidden === false) void refreshHistoryList();
+  } catch {
+    /* 记历史失败不能打断排版 */
+  }
+}
+
+let historyUiReady = false;
+
+function setHistoryStatus(message) {
+  const status = document.querySelector("#historyStatus");
+  if (status) status.textContent = message || "";
+}
+
+function closeHistoryDrawer() {
+  const drawer = document.querySelector("#historyDrawer");
+  const opener = document.querySelector("#historyOpen");
+  if (drawer) drawer.hidden = true;
+  if (opener) opener.setAttribute("aria-expanded", "false");
+}
+
+function renderHistoryList(items) {
+  const list = document.querySelector("#historyList");
+  if (!list) return;
+  list.replaceChildren();
+  if (!items.length) {
+    const empty = document.createElement("li");
+    empty.className = "history-empty";
+    empty.textContent = "还没有排版记录。优化成功后会出现在这里。";
+    list.append(empty);
+    return;
+  }
+  items.forEach((item) => {
+    const row = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    const title = document.createElement("strong");
+    title.textContent = item.title || "未命名";
+    const meta = document.createElement("span");
+    meta.textContent = [item.themeLabel, formatHistoryTime(item.createdAt)].filter(Boolean).join(" · ");
+    const excerpt = document.createElement("p");
+    excerpt.textContent = item.excerpt || "";
+    button.append(title, meta, excerpt);
+    button.addEventListener("click", () => { void loadHistoryItem(item.id); });
+    row.append(button);
+    list.append(row);
+  });
+}
+
+async function refreshHistoryList() {
+  setHistoryStatus("正在读取…");
+  try {
+    const response = await fetch("/api/history", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      closeHistoryDrawer();
+      const opener = document.querySelector("#historyOpen");
+      if (opener) opener.hidden = true;
+      return;
+    }
+    if (!response.ok || !Array.isArray(data.items)) {
+      setHistoryStatus(data.message || "历史暂时读不出来。");
+      return;
+    }
+    setHistoryStatus("");
+    renderHistoryList(data.items);
+  } catch {
+    setHistoryStatus("历史暂时读不出来。");
+  }
+}
+
+function applyHistoryRecord(item) {
+  const retiredTheme = applyStoredParams(item.params || {});
+  articleSource = typeof item.source === "string" ? item.source : "";
+  articleTitleOverride = "";
+  blockTypeOverrides = {};
+  if (articleInput) articleInput.value = articleSource;
+  persistArticleSource();
+  styleTouched = true;
+  syncMoodUI();
+  syncControls();
+  render();
+  selectEditorView(0);
+  setStatus("已载入这条历史，可以继续改。");
+  setFeedback(retiredTheme ? "原主题已移除，已切换为经典主题。" : "");
+}
+
+async function loadHistoryItem(id) {
+  setHistoryStatus("正在打开…");
+  try {
+    const response = await fetch(`/api/history/${encodeURIComponent(id)}`, { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.item?.source) {
+      setHistoryStatus(data.message || "这条暂时打不开。");
+      return;
+    }
+    applyHistoryRecord(data.item);
+    closeHistoryDrawer();
+  } catch {
+    setHistoryStatus("这条暂时打不开。");
+  }
+}
+
+function openHistoryDrawer() {
+  const drawer = document.querySelector("#historyDrawer");
+  const opener = document.querySelector("#historyOpen");
+  if (!drawer) return;
+  drawer.hidden = false;
+  if (opener) opener.setAttribute("aria-expanded", "true");
+  void refreshHistoryList();
+}
+
+function setupHistoryUi() {
+  if (historyUiReady) return;
+  historyUiReady = true;
+  document.querySelector("#historyOpen")?.addEventListener("click", openHistoryDrawer);
+  document.querySelector("#historyClose")?.addEventListener("click", closeHistoryDrawer);
+  document.querySelector("#historyBackdrop")?.addEventListener("click", closeHistoryDrawer);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.querySelector("#historyDrawer")?.hidden === false) closeHistoryDrawer();
+  });
+}
+
 async function showLocalAccount() {
   const account = document.querySelector("#studioAccount");
   const login = document.querySelector("#studioLogin");
@@ -2570,6 +2737,9 @@ async function showLocalAccount() {
     }
     account.hidden = false;
     if (login) login.hidden = true;
+    const historyOpen = document.querySelector("#historyOpen");
+    if (historyOpen) historyOpen.hidden = false;
+    setupHistoryUi();
     const name = document.querySelector("#studioAccountName");
     if (name) {
       name.textContent = data.name || data.email;

@@ -34,6 +34,7 @@ export function AccountLayout({
         <div className="account-container account-footer-inner">
           <span>YOOCO © 2026</span>
           <span>{section} / 你的最佳排版助理</span>
+          <Link href="/faq">常见问题</Link>
           <Link href="/">返回首页 ↗</Link>
         </div>
       </footer>

@@ -2,6 +2,8 @@ import { randomInt } from "node:crypto";
 
 export const INVITE_REDEEM_LIMIT = 5;
 export const INVITE_BONUS_USES = 5;
+/** 被邀请人最多领一次，邀请人最多按核销上限再领。剩余加成不能超过这个数。 */
+export const INVITE_BONUS_CAP = INVITE_BONUS_USES * (INVITE_REDEEM_LIMIT + 1);
 const CODE_LENGTH = 6;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const STORE_NAME = "yooco-invites";
@@ -16,6 +18,8 @@ type CodeRecord = {
   code: string;
   ownerId: number;
   redeemCount: number;
+  /** 已经给邀请人发过奖励的被邀请人。同一人再核销不会再加。 */
+  redeemedUserIds: number[];
   createdAt: string;
 };
 
@@ -40,7 +44,7 @@ type InviteStore = {
 const CODE_PATTERN = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 
 export function inviteSentence(code: string): string {
-  return `你的邀请码：${code}。一码最多用 5 次。好友注册填码，可多 5 次免费。`;
+  return `你的邀请码：${code}。好友注册成功后，双方各 +${INVITE_BONUS_USES} 次。一码最多用 ${INVITE_REDEEM_LIMIT} 次。`;
 }
 
 export function inviteFailureMessage(reason: InviteFailure): string {
@@ -91,6 +95,33 @@ function clampCount(value: unknown, max: number): number {
   return Math.min(max, count);
 }
 
+function readUserIds(value: unknown, max: number): number[] {
+  if (!Array.isArray(value)) return [];
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  for (const item of value) {
+    const id = asUserId(item);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+    if (ids.length >= max) break;
+  }
+  return ids;
+}
+
+function grantInviteBonus(user: UserInvite): void {
+  user.bonusRemaining = Math.min(INVITE_BONUS_CAP, user.bonusRemaining + INVITE_BONUS_USES);
+}
+
+function userRecord(doc: InviteDoc, userId: number, code = ""): UserInvite {
+  let user = doc.users.find((item) => item.userId === userId);
+  if (!user) {
+    user = { userId, code, bonusRemaining: 0 };
+    doc.users.push(user);
+  }
+  return user;
+}
+
 function normalizeDoc(raw: unknown): InviteDoc {
   if (!raw || typeof raw !== "object") return emptyDoc();
   const source = raw as Partial<InviteDoc>;
@@ -109,6 +140,7 @@ function normalizeDoc(raw: unknown): InviteDoc {
         code: code.code,
         ownerId,
         redeemCount: clampCount((item as CodeRecord).redeemCount, INVITE_REDEEM_LIMIT),
+        redeemedUserIds: readUserIds((item as CodeRecord).redeemedUserIds, INVITE_REDEEM_LIMIT),
         createdAt,
       });
       if (codes.length >= MAX_CODES) break;
@@ -128,7 +160,7 @@ function normalizeDoc(raw: unknown): InviteDoc {
       users.push({
         userId,
         code,
-        bonusRemaining: clampCount((item as UserInvite).bonusRemaining, INVITE_BONUS_USES),
+        bonusRemaining: clampCount((item as UserInvite).bonusRemaining, INVITE_BONUS_CAP),
         ...(parsedRedeemed.kind === "code" ? { redeemedCode: parsedRedeemed.code } : {}),
       });
     }
@@ -273,7 +305,13 @@ export async function ensureInviteCode(userId: number): Promise<{ ok: true; card
       const code = user?.code && !doc.codes.some((item) => item.code === user?.code) ? user.code : newCode(doc);
       if (!code) return { ok: false as const, reason: "unavailable" as const };
       if (!doc.codes.some((item) => item.code === code)) {
-        doc.codes.push({ code, ownerId: userId, redeemCount: 0, createdAt: new Date().toISOString() });
+        doc.codes.push({
+          code,
+          ownerId: userId,
+          redeemCount: 0,
+          redeemedUserIds: [],
+          createdAt: new Date().toISOString(),
+        });
       }
       if (!user) {
         user = { userId, code, bonusRemaining: 0 };
@@ -322,14 +360,19 @@ export async function redeemInviteCode(input: {
       if (!record) return { ok: false as const, reason: "invalid" as const };
       if (record.ownerId === input.userId) return { ok: false as const, reason: "own" as const };
       let user = doc.users.find((item) => item.userId === input.userId);
-      if (user?.redeemedCode) return { ok: false as const, reason: "already" as const };
+      if (user?.redeemedCode || record.redeemedUserIds.includes(input.userId)) {
+        return { ok: false as const, reason: "already" as const };
+      }
       if (record.redeemCount >= INVITE_REDEEM_LIMIT) return { ok: false as const, reason: "exhausted" as const };
       if (!user) {
         user = { userId: input.userId, code: "", bonusRemaining: 0 };
         doc.users.push(user);
       }
-      user.bonusRemaining = Math.min(INVITE_BONUS_USES, user.bonusRemaining + INVITE_BONUS_USES);
+      grantInviteBonus(user);
       user.redeemedCode = parsed.code;
+      const owner = userRecord(doc, record.ownerId, record.code);
+      grantInviteBonus(owner);
+      record.redeemedUserIds.push(input.userId);
       record.redeemCount += 1;
       await opened.store.write(doc);
       return { ok: true as const, bonusRemaining: user.bonusRemaining };

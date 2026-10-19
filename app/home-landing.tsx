@@ -310,6 +310,7 @@ export function HomeLanding() {
           <span className="ol-copy">YOOCO © 2026</span>
         </div>
         <p className="ol-beian">
+          <Link href="/faq">常见问题</Link>
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备2026141208号</a>
           {/* 公安备案号核发后，放在这个链接旁边。 */}
         </p>

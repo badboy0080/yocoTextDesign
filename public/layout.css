@@ -131,6 +131,7 @@
   position: absolute;
   left: 0;
   top: 0;
+  transform-origin: top left;
   overflow: hidden;
   background: #f7f6f2;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);

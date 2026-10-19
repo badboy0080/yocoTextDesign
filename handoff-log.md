@@ -110,7 +110,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 想做什么：单独做「版式设计」。短文案加背景图，标出角色，套花瓣九种构图，导出图片。不要做成公众号长文，也不要用生图模型写字。
 - 做成了什么：新页面 `/layout.html`。工作台侧栏和这页顶栏可以来回走。画幅有竖版、方版、900×500。`POST /api/layout-parse` 只切原文。九种构图在 `public/layout-templates.js`。右边能调字号、行高、字距、颜色、对齐、安全边距、压暗和 1x/2x。导出 PNG 或 JPEG。没配密钥时按空行拆。没有单独计次。
 - 改了哪些文件：`public/layout.html`、`public/layout.js`、`public/layout.css`、`public/layout-templates.js`、`public/studio.html`、`public/studio-ui.css`、`lib/layout-parse.js`、`app/api/layout-parse/route.ts`、`scripts/check-layout-parse.mjs`、`README.md`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-layout-parse.mjs` 通过。页面还要在浏览器里走一遍：填示例、换构图、导出。没有部署。
+- 如何验证：`node scripts/check-layout-parse.mjs` 通过。本地 5174 浏览器走完：填示例、换居中/对角线/四角、封面画幅、安全边距、上传再去掉背景、导出 PNG。没配密钥时按空行拆，字还是原文。1440 和 390 宽没有横向溢出。工作台侧栏有「版式设计」。没有部署。
 - 待办/风险：分析还没计次。导出是画布重画，和屏幕预览的换行可能差一点点。没配密钥时看不到模型建议。
 
 ### 2026-10-19 重点样式加上删除线、下划线、波浪

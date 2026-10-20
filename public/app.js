@@ -101,6 +101,7 @@ function skinMood(skinId) {
 
 const DEFAULT_MOOD = "minimal";
 const DEFAULT_SKIN = "ink-cream";
+const CARD_STYLES = ["border", "outline", "soft", "band", "stripe", "dashed", "rail"];
 
 function buildSkinState(skinId) {
   const moodId = skinMood(skinId);
@@ -517,6 +518,19 @@ function renderInline(text, slots) {
   return out;
 }
 
+function plainCardLabel(value, fallback) {
+  const text = String(value || "")
+    .replace(/==([^=\n]+)==/g, "$1")
+    .replace(/\*\*([^*\n]+)\*\*/g, "$1")
+    .replace(/__([^_\n]+)__/g, "$1")
+    .replace(/~~([^~\n]+?)~~/g, "$1")
+    .replace(/\+\+([^+\n]+?)\+\+/g, "$1")
+    .replace(/~([^~\n]+?)~/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+  return text || fallback;
+}
+
 function inlineMarkdown(value) {
   const slots = [];
   const html = renderInline(escapeHtml(value), slots).replace(/\n/g, "<br />");
@@ -763,7 +777,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
     textAlign: ["left", "right", "center", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold", "strikethrough", "text-underline", "wavy"],
     headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
-    cardStyle: ["border", "outline", "soft", "band"],
+    cardStyle: CARD_STYLES,
     listStyle: ["dot", "circle", "ghost", "check"],
     theme: THEME_IDS,
     articleType: ARTICLE_TYPE_IDS.concat(["auto"]),
@@ -1336,6 +1350,11 @@ function renderTableMarkup(item, idx, editable) {
   return `<table class="article-table" data-type="table" ${idx}><thead><tr>${head}</tr></thead>${body ? `<tbody>${body}</tbody>` : ""}</table>`;
 }
 
+function renderEditableCard(className, type, idx, title, fallback, bodyHtml) {
+  const label = escapeHtml(plainCardLabel(title, fallback));
+  return `<aside class="${className}" data-type="${type}" ${idx}><strong class="card-title" contenteditable="true" spellcheck="false">${label}</strong><div class="card-body" contenteditable="true" spellcheck="false">${bodyHtml}</div></aside>`;
+}
+
 function renderBody() {
   const model = getArticleModel();
   const editable = "true";
@@ -1345,10 +1364,10 @@ function renderBody() {
     if (item.type === "highlight" && state.styleVariant === "deep-night") return `<p class="highlight-line" data-type="highlight" ${idx} contenteditable="${editable}"><mark>${item.text}</mark></p>`;
     if (item.type === "heading") return renderHeadingBlock(item, index, editable);
     if (item.type === "quote") {
-      if (state.showQuote) return `<aside class="quote-card" data-type="quote" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${inlineMarkdown(item.text)}</aside>`;
+      if (state.showQuote) return renderEditableCard("quote-card", "quote", idx, item.title, "引用", inlineMarkdown(item.text));
       return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<aside class="content-card" data-type="card" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${inlineMarkdown(item.text)}</aside>`;
+    if (item.type === "card") return renderEditableCard("content-card", "card", idx, item.title, "重点提示", inlineMarkdown(item.text));
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, stepIndex) =>
@@ -1488,18 +1507,19 @@ function serializePreviewToMarkdown() {
       parts.push(`${"#".repeat(level)} ${text}`);
       return;
     }
-    if (type === "quote") {
-      const title = el.querySelector("strong")?.textContent.trim() || "引用";
-      const clone = el.cloneNode(true);
-      clone.querySelector("strong")?.remove();
-      parts.push(`> **${title}**：${htmlToMd(clone)}`);
-      return;
-    }
-    if (type === "card") {
-      const title = el.querySelector("strong")?.textContent.trim() || "重点提示";
-      const clone = el.cloneNode(true);
-      clone.querySelector("strong")?.remove();
-      parts.push(`:::card ${title}\n${htmlToMd(clone)}\n:::`);
+    if (type === "quote" || type === "card") {
+      const fallback = type === "card" ? "重点提示" : "引用";
+      const titleEl = el.querySelector(":scope > .card-title") || el.querySelector(":scope > strong");
+      const title = titleEl?.textContent.trim() || fallback;
+      const bodyEl = el.querySelector(":scope > .card-body");
+      let body = "";
+      if (bodyEl) body = htmlToMd(bodyEl);
+      else {
+        const clone = el.cloneNode(true);
+        (clone.querySelector(":scope > .card-title") || clone.querySelector("strong"))?.remove();
+        body = htmlToMd(clone);
+      }
+      parts.push(type === "card" ? `:::card ${title}\n${body}\n:::` : `> **${title}**：${body}`);
       return;
     }
     if (type === "steps") {
@@ -2051,17 +2071,37 @@ function buildCopyHtml() {
       const edge = state.theme === "nocturne" ? `border:1px solid ${state.borderColor};` : "border:0;";
       return `${base}padding:${state.cardPadding}px;${edge}border-radius:${state.cardRadius}px;background-color:${bgColor};`;
     }
-    if (kind === "band") return `${base}padding:0 0 ${state.cardPadding}px;border:0;border-radius:${state.cardRadius}px;overflow:hidden;background-color:${bgColor};`;
     return `${base}padding:${state.cardPadding}px;border:0;border-left:${Math.max(3, state.cardBorderWidth + 2)}px solid ${state.accentColor};border-radius:0 ${state.cardRadius}px ${state.cardRadius}px 0;background-color:${bgColor};`;
   };
-  const cardTitleStyle = (kind, size) => {
-    if (kind === "band") return `display:block;margin:0 0 12px;padding:10px ${state.cardPadding}px;background-color:${state.accentColor};color:${state.pageColor};font-size:${size}px;letter-spacing:.1em;`;
-    return `display:block;margin:0 0 7px;color:${state.cardTitleColor};font-size:${size}px;font-weight:700;letter-spacing:.1em;`;
+  const plainTitleStyle = (size) => `padding:0;color:${state.cardTitleColor};font-size:${size}px;font-weight:700;line-height:1.55;letter-spacing:.04em;text-align:${bodyAlign};text-decoration:none;background-color:transparent;border:0;`;
+  const contentCardTitleStyle = `${plainTitleStyle(state.cardTitleSize)}display:block;`;
+  // 公众号里背景要画在整块 section 上。画在标题文字上时，换行后半句会掉出色块。
+  const copyCardBlock = (kind, bgColor, title, bodyHtml, titleSize, fallback) => {
+    const pad = state.cardPadding;
+    const radius = state.cardRadius;
+    const accent = state.accentColor;
+    const page = state.pageColor;
+    const text = state.textColor;
+    const align = bodyAlign;
+    const label = escapeHtml(plainCardLabel(title, fallback));
+    const titleCss = `${plainTitleStyle(titleSize)}margin:0;`;
+    const bodyCss = `margin:8px 0 0;padding:0;color:${text};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:${align};`;
+    const shell = `margin:18px 0 22px;text-align:${align};`;
+    if (kind === "band") {
+      return `<section style="${shell}padding:0;border:0;border-radius:${radius}px;background-color:${bgColor};"><section style="padding:12px ${pad}px;background-color:${accent};"><section style="${titleCss}color:${page};">${label}</section></section><section style="padding:14px ${pad}px ${pad}px;background-color:${bgColor};"><section style="${bodyCss}margin:0;">${bodyHtml}</section></section></section>`;
+    }
+    if (kind === "stripe") {
+      return `<section style="${shell}padding:0;border:0;border-radius:${radius}px;background-color:${bgColor};"><section style="background-color:${accent};font-size:0;line-height:0;"><span style="display:block;height:4px;line-height:4px;font-size:0;">&nbsp;</span></section><section style="padding:${pad}px;background-color:${bgColor};"><section style="${titleCss}">${label}</section><section style="${bodyCss}">${bodyHtml}</section></section></section>`;
+    }
+    if (kind === "dashed") {
+      return `<section style="${shell}padding:${pad}px;border:1px dashed ${accent};border-radius:${radius}px;background-color:transparent;"><section style="${titleCss}">${label}</section><section style="${bodyCss}">${bodyHtml}</section></section>`;
+    }
+    if (kind === "rail") {
+      return `<section style="${shell}padding:0;border:0;background-color:transparent;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background-color:${bgColor};"><tbody><tr><td width="12" valign="top" style="width:12px;padding:0;background-color:${accent};font-size:0;line-height:0;">&nbsp;</td><td valign="top" style="padding:${pad}px;background-color:${bgColor};"><section style="${titleCss}">${label}</section><section style="${bodyCss}">${bodyHtml}</section></td></tr></tbody></table></section>`;
+    }
+    const box = cardBoxStyle(kind, bgColor);
+    return `<section style="${box}"><p style="${titleCss}display:block;margin:0 0 7px;">${label}</p><p style="${bodyCss}margin:0;">${bodyHtml}</p></section>`;
   };
-  const quoteStyle = cardBoxStyle(cardKind, state.quoteColor);
-  const cardStyle = cardBoxStyle(cardKind, state.cardColor);
-  const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
-  const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
   const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;text-align:left;`;
   const imageBoxStyle = isDeepNight
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.pageColor};color:${mutedColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
@@ -2124,10 +2164,10 @@ function buildCopyHtml() {
     }
     if (item.type === "paragraph") return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
     if (item.type === "quote") {
-      if (state.showQuote) return `<section style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+      if (state.showQuote) return copyCardBlock(cardKind, state.quoteColor, item.title, copyInlineMarkdown(item.text), state.quoteTitleSize, "引用");
       return `<p style="${textStyle}font-style:italic;">${copyInlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<section style="${cardStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+    if (item.type === "card") return copyCardBlock(cardKind, state.cardColor, item.title, copyInlineMarkdown(item.text), state.cardTitleSize, "重点提示");
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
@@ -2620,6 +2660,9 @@ articleTitle.addEventListener("input", () => {
 articleBody.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
+});
+articleBody.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && event.target.closest?.(".card-title")) event.preventDefault();
 });
 const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
 let blockTypeMenu = null;

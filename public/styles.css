@@ -623,9 +623,25 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-content .article-image img { display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: var(--image-radius, 12px); }
 .article-content .article-image figcaption { margin-top: 7px; color: var(--muted-color, #8e9389); font-size: var(--caption-size, 11px); line-height: 1.6; }
 .quote-card { display: block; margin: 18px 0 22px; padding: var(--card-padding, 20px); border-left: calc(var(--card-border-width, 1px) + 2px) solid var(--accent-color, #718c25); border-radius: var(--card-radius, 12px); background: var(--quote-color, #f7f8f1); color: var(--text-color, #3f3f3f); font-size: calc(var(--font-size, 16px) - 1px); line-height: var(--line-height, 1.75); text-align: var(--text-align, left); }
-.quote-card strong { display: block; margin-bottom: 7px; color: var(--card-title-color, var(--accent-color, #718c25)); font-size: var(--quote-title-size, 11px); letter-spacing: .1em; }
 .content-card { display: block; margin: 18px 0 22px; padding: var(--card-padding, 20px); border: var(--card-border-width, 1px) solid var(--accent-color, #718c25); border-radius: var(--card-radius, 12px); background: var(--card-color, #f3f5eb); color: var(--text-color, #3f3f3f); font-size: calc(var(--font-size, 16px) - 1px); line-height: var(--line-height, 1.75); text-align: var(--text-align, left); }
-.content-card strong { display: block; margin-bottom: 7px; color: var(--card-title-color, var(--accent-color, #718c25)); font-size: var(--card-title-size, 11px); letter-spacing: .1em; }
+.card-title {
+  display: block; width: 100%; box-sizing: border-box; margin: 0 0 7px;
+  color: var(--card-title-color, var(--accent-color, #718c25)); font-weight: 700;
+  line-height: 1.55; letter-spacing: .04em; text-decoration: none; overflow-wrap: anywhere;
+  background: none; border: 0;
+}
+.content-card > .card-title { font-size: var(--card-title-size, 11px); }
+.quote-card > .card-title { font-size: var(--quote-title-size, 11px); }
+.article-page .card-title,
+.article-page .card-title * { text-decoration: none; }
+.card-title::spelling-error,
+.card-title::grammar-error { text-decoration: none; background: none; }
+.card-title .inline-highlight {
+  padding: 0; margin: 0; background: none; border: 0; border-radius: 0; box-shadow: none;
+  color: inherit; font-weight: inherit; font-size: inherit;
+}
+.card-body { display: block; min-width: 0; }
+.card-body strong { display: inline; font-size: inherit; font-weight: 700; letter-spacing: inherit; background: none; }
 .plain-quote { padding-left: 1em; border-left: 2px solid var(--accent-color, #718c25); font-style: italic; }
 .image-note { color: var(--muted-color, #8e9389) !important; font-size: calc(var(--font-size, 16px) - 1px) !important; }
 .article-divider {
@@ -871,18 +887,6 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .article-page[data-card-style="soft"] .content-card { border: 0; background: var(--card-color, #f3f5eb); }
 .article-page[data-card-style="soft"] .quote-card { border: 0; background: var(--quote-color, #f7f8f1); }
-.article-page[data-card-style="band"] .content-card,
-.article-page[data-card-style="band"] .quote-card {
-  border: 0; border-radius: var(--card-radius, 12px); overflow: hidden;
-  background: var(--card-color, #f3f5eb); padding: 0 0 var(--card-padding, 20px);
-}
-.article-page[data-card-style="band"] .quote-card { background: var(--quote-color, #f7f8f1); }
-.article-page[data-card-style="band"] .content-card strong,
-.article-page[data-card-style="band"] .quote-card strong {
-  margin: calc(var(--card-padding, 20px) * -1) calc(var(--card-padding, 20px) * -1) 12px;
-  padding: 10px var(--card-padding, 20px); background: var(--accent-color, #718c25);
-  color: var(--page-color, #fff); font-size: var(--card-title-size, 11px); letter-spacing: .1em;
-}
 
 /* ===== 造型层：列表样式 ===== */
 .article-content .article-list { list-style: none; padding-left: 0; counter-reset: listitem; }
@@ -1115,8 +1119,8 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-page[data-theme="mono"] .quote-card {
   border: 0; border-left: 3px solid var(--divider-color); border-radius: 0; background: var(--card-color);
 }
-.article-page[data-theme="mono"] .content-card strong,
-.article-page[data-theme="mono"] .quote-card strong { letter-spacing: .18em; text-transform: uppercase; }
+.article-page[data-theme="mono"] .content-card > .card-title,
+.article-page[data-theme="mono"] .quote-card > .card-title { letter-spacing: .18em; text-transform: uppercase; }
 .article-page[data-theme="mono"] .steps-block,
 .article-page[data-theme="mono"] .stat-block { border: 1px solid var(--divider-color); border-radius: 4px; background: var(--card-color); }
 .article-page[data-theme="mono"] .article-divider { opacity: .8; margin-top: 48px; margin-bottom: 40px; }
@@ -1139,7 +1143,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   border: 0; border-top: 1px solid var(--divider-color); border-bottom: 1px solid var(--divider-color);
   border-radius: 0; background: transparent; text-align: center; font-family: var(--heading-font); color: var(--title-color);
 }
-.article-page[data-theme="serene"] .quote-card strong { text-align: center; letter-spacing: .3em; font-weight: 600; }
+.article-page[data-theme="serene"] .quote-card > .card-title { text-align: center; letter-spacing: .3em; font-weight: 600; }
 .article-page[data-theme="serene"] .steps-block,
 .article-page[data-theme="serene"] .stat-block { border: 1px solid var(--divider-color); border-radius: 0; background: var(--page-color); }
 .article-page[data-theme="serene"] .article-divider { height: 1px; opacity: 1; margin-top: 56px; margin-bottom: 56px; }
@@ -1266,4 +1270,60 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .heading-atlas.atlas-vertical { column-gap: 12px; }
   .heading-atlas.atlas-ticket { padding: 14px !important; }
   .heading-atlas.atlas-index .heading-atlas-main { padding: 16px 13px 13px; }
+}
+
+/* 卡片样式放在主题盖层之后，手选造型才能盖过主题自带的卡片边框。 */
+.article-page[data-card-style="band"] .content-card,
+.article-page[data-card-style="band"] .quote-card {
+  border: 0; border-radius: var(--card-radius, 12px); overflow: hidden;
+  background: var(--card-color, #f3f5eb); padding: 0;
+}
+.article-page[data-card-style="band"] .quote-card { background: var(--quote-color, #f7f8f1); }
+.article-page[data-card-style="band"] .content-card > .card-title,
+.article-page[data-card-style="band"] .quote-card > .card-title {
+  margin: 0; padding: 12px var(--card-padding, 20px);
+  background: var(--accent-color, #718c25); color: var(--page-color, #fff);
+  letter-spacing: .02em; line-height: 1.55;
+}
+.article-page[data-card-style="band"] .card-body {
+  padding: 14px var(--card-padding, 20px) var(--card-padding, 20px);
+}
+
+.article-page[data-card-style="stripe"] .content-card,
+.article-page[data-card-style="stripe"] .quote-card {
+  border: 0; border-radius: var(--card-radius, 12px); overflow: hidden;
+  background: var(--card-color, #f3f5eb); padding: 0;
+}
+.article-page[data-card-style="stripe"] .quote-card { background: var(--quote-color, #f7f8f1); }
+.article-page[data-card-style="stripe"] .content-card::before,
+.article-page[data-card-style="stripe"] .quote-card::before {
+  content: ""; display: block; height: 4px; background: var(--accent-color, #718c25);
+}
+.article-page[data-card-style="stripe"] .card-title {
+  margin: 0; padding: 14px var(--card-padding, 20px) 0;
+}
+.article-page[data-card-style="stripe"] .card-body {
+  padding: 8px var(--card-padding, 20px) var(--card-padding, 20px);
+}
+
+.article-page[data-card-style="dashed"] .content-card,
+.article-page[data-card-style="dashed"] .quote-card {
+  border: 1.5px dashed var(--accent-color, #718c25);
+  border-radius: var(--card-radius, 12px);
+  background: transparent;
+}
+
+.article-page[data-card-style="rail"] .content-card,
+.article-page[data-card-style="rail"] .quote-card {
+  border: 0; border-left: 12px solid var(--accent-color, #718c25);
+  border-radius: 0 var(--card-radius, 12px) var(--card-radius, 12px) 0;
+  background: var(--card-color, #f3f5eb);
+}
+.article-page[data-card-style="rail"] .quote-card { background: var(--quote-color, #f7f8f1); }
+
+.article-page[data-highlight-style] .card-title,
+.article-page[data-highlight-style] .card-title *,
+.article-page[data-theme][data-highlight-style] .card-title,
+.article-page[data-theme][data-highlight-style] .card-title * {
+  text-decoration: none;
 }

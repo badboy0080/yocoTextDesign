@@ -1,15 +1,86 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { WORKS, type WorkPiece } from "@/lib/works";
 import { WorkModal, WorkPreview } from "@/components/work-modal";
 import "@/app/works.css";
 
-const TILTS = [-14, -7, 0, 7, 14];
+function FitPreview({ work }: { work: WorkPiece }) {
+  const frameRef = useRef<HTMLSpanElement>(null);
+  const sheetRef = useRef<HTMLSpanElement>(null);
+  const [scale, setScale] = useState(0);
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    const sheet = sheetRef.current;
+    if (!frame || !sheet) return;
+
+    const measure = () => {
+      const page = sheet.querySelector(".work-sheet");
+      if (!(page instanceof HTMLElement)) return;
+      const width = page.offsetWidth;
+      const height = page.offsetHeight;
+      const frameWidth = frame.clientWidth;
+      const frameHeight = frame.clientHeight;
+      if (!width || !height || !frameWidth || !frameHeight) return;
+      const next = Math.min(frameWidth / width, frameHeight / height);
+      setScale(next);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [work.id]);
+
+  return (
+    <span ref={frameRef} className="works-marquee-frame" style={{ background: work.pageColor }}>
+      <span
+        ref={sheetRef}
+        className="works-marquee-fit"
+        style={{
+          transform: `translate(-50%, -50%) scale(${scale || 0})`,
+          visibility: scale ? "visible" : "hidden",
+        }}
+      >
+        <WorkPreview work={work} />
+      </span>
+    </span>
+  );
+}
+
+function MarqueeCard({
+  work,
+  clone,
+  onOpen,
+}: {
+  work: WorkPiece;
+  clone: boolean;
+  onOpen: (work: WorkPiece, origin: HTMLButtonElement) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="works-marquee-card"
+      aria-haspopup="dialog"
+      aria-label={`${work.title}，${work.themeLabel}`}
+      aria-hidden={clone ? true : undefined}
+      tabIndex={clone ? -1 : undefined}
+      onClick={(event) => onOpen(work, event.currentTarget)}
+    >
+      <FitPreview work={work} />
+    </button>
+  );
+}
 
 export function WorksRail() {
   const [open, setOpen] = useState<WorkPiece | null>(null);
   const [origin, setOrigin] = useState<HTMLButtonElement | null>(null);
+
+  function onOpen(work: WorkPiece, button: HTMLButtonElement) {
+    setOrigin(button);
+    setOpen(work);
+  }
 
   return (
     <section className="works-band" aria-labelledby="works-heading">
@@ -18,28 +89,16 @@ export function WorksRail() {
           <h2 id="works-heading">没有创意？试试下方的版式</h2>
           <a className="works-more" href="/works">全部精品模板 ↗</a>
         </div>
-        <div className="works-fan" aria-label="版式示例">
-          {WORKS.slice(0, 5).map((work, index) => (
-            <button
-              key={work.id}
-              type="button"
-              className="work-card"
-              style={{ "--tilt": `${TILTS[index]}deg` } as CSSProperties}
-              aria-haspopup="dialog"
-              onClick={(event) => {
-                setOrigin(event.currentTarget);
-                setOpen(work);
-              }}
-            >
-              <span className="work-cover" style={{ background: work.pageColor }}>
-                <WorkPreview work={work} />
-              </span>
-              <span className="work-card-copy">
-                <strong>{work.title}</strong>
-                <em style={{ color: work.primary }}>{work.themeLabel}</em>
-              </span>
-            </button>
-          ))}
+        <div className="works-marquee">
+          <div className="works-marquee-track">
+            {[false, true].map((clone) => (
+              <div key={clone ? "clone" : "live"} className="works-marquee-group" aria-hidden={clone ? true : undefined}>
+                {WORKS.map((work) => (
+                  <MarqueeCard key={work.id} work={work} clone={clone} onOpen={onOpen} />
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       {open ? <WorkModal work={open} origin={origin} onClose={() => setOpen(null)} /> : null}

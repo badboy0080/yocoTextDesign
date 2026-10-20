@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-10-19 公众号删除线、下划线、波浪、表格和二级列表
+
+- 想做什么：手写 Markdown 要能贴进公众号。只要这五样：删除线、下划线、波浪强调、简单表格、缩进一级的子列表。不要提示块。
+- 做成了什么：预览和复制稿都会画出来。复制稿用内联样式，不靠外部样式。下划线在「底部标记」时跟现有重点下划线一样。波浪写了 `underline` 再加 `wavy`，认不出波浪时还剩一条线。表格用主题里的分隔色、卡片底和字号。子列表比上一级多缩进。`~~` 先认，避免被单个 `~` 吃掉。AI 提示里写了保留这些记号；列表项开头的两个空格不再被裁掉。
+- 改了哪些文件：`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：用工作室脚本跑了一遍样例，预览和复制稿都对上了。Chrome 打开临时页，填进同一段样例，预览里五样都在，复制稿有删除线、波浪和表格边框。没有部署，也没有真贴公众号后台。
+- 待办/风险：公众号后台可能把波浪收成普通下划线，表格边框也要实贴一次才知道。第三级列表会并进第二级。中间空一行的列表仍会拆成两段。
+
+### 2026-10-19 邀请核销改为双方各加 5 次
+
+- 想做什么：邀请码注册成功后，邀请人和被邀请人各加 5 次。不要改成排版成功才给。文案和常见问题跟这个口径对齐。
+- 做成了什么：核销成功时两边各加 `INVITE_BONUS_USES`。同一被邀请人再核销，邀请人不再加。加成上限改成 30，避免邀请人加到 5 次就被卡住。`/faq` 放客服定稿的四条。弹窗、复制文案、注册提示都写成双方各加 5 次。已合 master，未部署。
+- 改了哪些文件：`lib/invite-store.ts`、`lib/invite-copy.ts`、`lib/site-faq.ts`、`app/faq/page.tsx`、`components/invite-modal.tsx`、`components/auth-page.tsx`、`components/account-layout.tsx`、`public/app.js`、`app/home-landing.tsx`、`app/home.css`、`app/account.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts`、`scripts/check-unlimited-uses.ts`、`scripts/check-account-admin.ts` 通过。本地打开 `/faq`、`/register` 和首页页脚。没有部署。
+- 待办/风险：上线前已经核销过的次数，不会补发给邀请人。一码仍最多 5 次。部署由阿超本机 EdgeOne 做。
+
 ### 2026-10-19 登录用户的排版历史
 
 - 想做什么：登录后能看到自己做过的排版，点开可以回到工作台继续改。未登录不展示。

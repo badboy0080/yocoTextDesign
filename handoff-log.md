@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+版式设计（2026-10-20，未部署）：`/layout.html` 仍是固定画幅海报，和公众号「优化排版」分开。文案可短可长。分析一次把原文切片放进信息池；换构图只是少取或多取，默认不重新分析。十种构图，多了三分焦点。12 列网格可开关。字阶一键套用，主标题至少是辅助字的 2.5 倍。安全边距分紧、标准、宽，再小也不低于 48px。有背景图且字看不清时会压暗或改字色。导出前会提示越出安全边距，图仍会下载。没配 DeepSeek 时按空行拆，字仍是原文。没有单独计次。没有合并，没有部署。
+
 公众号行内写法（2026-10-19，未部署）：工作台手写 Markdown 多了五样。`~~删除~~` 是删除线，`++下划线++` 是下划线（重点样式选「底部标记」时，跟重点一样用色条），`~波浪~` 是波浪下划线（公众号不认波浪时仍剩普通下划线）。管道表格会变成带边框的表格。列表缩进两个空格会变成二级。复制稿只用内联样式。AI 整理时尽量别把这些记号和表格换行、列表缩进丢掉。没有新主题。重点样式下拉又加了删除线、下划线、波浪，只改 `==重点==`。`~~`、`++`、`~` 不跟这个下拉走。旧的「底部标记」还是原来的色条。
 
 邀请双方各加 5 次（2026-10-19，已合 master，未部署）：好友填对邀请码并注册成功后，被邀请人和邀请人各加 5 次。加次仍写在邀请记录里，叠在每天次数外面。同一被邀请人不能让邀请人再加一次。弹窗、复制文案和注册提示都改成双方各加 5 次。常见问题在 `/faq`，用客服定稿四条。到账仍是注册成功，不是排版成功。上线前已经核销过的，不会按旧次数补发给邀请人。
@@ -103,6 +105,22 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-20 版式设计 P0
+
+- 想做什么：把网格、字阶、安全边距、亲密性、对齐、对比和三分焦点做进海报工具。文案可短可长。分析一次进信息池，换构图按需取用。
+- 做成了什么：12 列网格可开关，构图槽位落在格子上。一键字阶，主标题至少是辅助字的 2.5 倍，正文间距默认 0，行高按 4/8px。安全边距三档，低于 48px 会抬上去，导出前检查越界。背景太花时自动压暗或改字色。信息池只分析一次。新增三分焦点。散点和四角各有一条对齐轴，标题组和说明组可以一起对齐。
+- 改了哪些文件：`public/layout.html`、`public/layout.js`、`public/layout.css`、`public/layout-templates.js`、`lib/layout-parse.js`、`scripts/check-layout-parse.mjs`、`scripts/check-layout-theory.mjs`、`README.md`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-layout-parse.mjs` 和 `node scripts/check-layout-theory.mjs` 通过。本地 5174 走完：示例、稍长示例、居中少取、九宫格多取、三分焦点、紧边距 48px、套用字阶、标题组靠右、网格开关、黑底改字色、去掉背景、导出 PNG。没配密钥时按空行拆，字还是原文。换构图没有再次请求分析。1440 宽海报没有压到右边配置。390 宽没有横向溢出。没有部署。
+- 待办/风险：分析还没计次。导出仍是画布重画，和屏幕换行可能差一点点。手动勾选上画后，再换构图会按那套构图重选。
+
+### 2026-10-19 版式设计海报页
+
+- 想做什么：单独做「版式设计」。短文案加背景图，标出角色，套花瓣九种构图，导出图片。不要做成公众号长文，也不要用生图模型写字。
+- 做成了什么：新页面 `/layout.html`。工作台侧栏和这页顶栏可以来回走。画幅有竖版、方版、900×500。`POST /api/layout-parse` 只切原文。九种构图在 `public/layout-templates.js`。右边能调字号、行高、字距、颜色、对齐、安全边距、压暗和 1x/2x。导出 PNG 或 JPEG。没配密钥时按空行拆。没有单独计次。
+- 改了哪些文件：`public/layout.html`、`public/layout.js`、`public/layout.css`、`public/layout-templates.js`、`public/studio.html`、`public/studio-ui.css`、`lib/layout-parse.js`、`app/api/layout-parse/route.ts`、`scripts/check-layout-parse.mjs`、`README.md`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-layout-parse.mjs` 通过。本地 5174 浏览器走完：填示例、换居中/对角线/四角、封面画幅、安全边距、上传再去掉背景、导出 PNG。没配密钥时按空行拆，字还是原文。1440 和 390 宽没有横向溢出。工作台侧栏有「版式设计」。没有部署。
+- 待办/风险：分析还没计次。导出是画布重画，和屏幕预览的换行可能差一点点。没配密钥时看不到模型建议。
+
 ### 2026-10-19 重点样式加上删除线、下划线、波浪
 
 - 想做什么：工作台「重点样式」里自己能选删除线、下划线、波浪，用来改 `==重点==`。不要逼着改全局样式才能写一处删除线。
@@ -126,19 +144,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/invite-store.ts`、`lib/invite-copy.ts`、`lib/site-faq.ts`、`app/faq/page.tsx`、`components/invite-modal.tsx`、`components/auth-page.tsx`、`components/account-layout.tsx`、`public/app.js`、`app/home-landing.tsx`、`app/home.css`、`app/account.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npx tsx scripts/check-invite.ts`、`scripts/check-unlimited-uses.ts`、`scripts/check-account-admin.ts` 通过。本地打开 `/faq`、`/register` 和首页页脚。没有部署。
 - 待办/风险：上线前已经核销过的次数，不会补发给邀请人。一码仍最多 5 次。部署由阿超本机 EdgeOne 做。
-
-### 2026-10-19 登录用户的排版历史
-
-- 想做什么：登录后能看到自己做过的排版，点开可以回到工作台继续改。未登录不展示。
-- 做成了什么：之前成功排版只留在这台浏览器，不进账号库。现在登录用户每次优化成功写一条到 EdgeOne Blob（本机没有 Blob 时记在这次运行的内存里）。工作台顶栏「历史」打开玻璃侧栏。列表给标题、主题、时间和一句原文。点开载入正文和样式。每人最多 30 条，正文超过 4 万字会截断。另一账号看不到。
-- 改了哪些文件：`lib/layout-history.ts`、`app/api/history/route.ts`、`app/api/history/[id]/route.ts`、`public/studio.html`、`public/app.js`、`public/studio-ui.css`、`scripts/check-layout-history.ts`、`tsconfig.json`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npx tsx scripts/check-layout-history.ts` 通过。本地 5174 用两个账号打接口：未登录 401；甲能存、能列表、能点开；乙看甲的编号是 404，自己的列表是空的。浏览器里未登录没有「历史」；登录后列表能点开并回到预览。模拟一次优化成功后，新的一条出现在列表里。没有部署。
-- 待办/风险：线上要等部署后才会进 Blob。更早的排版没有补录。正文只留优化后的那一版，原文只留一句摘要。超过 30 条或单条太长，更早的会被丢掉。
-
-### 2026-10-19 精品模板 02～05 补原文
-
-- 想做什么：首页另外 4 张精品模板弹窗左栏补上配套原文。右栏排版成品不动。06～10 先不动。
-- 做成了什么：「本期目录」「周末去哪儿」「夜间构建」「十分钟装好」各有一份 `plain`。句子和各自 blocks 一致，换行跟「少说一句」一样。没有眉标、列表符、引用竖线和 YOOCO · FIN.。
-- 改了哪些文件：`lib/works.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：对照 blocks 逐句相同。本地 5174 打开首页，点开前 5 张。左栏是终稿纯文本，没有列表符、引用竖线和 YOOCO。右栏标题和小标题仍是原来的排版，页脚仍是 YOOCO · FIN.。作品页 06～10 左栏仍是「这套模板还没有配套原文。」没有部署。
-- 待办/风险：06～10 左栏仍是「这套模板还没有配套原文。」做同款仍用原来的 markdown，不是左栏这份纯文本。

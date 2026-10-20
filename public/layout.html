@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>Yooco · 版式设计</title>
+    <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
+    <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
+    <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
+    <link rel="stylesheet" href="./studio-ui.css?v=layout-history-v1" />
+    <link rel="stylesheet" href="./layout.css?v=layout-p0-v2" />
+  </head>
+  <body>
+    <div class="studio-layout">
+      <aside class="studio-navigation" aria-label="网站导航">
+        <a class="studio-logo" href="/" aria-label="Yooco 首页"><img class="yooco-brand-bubble" src="./yooco-mark-lime.svg" alt="" width="40" height="32" /><span class="yooco-brand-word">Yooco</span></a>
+        <nav>
+          <a href="/studio.html">工作台</a>
+          <a href="/layout.html" aria-current="page">版式设计</a>
+          <a href="/works">精品模板</a>
+        </nav>
+        <div class="studio-side-foot">
+          <a class="studio-home-link" href="/">返回首页</a>
+        </div>
+      </aside>
+      <div class="studio-main">
+        <header class="topbar topbar-buttons">
+          <h1 class="studio-title">版式设计</h1>
+          <div class="topbar-actions">
+            <a class="ghost-button" href="/studio.html">返回优化排版</a>
+            <button class="copy-button" id="exportButton" type="button">导出图片</button>
+          </div>
+        </header>
+        <div class="layout-workspace">
+          <section class="layout-side" aria-label="文案和画幅">
+            <label class="layout-label" for="copyInput">文案</label>
+            <p class="layout-help">短句或稍长的一段都可以。分析只抽你写过的字，放进信息池。长文若要贴进公众号，请去<a href="/studio.html">优化排版</a>。</p>
+            <textarea id="copyInput" rows="8" maxlength="8000" placeholder="例如：&#10;少说一句&#10;&#10;把想说的话，放在画面中间。&#10;&#10;文 / Yooco"></textarea>
+            <p class="layout-note" id="lengthNote" hidden>这段稍长。会抽几句重点，不会整段铺满。</p>
+            <div class="layout-actions">
+              <button class="ai-button" id="analyzeButton" type="button">分析文案</button>
+              <button class="ghost-button" id="sampleButton" type="button">填入示例</button>
+              <button class="ghost-button" id="longSampleButton" type="button">填入稍长示例</button>
+            </div>
+            <p class="layout-status" id="layoutStatus" role="status"></p>
+            <label class="layout-label" for="bgFile">背景图</label>
+            <p class="layout-help">可不传。不传时用浅灰团块打底。</p>
+            <div class="layout-actions">
+              <label class="ghost-button file-button">上传背景图<input id="bgFile" type="file" accept="image/*" /></label>
+              <button class="ghost-button" id="clearBg" type="button" hidden>去掉背景图</button>
+            </div>
+            <p class="layout-help" id="bgName"></p>
+            <label class="layout-label">画幅</label>
+            <div class="preset-row" id="presetRow" role="radiogroup" aria-label="画幅"></div>
+          </section>
+          <section class="layout-stage-wrap" aria-label="海报预览">
+            <p class="layout-empty" id="emptyHint">贴上文案，点「分析文案」。字会出现在画布上，可以直接改。</p>
+            <div class="layout-fit" id="layoutFit">
+              <div class="poster" id="poster">
+                <div class="poster-shapes" id="posterShapes"></div>
+                <img class="poster-photo" id="posterPhoto" alt="" hidden />
+                <div class="poster-overlay" id="posterOverlay"></div>
+                <div class="poster-grid" id="posterGrid" hidden></div>
+                <div class="poster-thirds" id="posterThirds" hidden>
+                  <span class="thirds-v" style="left: 33.33%"></span>
+                  <span class="thirds-v" style="left: 66.66%"></span>
+                  <span class="thirds-h" style="top: 33.33%"></span>
+                  <span class="thirds-h" style="top: 66.66%"></span>
+                </div>
+                <div class="poster-guide" id="posterGuide"></div>
+              </div>
+            </div>
+          </section>
+          <section class="layout-config" aria-label="构图和文字参数">
+            <h2 class="layout-label">构图</h2>
+            <p class="layout-help">换一种，位置会重排，上画的句子也会变少或变多。不会重新分析。</p>
+            <div class="composition-grid" id="compositionGrid" role="listbox" aria-label="构图"></div>
+            <label class="layout-check"><input id="showGrid" type="checkbox" /> 显示 12 列网格（不进导出图）</label>
+            <h2 class="layout-label">安全边距</h2>
+            <div class="preset-row" id="marginRow" role="radiogroup" aria-label="安全边距"></div>
+            <p class="layout-help" id="safeMarginValue">标准</p>
+            <label class="layout-check"><input id="showGuide" type="checkbox" checked /> 显示安全框（不进导出图）</label>
+            <h2 class="layout-label">字阶</h2>
+            <p class="layout-help">主标题至少是辅助字的 2.5 倍。正文间距默认是 0。</p>
+            <button class="ghost-button" id="applyScale" type="button">套用字阶</button>
+            <p class="layout-note" id="scaleHint" hidden></p>
+            <h2 class="layout-label">整组对齐</h2>
+            <div class="group-align" id="groupAlign">
+              <span>标题组</span>
+              <button type="button" data-group="headline" data-align="left">左</button>
+              <button type="button" data-group="headline" data-align="center">中</button>
+              <button type="button" data-group="headline" data-align="right">右</button>
+              <span>说明组</span>
+              <button type="button" data-group="note" data-align="left">左</button>
+              <button type="button" data-group="note" data-align="center">中</button>
+              <button type="button" data-group="note" data-align="right">右</button>
+            </div>
+            <label class="layout-field" for="overlay">压暗背景 <span id="overlayValue">0%</span></label>
+            <input id="overlay" type="range" min="0" max="80" step="1" value="0" />
+            <p class="layout-help">背景太花时把这里调高，或把字色改成白色。</p>
+            <label class="layout-field" for="exportScale">导出倍率</label>
+            <div class="preset-row" id="scaleRow" role="radiogroup" aria-label="导出倍率">
+              <button type="button" data-scale="1" aria-pressed="false">1x</button>
+              <button type="button" data-scale="2" aria-pressed="true">2x</button>
+            </div>
+            <label class="layout-field" for="exportFormat">格式</label>
+            <select id="exportFormat">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+            </select>
+            <h2 class="layout-label">信息池</h2>
+            <p class="layout-help">分析一次就放在这里。勾选决定上不上画。换构图会按这套重选。</p>
+            <div id="poolList"></div>
+            <h2 class="layout-label">字号和颜色</h2>
+            <div id="roleFields"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./layout.js?v=layout-p0-v2"></script>
+  </body>
+</html>

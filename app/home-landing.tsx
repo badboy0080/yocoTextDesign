@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { HomeFaq } from "@/components/home-faq";
 import Link from "next/link";
 
 import { EyeTracker } from "@/components/eye-tracker";
@@ -194,6 +195,7 @@ export function HomeLanding() {
       <div className="ol-glow ol-glow-a" aria-hidden="true" />
       <div className="ol-glow ol-glow-b" aria-hidden="true" />
       <div className="ol-shell">
+      <div className="ol-screen">
       <header className="ol-header">
         <Link href="/" aria-label="Yooco 首页">
           <BrandLogo onDark />
@@ -316,6 +318,8 @@ export function HomeLanding() {
         </p>
       </footer>
       <p className="ol-watermark" aria-hidden="true">YOOCO</p>
+      </div>
+      <HomeFaq />
       </div>
     </div>
   );

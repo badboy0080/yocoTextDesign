@@ -757,6 +757,76 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   pointer-events: none;
   user-select: none;
 }
+.ol-faq {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+.ol-faq-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+.ol-faq-head h2 {
+  margin: 0;
+  color: #ebebeb;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.ol-faq-more {
+  color: #ccff00;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ol-faq-more:hover { color: #d6ff4d; }
+.ol-faq-list {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.ol-faq-item + .ol-faq-item { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.ol-faq-item.is-open { background: rgba(204, 255, 0, 0.06); }
+.ol-faq-item button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 0;
+  background: transparent;
+  color: #ebebeb;
+  font: 600 15px/1.45 var(--ol-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.ol-faq-item svg { flex: none; transition: transform 0.25s ease; }
+.ol-faq-item.is-open svg { transform: rotate(180deg); }
+.ol-faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s ease; }
+.ol-faq-item.is-open .ol-faq-panel { grid-template-rows: 1fr; }
+.ol-faq-panel > div { overflow: hidden; }
+.ol-faq-panel p {
+  margin: 0;
+  padding: 0 18px 16px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.ol-faq-panel strong { color: #ccff00; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) {
+  .ol-faq-panel, .ol-faq-item svg { transition: none; }
+}
 .ol-home :focus-visible { outline: 2px solid var(--ol-lime); outline-offset: 3px; }
 .sr-only {
   position: absolute;
@@ -772,23 +842,28 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
 @media (min-width: 900px) {
   .ol-pricing-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-/* 1440×900 and other wide desktops: one screen, cards peek at the bottom edge. */
+/* 1440×900 and other wide desktops: the first screen stays one viewport.
+   FAQ sits under that screen, so the page can scroll. */
 @media (min-width: 1100px) {
   body:has(.ol-home) {
     margin: 0;
-    height: 100dvh;
-    overflow: hidden;
+    min-height: 100dvh;
+    height: auto;
+    overflow: auto;
   }
   .ol-home {
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
   }
   .ol-shell {
+    height: auto;
+    margin: 12px auto 28px;
+  }
+  .ol-screen {
     display: flex;
     flex-direction: column;
     height: calc(100dvh - 24px);
-    margin: 12px auto;
   }
   .ol-header {
     flex: none;
@@ -853,7 +928,11 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
     padding-top: 12px;
   }
 }
+.ol-screen { position: relative; }
 @media (max-width: 640px) {
+  .ol-faq { width: min(720px, calc(100% - 28px)); padding-bottom: 28px; }
+  .ol-faq-item button { padding: 14px; font-size: 14px; }
+  .ol-faq-panel p { padding: 0 14px 14px; }
   .ol-shell { width: min(1600px, calc(100% - 12px)); margin-block: 8px; border-radius: 1.5rem; }
   .ol-header { padding: 14px; }
   .ol-composer-bar { align-items: stretch; }

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { inviteShareText } from "../lib/invite-copy.ts";
 import { planNormalizeSpend, quotaRemaining } from "../lib/invite-quota.ts";
-import { SITE_FAQ } from "../lib/site-faq.ts";
+import { SITE_FAQ, faqCategories } from "../lib/site-faq.ts";
 import { TRIAL_LIMIT } from "../lib/trial-quota.js";
 import {
   consumeInviteBonus,
@@ -32,6 +32,23 @@ assert(!studioCopy.includes("可多 5 次免费"), "工作室不要留只给好�
 assert(registerCopy.includes("注册成功后，双方各 +5 次"), "注册页要写双方各加 5 次");
 assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
 assert(SITE_FAQ.length === 4, "常见问题正好四条");
+assert(faqCategories().join("|") === "次数|验证码|邀请", "常见问题按次数、验证码、邀请分组");
+const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "utf8");
+const faqTabs = readFileSync(new URL("../components/faq-tabs-card.tsx", import.meta.url), "utf8");
+const faqBrief = readFileSync(new URL("../components/home-faq.tsx", import.meta.url), "utf8");
+const homeLanding = readFileSync(new URL("../app/home-landing.tsx", import.meta.url), "utf8");
+assert(faqPage.includes("FaqTabsCard"), "常见问题页用分类卡片");
+assert(faqTabs.includes("SITE_FAQ") && faqBrief.includes("SITE_FAQ"), "首页和常见问题读同一份问答");
+assert(!faqTabs.includes("未登录每天免费") && !faqBrief.includes("未登录每天免费"), "页面不要再抄一份问答正文");
+assert(homeLanding.includes("HomeFaq"), "首页底部要放简版问答");
+assert(faqBrief.includes('href="/faq"'), "首页要能去完整常见问题");
+const inviteModal = readFileSync(new URL("../components/invite-modal.tsx", import.meta.url), "utf8");
+assert(inviteModal.includes("inviteShareText"), "复制仍用原来的整段话");
+assert(inviteModal.includes("invite_share"), "打开和复制仍记 invite_share");
+assert(inviteModal.includes("双方各 +5 次"), "邀请卡写双方各加 5 次");
+const studioHtml = readFileSync(new URL("../public/studio.html", import.meta.url), "utf8");
+assert(studioHtml.includes("邀请好友，双方各 +5 次"), "工作室邀请卡写双方各加 5 次");
+assert(studioHtml.includes('id="waitlistForm"') && studioHtml.includes('id="waitlistEmail"'), "留邮箱表单还在");
 assert(SITE_FAQ.map((item) => item.title).join("|") === "试用次数|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题用客服定稿");
 assert(
   SITE_FAQ[0].body === "未登录每天免费 3 次，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加次。请勿重复注册刷次。",

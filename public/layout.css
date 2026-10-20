@@ -55,6 +55,8 @@
 .preset-row,
 .composition-grid { display: grid; gap: 8px; }
 .preset-row { grid-template-columns: 1fr; }
+#marginRow { grid-template-columns: repeat(3, 1fr); margin-bottom: 8px; }
+#marginRow button { text-align: center; }
 .composition-grid { grid-template-columns: 1fr 1fr; margin-bottom: 8px; }
 .preset-row button,
 .composition-grid button,
@@ -146,6 +148,24 @@
 .poster-photo { z-index: 1; width: 100%; height: 100%; object-fit: cover; }
 .poster-overlay { z-index: 2; pointer-events: none; }
 .poster-guide { z-index: 3; border: 1px dashed rgba(0, 0, 0, 0.28); pointer-events: none; }
+.poster-grid,
+.poster-thirds { position: absolute; z-index: 3; pointer-events: none; }
+.poster-grid {
+  background-image:
+    repeating-linear-gradient(to right, transparent, transparent calc(100% / 12 - 1px), rgba(28, 28, 28, 0.28) calc(100% / 12 - 1px), rgba(28, 28, 28, 0.28) calc(100% / 12)),
+    repeating-linear-gradient(to bottom, transparent, transparent calc(100% / 12 - 1px), rgba(28, 28, 28, 0.22) calc(100% / 12 - 1px), rgba(28, 28, 28, 0.22) calc(100% / 12));
+}
+.poster-thirds .thirds-v,
+.poster-thirds .thirds-h { position: absolute; background: rgba(204, 255, 0, 0.7); }
+.poster-thirds .thirds-v { top: 0; bottom: 0; width: 1px; }
+.poster-thirds .thirds-h { left: 0; right: 0; height: 1px; }
+.group-align { display: grid; grid-template-columns: auto repeat(3, 1fr); gap: 6px; align-items: center; margin-bottom: 8px; }
+.group-align span { color: rgba(255, 255, 255, 0.72); font-size: 12px; }
+.group-align button { min-height: 36px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; background: rgba(255, 255, 255, 0.03); color: #ebebeb; cursor: pointer; }
+.group-align button[aria-pressed="true"] { border-color: #ccff00; box-shadow: inset 3px 0 #ccff00; }
+.pool-row { display: grid; grid-template-columns: 18px 1fr; gap: 8px; margin: 8px 0; align-items: start; }
+.pool-row small { display: block; margin-bottom: 4px; color: rgba(255, 255, 255, 0.55); font-size: 11px; }
+.pool-row textarea { min-height: 52px; padding: 8px; }
 .poster-zone {
   position: absolute;
   z-index: 4;

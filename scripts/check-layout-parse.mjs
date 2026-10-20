@@ -2,7 +2,8 @@ import { findSourceSlice, normalizeLayoutResult } from "../lib/layout-parse.js";
 import {
   COMPOSITIONS,
   COMPOSITION_IDS,
-  placeZone,
+  GRID_COLUMNS,
+  GRID_ROWS,
   parseCopyLocally,
 } from "../public/layout-templates.js";
 
@@ -10,20 +11,18 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const labels = ["居中式", "对角线", "散点式", "三角", "九宫格", "包围式", "曲线式", "分割式", "四角式"];
-assert(COMPOSITIONS.length === 9, "要有九种构图");
-assert(new Set(COMPOSITION_IDS).size === 9, "构图编号不能重复");
-assert(labels.every((label) => COMPOSITIONS.some((item) => item.label === label)), "九种中文名要齐");
+const labels = ["居中式", "对角线", "散点式", "三角", "九宫格", "包围式", "曲线式", "分割式", "四角式", "三分焦点"];
+assert(COMPOSITIONS.length === 10, "要有十种构图");
+assert(new Set(COMPOSITION_IDS).size === 10, "构图编号不能重复");
+assert(labels.every((label) => COMPOSITIONS.some((item) => item.label === label)), "构图中文名要齐");
+assert(COMPOSITION_IDS.includes("thirds-focus"), "要有三分焦点");
 
 for (const item of COMPOSITIONS) {
-  for (const role of ["title", "subtitle", "body", "caption", "source"]) {
-    const zone = item.zones[role];
-    assert(zone, `${item.id} 缺 ${role}`);
-    assert(zone.w > 8 && zone.h > 4, `${item.id} ${role} 区太小`);
-    assert(zone.x >= 0 && zone.y >= 0 && zone.x + zone.w <= 100 && zone.y + zone.h <= 100, `${item.id} ${role} 超出画布`);
-    const placed = placeZone(zone, 10);
-    assert(placed.x >= 9.9 && placed.y >= 9.9, `${item.id} 安全边距没有往里收`);
-    assert(placed.x + placed.w <= 90.1 && placed.y + placed.h <= 90.1, `${item.id} 收边后仍出界`);
+  assert(item.slots.length >= 3, `${item.id} 槽位太少`);
+  for (const slot of item.slots) {
+    assert(slot.col >= 1 && slot.row >= 1, `${item.id} ${slot.id} 槽位从 1 开始`);
+    assert(slot.col + slot.colSpan - 1 <= GRID_COLUMNS, `${item.id} ${slot.id} 超出 12 列`);
+    assert(slot.row + slot.rowSpan - 1 <= GRID_ROWS, `${item.id} ${slot.id} 超出 12 行`);
   }
 }
 

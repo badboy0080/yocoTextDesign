@@ -1283,7 +1283,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .heading-atlas.atlas-index .heading-atlas-number { position: absolute; top: -10px; left: 14px; z-index: 1; padding: 0 8px; background: var(--page-color); color: var(--text-color); font: 11px/1.7 ui-monospace, monospace; letter-spacing: .06em; }
 .heading-atlas.atlas-index .heading-atlas-number::before { content: "INDEX / " counter(atlas-section, decimal-leading-zero); }
 .heading-atlas.atlas-index .heading-atlas-label { margin-top: 8px; color: var(--muted-color); }
-.heading-atlas.atlas-quote .heading-atlas-quote-mark { display: block; height: 46px; color: var(--accent-color); font: 72px/.8 Georgia, serif; }
+.heading-atlas.atlas-quote .heading-atlas-quote-mark { display: block; color: var(--accent-color); font: 72px/.8 Georgia, serif; }
 .article-page[data-heading-style="atlas-quote"] .section-title.level-2.heading-atlas.atlas-quote { display: flex; flex-direction: column; align-items: stretch; font-family: "Songti SC", "Noto Serif CJK SC", SimSun, serif; font-weight: 500; line-height: 1.5; }
 .heading-atlas.atlas-quote .heading-atlas-quote-mark { order: 0; }
 .heading-atlas.atlas-quote .heading-atlas-main { order: 1; }
@@ -1297,7 +1297,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .heading-atlas.atlas-ticket .heading-atlas-label { margin-bottom: 12px; color: var(--page-color); font-size: 10px; }
 .heading-atlas.atlas-ticket .heading-atlas-ticket-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 24px; padding-top: 9px; border-top: 1px dashed var(--page-color); color: var(--page-color); font: 10px/1.4 ui-monospace, monospace; letter-spacing: .06em; }
 .heading-atlas.atlas-marker .heading-atlas-first,.heading-atlas.atlas-marker .heading-atlas-second,.heading-atlas.atlas-weight .heading-atlas-first,.heading-atlas.atlas-weight .heading-atlas-second { display: block; }
-.heading-atlas.atlas-marker .heading-atlas-second { display: table; padding: 0 3px; background: linear-gradient(transparent 55%, var(--highlight-color) 55%); }
+.heading-atlas.atlas-marker .heading-atlas-second { display: table; padding: 0 3px; box-shadow: inset 0 -.6em 0 var(--highlight-color); }
 .heading-atlas.atlas-marker .heading-atlas-label,.heading-atlas.atlas-shadow .heading-atlas-label,.heading-atlas.atlas-weight .heading-atlas-label { margin-top: 12px; color: var(--muted-color); }
 .heading-atlas.atlas-shadow .heading-atlas-main { padding: 0 5px 5px 0; font-weight: 900; text-shadow: 2px 2px 0 var(--page-color), 4px 4px 0 color-mix(in srgb, var(--accent-color) 38%, transparent); }
 .heading-atlas.atlas-weight .heading-atlas-first { font-weight: 900; }

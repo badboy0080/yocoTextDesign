@@ -6,6 +6,9 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AccountLayout } from "@/components/account-layout";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { validEmail } from "@/lib/email-address";
+
+const CODE_LENGTH = 6;
 
 type Mode = "login" | "register";
 
@@ -27,12 +30,45 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [code, setCode] = useState("");
   const [sendingCode, setSendingCode] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLInputElement>(null);
   const inviteRef = useRef<HTMLInputElement>(null);
-  const codeReady = code.length === 6;
+  const emailChecked = useRef(false);
+  const codeReady = code.length === CODE_LENGTH;
+
+  function emailProblem(value: string) {
+    const email = value.trim();
+    if (!email) return "请先填写邮箱";
+    if (!validEmail(email)) return "请填写有效的邮箱";
+    return "";
+  }
+
+  function syncEmailError(force = false) {
+    const message = emailProblem(emailRef.current?.value || "");
+    if (!force && !emailChecked.current) return message;
+    emailChecked.current = true;
+    setEmailError(message);
+    return message;
+  }
+
+  function syncPasswordErrors(force = false) {
+    if (!isRegister) return true;
+    const password = passwordRef.current?.value || "";
+    const confirm = confirmRef.current?.value || "";
+    const passwordMessage = (password.length > 0 || force) && password.length < 8 ? "密码至少 8 位" : "";
+    const confirmMessage = (confirm.length > 0 || (force && password.length >= 8)) && password !== confirm
+      ? "两次密码不一致"
+      : "";
+    setPasswordError(passwordMessage);
+    setConfirmError(confirmMessage);
+    return !passwordMessage && !confirmMessage;
+  }
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -41,12 +77,12 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }, [cooldown]);
 
   async function sendCode() {
-    const email = emailRef.current?.value.trim() || "";
-    if (!email) {
-      setNotice("请先填写邮箱。");
+    const message = syncEmailError(true);
+    if (message) {
       emailRef.current?.focus();
       return;
     }
+    const email = emailRef.current?.value.trim() || "";
     setSendingCode(true);
     setNotice("");
     try {
@@ -74,11 +110,29 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }
 
   async function handleSubmit() {
-    for (const field of [nameRef.current, emailRef.current, passwordRef.current, confirmRef.current]) {
-      if (field && !field.reportValidity()) return;
+    const nameMessage = isRegister && !(nameRef.current?.value.trim()) ? "请填写称呼" : "";
+    const emailMessage = syncEmailError(true);
+    const passwordsOk = syncPasswordErrors(true);
+    setNameError(nameMessage);
+    if (nameMessage) {
+      nameRef.current?.focus();
+      return;
     }
-    if (isRegister && passwordRef.current?.value !== confirmRef.current?.value) {
-      setNotice("两次输入的密码不一致，请重新确认。");
+    if (emailMessage) {
+      emailRef.current?.focus();
+      return;
+    }
+    if (!isRegister) {
+      if (!(passwordRef.current?.value || "")) {
+        setPasswordError("请填写密码");
+        passwordRef.current?.focus();
+        return;
+      }
+      setPasswordError("");
+    }
+    if (!passwordsOk) {
+      if ((passwordRef.current?.value || "").length < 8) passwordRef.current?.focus();
+      else confirmRef.current?.focus();
       return;
     }
     if (isRegister && !codeReady) {
@@ -139,56 +193,93 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
             <div className="auth-form">
               {isRegister && (
-                <label className="auth-field">
+                <label className={`auth-field${nameError ? " is-invalid" : ""}`}>
                   <span>称呼 <span className="auth-field-index">01</span></span>
-                  <input ref={nameRef} type="text" placeholder="怎么称呼你" autoComplete="off" required />
+                  <input ref={nameRef} type="text" placeholder="怎么称呼你" autoComplete="off" aria-invalid={nameError ? true : undefined} onInput={() => { if (nameError) setNameError(nameRef.current?.value.trim() ? "" : "请填写称呼"); }} />
+                  {nameError && <small className="auth-field-error" role="alert">{nameError}</small>}
                 </label>
               )}
-              <label className="auth-field">
-                <span>邮箱 <span className="auth-field-index">{isRegister ? "02" : "01"}</span></span>
-                <input ref={emailRef} type="email" placeholder="name@example.com" autoComplete="off" required />
-              </label>
-              {isRegister && (
-                <div className="auth-field">
-                  <span>
-                    <span>验证码 <span className="auth-field-index">03</span></span>
+              <div className={`auth-field${emailError ? " is-invalid" : ""}`}>
+                <label htmlFor="auth-email">邮箱 <span className="auth-field-index">{isRegister ? "02" : "01"}</span></label>
+                <div className="auth-email-row">
+                  <input
+                    id="auth-email"
+                    ref={emailRef}
+                    type="email"
+                    placeholder="name@example.com"
+                    autoComplete="off"
+                    inputMode="email"
+                    aria-invalid={emailError ? true : undefined}
+                    aria-describedby={emailError ? "auth-email-error" : undefined}
+                    onInput={() => syncEmailError(false)}
+                    onBlur={() => { if (emailRef.current?.value.trim() || emailChecked.current) syncEmailError(true); }}
+                  />
+                  {isRegister && (
                     <button type="button" className="auth-code-button" onClick={sendCode} disabled={sendingCode || cooldown > 0}>
                       {sendingCode ? "正在发送…" : cooldown > 0 ? `${cooldown} 秒后重发` : "获取验证码"}
                     </button>
-                  </span>
+                  )}
+                </div>
+                {emailError && <small id="auth-email-error" className="auth-field-error" role="alert">{emailError}</small>}
+              </div>
+              {isRegister && (
+                <div className="auth-field">
+                  <span>验证码 <span className="auth-field-index">03</span></span>
                   <div className="auth-otp">
                     <InputOTP
-                      maxLength={6}
+                      maxLength={CODE_LENGTH}
                       value={code}
-                      onChange={setCode}
+                      onChange={(value) => setCode(value.replace(/\D/g, "").slice(0, CODE_LENGTH))}
                       pattern={REGEXP_ONLY_DIGITS}
                       inputMode="numeric"
                       pushPasswordManagerStrategy="none"
                       aria-label="邮箱验证码"
+                      onPaste={(event) => {
+                        const digits = (event.clipboardData?.getData("text") || "").replace(/\D/g, "").slice(0, CODE_LENGTH);
+                        if (!digits) return;
+                        event.preventDefault();
+                        setCode(digits);
+                      }}
                     >
                       <InputOTPGroup>
-                        {Array.from({ length: 6 }, (_, index) => (
+                        {Array.from({ length: CODE_LENGTH }, (_, index) => (
                           <InputOTPSlot key={index} index={index} />
                         ))}
                       </InputOTPGroup>
                     </InputOTP>
                   </div>
-                  <small className="auth-field-hint">发到上面的邮箱，5 分钟内有效</small>
+                  <small className="auth-field-hint">发到上面的邮箱，5 分钟内有效。可以整段粘贴。</small>
                 </div>
               )}
-              <label className="auth-field">
+              <label className={`auth-field${passwordError ? " is-invalid" : ""}`}>
                 <span>密码 <span className="auth-field-index">{isRegister ? "04" : "02"}</span></span>
                 <span className="auth-password-wrap">
-                  <input ref={passwordRef} type={showPassword ? "text" : "password"} placeholder={isRegister ? "至少 8 位字符" : "输入密码"} autoComplete="off" minLength={isRegister ? 8 : undefined} required />
+                  <input
+                    ref={passwordRef}
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isRegister ? "至少 8 位字符" : "输入密码"}
+                    autoComplete="off"
+                    aria-invalid={passwordError ? true : undefined}
+                    onInput={() => { if (isRegister) syncPasswordErrors(false); else if (passwordRef.current?.value) setPasswordError(""); }}
+                  />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "隐藏密码" : "显示密码"} aria-pressed={showPassword}>
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </span>
+                {passwordError && <small className="auth-field-error" role="alert">{passwordError}</small>}
               </label>
               {isRegister && (
-                <label className="auth-field">
+                <label className={`auth-field${confirmError ? " is-invalid" : ""}`}>
                   <span>确认密码 <span className="auth-field-index">05</span></span>
-                  <input ref={confirmRef} type="password" placeholder="再次输入密码" autoComplete="off" minLength={8} required />
+                  <input
+                    ref={confirmRef}
+                    type="password"
+                    placeholder="再次输入密码"
+                    autoComplete="off"
+                    aria-invalid={confirmError ? true : undefined}
+                    onInput={() => syncPasswordErrors(false)}
+                  />
+                  {confirmError && <small className="auth-field-error" role="alert">{confirmError}</small>}
                 </label>
               )}
               {isRegister && (

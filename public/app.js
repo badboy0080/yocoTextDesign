@@ -135,6 +135,7 @@ const copyFeedback = document.querySelector("#copyFeedback");
 const themeGrid = document.querySelector("#themeGrid");
 const articleInput = document.querySelector("#articleInput");
 const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
+const optimizeHint = document.querySelector("#optimizeHint");
 const articleStatus = document.querySelector("#articleStatus");
 const trialMeter = document.querySelector("#trialMeter");
 const trialBanner = document.querySelector("#trialBanner");
@@ -174,6 +175,13 @@ function setFeedback(message) {
   copyFeedback.textContent = message || "";
   if (message) copyFeedback.title = message;
   else copyFeedback.removeAttribute("title");
+}
+
+function showOptimizeHint(message) {
+  if (!optimizeHint) return;
+  const text = String(message || "").trim();
+  optimizeHint.textContent = text;
+  optimizeHint.hidden = !text;
 }
 
 function beijingDateKey(now = Date.now()) {
@@ -348,38 +356,32 @@ function initParameterAccordion() {
   if (!stylePane) return;
   const groups = Array.from(stylePane.querySelectorAll("[data-accordion]"));
   groups.forEach((group) => {
-    const body = group.querySelector(".group-body");
+    const body = group.querySelector(":scope > .group-body");
     if (body && !body.querySelector(":scope > .group-body-inner")) {
       const inner = document.createElement("div");
       inner.className = "group-body-inner";
       while (body.firstChild) inner.appendChild(body.firstChild);
       body.appendChild(inner);
     }
-    const toggle = group.querySelector(".group-toggle");
-    if (!toggle) return;
+    const toggle = group.querySelector(":scope > .group-toggle");
+    if (!toggle || toggle.dataset.bound === "1") return;
+    toggle.dataset.bound = "1";
     toggle.addEventListener("click", () => {
       const willOpen = !group.classList.contains("is-open");
-      groups.forEach((other) => {
+      const solo = !group.classList.contains("more-settings") && Boolean(group.closest(".more-settings"));
+      const peers = solo
+        ? Array.from(group.parentElement.querySelectorAll(":scope > [data-accordion]"))
+        : [group];
+      peers.forEach((other) => {
         const open = other === group && willOpen;
         other.classList.toggle("is-open", open);
-        const btn = other.querySelector(".group-toggle");
+        const btn = other.querySelector(":scope > .group-toggle");
         if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
       });
     });
   });
 }
 initParameterAccordion();
-
-const sampleContent = [
-  { type: "lead", text: "下午四点，雨停了。路边的树还在滴水，我从家里出发，沿着熟悉的街走向河边。" },
-  { type: "highlight", text: "雨后的空气，带着一点青草味。" },
-  { type: "heading", text: "先走过老街" },
-  { type: "paragraph", text: "转角的面包店刚把招牌灯点亮，玻璃上蒙着一层薄雾。平时赶路很少注意到的细节，在放慢脚步后一个个出现。" },
-  { type: "quote", title: "片刻", text: "城市没有变安静，只是我终于有时间听见它。" },
-  { type: "divider" },
-  { type: "heading", text: "回来的路" },
-  { type: "paragraph", text: "天色暗下来时，河面映着两岸的灯。我没有拍几张照片，只记住了风吹过水面的声音。散步没有目的地，走完以后却像把一天重新整理了一遍。" },
-];
 
 function applySkin(skinId, { fromUser = true } = {}) {
   if (!SKINS[skinId]) return;
@@ -425,15 +427,62 @@ function syncMoodUI() {
   });
 }
 
+function themePalette(kind, id) {
+  const source = kind === "mood" ? (SKINS[MOODS[id]?.skins?.[0]] || {}) : (THEMES[id]?.params || {});
+  return {
+    page: source.pageColor || "#ffffff",
+    title: source.titleColor || source.textColor || "#20231f",
+    text: source.textColor || "#3f3f3f",
+    accent: source.accentColor || (kind === "theme" ? THEMES[id]?.primary : "") || "#ccff00",
+  };
+}
+
+function themePreviewExcerpt() {
+  const source = (articleInput ? articleInput.value : articleSource).trim();
+  const fallback = { title: "标题", lines: ["正文会按这个主题排开。", ""] };
+  if (!source) return fallback;
+  try {
+    const model = parseArticle(source);
+    const bits = [];
+    const push = (value) => {
+      const text = String(value || "").replace(/\s+/g, " ").trim();
+      if (text) bits.push(text);
+    };
+    push(articleTitleOverride || model.title);
+    (model.blocks || []).forEach((block) => {
+      if (bits.length >= 3) return;
+      push(block.text || block.title || (Array.isArray(block.items) ? listItemText(block.items[0]) : ""));
+    });
+    const title = (bits[0] || fallback.title).slice(0, 16);
+    const lines = bits.slice(1, 3).map((line) => line.slice(0, 28));
+    while (lines.length < 2) lines.push("");
+    return { title, lines };
+  } catch {
+    return fallback;
+  }
+}
+
+function refreshThemePreviews() {
+  if (!themeGrid) return;
+  const excerpt = themePreviewExcerpt();
+  themeGrid.querySelectorAll(".theme-mini-title").forEach((node) => { node.textContent = excerpt.title; });
+  themeGrid.querySelectorAll(".theme-mini").forEach((card) => {
+    const lines = card.querySelectorAll(".theme-mini-line");
+    lines.forEach((node, index) => { node.textContent = excerpt.lines[index] || ""; });
+  });
+}
+
+function themeCardMarkup(kind, id, label, hint, palette) {
+  const attr = kind === "mood" ? `data-mood="${id}"` : `data-theme="${id}"`;
+  return `<button type="button" class="theme-chip" ${attr} style="--theme-primary:${palette.accent}" title="${escapeHtml(hint)}"><span class="theme-chip-name"><i class="theme-swatch" style="background:${palette.accent}"></i><b>${escapeHtml(label)}</b></span><span class="theme-mini" aria-hidden="true"><span class="theme-mini-page" style="background:${palette.page};color:${palette.text}"><strong class="theme-mini-title" style="color:${palette.title}"></strong><span class="theme-mini-line"></span><span class="theme-mini-line"></span></span></span></button>`;
+}
+
 function renderMoodUI() {
   if (!themeGrid) return;
-  const moodButtons = Object.entries(MOODS).map(([id, mood]) => {
-    const primary = SKINS[mood.skins[0]]?.accentColor || "#71717a";
-    return `<button type="button" class="theme-chip" data-mood="${id}" style="--theme-primary:${primary}" title="${mood.hint}"><b>${mood.label}</b></button>`;
-  }).join("");
+  const moodButtons = Object.entries(MOODS).map(([id, mood]) => themeCardMarkup("mood", id, mood.label, mood.hint, themePalette("mood", id))).join("");
   const themeButtons = THEME_ORDER.map((id) => {
     const theme = THEMES[id];
-    return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
+    return themeCardMarkup("theme", id, theme.label, theme.fit, themePalette("theme", id));
   }).join("");
   themeGrid.innerHTML = moodButtons + themeButtons;
   themeGrid.querySelectorAll("[data-mood]").forEach((button) => {
@@ -442,6 +491,7 @@ function renderMoodUI() {
   themeGrid.querySelectorAll("[data-theme]").forEach((button) => {
     button.addEventListener("click", () => applyTheme(button.dataset.theme));
   });
+  refreshThemePreviews();
   syncMoodUI();
 }
 
@@ -1222,11 +1272,7 @@ function renderStructureEditor() {
 
 function getArticleModel() {
   if (!articleSource.trim()) {
-    return {
-      title: "雨停以后，去散步",
-      blocks: applyStructureOverrides({ blocks: sampleContent }).blocks,
-      isSample: true,
-    };
+    return { title: "", blocks: [], isSample: true };
   }
   const parsed = applyStructureOverrides(parseArticle(articleSource));
   const inferred = articleTitleOverride.trim()
@@ -1336,8 +1382,27 @@ function renderTableMarkup(item, idx, editable) {
   return `<table class="article-table" data-type="table" ${idx}><thead><tr>${head}</tr></thead>${body ? `<tbody>${body}</tbody>` : ""}</table>`;
 }
 
+function syncPreviewEmpty(isEmpty) {
+  previewStage?.classList.toggle("is-source-empty", isEmpty);
+  const empty = document.querySelector("#previewEmpty");
+  if (empty) empty.hidden = !isEmpty;
+}
+
 function renderBody() {
   const model = getArticleModel();
+  if (model.isSample) {
+    if (articleBody) articleBody.innerHTML = "";
+    if (articleTitle) {
+      articleTitle.textContent = "";
+      articleTitle.hidden = true;
+      articleTitle.contentEditable = "false";
+      articleTitle.setAttribute("aria-hidden", "true");
+    }
+    syncPreviewEmpty(true);
+    refreshThemePreviews();
+    return;
+  }
+  syncPreviewEmpty(false);
   const editable = "true";
   let parts = model.blocks.map((item, index) => {
     const idx = blockIndexAttr(item, index);
@@ -1392,6 +1457,7 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
+  refreshThemePreviews();
   const titleText = String(model.title || "").trim();
   articleTitle.textContent = titleText;
   articleTitle.hidden = !titleText;
@@ -1829,9 +1895,10 @@ async function applyAiNormalization(data, assignment, source) {
 async function normalizeWithDeepSeek() {
   const source = (articleInput ? articleInput.value : articleSource).trim();
   if (!source) {
-    setFeedback("请先添加文章内容");
+    showOptimizeHint("请先添加文章内容");
     return;
   }
+  showOptimizeHint("");
   if (remainingTrialCount() <= 0) {
     showUpgradePrompt(UPGRADE_PROMPT);
     return;
@@ -2275,6 +2342,10 @@ function copyHtmlWithExecCommand(html, plain) {
 }
 
 async function copyRichText() {
+  if (!articleSource.trim()) {
+    setFeedback("还没有可复制的排版");
+    return;
+  }
   flushPendingPreviewEdits();
   updateCompliancePanel();
   const report = getComplianceReport();
@@ -2409,10 +2480,11 @@ function applyArticleSource(showStatus = true) {
   if (articleSource) {
     const model = parseArticle(articleSource);
     setStatus(`已更新 ${model.blocks.length} 个内容块`);
+    showOptimizeHint("");
   } else {
-    setStatus("当前为示例文章");
+    setStatus("");
   }
-  if (showStatus) setFeedback(articleSource ? "预览已更新" : "已恢复示例");
+  if (showStatus) setFeedback(articleSource ? "预览已更新" : "");
   render();
 }
 
@@ -2423,8 +2495,8 @@ function clearArticleSource() {
   blockTypeOverrides = {};
   lastAiResult = null;
   persistArticleSource();
-  setStatus("当前为示例文章");
-  setFeedback("已恢复示例");
+  setStatus("");
+  setFeedback("");
   render();
 }
 

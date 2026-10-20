@@ -427,62 +427,15 @@ function syncMoodUI() {
   });
 }
 
-function themePalette(kind, id) {
-  const source = kind === "mood" ? (SKINS[MOODS[id]?.skins?.[0]] || {}) : (THEMES[id]?.params || {});
-  return {
-    page: source.pageColor || "#ffffff",
-    title: source.titleColor || source.textColor || "#20231f",
-    text: source.textColor || "#3f3f3f",
-    accent: source.accentColor || (kind === "theme" ? THEMES[id]?.primary : "") || "#ccff00",
-  };
-}
-
-function themePreviewExcerpt() {
-  const source = (articleInput ? articleInput.value : articleSource).trim();
-  const fallback = { title: "标题", lines: ["正文会按这个主题排开。", ""] };
-  if (!source) return fallback;
-  try {
-    const model = parseArticle(source);
-    const bits = [];
-    const push = (value) => {
-      const text = String(value || "").replace(/\s+/g, " ").trim();
-      if (text) bits.push(text);
-    };
-    push(articleTitleOverride || model.title);
-    (model.blocks || []).forEach((block) => {
-      if (bits.length >= 3) return;
-      push(block.text || block.title || (Array.isArray(block.items) ? listItemText(block.items[0]) : ""));
-    });
-    const title = (bits[0] || fallback.title).slice(0, 16);
-    const lines = bits.slice(1, 3).map((line) => line.slice(0, 28));
-    while (lines.length < 2) lines.push("");
-    return { title, lines };
-  } catch {
-    return fallback;
-  }
-}
-
-function refreshThemePreviews() {
-  if (!themeGrid) return;
-  const excerpt = themePreviewExcerpt();
-  themeGrid.querySelectorAll(".theme-mini-title").forEach((node) => { node.textContent = excerpt.title; });
-  themeGrid.querySelectorAll(".theme-mini").forEach((card) => {
-    const lines = card.querySelectorAll(".theme-mini-line");
-    lines.forEach((node, index) => { node.textContent = excerpt.lines[index] || ""; });
-  });
-}
-
-function themeCardMarkup(kind, id, label, hint, palette) {
-  const attr = kind === "mood" ? `data-mood="${id}"` : `data-theme="${id}"`;
-  return `<button type="button" class="theme-chip" ${attr} style="--theme-primary:${palette.accent}" title="${escapeHtml(hint)}"><span class="theme-chip-name"><i class="theme-swatch" style="background:${palette.accent}"></i><b>${escapeHtml(label)}</b></span><span class="theme-mini" aria-hidden="true"><span class="theme-mini-page" style="background:${palette.page};color:${palette.text}"><strong class="theme-mini-title" style="color:${palette.title}"></strong><span class="theme-mini-line"></span><span class="theme-mini-line"></span></span></span></button>`;
-}
-
 function renderMoodUI() {
   if (!themeGrid) return;
-  const moodButtons = Object.entries(MOODS).map(([id, mood]) => themeCardMarkup("mood", id, mood.label, mood.hint, themePalette("mood", id))).join("");
+  const moodButtons = Object.entries(MOODS).map(([id, mood]) => {
+    const primary = SKINS[mood.skins[0]]?.accentColor || "#71717a";
+    return `<button type="button" class="theme-chip" data-mood="${id}" style="--theme-primary:${primary}" title="${mood.hint}"><b>${mood.label}</b></button>`;
+  }).join("");
   const themeButtons = THEME_ORDER.map((id) => {
     const theme = THEMES[id];
-    return themeCardMarkup("theme", id, theme.label, theme.fit, themePalette("theme", id));
+    return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
   }).join("");
   themeGrid.innerHTML = moodButtons + themeButtons;
   themeGrid.querySelectorAll("[data-mood]").forEach((button) => {
@@ -491,7 +444,6 @@ function renderMoodUI() {
   themeGrid.querySelectorAll("[data-theme]").forEach((button) => {
     button.addEventListener("click", () => applyTheme(button.dataset.theme));
   });
-  refreshThemePreviews();
   syncMoodUI();
 }
 
@@ -1399,7 +1351,6 @@ function renderBody() {
       articleTitle.setAttribute("aria-hidden", "true");
     }
     syncPreviewEmpty(true);
-    refreshThemePreviews();
     return;
   }
   syncPreviewEmpty(false);
@@ -1457,7 +1408,6 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
-  refreshThemePreviews();
   const titleText = String(model.title || "").trim();
   articleTitle.textContent = titleText;
   articleTitle.hidden = !titleText;

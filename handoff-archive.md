@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-19 邀请核销改为双方各加 5 次
+
+- 想做什么：邀请码注册成功后，邀请人和被邀请人各加 5 次。不要改成排版成功才给。文案和常见问题跟这个口径对齐。
+- 做成了什么：核销成功时两边各加 `INVITE_BONUS_USES`。同一被邀请人再核销，邀请人不再加。加成上限改成 30，避免邀请人加到 5 次就被卡住。`/faq` 放客服定稿的四条。弹窗、复制文案、注册提示都写成双方各加 5 次。已合 master，未部署。
+- 改了哪些文件：`lib/invite-store.ts`、`lib/invite-copy.ts`、`lib/site-faq.ts`、`app/faq/page.tsx`、`components/invite-modal.tsx`、`components/auth-page.tsx`、`components/account-layout.tsx`、`public/app.js`、`app/home-landing.tsx`、`app/home.css`、`app/account.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts`、`scripts/check-unlimited-uses.ts`、`scripts/check-account-admin.ts` 通过。本地打开 `/faq`、`/register` 和首页页脚。没有部署。
+- 待办/风险：上线前已经核销过的次数，不会补发给邀请人。一码仍最多 5 次。部署由阿超本机 EdgeOne 做。
+
 ### 2026-10-19 登录用户的排版历史
 
 - 想做什么：登录后能看到自己做过的排版，点开可以回到工作台继续改。未登录不展示。

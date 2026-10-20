@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=waitlist-pill-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=invite-waitlist-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=studio-glass-invite-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -80,10 +80,19 @@
             <p id="sourceHelp">支持纯文字和 Markdown，修改后会同步更新排版。</p>
             <textarea id="articleInput" rows="16" spellcheck="false" aria-describedby="sourceHelp" placeholder="在这里粘贴或编辑文章…"></textarea>
           </div>
-          <div class="preview-stage" id="previewStage" role="tabpanel" aria-labelledby="resultViewTab">
+          <div class="preview-stage is-source-empty" id="previewStage" role="tabpanel" aria-labelledby="resultViewTab">
+            <div class="preview-empty" id="previewEmpty">
+              <div class="preview-empty-card">
+                <span class="preview-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5h6.5L19 9v10.5a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-14a1 1 0 0 1 1-1Z"/><path d="M14.5 4.5V9H19"/><path d="M10 13h6M10 16.5h4"/></svg>
+                </span>
+                <p class="preview-empty-title">先在左侧粘贴文章</p>
+                <p class="preview-empty-note">点上方「原文」，把文章贴进去，再点优化排版。</p>
+              </div>
+            </div>
             <article class="web-preview" aria-label="公众号文章预览">
               <div class="article-page" id="articlePage">
-                <h2 id="articleTitle" contenteditable="true" spellcheck="false">雨停以后，去散步</h2>
+                <h2 id="articleTitle" contenteditable="true" spellcheck="false" hidden></h2>
                 <div id="articleBody" class="article-content"></div>
               </div>
             </article>
@@ -107,7 +116,10 @@
             <span id="articleStatus" role="status"></span>
             <div class="preview-footer-tools">
               <label class="preview-tool-toggle"><input id="darkPreviewToggle" type="checkbox" />暗色预览</label>
-              <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
+              <span class="optimize-slot">
+                <p class="optimize-hint" id="optimizeHint" role="alert" hidden></p>
+                <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
+              </span>
             </div>
           </div>
         </section>
@@ -138,6 +150,14 @@
                 </div>
               </div>
 
+              <div class="control-group more-settings" data-accordion>
+                <button type="button" class="group-toggle" aria-expanded="false">
+                  <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h10"/><path d="M3 8h10"/><path d="M3 11.5h10"/><circle cx="6" cy="4.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="10" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="7" cy="11.5" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+                  <span class="group-label">更多设置</span>
+                  <span class="group-hint">造型、颜色、滑杆</span>
+                  <span class="group-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="group-body">
               <div class="control-group" data-accordion>
                 <button type="button" class="group-toggle" aria-expanded="false">
                   <span class="group-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5 8 3.5l5 9"/><path d="M5.2 9.5h5.6"/></svg></span>
@@ -276,6 +296,8 @@
                   </span>
                 </div>
               </div>
+                </div>
+              </div>
             </section>
           </div>
         </aside>
@@ -321,6 +343,6 @@
 
     <script src="./analytics.js?v=invite-v1"></script>
     <script src="./themes.js?v=text-align-v1"></script>
-    <script src="./app.js?v=highlight-decor-v1"></script>
+    <script src="./app.js?v=studio-glass-v1"></script>
   </body>
 </html>

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     if (contentLength > MAX_BODY_BYTES) {
       throw new AppError("REQUEST_TOO_LARGE", "选中的文字太长了。", 413);
     }
-    const body = await request.json();
+    const body = (await request.json()) as { tool?: string; text?: string };
     const tool = typeof body?.tool === "string" ? body.tool : "";
     if (tool !== "humanize") {
       throw new AppError("UNKNOWN_TOOL", "还没有这个工具。", 400);

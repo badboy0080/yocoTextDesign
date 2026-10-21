@@ -163,6 +163,8 @@ let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
 let blockTypeOverrides = {};
 let lastAiResult = null;
+// 点「用示例文章试一下」后，右侧先用站内静态 HTML，不走优化接口。
+let sampleStaticActive = false;
 let previewSyncTimer = 0;
 try { localStorage.removeItem("yooco-content-components"); } catch { /* ignore private mode */ }
 
@@ -389,10 +391,12 @@ function applySkin(skinId, { fromUser = true } = {}) {
   currentMood = skinMood(skinId);
   Object.assign(state, buildSkinState(skinId));
   state.theme = "classic";
+  const sampleSource = fromUser && isSampleTrySource();
   if (fromUser) styleTouched = true;
   syncMoodUI();
   syncControls();
   render();
+  if (sampleSource) setFeedback("已按当前主题重排示例，没有调用优化。");
 }
 
 function isTheme() {
@@ -411,10 +415,12 @@ function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   // 用户此前手动指定过文章类型时，换主题不重置它（类型是对文章的判断，与主题无关）。
   if (previousArticleType && previousArticleType !== "auto") state.articleType = previousArticleType;
   if (articleType) state.articleType = articleType;
+  const sampleSource = fromUser && isSampleTrySource();
   if (fromUser) styleTouched = true;
   syncMoodUI();
   syncControls();
   render();
+  if (sampleSource) setFeedback("已按当前主题重排示例，没有调用优化。");
 }
 
 function syncMoodUI() {
@@ -1340,7 +1346,70 @@ function syncPreviewEmpty(isEmpty) {
   if (empty) empty.hidden = !isEmpty;
 }
 
+function sampleTryRecord() {
+  const sample = window.YOOCO_SAMPLE_TRY;
+  if (!sample || typeof sample.source !== "string" || typeof sample.html !== "string" || !sample.html.trim()) return null;
+  return sample;
+}
+
+function isSampleTrySource() {
+  const sample = sampleTryRecord();
+  return Boolean(sample && articleSource.trim() === sample.source.trim());
+}
+
+function sampleTryCanStayStatic() {
+  if (state.showSignature) return false;
+  return ["bar", "line", "index", "block"].includes(state.headingStyle || "bar");
+}
+
+function paintSampleTry() {
+  const sample = sampleTryRecord();
+  syncPreviewEmpty(false);
+  const titleText = String(sample?.title || "").trim();
+  if (articleTitle) {
+    articleTitle.textContent = titleText;
+    articleTitle.hidden = !titleText;
+    articleTitle.contentEditable = titleText ? "true" : "false";
+    if (titleText) articleTitle.removeAttribute("aria-hidden");
+    else articleTitle.setAttribute("aria-hidden", "true");
+  }
+  if (articleBody) articleBody.innerHTML = sample.html;
+}
+
+function loadSampleTry() {
+  const sample = sampleTryRecord();
+  if (!sample) {
+    setFeedback("示例暂时打不开。");
+    return;
+  }
+  // 只填原文并展示预制 HTML，不请求 /api/normalize，不计次，不写历史。
+  const stayStatic = sampleTryCanStayStatic();
+  sampleStaticActive = stayStatic;
+  if (previewSyncTimer) {
+    window.clearTimeout(previewSyncTimer);
+    previewSyncTimer = 0;
+  }
+  articleTitleOverride = "";
+  blockTypeOverrides = {};
+  lastAiResult = null;
+  articleSource = sample.source.trim();
+  if (articleInput) articleInput.value = articleSource;
+  persistArticleSource();
+  showOptimizeHint("");
+  selectEditorView(0);
+  render({ keepSample: stayStatic });
+  setStatus(stayStatic
+    ? "已放入示例。这是站内预制排版，没有调用优化，也不计次数。"
+    : "已放入示例，并按当前样式在本地重排。没有调用优化，也不计次数。");
+  setFeedback("");
+}
+
 function renderBody() {
+  if (sampleStaticActive && isSampleTrySource()) {
+    paintSampleTry();
+    return;
+  }
+  sampleStaticActive = false;
   const model = getArticleModel();
   if (model.isSample) {
     if (articleBody) articleBody.innerHTML = "";
@@ -1654,6 +1723,7 @@ function applyStyleVars() {
 }
 
 function render(options = {}) {
+  if (!options.keepSample) sampleStaticActive = false;
   applyStyleVars();
   if (options.body !== false) {
     renderBody();
@@ -2603,6 +2673,7 @@ lockBrandColor?.addEventListener("change", () => {
 });
 if (lockBrandColor) lockBrandColor.checked = localStorage.getItem("yooco-lock-brand-color") === "1";
 aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
+document.querySelector("#sampleTryButton")?.addEventListener("click", loadSampleTry);
 articleInput?.addEventListener("paste", handleRichTextPaste);
 articleBody?.addEventListener("paste", handleRichTextPaste);
 articleInput?.addEventListener("input", () => {

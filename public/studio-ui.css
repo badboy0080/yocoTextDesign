@@ -38,7 +38,7 @@ body {
 }
 [hidden] { display:none !important; }
 .studio-layout { display:grid; grid-template-columns:200px minmax(0,1fr); height:calc(100dvh - 24px); min-height:0; margin:12px; overflow:hidden; border:1px solid rgba(255,255,255,.1); border-radius:2.5rem; background:#0c0c0c; box-shadow:0 25px 80px rgba(0,0,0,.45); }
-.studio-navigation { position:sticky; top:0; display:flex; flex-direction:column; gap:32px; height:100%; padding:24px 16px; border-right:1px solid var(--line); background:rgba(255,255,255,.03); backdrop-filter:blur(16px); }
+.studio-navigation { position:sticky; top:0; z-index:2; display:flex; flex-direction:column; gap:32px; height:100%; padding:24px 16px; border-right:1px solid var(--line); background:rgba(255,255,255,.03); backdrop-filter:blur(16px); }
 .studio-logo { display:inline-flex; align-items:center; gap:10px; padding:8px 0; color:#ebebeb; text-decoration:none; }
 .studio-logo img { display:block; max-width:100%; height:auto; }
 .studio-navigation nav { display:grid; gap:8px; }
@@ -47,7 +47,8 @@ body {
 .studio-navigation nav a[aria-current] { background:var(--yooco-color-soft); box-shadow:inset 3px 0 var(--yooco-color-primary); font-weight:600; }
 .studio-home-link { margin-top: 0; padding: 12px; }
 .studio-side-foot { margin-top: auto; display: grid; gap: 8px; }
-.studio-account { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px; border-radius: 12px; }
+.studio-account { display: flex; align-items: flex-end; gap: 8px; min-width: 0; padding: 8px; border-radius: 12px; }
+.studio-account-person { position: relative; display: flex; flex: none; flex-direction: column; align-items: center; gap: 8px; }
 .studio-avatar { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--avatar-color, #B6FF5C) 28%, white); color: var(--avatar-color, #5c8a22); }
 .studio-avatar svg { width: 28px; height: 22px; }
 .studio-account-text { min-width: 0; display: grid; line-height: 1.3; }
@@ -269,8 +270,12 @@ html.studio-embedded .studio-navigation { display:none; }
 .trial-banner.is-saved { border-color: rgba(255, 255, 255, 0.1); box-shadow: inset 72px 28px 90px rgba(204, 255, 0, 0.07), 0 18px 50px rgba(0, 0, 0, 0.35); }
 .trial-banner.is-saved .trial-banner-copy { color: rgba(255, 255, 255, 0.6); opacity: 0.5; }
 .trial-banner.is-saved::before, .trial-banner.is-saved::after { opacity: 0.35; }
+.trial-banner-actions { position: relative; z-index: 1; display: flex; flex: 1 1 280px; flex-direction: column; align-items: flex-end; gap: 10px; min-width: min(100%, 280px); }
+.trial-invite { height: 44px; min-height: 44px; padding: 0 22px; border: 0; border-radius: 999px; background: #ccff00; color: #000; font: 700 15px/1 "Space Grotesk", "Noto Sans SC", sans-serif; white-space: nowrap; cursor: pointer; box-shadow: 0 0 24px rgba(204, 255, 0, 0.28); }
+.trial-invite:hover { background: #d6ff4d; color: #000; }
 .trial-waitlist { flex: 0 1 auto; margin: 0; gap: 8px; align-items: center; padding: 6px; border-radius: 999px; }
-.trial-waitlist button:hover:not(:disabled) { background: #d6ff4d; color: #000; }
+.trial-waitlist button { background: transparent; color: rgba(255, 255, 255, 0.78); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.22); }
+.trial-waitlist button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); color: #fff; }
 .trial-waitlist button:disabled { opacity: .55; cursor: wait; box-shadow: none; }
 .trial-waitlist-feedback { flex-basis: auto; margin: 0; color: #ccff00; font-size: 13px; line-height: 1.5; }
 .trial-waitlist-feedback.is-success { font-size: 15px; font-weight: 700; }
@@ -282,6 +287,8 @@ html.studio-embedded .studio-navigation { display:none; }
 @media (max-width: 860px) {
   .studio-main .trial-banner { margin: 12px 16px; flex-direction: column; align-items: stretch; gap: 16px; padding: 20px; }
   .trial-banner-lead { flex: 0 1 auto; }
+  .trial-banner-actions { width: 100%; align-items: stretch; }
+  .trial-invite { width: 100%; }
   .trial-waitlist { width: 100%; }
   .trial-waitlist input { flex: 1 1 auto; width: auto; min-width: 0; }
 }
@@ -383,6 +390,62 @@ html.studio-embedded .studio-navigation { display:none; }
 .studio-main input[type="range"]:hover::-moz-range-thumb,
 .studio-main input[type="range"]:focus-visible::-moz-range-thumb {
   border-color: #d1ff52;
+}
+.invite-gift {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(204, 255, 0, 0.55);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(204, 255, 0, 0.34), rgba(204, 255, 0, 0.08) 58%, rgba(0, 0, 0, 0.35));
+  color: #ccff00;
+  cursor: pointer;
+  animation: invite-gift-glow 3.2s ease-in-out infinite, invite-gift-bob 4.8s ease-in-out infinite;
+}
+.invite-gift svg { width: 18px; height: 18px; transform-origin: 50% 70%; animation: invite-gift-wobble 4.8s ease-in-out infinite; }
+.invite-gift:hover, .invite-gift:focus-visible { border-color: #ccff00; color: #e8ff8a; }
+.invite-gift::after {
+  content: "邀请好友，双方各 +5 积分";
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  z-index: 30;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border: 1px solid rgba(204, 255, 0, 0.35);
+  border-radius: 999px;
+  background: #141414;
+  color: #ebebeb;
+  font: 600 12px/1.3 "Space Grotesk", "Noto Sans SC", sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.invite-gift:hover::after, .invite-gift:focus-visible::after { opacity: 1; }
+@keyframes invite-gift-wobble {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  76% { transform: rotate(-9deg); }
+  82% { transform: rotate(8deg); }
+  88% { transform: rotate(-4deg); }
+  94% { transform: rotate(2deg); }
+}
+@keyframes invite-gift-bob {
+  0%, 78%, 100% { translate: 0 0; }
+  86% { translate: 0 -3px; }
+  93% { translate: 0 0; }
+}
+@keyframes invite-gift-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(204, 255, 0, 0.16); }
+  50% { box-shadow: 0 0 16px rgba(204, 255, 0, 0.42); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .invite-gift, .invite-gift svg { animation: none; }
+}
+@media (max-width: 1023px) {
+  .invite-gift::after { display: none; }
 }
 .studio-account-popover { background:#141414; border-color:rgba(255,255,255,.1); }
 .studio-account-popover button { color:#ebebeb; font-family:"Space Grotesk","Noto Sans SC",sans-serif; }

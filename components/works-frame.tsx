@@ -46,7 +46,8 @@ function avatarColor(email: string) {
   return AVATAR_COLORS[sum % AVATAR_COLORS.length];
 }
 
-const INVITE_GIFT_LABEL = "邀请好友，双方各 +5 积分";
+const INVITE_GIFT_LABEL = "邀请赢积分";
+const INVITE_GIFT_TIP = "邀请好友，双方各 +5 积分";
 
 function InviteGiftIcon() {
   return (
@@ -156,15 +157,18 @@ export function WorksFrame() {
         {account ? (
           <div className="works-account">
             <div className="works-account-person">
-              <button
-                type="button"
-                className="invite-gift"
-                title={INVITE_GIFT_LABEL}
-                aria-label={INVITE_GIFT_LABEL}
-                onClick={() => { setMenuOpen(false); setInviteOpen(true); }}
-              >
-                <InviteGiftIcon />
-              </button>
+              <div className="invite-gift-row">
+                <button
+                  type="button"
+                  className="invite-gift"
+                  title={INVITE_GIFT_TIP}
+                  aria-label={INVITE_GIFT_TIP}
+                  onClick={() => { setMenuOpen(false); setInviteOpen(true); }}
+                >
+                  <InviteGiftIcon />
+                </button>
+                <span className="invite-gift-label">{INVITE_GIFT_LABEL}</span>
+              </div>
               <span className="works-avatar" style={{ ["--avatar-color" as string]: avatarColor(account.email) }} aria-hidden="true">
                 <svg viewBox="0 0 160 120">
                   <path d="M16 57C16 24 41 11 78 11C118 11 143 23 143 57C143 82 128 101 103 112C96 115 93 113 96 105C100 92 90 93 77 94C39 98 16 84 16 57Z" fill="currentColor" />

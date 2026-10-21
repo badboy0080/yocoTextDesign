@@ -177,7 +177,9 @@
 
 .works-brand-row .works-fold { width:32px; min-height:32px; margin:0; padding:0; justify-content:center; flex:none; color:var(--yooco-color-muted); }
 .works-account { position:relative; display:flex; align-items:flex-end; gap:8px; min-width:0; margin-top:auto; padding:8px 4px; }
-.works-account-person { position:relative; display:flex; flex:none; flex-direction:column; align-items:center; gap:8px; }
+.works-account-person { position:relative; display:flex; flex:none; flex-direction:column; align-items:flex-start; gap:8px; }
+.invite-gift-row { position:relative; width:36px; height:36px; }
+.invite-gift-label { position:absolute; left:calc(100% + 8px); top:50%; z-index:2; transform:translateY(-50%); color:#e6c56b; font-size:12px; font-weight:650; letter-spacing:.04em; white-space:nowrap; pointer-events:none; }
 .works-avatar { width:36px; height:36px; flex:none; display:grid; place-items:center; border-radius:50%; background:color-mix(in srgb, var(--avatar-color, #B6FF5C) 28%, white); color:var(--avatar-color, #5c8a22); }
 .works-avatar svg { width:28px; height:22px; }
 .works-account-copy { min-width:0; display:grid; line-height:1.3; }
@@ -196,7 +198,8 @@
 .works-app.is-side-collapsed .works-brand-row { width:100%; gap:2px; }
 .works-app.is-side-collapsed .works-nav button span { display:none; }
 .works-app.is-side-collapsed .works-nav button { justify-content:center; padding:.62rem; }
-.works-app.is-side-collapsed .works-account-copy { display:none; }
+.works-app.is-side-collapsed .works-account-copy,
+.works-app.is-side-collapsed .invite-gift-label { display:none; }
 .works-app.is-side-collapsed .works-account { justify-content:center; padding-inline:0; }
 .works-view { min-height:100dvh; }
 .works-studio-view { height:100dvh; }
@@ -328,16 +331,16 @@ body:has(.works-app) { background: #000; }
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(214, 184, 110, 0.45);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(214, 184, 110, 0.08);
   cursor: pointer;
   animation: invite-gift-glow 6.5s ease-in-out infinite;
 }
 .invite-gift svg { width: 20px; height: 20px; transform-origin: 50% 62%; animation: invite-gift-wobble 6.5s ease-in-out infinite; }
-.invite-gift-box, .invite-gift-lid { fill: #242424; stroke: rgba(255, 255, 255, 0.78); stroke-width: 1.2; }
-.invite-gift-ribbon { fill: #ccff00; stroke: none; }
-.invite-gift:hover, .invite-gift:focus-visible { border-color: rgba(204, 255, 0, 0.55); }
+.invite-gift-box, .invite-gift-lid { fill: #1c1914; stroke: #c6a15a; stroke-width: 1.15; }
+.invite-gift-ribbon { fill: #e6c56b; stroke: none; }
+.invite-gift:hover, .invite-gift:focus-visible { border-color: rgba(230, 197, 107, 0.8); }
 .invite-gift::after {
   content: "邀请好友，双方各 +5 积分";
   position: absolute;
@@ -346,7 +349,7 @@ body:has(.works-app) { background: #000; }
   z-index: 30;
   transform: translateY(-50%);
   padding: 6px 10px;
-  border: 1px solid rgba(204, 255, 0, 0.35);
+  border: 1px solid rgba(214, 184, 110, 0.4);
   border-radius: 999px;
   background: #141414;
   color: #ebebeb;
@@ -355,6 +358,8 @@ body:has(.works-app) { background: #000; }
   opacity: 0;
   pointer-events: none;
 }
+.invite-gift-row .invite-gift::after { content: none; }
+.works-app.is-side-collapsed .invite-gift::after { content: "邀请好友，双方各 +5 积分"; }
 .invite-gift:hover::after, .invite-gift:focus-visible::after { opacity: 1; }
 @keyframes invite-gift-wobble {
   0%, 14%, 100% { transform: rotate(0deg); }
@@ -363,8 +368,8 @@ body:has(.works-app) { background: #000; }
   11% { transform: rotate(-1deg); }
 }
 @keyframes invite-gift-glow {
-  0%, 46%, 62%, 100% { box-shadow: 0 0 0 0 rgba(204, 255, 0, 0); }
-  52% { box-shadow: 0 0 10px 1px rgba(204, 255, 0, 0.38); }
+  0%, 46%, 62%, 100% { box-shadow: 0 0 0 0 rgba(214, 184, 110, 0); }
+  52% { box-shadow: 0 0 10px 1px rgba(214, 184, 110, 0.32); }
 }
 @media (prefers-reduced-motion: reduce) {
   .invite-gift, .invite-gift svg { animation: none; }

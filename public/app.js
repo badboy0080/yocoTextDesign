@@ -3064,6 +3064,7 @@ async function showLocalAccount() {
   };
   const inviteModal = document.querySelector("#inviteModal");
   const inviteBody = document.querySelector("#inviteModalBody");
+  const inviteCodeText = document.querySelector("#inviteCodeText");
   const inviteStatus = document.querySelector("#inviteModalStatus");
   const inviteCopy = document.querySelector("#inviteCopy");
   let inviteCode = "";
@@ -3077,6 +3078,7 @@ async function showLocalAccount() {
     inviteCode = "";
     if (inviteCopy) inviteCopy.disabled = true;
     if (inviteStatus) inviteStatus.textContent = "";
+    if (inviteCodeText) inviteCodeText.textContent = "邀请码";
     inviteBody.textContent = "正在取出邀请码…";
     inviteModal.hidden = false;
     inviteModal.querySelector(".invite-modal-card")?.focus();
@@ -3088,7 +3090,8 @@ async function showLocalAccount() {
         return;
       }
       inviteCode = data.code;
-      inviteBody.textContent = data.sentence;
+      inviteBody.textContent = "";
+      if (inviteCodeText) inviteCodeText.textContent = data.code;
       if (inviteCopy) inviteCopy.disabled = false;
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("invite_share");
     } catch {

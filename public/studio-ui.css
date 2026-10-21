@@ -419,9 +419,9 @@ html.studio-embedded .studio-navigation { display:none; }
 .preview-empty-title { margin:14px 0 6px; color:#ebebeb; font-size:18px; font-weight:700; }
 
 .tool-menu-wrap { position:relative; }
-.tool-menu-button, .tool-undo { display:inline-flex; align-items:center; min-height:40px; padding:6px 16px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.05); color:#ebebeb; font:600 14px/20px "Space Grotesk","Noto Sans SC",sans-serif; cursor:pointer; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
-.tool-menu-button:hover, .tool-menu-button[aria-expanded="true"], .tool-undo:hover { border-color:rgba(204,255,0,.45); color:#ccff00; }
-.tool-undo[hidden], .tool-hint[hidden], .tool-menu[hidden] { display:none !important; }
+.tool-menu-button { display:inline-flex; align-items:center; min-height:40px; padding:6px 16px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.05); color:#ebebeb; font:600 14px/20px "Space Grotesk","Noto Sans SC",sans-serif; cursor:pointer; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.tool-menu-button:hover, .tool-menu-button[aria-expanded="true"] { border-color:rgba(204,255,0,.45); color:#ccff00; }
+.tool-hint[hidden], .tool-menu[hidden] { display:none !important; }
 .tool-hint { margin:0; padding:6px 12px; border:1px solid rgba(204,255,0,.4); border-radius:999px; background:rgba(204,255,0,.12); color:#ccff00; font:600 12px/18px "Noto Sans SC",sans-serif; }
 .tool-menu { position:absolute; top:calc(100% + 8px); right:0; z-index:30; width:min(320px, calc(100vw - 32px)); padding:8px; border:1px solid rgba(255,255,255,.14); border-radius:16px; background:rgba(18,20,22,.72); box-shadow:0 18px 50px rgba(0,0,0,.45); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); }
 .tool-menu-item { display:flex; align-items:flex-start; gap:12px; width:100%; padding:10px 12px; border:0; border-radius:12px; background:transparent; color:#f4f4f0; text-align:left; cursor:pointer; font:600 14px/1.4 "Space Grotesk","Noto Sans SC",sans-serif; }

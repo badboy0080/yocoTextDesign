@@ -101,7 +101,7 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
           <span />
           <span className="is-add">+</span>
         </div>
-        <h2 id={titleId}>邀请好友，双方各 +5 次</h2>
+        <h2 id={titleId}>邀请好友，双方各 +5 积分</h2>
         <p>{body}</p>
         <div className="invite-modal-actions">
           <button className="invite-modal-copy" type="button" onClick={copyCode} disabled={!code}>

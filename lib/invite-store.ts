@@ -44,7 +44,7 @@ type InviteStore = {
 const CODE_PATTERN = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 
 export function inviteSentence(code: string): string {
-  return `你的邀请码：${code}。好友注册成功后，双方各 +${INVITE_BONUS_USES} 次。一码最多用 ${INVITE_REDEEM_LIMIT} 次。`;
+  return `你的邀请码：${code}。好友注册成功后，双方各 +${INVITE_BONUS_USES} 积分。一码最多用 ${INVITE_REDEEM_LIMIT} 次。`;
 }
 
 export function inviteFailureMessage(reason: InviteFailure): string {

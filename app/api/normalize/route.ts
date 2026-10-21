@@ -1,10 +1,13 @@
+import { creditCost } from "../../../lib/credits";
 import { AppError, normalizeWithDeepSeek, validateRequest } from "../../../lib/deepseek-normalizer";
 import {
-  consumeNormalizeQuota,
   peekNormalizeQuota,
+  prepareCreditSpend,
   RateLimitError,
+  spendCredits,
   TRIAL_LIMIT,
   UPGRADE_OFFER,
+  type CreditSnapshot,
 } from "../../../lib/edgeone-rate-limit";
 import { getDeepseekApiKey, getDeepseekModel } from "../../../lib/runtime-env";
 
@@ -22,6 +25,7 @@ export async function GET(request: Request) {
     {
       ok: true,
       trial,
+      credits: trial.credits,
       upgrade: trial.remaining === 0 ? UPGRADE_OFFER : undefined,
     },
     { headers: trialHeaders() },
@@ -36,9 +40,12 @@ export async function POST(request: Request) {
     }
     const body = await request.json();
     const { source, assignment } = validateRequest(body);
-    const trial = await consumeNormalizeQuota(request);
+    const cost = creditCost("layout");
+    if (!cost) throw new AppError("INTERNAL_ERROR", "排版积分价格没配好。", 500);
+    const creditUser = await prepareCreditSpend(request, cost);
     const data = await normalizeWithDeepSeek(source, getDeepseekApiKey(), getDeepseekModel(), assignment);
-    return Response.json({ ok: true, data, trial }, { headers: trialHeaders() });
+    const trial = await spendCredits(creditUser, "layout", cost);
+    return Response.json({ ok: true, data, trial, credits: trial.credits }, { headers: trialHeaders() });
   } catch (error) {
     const known = error instanceof AppError;
     const status = known ? error.status : 500;
@@ -47,12 +54,14 @@ export async function POST(request: Request) {
     const headers: Record<string, string> = trialHeaders();
     const payload: {
       ok: false;
+      credits?: CreditSnapshot;
       error: {
         code: string;
         message: string;
         remaining?: number;
         limit?: number;
         bonus?: number;
+        credits?: CreditSnapshot;
         upgrade?: typeof UPGRADE_OFFER;
       };
     } = { ok: false, error: { code, message } };
@@ -61,6 +70,13 @@ export async function POST(request: Request) {
       payload.error.remaining = error.remaining;
       payload.error.limit = error.limit;
       payload.error.bonus = error.bonus;
+      payload.credits = {
+        remaining: error.remaining,
+        limit: error.limit,
+        bonus: error.bonus,
+        unlimited: false,
+      };
+      payload.error.credits = payload.credits;
       if (error.code === "TRIAL_EXHAUSTED") {
         payload.error.upgrade = UPGRADE_OFFER;
       }

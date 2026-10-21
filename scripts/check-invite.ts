@@ -20,19 +20,19 @@ function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
 }
 
-const expectedSentence = "你的邀请码：ABC234。好友注册成功后，双方各 +5 次。一码最多用 5 次。";
-assert(inviteSentence("ABC234") === expectedSentence, "弹窗要写双方各加 5 次");
-const expectedShare = "好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：ABC234\n好友注册成功后，双方各 +5 次。";
-assert(inviteShareText("ABC234") === expectedShare, "复制模板要在原三行后写双方各加 5 次");
-assert(expectedShare.includes(`双方各 +${INVITE_BONUS_USES} 次`), "复制模板的加次要跟常量一致");
+const expectedSentence = "你的邀请码：ABC234。好友注册成功后，双方各 +5 积分。一码最多用 5 次。";
+assert(inviteSentence("ABC234") === expectedSentence, "弹窗要写双方各加 5 积分");
+const expectedShare = "好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：ABC234\n好友注册成功后，双方各 +5 积分。";
+assert(inviteShareText("ABC234") === expectedShare, "复制模板要在原三行后写双方各加 5 积分");
+assert(expectedShare.includes(`双方各 +${INVITE_BONUS_USES} 积分`), "复制模板的加积分要跟常量一致");
 const studioCopy = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
 const registerCopy = readFileSync(new URL("../components/auth-page.tsx", import.meta.url), "utf8");
-assert(studioCopy.includes("好友注册成功后，双方各 +5 次。"), "工作室复制模板也要写双方各加 5 次");
+assert(studioCopy.includes("好友注册成功后，双方各 +5 积分。"), "工作室复制模板也要写双方各加 5 积分");
 assert(!studioCopy.includes("可多 5 次免费"), "工作室不要留只给好友加次的旧句");
-assert(registerCopy.includes("注册成功后，双方各 +5 次"), "注册页要写双方各加 5 次");
+assert(registerCopy.includes("注册成功后，双方各 +5 积分"), "注册页要写双方各加 5 积分");
 assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
 assert(SITE_FAQ.length === 4, "常见问题正好四条");
-assert(faqCategories().join("|") === "次数|验证码|邀请", "常见问题按次数、验证码、邀请分组");
+assert(faqCategories().join("|") === "积分|验证码|邀请", "常见问题按积分、验证码、邀请分组");
 const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "utf8");
 const faqTabs = readFileSync(new URL("../components/faq-tabs-card.tsx", import.meta.url), "utf8");
 const faqBrief = readFileSync(new URL("../components/home-faq.tsx", import.meta.url), "utf8");
@@ -45,22 +45,22 @@ assert(faqBrief.includes('href="/faq"'), "首页要能去完整常见问题");
 const inviteModal = readFileSync(new URL("../components/invite-modal.tsx", import.meta.url), "utf8");
 assert(inviteModal.includes("inviteShareText"), "复制仍用原来的整段话");
 assert(inviteModal.includes("invite_share"), "打开和复制仍记 invite_share");
-assert(inviteModal.includes("双方各 +5 次"), "邀请卡写双方各加 5 次");
+assert(inviteModal.includes("双方各 +5 积分"), "邀请卡写双方各加 5 积分");
 const studioHtml = readFileSync(new URL("../public/studio.html", import.meta.url), "utf8");
-assert(studioHtml.includes("邀请好友，双方各 +5 次"), "工作室邀请卡写双方各加 5 次");
+assert(studioHtml.includes("邀请好友，双方各 +5 积分"), "工作室邀请卡写双方各加 5 积分");
 assert(studioHtml.includes('id="waitlistForm"') && studioHtml.includes('id="waitlistEmail"'), "留邮箱表单还在");
-assert(SITE_FAQ.map((item) => item.title).join("|") === "试用次数|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题用客服定稿");
+assert(SITE_FAQ.map((item) => item.title).join("|") === "试用积分|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题里，试用改成积分");
 assert(
-  SITE_FAQ[0].body === "未登录每天免费 3 次，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加次。请勿重复注册刷次。",
-  "试用次数用客服定稿",
+  SITE_FAQ[0].body === "未登录每天免费 3 积分，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加积分。请勿重复注册刷积分。",
+  "试用积分说明",
 );
 assert(
   SITE_FAQ[1].body === "① 查垃圾箱/广告邮件；② 确认邮箱后重发，等 1–2 分钟；③ 仍没有，把注册邮箱发给客服人工协助。（只有邮箱验证码。）",
   "验证码说明用客服定稿",
 );
 assert(
-  SITE_FAQ[2].body === "个人信息里拿邀请码。好友注册时填码并注册成功后，邀请人与被邀请人各 +5 次。一码最多核销 5 次；同一账号只能核销一次。",
-  "邀请说明用客服定稿",
+  SITE_FAQ[2].body === "个人信息里拿邀请码。好友注册时填码并注册成功后，邀请人与被邀请人各 +5 积分。一码最多核销 5 次；同一账号只能核销一次。",
+  "邀请说明里的加次改成积分",
 );
 assert(
   SITE_FAQ[3].body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",

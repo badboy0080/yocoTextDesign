@@ -286,7 +286,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                 <label className="auth-field">
                   <span>邀请码（选填） <span className="auth-field-index">06</span></span>
                   <input ref={inviteRef} type="text" placeholder="没有也可以注册" autoComplete="off" maxLength={16} spellCheck={false} />
-                  <small className="auth-field-hint">注册成功后，双方各 +5 次。<Link href="/faq">常见问题</Link></small>
+                  <small className="auth-field-hint">注册成功后，双方各 +5 积分。<Link href="/faq">常见问题</Link></small>
                 </label>
               )}
               <button className="account-primary-button" type="button" onClick={handleSubmit} disabled={busy || (isRegister && !codeReady)} title={isRegister && !codeReady ? "请先填写 6 位验证码" : undefined}>

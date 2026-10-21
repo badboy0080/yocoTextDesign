@@ -149,7 +149,7 @@ function guestTrialLimit() {
   return trialLimit;
 }
 const TRIAL_STORAGE_KEY = "yooco-trial";
-const WAITLIST_COPY = "免费次数用完了。留下邮箱，开放订阅我通知你。";
+const WAITLIST_COPY = "免费积分用完了。留下邮箱，开放订阅我通知你。";
 const UPGRADE_PROMPT = WAITLIST_COPY;
 let serverTrialRemaining = null;
 let serverTrialBonus = 0;
@@ -224,7 +224,7 @@ function renderTrialMeter() {
   if (serverTrialUnlimited) {
     if (trialMeter) {
       trialMeter.hidden = false;
-      trialMeter.textContent = "不限次数";
+      trialMeter.textContent = "不限积分";
       trialMeter.classList.remove("is-empty");
     }
     if (trialBanner) trialBanner.hidden = true;
@@ -236,9 +236,9 @@ function renderTrialMeter() {
   const remaining = remainingTrialCount();
   if (trialMeter) {
     trialMeter.hidden = false;
-    if (remaining <= 0) trialMeter.textContent = "试用已用完";
-    else if (serverTrialBonus > 0) trialMeter.textContent = `剩余 ${remaining} 次（含邀请加成 ${serverTrialBonus}）`;
-    else trialMeter.textContent = `剩余 ${remaining} 次`;
+    if (remaining <= 0) trialMeter.textContent = "积分已用完";
+    else if (serverTrialBonus > 0) trialMeter.textContent = `剩余 ${remaining} 积分（含邀请加成 ${serverTrialBonus}）`;
+    else trialMeter.textContent = `剩余 ${remaining} 积分`;
     trialMeter.classList.toggle("is-empty", remaining <= 0);
   }
   if (trialBanner) trialBanner.hidden = remaining > 0;
@@ -249,20 +249,24 @@ function renderTrialMeter() {
 
 function applyTrialFromServer(trial) {
   if (!trial || typeof trial !== "object") return;
-  serverTrialUnlimited = trial.unlimited === true;
+  const credits = trial.credits && typeof trial.credits === "object" ? trial.credits : null;
+  serverTrialUnlimited = credits ? credits.unlimited === true : trial.unlimited === true;
   if (serverTrialUnlimited) {
     serverTrialRemaining = null;
     serverTrialBonus = 0;
     renderTrialMeter();
     return;
   }
-  if (typeof trial.limit === "number" && Number.isFinite(trial.limit) && trial.limit > 0) {
-    trialLimit = Math.round(trial.limit);
+  const limit = credits && typeof credits.limit === "number" ? credits.limit : trial.limit;
+  if (typeof limit === "number" && Number.isFinite(limit) && limit > 0) {
+    trialLimit = Math.round(limit);
   }
   if (typeof trial.enforced === "boolean") serverTrialEnforced = trial.enforced;
-  serverTrialBonus = typeof trial.bonus === "number" && Number.isFinite(trial.bonus) ? Math.max(0, trial.bonus) : 0;
-  if (typeof trial.remaining === "number" && Number.isFinite(trial.remaining)) {
-    serverTrialRemaining = Math.max(0, trial.remaining);
+  const bonus = credits && typeof credits.bonus === "number" ? credits.bonus : trial.bonus;
+  serverTrialBonus = typeof bonus === "number" && Number.isFinite(bonus) ? Math.max(0, bonus) : 0;
+  const remaining = credits && typeof credits.remaining === "number" ? credits.remaining : trial.remaining;
+  if (typeof remaining === "number" && Number.isFinite(remaining)) {
+    serverTrialRemaining = Math.max(0, remaining);
     const dailyRemaining = Math.max(0, serverTrialRemaining - serverTrialBonus);
     writeLocalTrialUsed(guestTrialLimit() - dailyRemaining);
   }
@@ -1382,7 +1386,7 @@ function loadSampleTry() {
     setFeedback("示例暂时打不开。");
     return;
   }
-  // 只填原文并展示预制 HTML，不请求 /api/normalize，不计次，不写历史。
+  // 只填原文并展示预制 HTML，不请求 /api/normalize，不计积分，不写历史。
   const stayStatic = sampleTryCanStayStatic();
   sampleStaticActive = stayStatic;
   if (previewSyncTimer) {
@@ -1399,8 +1403,8 @@ function loadSampleTry() {
   selectEditorView(0);
   render({ keepSample: stayStatic });
   setStatus(stayStatic
-    ? "已放入示例。这是站内预制排版，没有调用优化，也不计次数。"
-    : "已放入示例，并按当前样式在本地重排。没有调用优化，也不计次数。");
+    ? "已放入示例。这是站内预制排版，没有调用优化，也不计积分。"
+    : "已放入示例，并按当前样式在本地重排。没有调用优化，也不计积分。");
   setFeedback("");
 }
 
@@ -3086,7 +3090,7 @@ async function showLocalAccount() {
   inviteCopy?.addEventListener("click", async () => {
     if (!inviteCode) return;
     try {
-      await navigator.clipboard.writeText(`好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${inviteCode}\n好友注册成功后，双方各 +5 次。`);
+      await navigator.clipboard.writeText(`好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${inviteCode}\n好友注册成功后，双方各 +5 积分。`);
       if (inviteStatus) inviteStatus.textContent = "已复制。";
     } catch {
       if (inviteStatus) inviteStatus.textContent = "复制没成功，请手动选中邀请码。";
@@ -3138,3 +3142,314 @@ async function showLocalAccount() {
     }
   } catch { /* 未登录时工作台仍可试用 */ }
 }
+
+// 工具箱。以后加工具，只往这个数组里加一项。价格要和 lib/credits.js 一致。
+const STUDIO_TOOLS = [
+  {
+    id: "humanize",
+    label: "更具有人味",
+    hint: "去掉 AI 腔，读起来像人写的",
+    cost: 1,
+  },
+];
+const TOOL_MAX_CHARS = 3000;
+let toolSession = null;
+let toolUndoSnapshot = null;
+let toolRequest = 0;
+let toolController = null;
+
+function textUnits(value) {
+  return Array.from(String(value || "")).length;
+}
+
+function trackTool(event) {
+  try {
+    if (typeof window.yoocoTrack === "function") window.yoocoTrack(event);
+  } catch {
+    /* 埋点不能挡住改写 */
+  }
+}
+
+function studioIsLoggedIn() {
+  const account = document.querySelector("#studioAccount");
+  return Boolean(account && account.hidden === false);
+}
+
+function promptNeedCredits() {
+  showUpgradePrompt();
+  if (studioIsLoggedIn()) document.querySelector("#studioInvite")?.click();
+}
+
+function showToolHint(message) {
+  const hint = document.querySelector("#toolHint");
+  if (!hint) return;
+  const text = String(message || "").trim();
+  hint.textContent = text;
+  hint.hidden = !text;
+}
+
+function selectedSourceRange() {
+  if (!articleInput) return null;
+  const start = articleInput.selectionStart ?? 0;
+  const end = articleInput.selectionEnd ?? 0;
+  if (!(end > start)) return null;
+  const selected = articleInput.value.slice(start, end);
+  if (!selected.trim()) return null;
+  return { start, end, selected, value: articleInput.value };
+}
+
+function closeToolMenu() {
+  const menu = document.querySelector("#toolMenu");
+  const button = document.querySelector("#toolMenuButton");
+  if (menu) menu.hidden = true;
+  if (button) button.setAttribute("aria-expanded", "false");
+}
+
+function openToolMenu() {
+  const menu = document.querySelector("#toolMenu");
+  const button = document.querySelector("#toolMenuButton");
+  if (!menu || !button) return;
+  const willOpen = menu.hidden !== false;
+  menu.hidden = !willOpen;
+  button.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  if (willOpen) trackTool("tool_open");
+}
+
+function setToolError(message) {
+  const node = document.querySelector("#toolCompareError");
+  if (!node) return;
+  const text = String(message || "").trim();
+  node.textContent = text;
+  node.hidden = !text;
+}
+
+function setToolBusy(busy) {
+  const accept = document.querySelector("#toolAccept");
+  const regen = document.querySelector("#toolRegen");
+  const loading = document.querySelector("#toolCompareLoading");
+  const result = document.querySelector("#toolCompareResult");
+  const ready = Boolean(toolSession?.result);
+  if (accept) accept.disabled = busy || !ready;
+  if (regen) regen.disabled = busy;
+  if (loading) loading.hidden = !busy;
+  if (result) result.hidden = busy || !ready;
+}
+
+function openToolCompare(tool, picked) {
+  const modal = document.querySelector("#toolCompare");
+  const title = document.querySelector("#toolCompareTitle");
+  const note = document.querySelector("#toolCompareNote");
+  const source = document.querySelector("#toolCompareSource");
+  const result = document.querySelector("#toolCompareResult");
+  if (title) title.textContent = tool.label;
+  if (note) note.textContent = tool.hint;
+  if (source) source.textContent = picked.selected;
+  if (result) result.textContent = "";
+  setToolError("");
+  setToolBusy(true);
+  if (modal) {
+    modal.hidden = false;
+    modal.querySelector(".tool-compare-card")?.focus();
+  }
+}
+
+function closeToolCompare() {
+  const modal = document.querySelector("#toolCompare");
+  if (modal) modal.hidden = true;
+}
+
+function beginTool(tool) {
+  showToolHint("");
+  const picked = selectedSourceRange();
+  if (!picked) {
+    selectEditorView(1);
+    showToolHint("先在原文里选中要改的段落");
+    setStatus("先在原文里选中要改的段落");
+    articleInput?.focus();
+    return;
+  }
+  if (textUnits(picked.selected) > TOOL_MAX_CHARS) {
+    const message = `单次最多 ${TOOL_MAX_CHARS} 字，请少选一点。`;
+    showToolHint(message);
+    setStatus(message);
+    return;
+  }
+  if (remainingTrialCount() < tool.cost) {
+    promptNeedCredits();
+    return;
+  }
+  toolSession = { tool, start: picked.start, end: picked.end, selected: picked.selected, value: picked.value, result: "" };
+  openToolCompare(tool, picked);
+  void runTool();
+}
+
+async function runTool() {
+  if (!toolSession) return;
+  const requestId = ++toolRequest;
+  toolController?.abort();
+  const controller = new AbortController();
+  toolController = controller;
+  const previous = toolSession.result;
+  toolSession.result = "";
+  setToolError("");
+  setToolBusy(true);
+  const timeout = window.setTimeout(() => controller.abort(), 35000);
+  trackTool("tool_run");
+  try {
+    const response = await fetch("/api/tools", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tool: toolSession.tool.id, text: toolSession.selected }),
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (requestId !== toolRequest) return;
+    if (payload?.trial) applyTrialFromServer(payload.trial);
+    else if (payload?.credits) applyTrialFromServer({ credits: payload.credits, enforced: true });
+    if (!response.ok || !payload?.ok || typeof payload.text !== "string") {
+      toolSession.result = previous;
+      const code = payload?.error?.code || "";
+      const message = payload?.error?.message || "这次没改写完，请稍后再试。";
+      if (code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
+        serverTrialUnlimited = false;
+        if (typeof payload?.credits?.remaining === "number") serverTrialRemaining = Math.max(0, payload.credits.remaining);
+        else if (typeof payload?.error?.remaining === "number") serverTrialRemaining = Math.max(0, payload.error.remaining);
+        else serverTrialRemaining = 0;
+        renderTrialMeter();
+        setToolError(message);
+        promptNeedCredits();
+        return;
+      }
+      setToolError(message);
+      return;
+    }
+    toolSession.result = payload.text;
+    const result = document.querySelector("#toolCompareResult");
+    if (result) result.textContent = payload.text;
+  } catch (error) {
+    if (requestId !== toolRequest || !toolSession) return;
+    toolSession.result = previous;
+    const aborted = (error instanceof DOMException && error.name === "AbortError") || (error && error.name === "AbortError");
+    setToolError(aborted ? "改写超过 30 秒还没回来，请少选一点再试。" : "暂时连不上改写服务，请稍后再试。");
+  } finally {
+    window.clearTimeout(timeout);
+    if (requestId === toolRequest) setToolBusy(false);
+  }
+}
+
+function acceptToolRewrite() {
+  if (!toolSession?.result || !articleInput) return;
+  const { value, start, end, selected, result } = toolSession;
+  const current = articleInput.value;
+  let next = "";
+  if (current === value) next = `${current.slice(0, start)}${result}${current.slice(end)}`;
+  else {
+    const at = current.indexOf(selected);
+    if (at < 0) {
+      setToolError("原文已经变了，请重新选中。");
+      return;
+    }
+    next = `${current.slice(0, at)}${result}${current.slice(at + selected.length)}`;
+  }
+  toolUndoSnapshot = {
+    value: current,
+    articleTitleOverride,
+    blockTypeOverrides: { ...blockTypeOverrides },
+  };
+  articleInput.value = next;
+  articleTitleOverride = "";
+  applyArticleSource(false);
+  const undo = document.querySelector("#toolUndo");
+  if (undo) undo.hidden = false;
+  closeToolCompare();
+  trackTool("tool_accept");
+  setFeedback("原文和排版都已更新");
+  showToolHint("");
+}
+
+function undoToolRewrite() {
+  if (!toolUndoSnapshot || !articleInput) return;
+  articleInput.value = toolUndoSnapshot.value;
+  articleTitleOverride = toolUndoSnapshot.articleTitleOverride;
+  blockTypeOverrides = { ...toolUndoSnapshot.blockTypeOverrides };
+  toolUndoSnapshot = null;
+  const undo = document.querySelector("#toolUndo");
+  if (undo) undo.hidden = true;
+  applyArticleSource(false);
+  trackTool("tool_undo");
+  setFeedback("已撤销这次改写");
+}
+
+function renderToolMenu() {
+  const menu = document.querySelector("#toolMenu");
+  if (!menu) return;
+  menu.replaceChildren();
+  STUDIO_TOOLS.forEach((tool) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "tool-menu-item";
+    item.setAttribute("role", "menuitem");
+    const copy = document.createElement("span");
+    copy.className = "tool-menu-copy";
+    const title = document.createElement("span");
+    title.textContent = tool.label;
+    const hint = document.createElement("small");
+    hint.textContent = tool.hint;
+    copy.append(title, hint);
+    const cost = document.createElement("span");
+    cost.className = "tool-menu-cost";
+    cost.textContent = `${tool.cost} 积分`;
+    item.append(copy, cost);
+    item.addEventListener("click", () => {
+      closeToolMenu();
+      beginTool(tool);
+    });
+    menu.append(item);
+  });
+}
+
+function cancelToolRewrite() {
+  toolRequest += 1;
+  toolController?.abort();
+  closeToolCompare();
+  showToolHint("");
+  void refreshTrialFromServer();
+}
+
+function setupStudioTools() {
+  renderToolMenu();
+  document.querySelector("#toolMenuButton")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openToolMenu();
+  });
+  document.querySelector("#toolAccept")?.addEventListener("click", acceptToolRewrite);
+  document.querySelector("#toolRegen")?.addEventListener("click", () => {
+    if (!toolSession) return;
+    if (remainingTrialCount() < toolSession.tool.cost) {
+      promptNeedCredits();
+      return;
+    }
+    void runTool();
+  });
+  document.querySelector("#toolCancel")?.addEventListener("click", cancelToolRewrite);
+  document.querySelector("#toolUndo")?.addEventListener("click", undoToolRewrite);
+  document.querySelector("#toolCompare")?.addEventListener("click", (event) => {
+    if (event.target === document.querySelector("#toolCompare")) cancelToolRewrite();
+  });
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element) || event.target.closest(".tool-menu-wrap")) return;
+    closeToolMenu();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const modal = document.querySelector("#toolCompare");
+    if (modal && modal.hidden === false) {
+      event.stopPropagation();
+      cancelToolRewrite();
+      return;
+    }
+    closeToolMenu();
+  });
+}
+
+setupStudioTools();

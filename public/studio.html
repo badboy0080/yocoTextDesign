@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=wechat-heading-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=sample-try-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=credits-tools-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -45,14 +45,20 @@
     <header class="topbar topbar-buttons">
       <h1 class="studio-title">工作台</h1>
       <div class="topbar-actions">
-        <span class="trial-meter" id="trialMeter" hidden>剩余次数</span>
+        <div class="tool-menu-wrap">
+          <button class="tool-menu-button" id="toolMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="toolMenu">工具</button>
+          <div class="tool-menu" id="toolMenu" role="menu" hidden></div>
+        </div>
+        <button class="tool-undo" id="toolUndo" type="button" hidden>撤销</button>
+        <p class="tool-hint" id="toolHint" role="status" hidden></p>
+        <span class="trial-meter" id="trialMeter" hidden>剩余积分</span>
         <button class="history-open" id="historyOpen" type="button" hidden aria-haspopup="dialog" aria-controls="historyDrawer" aria-expanded="false">历史</button>
         <a class="studio-login" id="studioLogin" href="/login">Log in</a>
       </div>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
       <div class="trial-banner-lead">
-        <p class="trial-banner-copy" id="trialBannerText">免费次数用完了。留下邮箱，开放订阅我通知你。</p>
+        <p class="trial-banner-copy" id="trialBannerText">免费积分用完了。留下邮箱，开放订阅我通知你。</p>
         <p class="trial-waitlist-feedback" id="waitlistFeedback" role="status"></p>
       </div>
       <form class="trial-waitlist" id="waitlistForm" novalidate>
@@ -332,7 +338,7 @@
     <div class="invite-modal" id="inviteModal" hidden>
       <div class="invite-modal-card" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle" tabindex="-1">
         <div class="invite-faces" aria-hidden="true"><span></span><span></span><span class="is-add">+</span></div>
-        <h2 id="inviteModalTitle">邀请好友，双方各 +5 次</h2>
+        <h2 id="inviteModalTitle">邀请好友，双方各 +5 积分</h2>
         <p id="inviteModalBody">正在取出邀请码…</p>
         <div class="invite-modal-actions">
           <button class="invite-modal-copy" id="inviteCopy" type="button" disabled>复制邀请码</button>
@@ -342,9 +348,35 @@
       </div>
     </div>
 
-    <script src="./analytics.js?v=invite-v1"></script>
+    <div class="tool-compare" id="toolCompare" hidden>
+      <div class="tool-compare-card" role="dialog" aria-modal="true" aria-labelledby="toolCompareTitle" tabindex="-1">
+        <div class="tool-compare-head">
+          <h2 id="toolCompareTitle">更具有人味</h2>
+          <p id="toolCompareNote">去掉 AI 腔，读起来像人写的</p>
+        </div>
+        <div class="tool-compare-cols">
+          <section class="tool-compare-col" aria-label="原文">
+            <h3>原文</h3>
+            <pre id="toolCompareSource"></pre>
+          </section>
+          <section class="tool-compare-col" aria-label="改写">
+            <h3>改写</h3>
+            <p class="tool-compare-loading" id="toolCompareLoading">正在分析…</p>
+            <pre id="toolCompareResult" hidden></pre>
+          </section>
+        </div>
+        <p class="tool-compare-error" id="toolCompareError" role="alert" hidden></p>
+        <div class="tool-compare-actions">
+          <button class="tool-compare-primary" id="toolAccept" type="button" disabled>确认</button>
+          <button class="tool-compare-ghost" id="toolRegen" type="button">重新生成</button>
+          <button class="tool-compare-ghost" id="toolCancel" type="button">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./analytics.js?v=credits-tools-v1"></script>
     <script src="./themes.js?v=text-align-v1"></script>
-    <script src="./samples/sample-try.js?v=sample-try-v1"></script>
-    <script src="./app.js?v=sample-try-v1"></script>
+    <script src="./samples/sample-try.js?v=credits-tools-v1"></script>
+    <script src="./app.js?v=credits-tools-v1"></script>
   </body>
 </html>

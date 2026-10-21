@@ -398,7 +398,7 @@ export function parseEntitlementPatch(
         return {
           ok: false,
           status: 400,
-          message: `每日额度请填 0 到 ${MAX_ACCOUNT_DAILY_LIMIT} 的整数，留空则用全站每天 ${TRIAL_LIMIT} 次。`,
+          message: `每日积分请填 0 到 ${MAX_ACCOUNT_DAILY_LIMIT} 的整数，留空则用全站每天 ${TRIAL_LIMIT} 积分。`,
         };
       }
       patch.dailyLimit = limit;
@@ -406,7 +406,7 @@ export function parseEntitlementPatch(
   }
   if ("unlimitedUses" in raw) {
     if (typeof raw.unlimitedUses !== "boolean") {
-      return { ok: false, status: 400, message: "不限次数只能是开或关。" };
+      return { ok: false, status: 400, message: "不限积分只能是开或关。" };
     }
     patch.unlimitedUses = raw.unlimitedUses;
   }
@@ -480,7 +480,7 @@ export async function updateManagedAccount(
     return { ok: false, status: 400, message: "没有要保存的改动。" };
   }
   if (entitlementNeedsConfirm(before, parsed.patch) && !parsed.confirm) {
-    return { ok: false, status: 400, message: "改等级或不限次数需要再确认一次。" };
+    return { ok: false, status: 400, message: "改等级或不限积分需要再确认一次。" };
   }
   const after = applyEntitlement(before, parsed.patch);
   doc.users[index] = after;

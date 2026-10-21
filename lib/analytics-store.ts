@@ -7,6 +7,10 @@ export const FUNNEL_EVENTS = [
   "waitlist_email_submit",
   "invite_share",
   "invite_redeem",
+  "tool_open",
+  "tool_run",
+  "tool_accept",
+  "tool_undo",
 ] as const;
 export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];
 
@@ -20,6 +24,10 @@ export type FunnelDay = {
   waitlist_email_submit: EventCounts;
   invite_share: EventCounts;
   invite_redeem: EventCounts;
+  tool_open: EventCounts;
+  tool_run: EventCounts;
+  tool_accept: EventCounts;
+  tool_undo: EventCounts;
 };
 
 export type FunnelMetrics = {
@@ -32,6 +40,10 @@ export type FunnelMetrics = {
     waitlist_email_submit: EventCounts;
     invite_share: EventCounts;
     invite_redeem: EventCounts;
+    tool_open: EventCounts;
+    tool_run: EventCounts;
+    tool_accept: EventCounts;
+    tool_undo: EventCounts;
   };
 };
 
@@ -68,6 +80,10 @@ function emptyDay(): DayRecord {
     waitlist_email_submit: emptyBucket(),
     invite_share: emptyBucket(),
     invite_redeem: emptyBucket(),
+    tool_open: emptyBucket(),
+    tool_run: emptyBucket(),
+    tool_accept: emptyBucket(),
+    tool_undo: emptyBucket(),
   };
 }
 
@@ -185,6 +201,10 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
       waitlist_email_submit: countsOf(record.waitlist_email_submit),
       invite_share: countsOf(record.invite_share),
       invite_redeem: countsOf(record.invite_redeem),
+      tool_open: countsOf(record.tool_open),
+      tool_run: countsOf(record.tool_run),
+      tool_accept: countsOf(record.tool_accept),
+      tool_undo: countsOf(record.tool_undo),
     };
   });
 
@@ -195,6 +215,10 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
     waitlist_email_submit: 0,
     invite_share: 0,
     invite_redeem: 0,
+    tool_open: 0,
+    tool_run: 0,
+    tool_accept: 0,
+    tool_undo: 0,
   };
   const totalsUv: Record<FunnelEvent, Set<string>> = {
     visit: new Set(),
@@ -203,6 +227,10 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
     waitlist_email_submit: new Set(),
     invite_share: new Set(),
     invite_redeem: new Set(),
+    tool_open: new Set(),
+    tool_run: new Set(),
+    tool_accept: new Set(),
+    tool_undo: new Set(),
   };
   for (const date of dates) {
     const record = doc.days[date];
@@ -226,6 +254,10 @@ export function summarizeDoc(doc: StoreDoc): FunnelMetrics {
       },
       invite_share: { pv: totalsPv.invite_share, uv: totalsUv.invite_share.size },
       invite_redeem: { pv: totalsPv.invite_redeem, uv: totalsUv.invite_redeem.size },
+      tool_open: { pv: totalsPv.tool_open, uv: totalsUv.tool_open.size },
+      tool_run: { pv: totalsPv.tool_run, uv: totalsUv.tool_run.size },
+      tool_accept: { pv: totalsPv.tool_accept, uv: totalsUv.tool_accept.size },
+      tool_undo: { pv: totalsPv.tool_undo, uv: totalsUv.tool_undo.size },
     },
   };
 }

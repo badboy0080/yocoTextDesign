@@ -417,6 +417,42 @@ html.studio-embedded .studio-navigation { display:none; }
 .preview-empty-card { width:100%; padding:36px 24px; border:1px dashed rgba(204,255,0,.5); border-radius:1.75rem; background:rgba(255,255,255,.04); text-align:center; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.28); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
 .preview-empty-icon { display:inline-flex; width:56px; height:56px; align-items:center; justify-content:center; border-radius:18px; background:rgba(204,255,0,.12); color:#ccff00; }
 .preview-empty-title { margin:14px 0 6px; color:#ebebeb; font-size:18px; font-weight:700; }
+
+.tool-menu-wrap { position:relative; }
+.tool-menu-button, .tool-undo { display:inline-flex; align-items:center; min-height:40px; padding:6px 16px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.05); color:#ebebeb; font:600 14px/20px "Space Grotesk","Noto Sans SC",sans-serif; cursor:pointer; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.tool-menu-button:hover, .tool-menu-button[aria-expanded="true"], .tool-undo:hover { border-color:rgba(204,255,0,.45); color:#ccff00; }
+.tool-undo[hidden], .tool-hint[hidden], .tool-menu[hidden] { display:none !important; }
+.tool-hint { margin:0; padding:6px 12px; border:1px solid rgba(204,255,0,.4); border-radius:999px; background:rgba(204,255,0,.12); color:#ccff00; font:600 12px/18px "Noto Sans SC",sans-serif; }
+.tool-menu { position:absolute; top:calc(100% + 8px); right:0; z-index:30; width:min(320px, calc(100vw - 32px)); padding:8px; border:1px solid rgba(255,255,255,.14); border-radius:16px; background:rgba(18,20,22,.72); box-shadow:0 18px 50px rgba(0,0,0,.45); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); }
+.tool-menu-item { display:flex; align-items:flex-start; gap:12px; width:100%; padding:10px 12px; border:0; border-radius:12px; background:transparent; color:#f4f4f0; text-align:left; cursor:pointer; font:600 14px/1.4 "Space Grotesk","Noto Sans SC",sans-serif; }
+.tool-menu-item:hover, .tool-menu-item:focus-visible { background:rgba(255,255,255,.08); outline:none; }
+.tool-menu-copy { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.tool-menu-copy small { color:rgba(255,255,255,.62); font-size:12px; font-weight:400; line-height:1.45; }
+.tool-menu-cost { margin-left:auto; color:#ccff00; font-size:12px; font-weight:600; white-space:nowrap; }
+.tool-compare { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(0,0,0,.55); }
+.tool-compare[hidden] { display:none !important; }
+.tool-compare-card { width:min(920px, 100%); max-height:min(86vh, 760px); display:flex; flex-direction:column; gap:16px; padding:20px; border:1px solid rgba(255,255,255,.14); border-radius:20px; background:rgba(16,18,20,.78); color:#f4f4f0; box-shadow:0 24px 80px rgba(0,0,0,.5); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); font-family:"Space Grotesk","Noto Sans SC",sans-serif; }
+.tool-compare-head h2 { margin:0; font-size:18px; font-weight:650; }
+.tool-compare-head p { margin:4px 0 0; color:rgba(255,255,255,.62); font-size:13px; }
+.tool-compare-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; min-height:220px; }
+.tool-compare-col { display:flex; flex-direction:column; gap:8px; min-width:0; max-height:46vh; overflow:auto; padding:14px; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(255,255,255,.04); }
+.tool-compare-col h3 { margin:0; color:rgba(255,255,255,.55); font-size:12px; font-weight:600; letter-spacing:.08em; }
+.tool-compare-col pre { margin:0; white-space:pre-wrap; word-break:break-word; color:#f4f4f0; font:400 14px/1.7 "Noto Sans SC",sans-serif; }
+.tool-compare-loading { margin:0; color:rgba(255,255,255,.72); font-size:14px; }
+.tool-compare-loading[hidden], .tool-compare-error[hidden], #toolCompareResult[hidden] { display:none !important; }
+.tool-compare-error { margin:0; color:#ffb4b4; font-size:13px; line-height:1.5; }
+.tool-compare-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.tool-compare-primary, .tool-compare-ghost { min-height:40px; padding:6px 16px; border-radius:999px; font:600 14px/20px "Space Grotesk","Noto Sans SC",sans-serif; cursor:pointer; }
+.tool-compare-primary { border:0; background:#ccff00; color:#16180f; }
+.tool-compare-primary:disabled { opacity:.45; cursor:not-allowed; }
+.tool-compare-ghost { border:1px solid rgba(255,255,255,.16); background:transparent; color:#ebebeb; }
+.tool-compare-ghost:disabled { opacity:.45; cursor:not-allowed; }
+@media (max-width: 823px) {
+  .tool-menu { right:auto; left:0; }
+  .tool-compare { padding:12px; }
+  .tool-compare-cols { grid-template-columns:1fr; }
+  .tool-compare-col { max-height:28vh; }
+}
 .preview-empty-note { margin:0; color:rgba(255,255,255,.62); font-size:13px; line-height:1.6; }
 .preview-empty-try { margin-top:16px; }
 #stylePane > .more-settings { border-color:rgba(204,255,0,.32); background:linear-gradient(180deg, rgba(204,255,0,.12), rgba(255,255,255,.04) 46%, rgba(255,255,255,.02)); box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 14px 32px rgba(0,0,0,.28); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }

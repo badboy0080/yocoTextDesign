@@ -52,6 +52,8 @@ npm install
 
 ```bash
 DEEPSEEK_API_KEY=你的密钥
+# 人味改写用另一把。不填时回退上面那把，并在日志里提示。
+DEEPSEEK_TOOLS_API_KEY=你的另一把密钥
 # 可选
 DEEPSEEK_MODEL=deepseek-flash
 ```
@@ -77,9 +79,9 @@ SES_REGION=ap-hongkong
 
 `SES_FROM_EMAIL` 可以只写邮箱，也可以写成 `Yooco <noreply@你的域名>`。本地 `npm run dev` 在这四项都没配时，验证码会出现在接口响应和服务器日志里，方便自己注册。只配了一部分时不会回显，免得配错了还以为发出去了。生产环境不会回显。其他非生产预览若也要回显，设置 `OTP_DEV_ECHO=1`。线上把上面这些配到 EdgeOne 环境变量。以前的 `RESEND_API_KEY` 不再使用。
 
-账号权限在 `/admin`。只有「不限次数」的账号，或写在 `ADMIN_EMAILS` 里的邮箱，登录后能进。名单是逗号分隔的邮箱，例如 `ADMIN_EMAILS=owner@yoooco.com,editor@yoooco.com`。本地开发把这行放进 `.env`，或写在启动命令前面。线上配到 EdgeOne 环境变量，不要写进仓库。种子 `admin@yoooco.com` 已经标了不限次数，不写名单也能进。这里人工改等级（`free` / `member` / `admin`）和每天排版次数，不收款。等级 `admin` 只是标记，不会自动打开后台，也不会自动不限次数。
+账号权限在 `/admin`。只有「不限积分」的账号，或写在 `ADMIN_EMAILS` 里的邮箱，登录后能进。名单是逗号分隔的邮箱，例如 `ADMIN_EMAILS=owner@yoooco.com,editor@yoooco.com`。本地开发把这行放进 `.env`，或写在启动命令前面。线上配到 EdgeOne 环境变量，不要写进仓库。种子 `admin@yoooco.com` 已经标了不限积分（旧字段仍叫 unlimitedUses），不写名单也能进。这里人工改等级（`free` / `member` / `admin`）和每天积分，不收款。等级 `admin` 只是标记，不会自动打开后台，也不会自动不限积分。旧的「每天 N 次」就是现在的 N 积分，账号里的数字不用搬。
 
-`lib/local-accounts.ts` 里还有一份保底名单。当前是 `ycheng0208@foxmail.com`：会员，每天 30 次，不是不限次数。账号库里还没有这个邮箱时，下次读账号（登录、注册或打开后台）会建一个占位账号，密码只存哈希，明文不在仓库里。本人用初始密码登录。再注册同一邮箱会提示已经注册过。本机没有账号库时，这个占位账号只在这次打开的服务里，重启后会按同一个密码再建。这个邮箱如果已经注册过，不改原来的密码；等级低于会员会抬到会员，每天次数低于 30 会抬到 30。已经是管理员、额度更高、或已经不限次数的，保持原样。后台若把这个人改回免费，或把额度改到 30 以下，下次再读账号库时仍会抬回去。
+`lib/local-accounts.ts` 里还有一份保底名单。当前是 `ycheng0208@foxmail.com`：会员，每天 30 积分，不是不限积分。账号库里还没有这个邮箱时，下次读账号（登录、注册或打开后台）会建一个占位账号，密码只存哈希，明文不在仓库里。本人用初始密码登录。再注册同一邮箱会提示已经注册过。本机没有账号库时，这个占位账号只在这次打开的服务里，重启后会按同一个密码再建。这个邮箱如果已经注册过，不改原来的密码；等级低于会员会抬到会员，每天积分低于 30 会抬到 30。已经是管理员、额度更高、或已经不限积分的，保持原样。后台若把这个人改回免费，或把额度改到 30 以下，下次再读账号库时仍会抬回去。
 
 启动开发服务：
 
@@ -144,7 +146,7 @@ lib/
 
 ## 注意事项
 
-- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`，以及注册验证码用的 `TENCENT_SECRET_ID`、`TENCENT_SECRET_KEY`、`SES_FROM_EMAIL`、`SES_TEMPLATE_ID`  
+- **密钥不要入库**：`.dev.vars` 已在 `.gitignore` 中，线上请用托管平台的 Secrets 配置 `DEEPSEEK_API_KEY`。人味改写另配 `DEEPSEEK_TOOLS_API_KEY`，不配就回退 `DEEPSEEK_API_KEY`。注册验证码用 `TENCENT_SECRET_ID`、`TENCENT_SECRET_KEY`、`SES_FROM_EMAIL`、`SES_TEMPLATE_ID`  
 - 「优化排版」依赖外网可达的 DeepSeek；若部署在海外节点，可能出现超时，需要单独处理网络可达性  
 - 本仓库由 vinext / Sites 脚手架承载前端与 Worker；产品入口是 `/studio.html`，不是默认首页模板文案
 

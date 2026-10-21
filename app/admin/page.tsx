@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "账号权限 · Yooco",
-  description: "站长人工开通账号等级和每天排版次数。",
+  description: "站长人工开通账号等级和每天积分。",
 };
 
 export default async function AdminPage() {
@@ -20,7 +20,7 @@ export default async function AdminPage() {
         <div className="admin-wrap admin-denied">
           <p className="admin-kicker">YOOCO / ADMIN</p>
           <h1>进不了后台</h1>
-          <p className="admin-lead">这个账号不是管理员。只有不限次数的账号，或写在管理员名单里的邮箱，才能改别人的等级和次数。</p>
+          <p className="admin-lead">这个账号不是管理员。只有不限积分的账号，或写在管理员名单里的邮箱，才能改别人的等级和积分。</p>
           <p className="admin-lead">
             <a className="admin-back" href="/studio.html">
               回到工作台

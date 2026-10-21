@@ -116,7 +116,7 @@ export function AdminAccounts({ actorEmail }: { actorEmail: string }) {
             <p className="admin-kicker">YOOCO / ADMIN</p>
             <h1>账号权限</h1>
             <p className="admin-lead">
-              人工开通，不收款。等级只是标记。每日额度留空，就用全站每天 {siteDailyLimit} 次。打开不限次数后，这个账号排版不扣次数，也能进这个后台。当前登录：{actorEmail}
+              人工开通，不收款。等级只是标记。每日积分留空，就用全站每天 {siteDailyLimit} 积分。打开不限积分后，这个账号不扣积分，也能进这个后台。当前登录：{actorEmail}
             </p>
           </div>
           <a className="admin-back" href="/studio.html">
@@ -220,7 +220,7 @@ function AccountEditor({
   function onSave() {
     const patch = buildPatch();
     if (patch === "bad") {
-      setError("每日额度请填 0 到 10000 的整数，留空则用全站默认。");
+      setError("每日积分请填 0 到 10000 的整数，留空则用全站默认。");
       return;
     }
     if (patch === "same") {
@@ -245,7 +245,7 @@ function AccountEditor({
         <div>
           <h2 className="admin-email">{account.email}</h2>
           <p className="admin-meta">
-            {account.name || "未填称呼"} · 邀请加成 {account.inviteBonus} · {formatCreated(account.createdAt)} · 当前额度 {limitLabel}
+            {account.name || "未填称呼"} · 邀请加成 {account.inviteBonus} 积分 · {formatCreated(account.createdAt)} · 当前每日积分 {limitLabel}
           </p>
         </div>
         {account.adminAccess ? <span className="admin-badge">可进后台</span> : null}
@@ -261,13 +261,13 @@ function AccountEditor({
           </select>
         </label>
         <label className="admin-field">
-          <span>每日额度</span>
+          <span>每日积分</span>
           <input
             value={limitText}
             onChange={(event) => setLimitText(event.target.value)}
             inputMode="numeric"
-            placeholder={`留空 = 每天 ${siteDailyLimit} 次`}
-            aria-label={`${account.email} 的每日额度`}
+            placeholder={`留空 = 每天 ${siteDailyLimit} 积分`}
+            aria-label={`${account.email} 的每日积分`}
           />
         </label>
         <label className="admin-check">
@@ -276,7 +276,7 @@ function AccountEditor({
             checked={unlimited}
             onChange={(event) => setUnlimited(event.target.checked)}
           />
-          <span>不限次数</span>
+          <span>不限积分</span>
         </label>
       </div>
 
@@ -293,19 +293,19 @@ function AccountEditor({
             <h2 id={`confirm-${account.id}`}>再确认一次</h2>
             {pendingPlan ? (
               <p>
-                把 {account.email} 的等级改成「{pendingPlan}」。等级本身不打开后台，也不自动不限次数。
+                把 {account.email} 的等级改成「{pendingPlan}」。等级本身不打开后台，也不自动不限积分。
               </p>
             ) : null}
             {pendingUnlimited === true ? (
-              <p>打开不限次数后，这个账号排版不再扣次数，并且能进后台。</p>
+              <p>打开不限积分后，这个账号不再扣积分，并且能进后台。</p>
             ) : null}
             {pendingUnlimited === false ? (
-              <p>关掉不限次数后，如果这个邮箱不在管理员名单里，就进不了后台。排版会重新按每日额度扣次数。</p>
+              <p>关掉不限积分后，如果这个邮箱不在管理员名单里，就进不了后台。使用时会重新按每日积分扣分。</p>
             ) : null}
             {"dailyLimit" in pending ? (
               <p>
-                每日额度改成
-                {pending.dailyLimit === null ? `全站默认，每天 ${siteDailyLimit} 次` : `每天 ${String(pending.dailyLimit)} 次`}。
+                每日积分改成
+                {pending.dailyLimit === null ? `全站默认，每天 ${siteDailyLimit} 积分` : `每天 ${String(pending.dailyLimit)} 积分`}。
               </p>
             ) : null}
             <p>人工开通，不收款。</p>

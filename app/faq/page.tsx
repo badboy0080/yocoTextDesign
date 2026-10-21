@@ -4,7 +4,7 @@ import { FaqTabsCard } from "@/components/faq-tabs-card";
 
 export const metadata: Metadata = {
   title: "常见问题 · Yooco",
-  description: "试用次数、邮箱验证码和邀请好友。",
+  description: "试用积分、邮箱验证码和邀请好友。",
 };
 
 export default function FaqPage() {

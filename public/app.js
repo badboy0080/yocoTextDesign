@@ -3154,7 +3154,6 @@ const STUDIO_TOOLS = [
 ];
 const TOOL_MAX_CHARS = 3000;
 let toolSession = null;
-let toolUndoSnapshot = null;
 let toolRequest = 0;
 let toolController = null;
 
@@ -3351,33 +3350,13 @@ function acceptToolRewrite() {
     }
     next = `${current.slice(0, at)}${result}${current.slice(at + selected.length)}`;
   }
-  toolUndoSnapshot = {
-    value: current,
-    articleTitleOverride,
-    blockTypeOverrides: { ...blockTypeOverrides },
-  };
   articleInput.value = next;
   articleTitleOverride = "";
   applyArticleSource(false);
-  const undo = document.querySelector("#toolUndo");
-  if (undo) undo.hidden = false;
   closeToolCompare();
   trackTool("tool_accept");
   setFeedback("原文和排版都已更新");
   showToolHint("");
-}
-
-function undoToolRewrite() {
-  if (!toolUndoSnapshot || !articleInput) return;
-  articleInput.value = toolUndoSnapshot.value;
-  articleTitleOverride = toolUndoSnapshot.articleTitleOverride;
-  blockTypeOverrides = { ...toolUndoSnapshot.blockTypeOverrides };
-  toolUndoSnapshot = null;
-  const undo = document.querySelector("#toolUndo");
-  if (undo) undo.hidden = true;
-  applyArticleSource(false);
-  trackTool("tool_undo");
-  setFeedback("已撤销这次改写");
 }
 
 function renderToolMenu() {
@@ -3432,7 +3411,6 @@ function setupStudioTools() {
     void runTool();
   });
   document.querySelector("#toolCancel")?.addEventListener("click", cancelToolRewrite);
-  document.querySelector("#toolUndo")?.addEventListener("click", undoToolRewrite);
   document.querySelector("#toolCompare")?.addEventListener("click", (event) => {
     if (event.target === document.querySelector("#toolCompare")) cancelToolRewrite();
   });

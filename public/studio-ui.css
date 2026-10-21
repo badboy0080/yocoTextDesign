@@ -398,15 +398,16 @@ html.studio-embedded .studio-navigation { display:none; }
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(204, 255, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 42%, rgba(204, 255, 0, 0.34), rgba(204, 255, 0, 0.08) 58%, rgba(0, 0, 0, 0.35));
-  color: #ccff00;
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  animation: invite-gift-glow 3.2s ease-in-out infinite, invite-gift-bob 4.8s ease-in-out infinite;
+  animation: invite-gift-glow 6.5s ease-in-out infinite;
 }
-.invite-gift svg { width: 18px; height: 18px; transform-origin: 50% 70%; animation: invite-gift-wobble 4.8s ease-in-out infinite; }
-.invite-gift:hover, .invite-gift:focus-visible { border-color: #ccff00; color: #e8ff8a; }
+.invite-gift svg { width: 20px; height: 20px; transform-origin: 50% 62%; animation: invite-gift-wobble 6.5s ease-in-out infinite; }
+.invite-gift-box, .invite-gift-lid { fill: #242424; stroke: rgba(255, 255, 255, 0.78); stroke-width: 1.2; }
+.invite-gift-ribbon { fill: #ccff00; stroke: none; }
+.invite-gift:hover, .invite-gift:focus-visible { border-color: rgba(204, 255, 0, 0.55); }
 .invite-gift::after {
   content: "邀请好友，双方各 +5 积分";
   position: absolute;
@@ -426,20 +427,14 @@ html.studio-embedded .studio-navigation { display:none; }
 }
 .invite-gift:hover::after, .invite-gift:focus-visible::after { opacity: 1; }
 @keyframes invite-gift-wobble {
-  0%, 70%, 100% { transform: rotate(0deg); }
-  76% { transform: rotate(-9deg); }
-  82% { transform: rotate(8deg); }
-  88% { transform: rotate(-4deg); }
-  94% { transform: rotate(2deg); }
-}
-@keyframes invite-gift-bob {
-  0%, 78%, 100% { translate: 0 0; }
-  86% { translate: 0 -3px; }
-  93% { translate: 0 0; }
+  0%, 14%, 100% { transform: rotate(0deg); }
+  3% { transform: rotate(-3deg); }
+  7% { transform: rotate(2.5deg); }
+  11% { transform: rotate(-1deg); }
 }
 @keyframes invite-gift-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(204, 255, 0, 0.16); }
-  50% { box-shadow: 0 0 16px rgba(204, 255, 0, 0.42); }
+  0%, 46%, 62%, 100% { box-shadow: 0 0 0 0 rgba(204, 255, 0, 0); }
+  52% { box-shadow: 0 0 10px 1px rgba(204, 255, 0, 0.38); }
 }
 @media (prefers-reduced-motion: reduce) {
   .invite-gift, .invite-gift svg { animation: none; }

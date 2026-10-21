@@ -51,11 +51,11 @@ const INVITE_GIFT_LABEL = "邀请好友，双方各 +5 积分";
 function InviteGiftIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 7.2c-1.15-2.15-3.35-3.15-4.85-1.9-1.15.95-1.05 2.45.25 3.05" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M12 7.2c1.15-2.15 3.35-3.15 4.85-1.9 1.15.95 1.05 2.45-.25 3.05" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <rect x="3.5" y="8" width="17" height="3.2" rx="0.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <rect x="4.5" y="11.2" width="15" height="8.3" rx="0.8" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M12 8v11.5" stroke="currentColor" strokeWidth="1.6" />
+      <rect className="invite-gift-box" x="4.1" y="11" width="15.8" height="8.5" rx="1.4" />
+      <rect className="invite-gift-lid" x="3.2" y="8.15" width="17.6" height="3.05" rx="0.85" />
+      <rect className="invite-gift-ribbon" x="10.85" y="8.15" width="2.3" height="11.35" />
+      <path className="invite-gift-ribbon" d="M12 8.2c-1.35-2.15-3.55-2.85-4.55-1.75-.85.95-.35 2.25 1.05 2.55 1.15.25 2.45-.15 3.5-.8z" />
+      <path className="invite-gift-ribbon" d="M12 8.2c1.35-2.15 3.55-2.85 4.55-1.75.85.95.35 2.25-1.05 2.55-1.15.25-2.45-.15-3.5-.8z" />
     </svg>
   );
 }

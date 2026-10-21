@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-20 常见问题折叠、邀请卡和留邮箱样式
+
+- 想做什么：按 21st 那几块的交互，改常见问题、首页简版问答、邀请分享和留邮箱的样子。颜色用现有深色加青柠绿。不要改四条原文，不要动注册页和工作台布局，不要合并、不要部署。
+- 做成了什么：`/faq` 是分类 Tab，点开看答案。首页底部放同样四条折叠，加「更多问题」。邀请弹窗改成卡片，标题写双方各 +5 次。留邮箱改成带光晕的胶囊输入。文案、复制内容和两个埋点都没改规则。
+- 改了哪些文件：`lib/site-faq.ts`、`components/faq-answer.tsx`、`components/faq-tabs-card.tsx`、`components/home-faq.tsx`、`app/faq/page.tsx`、`app/home-landing.tsx`、`app/account.css`、`app/home.css`、`components/invite-modal.tsx`、`components/invite-modal.css`、`public/studio.html`（只动邀请弹窗和样式版本号）、`public/studio-ui.css`、`public/styles.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run build:edgeone` 通过。`npx tsx scripts/check-invite.ts` 通过。本地 5174 用浏览器看了桌面和 390 宽：分类能切换、答案能收起、首页能展开并跳到 `/faq`、邀请能复制原来的整段话并记下 invite_share、留邮箱提交后显示「已记下。开放订阅后通知你。」没有部署。
+- 待办/风险：没有可用客服联系方式，所以常见问题底部没加联系按钮。宽屏首页第一屏仍是一屏，问答在往下滚之后。已合 master。
+
 ### 2026-10-19 重点样式加上删除线、下划线、波浪
 
 - 想做什么：工作台「重点样式」里自己能选删除线、下划线、波浪，用来改 `==重点==`。不要逼着改全局样式才能写一处删除线。

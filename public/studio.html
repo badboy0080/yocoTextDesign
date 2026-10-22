@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=block-menu-dark-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=humanize-float-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=sidebar-history-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -20,6 +20,13 @@
       <aside class="studio-navigation" aria-label="网站导航">
         <a class="studio-logo" href="/" aria-label="Yooco 首页"><img class="yooco-brand-bubble" src="./yooco-mark-lime.svg" alt="" width="40" height="32" /><span class="yooco-brand-word">Yooco</span></a>
         <nav><a href="/works?panel=studio" aria-current="page">工作台</a><a href="/works">精品模板</a></nav>
+        <section class="studio-history" id="historyRail" aria-labelledby="historyTitle">
+          <h2 id="historyTitle">历史</h2>
+          <p class="history-status" id="historyStatus" role="status"></p>
+          <ul class="history-list" id="historyList">
+            <li class="history-empty">登录后可看排版历史。</li>
+          </ul>
+        </section>
         <div class="studio-side-foot">
           <a class="studio-home-link" href="/">返回首页</a>
           <div class="studio-account" id="studioAccount" hidden>
@@ -64,7 +71,10 @@
         </div>
         <p class="tool-hint" id="toolHint" role="status" hidden></p>
         <span class="trial-meter" id="trialMeter" hidden>剩余积分</span>
-        <button class="history-open" id="historyOpen" type="button" hidden aria-haspopup="dialog" aria-controls="historyDrawer" aria-expanded="false">历史</button>
+        <div class="history-fallback" id="historyFallback" hidden>
+          <button class="history-open" id="historyOpen" type="button" aria-expanded="false" aria-controls="historyPopover">历史</button>
+          <div class="history-popover" id="historyPopover" hidden></div>
+        </div>
         <a class="studio-login" id="studioLogin" href="/login">Log in</a>
       </div>
     </header>
@@ -337,19 +347,6 @@
       </div>
     </div>
 
-    <div class="history-drawer" id="historyDrawer" hidden>
-      <div class="history-backdrop" id="historyBackdrop"></div>
-      <aside class="history-panel" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
-        <div class="history-head">
-          <h2 id="historyTitle">历史记录</h2>
-          <button class="history-close" id="historyClose" type="button">关闭</button>
-        </div>
-        <p class="history-note">只给你自己看。每次优化成功会记一条，点开可以继续改。</p>
-        <p class="history-status" id="historyStatus" role="status"></p>
-        <ul class="history-list" id="historyList"></ul>
-      </aside>
-    </div>
-
     <div class="invite-modal" id="inviteModal" hidden>
       <div class="invite-modal-card" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle" tabindex="-1">
         <button class="invite-modal-x" id="inviteClose" type="button" aria-label="关闭">×</button>
@@ -421,6 +418,6 @@
     <script src="./analytics.js?v=credits-tools-v1"></script>
     <script src="./themes.js?v=text-align-v1"></script>
     <script src="./samples/sample-try.js?v=credits-tools-v1"></script>
-    <script src="./app.js?v=humanize-float-v1"></script>
+    <script src="./app.js?v=sidebar-history-v1"></script>
   </body>
 </html>

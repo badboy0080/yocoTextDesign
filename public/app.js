@@ -2910,24 +2910,46 @@ async function rememberLayoutHistory(originalSource) {
     });
     if (response.status === 401) return;
     if (!response.ok) setFeedback("排版好了，但这条没能记进历史。");
-    else if (document.querySelector("#historyDrawer")?.hidden === false) void refreshHistoryList();
+    else void refreshHistoryList();
   } catch {
     /* 记历史失败不能打断排版 */
   }
 }
 
 let historyUiReady = false;
+let historyCurrentId = "";
+
+function studioEmbedded() {
+  return document.documentElement.classList.contains("studio-embedded");
+}
 
 function setHistoryStatus(message) {
   const status = document.querySelector("#historyStatus");
   if (status) status.textContent = message || "";
 }
 
-function closeHistoryDrawer() {
-  const drawer = document.querySelector("#historyDrawer");
+function setHistoryFallback(open) {
+  const pop = document.querySelector("#historyPopover");
   const opener = document.querySelector("#historyOpen");
-  if (drawer) drawer.hidden = true;
-  if (opener) opener.setAttribute("aria-expanded", "false");
+  if (pop) pop.hidden = !open;
+  if (opener) opener.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+function mountHistoryForShell() {
+  if (!studioEmbedded()) return;
+  const rail = document.querySelector("#historyRail");
+  const pop = document.querySelector("#historyPopover");
+  if (rail && pop && rail.parentElement !== pop) pop.append(rail);
+}
+
+function renderHistoryMessage(text) {
+  const list = document.querySelector("#historyList");
+  if (!list) return;
+  list.replaceChildren();
+  const empty = document.createElement("li");
+  empty.className = "history-empty";
+  empty.textContent = text;
+  list.append(empty);
 }
 
 function renderHistoryList(items) {
@@ -2935,16 +2957,15 @@ function renderHistoryList(items) {
   if (!list) return;
   list.replaceChildren();
   if (!items.length) {
-    const empty = document.createElement("li");
-    empty.className = "history-empty";
-    empty.textContent = "还没有排版记录。优化成功后会出现在这里。";
-    list.append(empty);
+    renderHistoryMessage("还没有排版记录。");
     return;
   }
   items.forEach((item) => {
     const row = document.createElement("li");
     const button = document.createElement("button");
     button.type = "button";
+    button.dataset.id = item.id || "";
+    if (item.id && item.id === historyCurrentId) button.classList.add("is-current");
     const title = document.createElement("strong");
     title.textContent = item.title || "未命名";
     const meta = document.createElement("span");
@@ -2964,9 +2985,11 @@ async function refreshHistoryList() {
     const response = await fetch("/api/history", { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) {
-      closeHistoryDrawer();
-      const opener = document.querySelector("#historyOpen");
-      if (opener) opener.hidden = true;
+      setHistoryStatus("");
+      renderHistoryMessage("登录后可看排版历史。");
+      const fallback = document.querySelector("#historyFallback");
+      if (fallback) fallback.hidden = true;
+      setHistoryFallback(false);
       return;
     }
     if (!response.ok || !Array.isArray(data.items)) {
@@ -3006,29 +3029,35 @@ async function loadHistoryItem(id) {
       return;
     }
     applyHistoryRecord(data.item);
-    closeHistoryDrawer();
+    historyCurrentId = id;
+    document.querySelectorAll("#historyList button").forEach((button) => {
+      button.classList.toggle("is-current", button.dataset.id === id);
+    });
+    setHistoryStatus("");
+    if (studioEmbedded()) setHistoryFallback(false);
   } catch {
     setHistoryStatus("这条暂时打不开。");
   }
 }
 
-function openHistoryDrawer() {
-  const drawer = document.querySelector("#historyDrawer");
-  const opener = document.querySelector("#historyOpen");
-  if (!drawer) return;
-  drawer.hidden = false;
-  if (opener) opener.setAttribute("aria-expanded", "true");
-  void refreshHistoryList();
-}
-
 function setupHistoryUi() {
   if (historyUiReady) return;
   historyUiReady = true;
-  document.querySelector("#historyOpen")?.addEventListener("click", openHistoryDrawer);
-  document.querySelector("#historyClose")?.addEventListener("click", closeHistoryDrawer);
-  document.querySelector("#historyBackdrop")?.addEventListener("click", closeHistoryDrawer);
+  mountHistoryForShell();
+  if (!studioEmbedded()) return;
+  document.querySelector("#historyOpen")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const pop = document.querySelector("#historyPopover");
+    const willOpen = pop?.hidden !== false;
+    setHistoryFallback(willOpen);
+    if (willOpen) void refreshHistoryList();
+  });
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element) || event.target.closest("#historyFallback")) return;
+    setHistoryFallback(false);
+  });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && document.querySelector("#historyDrawer")?.hidden === false) closeHistoryDrawer();
+    if (event.key === "Escape") setHistoryFallback(false);
   });
 }
 
@@ -3159,9 +3188,12 @@ async function showLocalAccount() {
     account.hidden = false;
     studioLoggedIn = true;
     if (login) login.hidden = true;
-    const historyOpen = document.querySelector("#historyOpen");
-    if (historyOpen) historyOpen.hidden = false;
     setupHistoryUi();
+    if (studioEmbedded()) {
+      const fallback = document.querySelector("#historyFallback");
+      if (fallback) fallback.hidden = false;
+    }
+    void refreshHistoryList();
     const name = document.querySelector("#studioAccountName");
     if (name) {
       name.textContent = data.name || data.email;
@@ -3534,7 +3566,7 @@ function cancelToolRewrite() {
 }
 
 function humanizeDialogOpen() {
-  return ["#toolCompare", "#inviteModal", "#historyDrawer"].some((id) => {
+  return ["#toolCompare", "#inviteModal", "#historyPopover"].some((id) => {
     const node = document.querySelector(id);
     return node && node.hidden === false;
   });
@@ -3686,15 +3718,12 @@ function paintHumanizeFloat() {
   if (kind === "preview") {
     const state = inspectPreviewSelection();
     const focused = Boolean(document.activeElement && articleBody.contains(document.activeElement));
-    if (focused && state.kind === "text") {
-      humanizeRemembered = state.pick;
-      pick = state.pick;
-      rects = [...state.pick.range.getClientRects()];
-      box = previewStage.getBoundingClientRect();
-    } else if (focused && (state.kind === "short" || state.kind === "locked")) {
-      humanizeRemembered = null;
-    }
-  } else if (kind === "source" && articleInput && document.activeElement === articleInput) {
+    if (focused && state.kind === "text") humanizeRemembered = state.pick;
+    else if (focused && (state.kind === "short" || state.kind === "locked")) humanizeRemembered = null;
+    hideHumanizeLayer();
+    return;
+  }
+  if (kind === "source" && articleInput && document.activeElement === articleInput) {
     const sourcePick = selectedSourceRange();
     if (sourcePick && selectionShowsHumanize(sourcePick.selected)) {
       pick = sourcePick;

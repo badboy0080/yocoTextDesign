@@ -149,7 +149,7 @@ function guestTrialLimit() {
   return trialLimit;
 }
 const TRIAL_STORAGE_KEY = "yooco-trial";
-const WAITLIST_COPY = "免费积分用完了。留下邮箱，开放订阅我通知你。";
+const WAITLIST_COPY = "免费积分用完了。邀请好友，双方各再得 +5 积分。";
 const UPGRADE_PROMPT = WAITLIST_COPY;
 let serverTrialRemaining = null;
 let serverTrialBonus = 0;
@@ -3049,8 +3049,22 @@ async function showLocalAccount() {
     more.setAttribute("aria-expanded", open ? "true" : "false");
   });
   document.querySelector("#studioProfile")?.addEventListener("click", closeMenu);
+  let studioLoggedIn = false;
+  const goToLogin = () => {
+    const url = "/login";
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.assign(url);
+        return;
+      }
+    } catch {
+      /* 顶层打不开就在当前页走 */
+    }
+    location.assign(url);
+  };
   const inviteModal = document.querySelector("#inviteModal");
   const inviteBody = document.querySelector("#inviteModalBody");
+  const inviteCodeText = document.querySelector("#inviteCodeText");
   const inviteStatus = document.querySelector("#inviteModalStatus");
   const inviteCopy = document.querySelector("#inviteCopy");
   let inviteCode = "";
@@ -3064,6 +3078,7 @@ async function showLocalAccount() {
     inviteCode = "";
     if (inviteCopy) inviteCopy.disabled = true;
     if (inviteStatus) inviteStatus.textContent = "";
+    if (inviteCodeText) inviteCodeText.textContent = "邀请码";
     inviteBody.textContent = "正在取出邀请码…";
     inviteModal.hidden = false;
     inviteModal.querySelector(".invite-modal-card")?.focus();
@@ -3075,14 +3090,31 @@ async function showLocalAccount() {
         return;
       }
       inviteCode = data.code;
-      inviteBody.textContent = data.sentence;
+      inviteBody.textContent = "";
+      if (inviteCodeText) inviteCodeText.textContent = data.code;
       if (inviteCopy) inviteCopy.disabled = false;
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("invite_share");
     } catch {
       inviteBody.textContent = "暂时取不出邀请码，请稍后再试。";
     }
   };
-  document.querySelector("#studioInvite")?.addEventListener("click", openInvite);
+  document.querySelector("#studioGift")?.addEventListener("click", openInvite);
+  document.querySelector("#trialInvite")?.addEventListener("click", async () => {
+    if (!studioLoggedIn) {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = response.ok ? await response.json().catch(() => ({})) : {};
+        studioLoggedIn = Boolean(data?.email);
+      } catch {
+        studioLoggedIn = false;
+      }
+    }
+    if (!studioLoggedIn) {
+      goToLogin();
+      return;
+    }
+    openInvite();
+  });
   document.querySelector("#inviteClose")?.addEventListener("click", closeInvite);
   inviteModal?.addEventListener("click", (event) => {
     if (event.target === inviteModal) closeInvite();
@@ -3090,7 +3122,7 @@ async function showLocalAccount() {
   inviteCopy?.addEventListener("click", async () => {
     if (!inviteCode) return;
     try {
-      await navigator.clipboard.writeText(`好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：${inviteCode}\n好友注册成功后，双方各 +5 积分。`);
+      await navigator.clipboard.writeText(`好文章值得好排版。\n一起来试：https://www.yoooco.com/\n邀请码：${inviteCode}\n好友注册成功后，双方各 +5 积分。`);
       if (inviteStatus) inviteStatus.textContent = "已复制。";
     } catch {
       if (inviteStatus) inviteStatus.textContent = "复制没成功，请手动选中邀请码。";
@@ -3124,6 +3156,7 @@ async function showLocalAccount() {
       return;
     }
     account.hidden = false;
+    studioLoggedIn = true;
     if (login) login.hidden = true;
     const historyOpen = document.querySelector("#historyOpen");
     if (historyOpen) historyOpen.hidden = false;
@@ -3176,7 +3209,7 @@ function studioIsLoggedIn() {
 
 function promptNeedCredits() {
   showUpgradePrompt();
-  if (studioIsLoggedIn()) document.querySelector("#studioInvite")?.click();
+  if (studioIsLoggedIn()) document.querySelector("#studioGift")?.click();
 }
 
 function showToolHint(message) {

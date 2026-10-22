@@ -22,14 +22,21 @@ function assert(condition: unknown, message: string) {
 
 const expectedSentence = "你的邀请码：ABC234。好友注册成功后，双方各 +5 积分。一码最多用 5 次。";
 assert(inviteSentence("ABC234") === expectedSentence, "弹窗要写双方各加 5 积分");
-const expectedShare = "好的文章就应该有好的排版！\n快来https://yoooco.com/一起体验排版的乐趣吧！\n邀请码：ABC234\n好友注册成功后，双方各 +5 积分。";
-assert(inviteShareText("ABC234") === expectedShare, "复制模板要在原三行后写双方各加 5 积分");
+const expectedShare = "好文章值得好排版。\n一起来试：https://www.yoooco.com/\n邀请码：ABC234\n好友注册成功后，双方各 +5 积分。";
+assert(inviteShareText("ABC234") === expectedShare, "复制模板用张默终稿");
 assert(expectedShare.includes(`双方各 +${INVITE_BONUS_USES} 积分`), "复制模板的加积分要跟常量一致");
+assert(expectedShare.includes("https://www.yoooco.com/"), "分享链接用正式域名");
 const studioCopy = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
 const registerCopy = readFileSync(new URL("../components/auth-page.tsx", import.meta.url), "utf8");
-assert(studioCopy.includes("好友注册成功后，双方各 +5 积分。"), "工作室复制模板也要写双方各加 5 积分");
+assert(studioCopy.includes("好文章值得好排版。\\n一起来试：https://www.yoooco.com/\\n邀请码：${inviteCode}\\n好友注册成功后，双方各 +5 积分。"), "工作室复制模板同一段");
+assert(!studioCopy.includes("快来https://yoooco.com/"), "工作室不要留旧分享句");
 assert(!studioCopy.includes("可多 5 次免费"), "工作室不要留只给好友加次的旧句");
-assert(registerCopy.includes("注册成功后，双方各 +5 积分"), "注册页要写双方各加 5 积分");
+assert(studioCopy.includes("免费积分用完了。邀请好友，双方各再得 +5 积分。"), "积分用完横幅主文案");
+assert(!studioCopy.includes("留下邮箱，开放订阅我通知你"), "横幅不再把留邮箱当主句");
+assert(registerCopy.includes("邀请码（选填）"), "注册页标签");
+assert(registerCopy.includes("有就填，没有也能注册"), "注册页占位");
+assert(registerCopy.includes("填了邀请码并注册成功，双方各 +5 积分。"), "注册页提示");
+assert(!registerCopy.includes("没有也可以注册"), "注册页不要留旧占位");
 assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
 assert(SITE_FAQ.length === 4, "常见问题正好四条");
 assert(faqCategories().join("|") === "积分|验证码|邀请", "常见问题按积分、验证码、邀请分组");
@@ -46,9 +53,33 @@ const inviteModal = readFileSync(new URL("../components/invite-modal.tsx", impor
 assert(inviteModal.includes("inviteShareText"), "复制仍用原来的整段话");
 assert(inviteModal.includes("invite_share"), "打开和复制仍记 invite_share");
 assert(inviteModal.includes("双方各 +5 积分"), "邀请卡写双方各加 5 积分");
+assert(inviteModal.includes("邀请赢积分"), "邀请弹窗标题是邀请赢积分");
+assert(!inviteModal.includes("+200") && !inviteModal.includes("flova") && !inviteModal.includes("查看邀请历史"), "邀请弹窗不抄参考站规则、域名和历史");
 const studioHtml = readFileSync(new URL("../public/studio.html", import.meta.url), "utf8");
 assert(studioHtml.includes("邀请好友，双方各 +5 积分"), "工作室邀请卡写双方各加 5 积分");
-assert(studioHtml.includes('id="waitlistForm"') && studioHtml.includes('id="waitlistEmail"'), "留邮箱表单还在");
+assert(studioHtml.includes('id="studioGift"'), "直接打开的工作台，头像上方有礼盒");
+assert(studioHtml.includes('title="邀请好友，双方各 +5 积分"'), "礼盒悬停文案");
+assert(studioHtml.includes(">邀请赢积分</span>"), "礼盒旁有邀请赢积分");
+assert(studioHtml.includes("https://www.yoooco.com/"), "弹窗里的链接是正式站");
+assert(!studioHtml.includes("+200") && !studioHtml.includes("flova") && !studioHtml.includes("查看邀请历史"), "工作室弹窗不抄参考站");
+assert(!studioHtml.includes('id="studioInvite"'), "账号菜单不再放邀请好友");
+assert(studioHtml.includes('id="trialInvite">邀请好友</button>'), "积分用完主按钮是邀请好友");
+assert(studioHtml.includes("免费积分用完了。邀请好友，双方各再得 +5 积分。"), "积分用完横幅主文案写在页面上");
+assert(studioHtml.includes('id="waitlistForm"') && studioHtml.includes('id="waitlistEmail"'), "留邮箱表单还在，只是次要");
+const worksFrame = readFileSync(new URL("../components/works-frame.tsx", import.meta.url), "utf8");
+const accountMenu = readFileSync(new URL("../components/account-menu.tsx", import.meta.url), "utf8");
+assert(worksFrame.includes('className="invite-gift"'), "作品侧栏头像上方有礼盒");
+assert(worksFrame.includes("邀请好友，双方各 +5 积分"), "侧栏礼盒悬停文案");
+assert(worksFrame.includes("邀请赢积分"), "侧栏礼盒旁有短标签");
+const worksCss = readFileSync(new URL("../app/works.css", import.meta.url), "utf8");
+const studioUi = readFileSync(new URL("../public/studio-ui.css", import.meta.url), "utf8");
+assert(worksCss.includes(".invite-gift-ribbon { fill: #e6c56b"), "作品侧栏礼盒丝带是金色");
+assert(studioUi.includes(".invite-gift-ribbon { fill: #e6c56b"), "工作台礼盒丝带是金色");
+assert(!worksCss.includes(".invite-gift-ribbon { fill: #ccff00") && !studioUi.includes(".invite-gift-ribbon { fill: #ccff00"), "礼盒不再用荧光绿丝带");
+assert(!studioUi.includes(".invite-modal-copy") || studioUi.includes("linear-gradient(100deg, #f6e7b8"), "复制按钮是金色渐变");
+assert(!worksFrame.includes(">邀请好友</button>"), "侧栏菜单不再有邀请好友");
+assert(worksFrame.includes(">个人信息</button>"), "个人信息还在，不改去处");
+assert(!accountMenu.includes("邀请好友"), "登录页账号菜单不再放邀请");
 assert(SITE_FAQ.map((item) => item.title).join("|") === "试用积分|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题里，试用改成积分");
 assert(
   SITE_FAQ[0].body === "未登录每天免费 3 积分，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加积分。请勿重复注册刷积分。",
@@ -59,8 +90,8 @@ assert(
   "验证码说明用客服定稿",
 );
 assert(
-  SITE_FAQ[2].body === "个人信息里拿邀请码。好友注册时填码并注册成功后，邀请人与被邀请人各 +5 积分。一码最多核销 5 次；同一账号只能核销一次。",
-  "邀请说明里的加次改成积分",
+  SITE_FAQ[2].body === "登录后，点工作台头像上方的礼包图标，复制邀请码发给朋友。朋友注册时填上这个码并注册成功后，你们俩各得 +5 积分。一个码最多给 5 个朋友用；同一个账号只能核销一次。",
+  "邀请说明指向头像上方礼包",
 );
 assert(
   SITE_FAQ[3].body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",

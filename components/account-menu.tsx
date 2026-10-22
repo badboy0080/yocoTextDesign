@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { InviteModal } from "@/components/invite-modal";
 
 export function AccountMenu() {
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -51,12 +49,10 @@ export function AccountMenu() {
         </button>
         {open ? (
           <div className="account-menu-popover" role="menu">
-            <button type="button" role="menuitem" onClick={() => { setOpen(false); setInviteOpen(true); }}>邀请好友</button>
             <button type="button" role="menuitem" onClick={logout}>退出</button>
           </div>
         ) : null}
       </div>
-      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </>
   );
 }

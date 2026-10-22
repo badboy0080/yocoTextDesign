@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+邀请入口改到头像上方礼盒（2026-10-21，PR #51，未合并、未部署）：登录后，工作台左侧头像正上方有一枚克制的金色礼盒，旁边写着「邀请赢积分」。悬停是「邀请好友，双方各 +5 积分」。点开的邀请弹窗是深炭黑底、没有外圈描边、金色数字，主按钮是金色渐变。内部两张卡和复制条也不画边。左右两张卡写的是你得 +5、好友得 +5，没有抄参考站的 +200 或会员 5%。没有「查看邀请历史」。复制仍是原来的分享句，链接是 https://www.yoooco.com/ 。账号菜单里的「邀请好友」已去掉。个人信息仍只关菜单。常见问题仍是点头像上方礼包，奖励仍是双方各 +5。积分用完主按钮还是「邀请好友」，留下邮箱退到次要。`studio-ui.css` 缓存号是 `invite-noborder-v1`，`app.js` 仍是 `invite-gold-v1`。积分加减规则没动。
+
 工作台去掉顶栏「撤销」（2026-10-21，PR #50，已接到含人味接口类型修复的 master，未合并、未部署）：「工具」和积分之间的撤销按钮删了。确认「更具有人味」后仍会改原文和排版，顶栏不再出现撤销。`app.js` 和 `studio-ui.css` 的缓存号是 `no-undo-v1`。工具箱、积分、示例文章、历史没动。`npm run build` 已通过。截图里的改写是假返回，这台机器没有密钥。
 
 人味接口类型检查（2026-10-21，PR #49，未合并、未部署）：EdgeOne 的 `next build` 把 `request.json()` 看成空对象，读 `body.tool` 和 `body.text` 失败。只在 `app/api/tools/route.ts` 给结果标了 `{ tool?: string; text?: string }`。仍是字符串才用，否则当空。积分、改写和错误码没动。Node 22 的 `npm run build:edgeone` 已通过。
@@ -121,6 +123,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-21 邀请文案和头像上方礼盒
+
+- 想做什么：按张默终稿改邀请文案。发出邀请码改到工作台头像正上方的礼盒，菜单里不再留「邀请好友」。积分用完主引导改成邀请好友。不改积分加减。开 PR，不合并。
+- 做成了什么：礼盒只在登录后出现，作品侧栏和直接打开的工作台都有。旁边短标签是「邀请赢积分」，悬停仍是「邀请好友，双方各 +5 积分」。点礼盒或积分用完的「邀请好友」都打开邀请弹窗；没登录点横幅会去登录。弹窗改成深色、去掉外圈和内部描边：两张卡分别是你得 +5、好友得 +5，复制区是正式站链接和邀请码，按钮是金色渐变。没有假的邀请历史。`studio-ui.css` 缓存号是 `invite-noborder-v1`。个人信息仍只关掉菜单。注册页、常见问题和复制分享句按终稿。留邮箱表单还在，按钮改成次要。礼盒仍会轻轻晃一下并闪一次微光，颜色改成金。
+- 改了哪些文件：`lib/site-faq.ts`、`lib/invite-copy.ts`、`components/auth-page.tsx`、`components/account-menu.tsx`、`components/works-frame.tsx`、`components/invite-modal.tsx`、`components/invite-modal.css`、`app/works.css`、`public/studio.html`、`public/app.js`、`public/studio-ui.css`、`public/styles.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts` 通过。浏览器看了作品侧栏和直接打开的工作台：金色礼盒在头像正上方，短标签不压名字，点开是金色双卡弹窗，码是 THRW84，链接是 www.yoooco.com。菜单只有个人信息和退出。无头浏览器里剪贴板被拦住，页面会提示复制没成功；这是原来的复制方式，不是新逻辑。没有部署。
+- 待办/风险：PR #51。合进 master 会自动部署正式站。这次等阿超确认再合并。积分加减没动。
+
 ### 2026-10-21 去掉工作台顶栏的撤销
 
 - 想做什么：顶栏「工具」和积分之间的「撤销」去掉。确认「更具有人味」之后不要再出现这个按钮。工具箱、积分、示例文章、历史不动。开 PR，不合并。
@@ -152,11 +162,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/credits.js`、`lib/edgeone-rate-limit.ts`、`lib/trial-quota.js`、`lib/tool-prompts.js`、`lib/deepseek-tools.js`、`lib/runtime-env.ts`、`lib/analytics-store.ts`、`lib/invite-copy.ts`、`lib/invite-store.ts`、`lib/site-faq.ts`、`lib/local-accounts.ts`、`app/api/normalize/route.ts`、`app/api/tools/route.ts`、`app/api/track/route.ts`、`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`public/analytics.js`、注册页、邀请弹窗、管理后台、常见问题、`README.md`、检查脚本和交接日志。
 - 如何验证：`npm run build` 通过。邀请、不限积分、账号额度这几份检查脚本通过。浏览器里打开工作台：工具下拉、对比弹窗的加载和结果、确认后原文和排版一起变、顶栏从 3 积分变成 2 积分、出现撤销。改写文字是浏览器里假造的，没有真的调用 DeepSeek。没有部署。
 - 待办/风险：EdgeOne 要新配 `DEEPSEEK_TOOLS_API_KEY`。没配会用排版那把密钥，日志里会提示。取消时如果服务端已经写完，积分仍会扣，工作台会重新读剩余。
-
-### 2026-10-21 工作台用示例文章试一下
-
-- 想做什么：空状态文案下面加按钮「用示例文章试一下」。点完左侧有一篇原创示例，右侧是预先排好的结果。不调 AI，不扣积分，不写历史。之后自己贴文章再优化，照旧扣积分。
-- 做成了什么：按钮用现有次级样式。示例原文和默认主题的 HTML 放在 `public/samples/sample-try.js`。点按钮只填原文、显示这段 HTML。换主题用本地排版重画，并提示没有调用优化。已合进 master `2eaa220`。
-- 改了哪些文件：`public/studio.html`、`public/app.js`、`public/studio-ui.css`、`public/samples/sample-try.js`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：合入前 `npm run build` 通过。桌面空态能看到按钮；点完有标题、小标题、四条列表和引用。换主题会本地重排，不发优化请求。
-- 待办/风险：没有真贴公众号。浏览器里如果还存着旧文章，要先清空才会看到空态按钮。标题样式如果选了海报、胶囊这类特殊造型，第一次会按当前样式在本地重排，不展示那份静态 HTML。

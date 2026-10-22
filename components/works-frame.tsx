@@ -46,6 +46,21 @@ function avatarColor(email: string) {
   return AVATAR_COLORS[sum % AVATAR_COLORS.length];
 }
 
+const INVITE_GIFT_LABEL = "邀请赢积分";
+const INVITE_GIFT_TIP = "邀请好友，双方各 +5 积分";
+
+function InviteGiftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect className="invite-gift-box" x="4.1" y="11" width="15.8" height="8.5" rx="1.4" />
+      <rect className="invite-gift-lid" x="3.2" y="8.15" width="17.6" height="3.05" rx="0.85" />
+      <rect className="invite-gift-ribbon" x="10.85" y="8.15" width="2.3" height="11.35" />
+      <path className="invite-gift-ribbon" d="M12 8.2c-1.35-2.15-3.55-2.85-4.55-1.75-.85.95-.35 2.25 1.05 2.55 1.15.25 2.45-.15 3.5-.8z" />
+      <path className="invite-gift-ribbon" d="M12 8.2c1.35-2.15 3.55-2.85 4.55-1.75.85.95.35 2.25-1.05 2.55-1.15.25-2.45-.15-3.5-.8z" />
+    </svg>
+  );
+}
+
 export function WorksFrame() {
   const router = useRouter();
   const params = useSearchParams();
@@ -141,15 +156,29 @@ export function WorksFrame() {
         </nav>
         {account ? (
           <div className="works-account">
-            <span className="works-avatar" style={{ ["--avatar-color" as string]: avatarColor(account.email) }} aria-hidden="true">
-              <svg viewBox="0 0 160 120">
-                <path d="M16 57C16 24 41 11 78 11C118 11 143 23 143 57C143 82 128 101 103 112C96 115 93 113 96 105C100 92 90 93 77 94C39 98 16 84 16 57Z" fill="currentColor" />
-                <g fill="#20251F">
-                  <ellipse cx="61" cy="57" rx="7.5" ry="14" />
-                  <ellipse cx="97" cy="57" rx="7.5" ry="14" />
-                </g>
-              </svg>
-            </span>
+            <div className="works-account-person">
+              <div className="invite-gift-row">
+                <button
+                  type="button"
+                  className="invite-gift"
+                  title={INVITE_GIFT_TIP}
+                  aria-label={INVITE_GIFT_TIP}
+                  onClick={() => { setMenuOpen(false); setInviteOpen(true); }}
+                >
+                  <InviteGiftIcon />
+                </button>
+                <span className="invite-gift-label">{INVITE_GIFT_LABEL}</span>
+              </div>
+              <span className="works-avatar" style={{ ["--avatar-color" as string]: avatarColor(account.email) }} aria-hidden="true">
+                <svg viewBox="0 0 160 120">
+                  <path d="M16 57C16 24 41 11 78 11C118 11 143 23 143 57C143 82 128 101 103 112C96 115 93 113 96 105C100 92 90 93 77 94C39 98 16 84 16 57Z" fill="currentColor" />
+                  <g fill="#20251F">
+                    <ellipse cx="61" cy="57" rx="7.5" ry="14" />
+                    <ellipse cx="97" cy="57" rx="7.5" ry="14" />
+                  </g>
+                </svg>
+              </span>
+            </div>
             <span className="works-account-copy">
               <strong title={account.email}>{account.name}</strong>
               <small>免费版</small>
@@ -165,7 +194,6 @@ export function WorksFrame() {
               {menuOpen ? (
                 <div className="works-account-popover" role="menu">
                   <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>个人信息</button>
-                  <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setInviteOpen(true); }}>邀请好友</button>
                   <button
                     type="button"
                     role="menuitem"

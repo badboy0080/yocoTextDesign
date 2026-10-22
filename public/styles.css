@@ -103,7 +103,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   background: rgba(16, 185, 129, 0.28);
 }
 .trial-banner[hidden] { display: none !important; }
-.trial-banner-lead, .trial-waitlist { position: relative; z-index: 1; }
+.trial-banner-lead, .trial-banner-actions, .trial-waitlist { position: relative; z-index: 1; }
+.trial-banner-actions { display: flex; flex: 1 1 280px; flex-direction: column; align-items: flex-end; gap: 10px; min-width: min(100%, 280px); }
+.trial-invite {
+  flex: none;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #ccff00;
+  color: #000;
+  font: 700 15px/1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(204, 255, 0, 0.28);
+}
+.trial-invite:hover { background: #d6ff4d; color: #000; }
 .trial-banner-lead { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .trial-banner-copy { margin: 0; color: #ebebeb; font-size: 16px; font-weight: 500; line-height: 1.6; }
 .trial-banner.is-saved { border-color: rgba(255, 255, 255, 0.1); }
@@ -143,16 +159,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   height: 40px;
   min-height: 40px;
   padding: 0 22px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: #ccff00;
-  color: #000;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
   font: 700 14px/1 "Space Grotesk", "Noto Sans SC", sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 0 24px rgba(204, 255, 0, 0.28);
+  box-shadow: none;
 }
-.trial-waitlist button:hover:not(:disabled) { background: #d6ff4d; color: #000; }
+.trial-waitlist button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); color: #fff; }
 .trial-waitlist button:disabled { opacity: .55; cursor: wait; box-shadow: none; }
 .trial-waitlist-feedback { margin: 0; color: #ccff00; font-size: 13px; line-height: 1.5; }
 .trial-waitlist-feedback:empty { display: none; }

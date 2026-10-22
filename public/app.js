@@ -2696,6 +2696,7 @@ function selectEditorView(index) {
     tab.setAttribute("aria-selected", String(tabIndex === index));
     tab.tabIndex = tabIndex === index ? 0 : -1;
   });
+  scheduleHumanizeFloat();
 }
 editorViewTabs.forEach((tab, index) => {
   tab?.addEventListener("click", () => selectEditorView(index));
@@ -3186,9 +3187,16 @@ const STUDIO_TOOLS = [
   },
 ];
 const TOOL_MAX_CHARS = 3000;
+const HUMANIZE_MIN_CHARS = 2;
 let toolSession = null;
 let toolRequest = 0;
 let toolController = null;
+let humanizeLayer = null;
+let humanizeButton = null;
+let humanizePick = null;
+let humanizeRemembered = null;
+let humanizePointerActive = false;
+let humanizeFrame = 0;
 
 function textUnits(value) {
   return Array.from(String(value || "")).length;
@@ -3220,6 +3228,14 @@ function showToolHint(message) {
   hint.hidden = !text;
 }
 
+function normalizeSelectedText(value) {
+  return String(value || "").replace(/\u00a0/g, " ");
+}
+
+function selectionShowsHumanize(value) {
+  return normalizeSelectedText(value).trim().length >= HUMANIZE_MIN_CHARS;
+}
+
 function selectedSourceRange() {
   if (!articleInput) return null;
   const start = articleInput.selectionStart ?? 0;
@@ -3227,7 +3243,54 @@ function selectedSourceRange() {
   if (!(end > start)) return null;
   const selected = articleInput.value.slice(start, end);
   if (!selected.trim()) return null;
-  return { start, end, selected, value: articleInput.value };
+  return { kind: "source", start, end, selected, value: articleInput.value };
+}
+
+function activeEditorKind() {
+  const source = document.querySelector("#sourcePanel");
+  if (source && source.hidden === false) return "source";
+  if (previewStage && previewStage.hidden === false) return "preview";
+  return null;
+}
+
+function editableHost(node) {
+  const el = node?.nodeType === 1 ? node : node?.parentElement;
+  return el?.closest?.("[contenteditable='true']") || null;
+}
+
+function inspectPreviewSelection() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || !articleBody) return { kind: "none" };
+  const range = selection.getRangeAt(0);
+  if (!articleBody.contains(range.commonAncestorContainer)) return { kind: "outside" };
+  if (selection.isCollapsed) return { kind: "collapsed" };
+  const startHost = editableHost(range.startContainer);
+  const endHost = editableHost(range.endContainer);
+  if (!startHost || !articleBody.contains(startHost) || !endHost || !articleBody.contains(endHost)) return { kind: "locked" };
+  const selected = normalizeSelectedText(selection.toString());
+  if (!selectionShowsHumanize(selected)) return { kind: "short" };
+  return {
+    kind: "text",
+    pick: { kind: "preview", range: range.cloneRange(), selected, start: 0, end: 0, value: "" },
+  };
+}
+
+function readPreviewSelection() {
+  const state = inspectPreviewSelection();
+  return state.kind === "text" ? state.pick : null;
+}
+
+function rememberedPreview() {
+  const pick = humanizeRemembered;
+  if (!pick?.range || !pick.range.startContainer?.isConnected) return null;
+  const live = normalizeSelectedText(pick.range.toString());
+  if (live !== pick.selected || !selectionShowsHumanize(live)) return null;
+  return pick;
+}
+
+function currentToolSelection() {
+  if (activeEditorKind() === "source") return selectedSourceRange();
+  return readPreviewSelection() || rememberedPreview();
 }
 
 function closeToolMenu() {
@@ -3290,17 +3353,17 @@ function closeToolCompare() {
   if (modal) modal.hidden = true;
 }
 
-function beginTool(tool) {
+function beginTool(tool, picked) {
   showToolHint("");
-  const picked = selectedSourceRange();
-  if (!picked) {
+  const chosen = picked || currentToolSelection();
+  if (!chosen) {
     selectEditorView(1);
     showToolHint("先在原文里选中要改的段落");
     setStatus("先在原文里选中要改的段落");
     articleInput?.focus();
     return;
   }
-  if (textUnits(picked.selected) > TOOL_MAX_CHARS) {
+  if (textUnits(chosen.selected) > TOOL_MAX_CHARS) {
     const message = `单次最多 ${TOOL_MAX_CHARS} 字，请少选一点。`;
     showToolHint(message);
     setStatus(message);
@@ -3310,8 +3373,18 @@ function beginTool(tool) {
     promptNeedCredits();
     return;
   }
-  toolSession = { tool, start: picked.start, end: picked.end, selected: picked.selected, value: picked.value, result: "" };
-  openToolCompare(tool, picked);
+  hideHumanizeLayer();
+  toolSession = {
+    tool,
+    kind: chosen.kind || "source",
+    start: chosen.start ?? 0,
+    end: chosen.end ?? 0,
+    selected: chosen.selected,
+    value: chosen.kind === "preview" ? "" : (chosen.value ?? articleInput?.value ?? ""),
+    range: chosen.range ? chosen.range.cloneRange() : null,
+    result: "",
+  };
+  openToolCompare(tool, chosen);
   void runTool();
 }
 
@@ -3369,8 +3442,40 @@ async function runTool() {
   }
 }
 
+function acceptPreviewRewrite() {
+  const range = toolSession.range;
+  const live = range?.startContainer?.isConnected ? normalizeSelectedText(range.toString()) : "";
+  if (!range || live !== toolSession.selected) {
+    setToolError("原文已经变了，请重新选中。");
+    return;
+  }
+  range.deleteContents();
+  const fragment = document.createDocumentFragment();
+  const lines = String(toolSession.result).replace(/\r\n?/g, "\n").split("\n");
+  lines.forEach((line, index) => {
+    fragment.append(document.createTextNode(line));
+    if (index < lines.length - 1) fragment.append(document.createElement("br"));
+  });
+  const marker = document.createTextNode("");
+  fragment.append(marker);
+  range.insertNode(fragment);
+  marker.remove();
+  sampleStaticActive = false;
+  humanizeRemembered = null;
+  syncPreviewEdits();
+  closeToolCompare();
+  trackTool("tool_accept");
+  setFeedback("原文和排版都已更新");
+  showToolHint("");
+}
+
 function acceptToolRewrite() {
-  if (!toolSession?.result || !articleInput) return;
+  if (!toolSession?.result) return;
+  if (toolSession.kind === "preview") {
+    acceptPreviewRewrite();
+    return;
+  }
+  if (!articleInput) return;
   const { value, start, end, selected, result } = toolSession;
   const current = articleInput.value;
   let next = "";
@@ -3428,8 +3533,238 @@ function cancelToolRewrite() {
   void refreshTrialFromServer();
 }
 
+function humanizeDialogOpen() {
+  return ["#toolCompare", "#inviteModal", "#historyDrawer"].some((id) => {
+    const node = document.querySelector(id);
+    return node && node.hidden === false;
+  });
+}
+
+function hideHumanizeLayer() {
+  humanizePick = null;
+  if (!humanizeLayer) return;
+  humanizeLayer.hidden = true;
+  humanizeLayer.querySelectorAll(".humanize-selection-frame").forEach((node) => node.remove());
+}
+
+function ensureHumanizeLayer() {
+  if (humanizeLayer) return;
+  humanizeLayer = document.createElement("div");
+  humanizeLayer.id = "humanizeSelectionLayer";
+  humanizeLayer.hidden = true;
+  humanizeButton = document.createElement("button");
+  humanizeButton.type = "button";
+  humanizeButton.className = "humanize-float";
+  humanizeButton.textContent = "去AI味";
+  humanizeButton.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  humanizeButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const tool = STUDIO_TOOLS.find((item) => item.id === "humanize");
+    const picked = humanizePick;
+    if (!tool || !picked) return;
+    closeToolMenu();
+    beginTool(tool, picked);
+  });
+  humanizeLayer.append(humanizeButton);
+  document.body.append(humanizeLayer);
+}
+
+function mergeSelectionRects(rects) {
+  const items = [];
+  for (const rect of rects) {
+    if (!rect || rect.width < 0.5 || rect.height < 0.5) continue;
+    items.push({ top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom });
+  }
+  items.sort((a, b) => a.top - b.top || a.left - b.left);
+  const lines = [];
+  items.forEach((rect) => {
+    const line = lines.find((item) => rect.top < item.bottom - 1 && rect.bottom > item.top + 1);
+    if (!line) {
+      lines.push({ ...rect });
+      return;
+    }
+    line.top = Math.min(line.top, rect.top);
+    line.left = Math.min(line.left, rect.left);
+    line.right = Math.max(line.right, rect.right);
+    line.bottom = Math.max(line.bottom, rect.bottom);
+  });
+  return lines;
+}
+
+function clipToBox(rect, box) {
+  if (!box) return null;
+  const top = Math.max(rect.top, box.top + 1);
+  const left = Math.max(rect.left, box.left + 1);
+  const right = Math.min(rect.right, box.right - 1);
+  const bottom = Math.min(rect.bottom, box.bottom - 1);
+  if (right - left < 1 || bottom - top < 1) return null;
+  return { top, left, right, bottom };
+}
+
+function textareaSelectionRects(textarea, start, end) {
+  const style = getComputedStyle(textarea);
+  const mirror = document.createElement("div");
+  mirror.setAttribute("aria-hidden", "true");
+  ["boxSizing", "width", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "borderTopStyle", "borderRightStyle", "borderBottomStyle", "borderLeftStyle", "fontStyle", "fontWeight", "fontSize", "fontFamily", "lineHeight", "letterSpacing", "wordSpacing", "textIndent", "textTransform", "textAlign", "tabSize"].forEach((prop) => {
+    mirror.style[prop] = style[prop];
+  });
+  const scrollbar = Math.max(0, textarea.offsetWidth - textarea.clientWidth);
+  if (scrollbar) mirror.style.width = `${Math.max(0, parseFloat(style.width) - scrollbar)}px`;
+  mirror.style.position = "fixed";
+  mirror.style.left = "0";
+  mirror.style.top = "0";
+  mirror.style.margin = "0";
+  mirror.style.visibility = "hidden";
+  mirror.style.pointerEvents = "none";
+  mirror.style.whiteSpace = "pre-wrap";
+  mirror.style.wordWrap = "break-word";
+  mirror.style.overflowWrap = "break-word";
+  mirror.style.overflow = "hidden";
+  mirror.style.height = "auto";
+  const value = textarea.value;
+  mirror.append(document.createTextNode(value.slice(0, start)));
+  const span = document.createElement("span");
+  span.textContent = value.slice(start, end);
+  mirror.append(span, document.createTextNode(value.slice(end)));
+  document.body.append(mirror);
+  const mirrorRect = mirror.getBoundingClientRect();
+  const raw = [...span.getClientRects()];
+  mirror.remove();
+  const host = textarea.getBoundingClientRect();
+  const dx = host.left - textarea.scrollLeft - mirrorRect.left;
+  const dy = host.top - textarea.scrollTop - mirrorRect.top;
+  return raw.map((rect) => ({
+    top: rect.top + dy,
+    left: rect.left + dx,
+    right: rect.right + dx,
+    bottom: rect.bottom + dy,
+  }));
+}
+
+function placeHumanizeButton(rect, box) {
+  const width = humanizeButton.offsetWidth || 72;
+  const height = humanizeButton.offsetHeight || 28;
+  const gap = 4;
+  let left = rect.right - width;
+  let top = rect.top - height - gap;
+  const maxLeft = window.innerWidth - width - 8;
+  const maxTop = window.innerHeight - height - 8;
+  if (top < 8 || (box && top < box.top + 2)) top = rect.bottom + gap;
+  if (left < 8) left = rect.left;
+  humanizeButton.style.left = `${Math.round(Math.max(8, Math.min(left, maxLeft)))}px`;
+  humanizeButton.style.top = `${Math.round(Math.max(8, Math.min(top, maxTop)))}px`;
+}
+
+function paintHumanizeFrames(lines) {
+  humanizeLayer.querySelectorAll(".humanize-selection-frame").forEach((node) => node.remove());
+  const pad = 2;
+  lines.forEach((rect) => {
+    const frame = document.createElement("div");
+    frame.className = "humanize-selection-frame";
+    frame.style.left = `${rect.left - pad}px`;
+    frame.style.top = `${rect.top - pad}px`;
+    frame.style.width = `${rect.right - rect.left + pad * 2}px`;
+    frame.style.height = `${rect.bottom - rect.top + pad * 2}px`;
+    humanizeLayer.insertBefore(frame, humanizeButton);
+  });
+}
+
+function paintHumanizeFloat() {
+  ensureHumanizeLayer();
+  if (humanizeDialogOpen()) {
+    hideHumanizeLayer();
+    return;
+  }
+  const kind = activeEditorKind();
+  let pick = null;
+  let rects = [];
+  let box = null;
+  if (kind === "preview") {
+    const state = inspectPreviewSelection();
+    const focused = Boolean(document.activeElement && articleBody.contains(document.activeElement));
+    if (focused && state.kind === "text") {
+      humanizeRemembered = state.pick;
+      pick = state.pick;
+      rects = [...state.pick.range.getClientRects()];
+      box = previewStage.getBoundingClientRect();
+    } else if (focused && (state.kind === "short" || state.kind === "locked")) {
+      humanizeRemembered = null;
+    }
+  } else if (kind === "source" && articleInput && document.activeElement === articleInput) {
+    const sourcePick = selectedSourceRange();
+    if (sourcePick && selectionShowsHumanize(sourcePick.selected)) {
+      pick = sourcePick;
+      rects = textareaSelectionRects(articleInput, sourcePick.start, sourcePick.end);
+      box = articleInput.getBoundingClientRect();
+    }
+  }
+  const rawLines = mergeSelectionRects(rects);
+  const lines = rawLines.map((rect) => clipToBox(rect, box)).filter(Boolean);
+  if (!pick || !lines.length) {
+    hideHumanizeLayer();
+    return;
+  }
+  humanizePick = pick;
+  humanizeLayer.hidden = false;
+  paintHumanizeFrames(lines);
+  const lastVisible = clipToBox(rawLines[rawLines.length - 1], box);
+  humanizeButton.hidden = !lastVisible;
+  if (lastVisible) placeHumanizeButton(lastVisible, box);
+  humanizeButton.style.pointerEvents = humanizePointerActive ? "none" : "auto";
+}
+
+function scheduleHumanizeFloat() {
+  if (humanizeFrame) return;
+  humanizeFrame = window.requestAnimationFrame(() => {
+    humanizeFrame = 0;
+    paintHumanizeFloat();
+  });
+}
+
+function setupHumanizeFloat() {
+  ensureHumanizeLayer();
+  document.addEventListener("selectionchange", scheduleHumanizeFloat);
+  document.addEventListener("scroll", scheduleHumanizeFloat, true);
+  window.addEventListener("resize", scheduleHumanizeFloat);
+  window.addEventListener("blur", hideHumanizeLayer);
+  window.addEventListener("focus", scheduleHumanizeFloat);
+  articleInput?.addEventListener("scroll", scheduleHumanizeFloat, { passive: true });
+  articleInput?.addEventListener("keyup", scheduleHumanizeFloat);
+  articleInput?.addEventListener("mouseup", scheduleHumanizeFloat);
+  articleInput?.addEventListener("blur", scheduleHumanizeFloat);
+  articleBody?.addEventListener("focusout", scheduleHumanizeFloat);
+  articleBody?.addEventListener("keyup", scheduleHumanizeFloat);
+  articleBody?.addEventListener("input", () => {
+    humanizeRemembered = null;
+  });
+  articleInput?.addEventListener("input", () => {
+    humanizeRemembered = null;
+  });
+  document.addEventListener("pointerdown", (event) => {
+    humanizePointerActive = true;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target === humanizeButton || humanizeButton?.contains(target)) return;
+    if (target.closest(".tool-menu-wrap")) return;
+    humanizeRemembered = null;
+  });
+  document.addEventListener("pointerup", () => {
+    humanizePointerActive = false;
+    scheduleHumanizeFloat();
+  });
+  document.addEventListener("pointercancel", () => {
+    humanizePointerActive = false;
+    scheduleHumanizeFloat();
+  });
+}
+
 function setupStudioTools() {
   renderToolMenu();
+  setupHumanizeFloat();
   document.querySelector("#toolMenuButton")?.addEventListener("click", (event) => {
     event.stopPropagation();
     openToolMenu();

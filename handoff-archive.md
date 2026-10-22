@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-21 人味接口请求体补类型
+
+- 想做什么：EdgeOne 部署类型检查失败，`app/api/tools/route.ts` 里 `body.tool` 不在空对象上。只补类型，不改业务。开 PR，不合并。
+- 做成了什么：`request.json()` 的结果标成 `{ tool?: string; text?: string }`。`tool` 和 `text` 仍用原来的字符串判断。
+- 改了哪些文件：`app/api/tools/route.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：Node 22 跑 `tsc --noEmit` 和 `npm run build:edgeone`（`next build`）都通过。没有部署，没有合并。PR #49。
+- 待办/风险：这次没跑 `npm run build`（vinext）。线上要重新部署才会用上这处修复。
+
 ### 2026-10-21 积分和人味接到示例按钮
 
 - 想做什么：#47 已合进 master。这条 PR 和 master 撞了。两边都留：空态「用示例文章试一下」，以及积分文案、「工具 / 更具有人味」。不要合并。

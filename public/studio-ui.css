@@ -65,8 +65,8 @@ body {
 .studio-account-popover button:hover { background: var(--yooco-color-soft); }
 .invite-modal { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px 16px; background: rgba(0,0,0,.72); }
 .invite-modal[hidden] { display: none !important; }
-.invite-modal-card { position: relative; width: min(640px, 100%); padding: 28px 28px 22px; border: 1px solid rgba(214,184,110,.55); border-radius: 22px; background: radial-gradient(90% 70% at 50% -10%, rgba(214,184,110,.18), transparent 58%), #12110f; color: #f3ead7; box-shadow: 0 28px 80px rgba(0,0,0,.55); font-family: "Space Grotesk", "Noto Sans SC", sans-serif; }
-.invite-modal-card:focus { outline: 2px solid #e6c56b; outline-offset: 3px; }
+.invite-modal-card { position: relative; width: min(640px, 100%); padding: 28px 28px 22px; border: 0; border-radius: 22px; background: radial-gradient(90% 70% at 50% -10%, rgba(214,184,110,.18), transparent 58%), #12110f; color: #f3ead7; box-shadow: 0 28px 80px rgba(0,0,0,.55); font-family: "Space Grotesk", "Noto Sans SC", sans-serif; }
+.invite-modal .invite-modal-card:focus, .invite-modal .invite-modal-card:focus-visible { outline: none; }
 .invite-modal-x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: 0; border-radius: 999px; background: transparent; color: rgba(243,234,215,.7); font-size: 22px; line-height: 1; cursor: pointer; }
 .invite-modal-x:hover { color: #f6e7b8; }
 .invite-modal-head { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 36px 22px; }
@@ -75,7 +75,7 @@ body {
 .invite-modal-head .invite-gift-ribbon { fill: #e6c56b; stroke: none; }
 .invite-modal-card h2 { margin: 0; color: #f0d48a; font-size: 26px; font-weight: 700; letter-spacing: .06em; line-height: 1.2; text-align: center; }
 .invite-reward-row { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 12px; align-items: stretch; }
-.invite-reward { margin: 0; padding: 18px 16px 16px; border: 1px solid rgba(214,184,110,.38); border-radius: 16px; background: rgba(255,255,255,.025); text-align: center; }
+.invite-reward { margin: 0; padding: 18px 16px 16px; border: 0; border-radius: 16px; background: #1b1916; text-align: center; }
 .invite-reward-kicker { margin: 0; color: rgba(240,212,138,.8); font-size: 13px; letter-spacing: .12em; }
 .invite-reward-num { margin: 12px 0 6px; color: #f3e2a8; font-size: 40px; font-weight: 650; letter-spacing: -.03em; line-height: 1; }
 .invite-reward-who { margin: 0; color: #f6e7b8; font-size: 15px; font-weight: 650; }
@@ -85,7 +85,7 @@ body {
 .invite-modal-body { margin: 8px 0 0; color: rgba(243,234,215,.72); font-size: 14px; line-height: 1.6; text-align: center; }
 .invite-modal-body:empty { display: none; }
 .invite-share { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
-.invite-share-link { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; padding: 10px 14px; border: 1px solid rgba(214,184,110,.28); border-radius: 999px; background: rgba(0,0,0,.35); color: rgba(243,234,215,.82); font-size: 13px; }
+.invite-share-link { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; padding: 10px 14px; border: 0; border-radius: 999px; background: rgba(0,0,0,.35); color: rgba(243,234,215,.82); font-size: 13px; }
 .invite-share-link svg { flex: none; width: 16px; height: 16px; color: #e6c56b; }
 .invite-share-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .invite-share-link strong { flex: none; color: #f3e2a8; font-weight: 700; letter-spacing: .04em; }

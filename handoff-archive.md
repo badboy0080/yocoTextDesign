@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-21 次数改积分，工作台加人味工具
+
+- 想做什么：把排版次数改成积分，数字和旧余额不动。工作台加一个「更具有人味」，选中文字后对比，确认后替换原文并更新排版，不再调排版 AI。一个 PR，不合并。
+- 做成了什么：统一用 `spendCredits`，排版和人味都是 1 积分，AI 成功才扣。接口仍返回原来的 `trial`，并多了 `credits`。文案改到工作台、邀请、注册、常见问题和管理后台。工具列表是一个数组，目前只有人味。新接口 `POST /api/tools`。没选中、超过 3000 字、超时、积分不够都有提示。确认后可以撤销一次。
+- 改了哪些文件：`lib/credits.js`、`lib/edgeone-rate-limit.ts`、`lib/trial-quota.js`、`lib/tool-prompts.js`、`lib/deepseek-tools.js`、`lib/runtime-env.ts`、`lib/analytics-store.ts`、`lib/invite-copy.ts`、`lib/invite-store.ts`、`lib/site-faq.ts`、`lib/local-accounts.ts`、`app/api/normalize/route.ts`、`app/api/tools/route.ts`、`app/api/track/route.ts`、`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`public/analytics.js`、注册页、邀请弹窗、管理后台、常见问题、`README.md`、检查脚本和交接日志。
+- 如何验证：`npm run build` 通过。邀请、不限积分、账号额度这几份检查脚本通过。浏览器里打开工作台：工具下拉、对比弹窗的加载和结果、确认后原文和排版一起变、顶栏从 3 积分变成 2 积分、出现撤销。改写文字是浏览器里假造的，没有真的调用 DeepSeek。没有部署。
+- 待办/风险：EdgeOne 要新配 `DEEPSEEK_TOOLS_API_KEY`。没配会用排版那把密钥，日志里会提示。取消时如果服务端已经写完，积分仍会扣，工作台会重新读剩余。
+
 ### 2026-10-21 工作台用示例文章试一下
 
 - 想做什么：空状态文案下面加按钮「用示例文章试一下」。点完左侧有一篇原创示例，右侧是预先排好的结果。不调 AI，不扣积分，不写历史。之后自己贴文章再优化，照旧扣积分。

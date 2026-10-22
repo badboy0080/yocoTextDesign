@@ -552,22 +552,22 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   border-radius: 6px;
 }
 
+/* 浮层盖在白纸预览上。字色不要跟工作台的浅色变量走，否则会变成白底浅字。 */
 .block-type-menu {
   position: fixed;
   z-index: 80;
   min-width: 148px;
   padding: 6px;
-  border: 1px solid var(--di-border, #e4e4e7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 32px rgba(24, 24, 27, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #161616;
+  color: #f4f4f5;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 .block-type-menu-label {
   margin: 0;
   padding: 6px 10px 4px;
-  color: var(--di-text, #71717a);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -580,7 +580,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--di-ink, #18181b);
+  color: #f4f4f5;
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
@@ -589,12 +589,18 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .block-type-menu-item:hover,
 .block-type-menu-item:focus-visible {
-  background: #f4f4f5;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   outline: none;
 }
 .block-type-menu-item.is-active {
-  background: color-mix(in srgb, var(--di-primary, #3b82f6) 12%, #fff);
-  color: var(--di-primary, #3b82f6);
+  background: #ccff00;
+  color: #141414;
+}
+.block-type-menu-item.is-active:hover,
+.block-type-menu-item.is-active:focus-visible {
+  background: #d6ff4d;
+  color: #141414;
 }
 .article-meta { margin-bottom: 22px; color: #8e9389; font-size: 10px; letter-spacing: .08em; }
 .article-page h2 { margin: 0 0 12px; color: var(--title-color, #20231f); font-family: var(--heading-font, inherit); font-size: var(--title-size, 26px); font-weight: var(--heading-weight, 800); line-height: var(--heading-line-height, 1.33); letter-spacing: -.04em; }

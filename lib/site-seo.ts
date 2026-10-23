@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { SITE_CONFIG } from "@/lib/site-config";
 
-/** 搜索标题和说明。谁在用、用来干什么、品牌名，三样都要出现。 */
+/** 搜索标题和说明。标题保留可搜的排版词；说明只讲这个网站是什么工具。 */
 export const HOME_TITLE = "公众号排版 · AI 文章排版 | Yooco";
 export const HOME_DESCRIPTION =
-  "写公众号的人用 Yooco 做公众号排版和 AI 文章排版：贴上文章，选出版式，复制到微信就能发。Yooco · 好文章值得好排版。";
+  "Yooco 是公众号排版工具：粘贴或上传文章，一键优化排版、换主题，复制到微信公众号就能发。免费试用。";
 
 export const WORKS_TITLE = "微信文章排版模板 | Yooco";
 export const WORKS_DESCRIPTION =
@@ -34,6 +34,30 @@ export const homeMetadata: Metadata = {
   title: { absolute: HOME_TITLE },
   description: HOME_DESCRIPTION,
   alternates: { canonical: absoluteUrl("/") },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: absoluteUrl("/"),
+    siteName: "Yooco",
+    locale: "zh_CN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+  },
+};
+
+/** 首页给搜索引擎的软件说明。没有单独的分享图，不编图片地址。 */
+export const homeJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Yooco",
+  description: HOME_DESCRIPTION,
+  url: SITE_CONFIG.siteUrl,
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
 };
 
 export const worksMetadata: Metadata = {

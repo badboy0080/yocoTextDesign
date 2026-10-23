@@ -234,6 +234,7 @@ export function HomeLanding() {
                 <span className="ol-hero-accent">值得好排版</span>
               </span>
             </h1>
+            <p className="ol-hero-lead">公众号排版工具 · 粘贴原文，一键优化版式</p>
           </div>
           <div className="ol-hero-panel">
             <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>

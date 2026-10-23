@@ -550,6 +550,15 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   gap: 0.2em;
   white-space: nowrap;
 }
+.ol-hero-lead {
+  margin: 12px 0 0;
+  color: var(--ol-text-dim);
+  font-family: var(--ol-sans);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
 .ol-hero h1 .ol-hero-accent {
   /* 中文斜体是浏览器斜过去的，右侧笔画会伸出字盒。
      渐变用 background-clip:text 时，伸出的部分画不上，看起来像被裁掉。
@@ -1028,6 +1037,7 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   .ol-nav { grid-column: 1 / -1; width: auto; justify-content: flex-start; overflow-x: auto; }
   .ol-hero { gap: 28px; padding: 28px 20px 40px; }
   .ol-hero h1 { font-size: clamp(1.65rem, 7.2vw, 2.4rem); }
+  .ol-hero-lead { margin-top: 10px; font-size: 13px; }
   .ol-home .works-band { padding: 28px 12px 8px; }
   .ol-footer, .ol-pricing { padding-inline: 16px; }
   .ol-status { display: none; }

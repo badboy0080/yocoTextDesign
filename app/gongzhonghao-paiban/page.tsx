@@ -42,7 +42,7 @@ export default function GongzhonghaoPaibanPage() {
         </ul>
         <figure>
           <Image src={COMPARE_SRC} width={1080} height={1759} alt="同一篇《出师表》节选，清氧绿主题下排版前的素文和 Yooco 优化后的对照" />
-          <figcaption>同一篇《出师表》节选 · 左素文 · 右 Yooco 优化排版</figcaption>
+          <figcaption>同一篇《出师表》节选 · 上素文 · 下 Yooco 优化排版</figcaption>
         </figure>
 
         <h2>怎么用 Yooco 走完一次公众号排版</h2>

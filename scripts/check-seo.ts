@@ -64,7 +64,7 @@ assert(landingPage.includes("landingMetadata"), "落地页用同一份标题");
 assert(landingPage.includes("公众号排版：乱文一键变成能发的样子"), "落地页只有这一句主标题");
 assert(landingPage.includes("微信文章排版") && landingPage.includes("AI 文章排版"), "落地页自然提到另外两个词");
 assert(landingPage.includes('href="/studio.html"'), "落地页主按钮进工作台");
-assert(landingPage.includes("左素文 · 右 Yooco 优化排版"), "对比图图注按稿");
+assert(landingPage.includes("上素文 · 下 Yooco 优化排版"), "对比图是上下排，图注跟着改");
 assert(!/noindex/i.test(faqPage + worksPage + homePage + landingPage), "首页、精品模板、常见问题、落地页不要 noindex");
 const compareImage = readFileSync(new URL("../public/gongzhonghao-paiban/compare-1080x1440.png", import.meta.url));
 assert(compareImage.length > 10000, "对比图要能打开");

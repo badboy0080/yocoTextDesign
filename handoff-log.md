@@ -145,7 +145,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：页面有一个主标题、开篇、前后对比、五步、适合谁、和另外两个词的关系、三条短答。标题和说明用稿里的句子。站点地图加了这一页。
 - 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：本地打开 `/gongzhonghao-paiban`，主标题、图注、工作台按钮都在，页面没有 noindex。`/sitemap.xml` 里有这一页。`npx tsx scripts/check-seo.ts` 通过。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。附件原图在这台环境里没有文件，页面上的对比图是按阿超发来的那张清氧绿对照重做的。图注仍按稿写「左素文 · 右」，图本身是上素文、下排版后。
+- 待办/风险：合进 master 才会上正式站。图是上下排，图注已改成「上素文 · 下 Yooco 优化排版」。阿超第二次发来的原图，路径仍是空的，仓库里的图还是上次重做的那张，没有再重画。
 
 ### 2026-10-23 邀请说明和搜索标题
 

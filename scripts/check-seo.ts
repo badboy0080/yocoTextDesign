@@ -6,6 +6,8 @@ import {
   FAQ_TITLE,
   HOME_DESCRIPTION,
   HOME_TITLE,
+  homeJsonLd,
+  homeMetadata,
   INDEXABLE_PATHS,
   ROBOTS_DISALLOW,
   LANDING_DESCRIPTION,
@@ -23,8 +25,36 @@ function assert(condition: unknown, message: string) {
 assert(SITE_CONFIG.siteUrl === "https://www.yoooco.com", "正式站地址用三个 o，并带 www");
 assert(HOME_TITLE.startsWith("公众号排版"), "首页标题先写公众号排版");
 assert(HOME_TITLE.includes("AI 文章排版") && HOME_TITLE.includes("Yooco"), "首页标题带上 AI 文章排版和品牌");
-assert(HOME_DESCRIPTION.includes("公众号排版") && HOME_DESCRIPTION.includes("AI 文章排版"), "首页说明写清两件排版的事");
-assert(HOME_DESCRIPTION.includes("Yooco · 好文章值得好排版"), "首页说明保留品牌句");
+assert(
+  HOME_DESCRIPTION ===
+    "Yooco 是公众号排版工具：粘贴或上传文章，一键优化排版、换主题，复制到微信公众号就能发。免费试用。",
+  "首页说明用直白产品句",
+);
+assert(HOME_DESCRIPTION.includes("公众号排版"), "首页说明含主词公众号排版");
+assert(!HOME_DESCRIPTION.includes("好文章值得好排版"), "首页说明不再附品牌散文");
+assert(!HOME_DESCRIPTION.includes("一篇评论") && !HOME_DESCRIPTION.includes("颜色少"), "首页说明不要抽模板卡片散文");
+const og = homeMetadata.openGraph;
+assert(og && !Array.isArray(og), "首页要有分享卡片");
+assert(
+  og && !Array.isArray(og) && og.title === HOME_TITLE && og.description === HOME_DESCRIPTION,
+  "分享标题和说明跟首页搜索文案一致",
+);
+assert(
+  og && !Array.isArray(og) && og.siteName === "Yooco" && og.locale === "zh_CN" && og.type === "website",
+  "分享卡片标明 Yooco 中文网站",
+);
+assert(og && !Array.isArray(og) && String(og.url) === "https://www.yoooco.com", "分享地址是正式站首页");
+assert(!og || Array.isArray(og) || !("images" in og) || og.images == null, "没有现成分享图时不编图片地址");
+const twitter = homeMetadata.twitter;
+assert(
+  twitter && "card" in twitter && twitter.card === "summary_large_image" && twitter.title === HOME_TITLE && twitter.description === HOME_DESCRIPTION,
+  "Twitter 卡片跟首页说明一致",
+);
+assert(homeJsonLd["@type"] === "SoftwareApplication", "首页结构化数据标明这是软件");
+assert(
+  homeJsonLd.name === "Yooco" && homeJsonLd.description === HOME_DESCRIPTION && homeJsonLd.url === "https://www.yoooco.com",
+  "结构化数据用同一句产品说明",
+);
 assert(WORKS_TITLE.includes("微信文章排版") && WORKS_TITLE.includes("Yooco"), "精品模板标题对准微信文章排版");
 assert(WORKS_DESCRIPTION.includes("微信文章排版模板") && WORKS_DESCRIPTION.includes("独立工作台"), "精品模板说明不要再写成同一页打开工作台");
 assert(FAQ_TITLE.includes("公众号排版工具") && FAQ_TITLE.includes("Yooco"), "常见问题标题对准公众号排版工具");
@@ -56,6 +86,9 @@ assert(studio.includes('rel="canonical" href="https://www.yoooco.com/studio.html
 const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "utf8");
 const worksPage = readFileSync(new URL("../app/works/page.tsx", import.meta.url), "utf8");
 const homePage = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const homeLanding = readFileSync(new URL("../app/home-landing.tsx", import.meta.url), "utf8");
+assert(homeLanding.includes("Yooco：粘贴文章，一键做好公众号排版。"), "首页首屏用张默短句");
+assert(homePage.includes("application/ld+json") && homePage.includes("homeJsonLd"), "首页挂上结构化数据");
 const metrics = readFileSync(new URL("../app/metrics/layout.tsx", import.meta.url), "utf8");
 const admin = readFileSync(new URL("../app/admin/page.tsx", import.meta.url), "utf8");
 assert(faqPage.includes("faqMetadata") && worksPage.includes("worksMetadata") && homePage.includes("homeMetadata"), "三个公开页用同一份标题");

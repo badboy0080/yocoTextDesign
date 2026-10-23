@@ -297,7 +297,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
             <div className="auth-panel-bottom">
               <p>{isRegister ? "已经有账户？" : "还没有账户？"} <Link href={isRegister ? "/login" : "/register"}>{isRegister ? "返回登录" : "创建账户"} ↗</Link></p>
-              <Link className="account-secondary-button" href="/works?panel=studio">免登录试用工作台 <ArrowRight size={17} aria-hidden="true" /></Link>
+              <Link className="account-secondary-button" href="/studio.html">免登录试用工作台 <ArrowRight size={17} aria-hidden="true" /></Link>
             </div>
           </section>
         </div>

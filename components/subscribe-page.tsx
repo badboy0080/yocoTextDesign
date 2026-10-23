@@ -46,7 +46,7 @@ export function SubscribePage() {
                 <li><Check size={16} aria-hidden="true" />查看精品模板与排版灵感</li>
                 <li><Check size={16} aria-hidden="true" />调整版式、复制与导出配置</li>
               </ul>
-              <Link className="account-secondary-button" href="/works?panel=studio">开始免费试用 <ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link className="account-secondary-button" href="/studio.html">开始免费试用 <ArrowRight size={18} aria-hidden="true" /></Link>
             </article>
             <article className="subscribe-card subscribe-card-pro">
               <div className="subscribe-card-top"><span>02 / PRO</span><span className="subscribe-card-symbol" aria-hidden="true">+</span></div>

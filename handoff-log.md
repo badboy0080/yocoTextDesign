@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+工作台改成独立页（2026-10-23，未合并、未部署）：「工作台」不再嵌在精品模板页里。首页、侧栏、模板「做同款」、登录和订阅入口都进 `/studio.html`。左侧栏有历史；未登录是「登录后可看排版历史。」顶栏没有「历史」按钮。`/studio` 和旧地址 `/works?panel=studio` 会跳到独立工作台。精品模板仍是 `/works`。正式站要等合进 master。
+
 示例文章换成新稿（2026-10-23，未合并、未部署）：工作台「用示例文章试一下」换成《AI都会写文章了，公众号排版还得自己熬？》。正文只在 `public/samples/sample-try.js`。首页「免费试用」不预填文章。旧文「写完先别发」已整篇去掉。卡片、数据、步骤、引用、粗体、高亮按现有解析保留。两张配图是空链接，预览显示灰色占位。脚本缓存号是 `sample-yooco-article-v1`。正式站要等合进 master。
 
 历史进左侧栏，去AI味只跟原文（2026-10-22，未合并、未部署）：登录后排版历史在工作台左侧「工作台 / 精品模板」和「返回首页」之间，占满中间高度，自己滚动。点一条仍载入正文和样式。未登录或没有记录时，这里只留一句短提示。顶栏抽屉去掉了。从精品模板页嵌进工作台时侧栏不显示，顶栏「历史」打开的是同一份列表。排版结果里划词不再出绿框和「去AI味」；原文框聚焦且选中至少 2 个字才出现。点按钮后的改写和替换没动。样式和脚本缓存号是 `sidebar-history-v1`。正式站要等合进 master。
@@ -133,6 +135,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-23 工作台改成独立页，历史留在左侧
+
+- 想做什么：工作台和精品模板分成两个页面。历史始终在工作台左侧栏，不要再因为嵌进 `/works?panel=studio` 跑到右上角。旧地址自动跳走。只开 PR，不合并。
+- 做成了什么：进工作台的入口改成 `/studio.html`。精品模板页的「工作台」是跳转，不再用 iframe。`/studio` 和 `/works?panel=studio` 都会到独立工作台。
+- 改了哪些文件：`components/works-frame.tsx`、`app/works.css`、`app/works/page.tsx`、`app/home-landing.tsx`、`lib/works.ts`、`public/studio.html`、`next.config.ts`、`vite.config.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：本地 5174。未登录打开 `/studio.html`，左侧是「登录后可看排版历史。」顶栏是工具、剩余积分、Log in，没有「历史」。首页「免费试用」、精品模板侧栏「工作台」、模板「做同款」都落到 `/studio.html`，页面里没有 iframe。`/works?panel=studio` 和 `/studio` 直接跳到 `/studio.html`。精品模板页仍是模板列表。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。登录后的历史列表还是原来的读取方式，这次只是不再把工作台嵌进去。
+
 ### 2026-10-23 换成新的示例文章
 
 - 想做什么：把站内「用示例文章试一下」换成阿超这篇新稿。旧示例整篇替换。只开 PR，不合并。
@@ -164,11 +174,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/deepseek-tools.js`、`scripts/check-humanize-empty.js`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-humanize-empty.js` 通过。脚本用假返回走了空正文、空白、只剩「改写：」、思考占满后再试成功、两次都空、来不及再试、超时和密钥错误。没有密钥，没有打正式站，也没有部署。
 - 待办/风险：PR #53。合进 master 才会自动上线。第一次如果已经用满 30 秒，来不及再试，用户仍看到原来的空结果提示。DeepSeek 仍会对失败的那一次计费，咱们的积分只在成功后扣。
-
-### 2026-10-22 块类型菜单改成黑底浅字
-
-- 想做什么：预览里右键弹出的块类型菜单白底浅字，看不清。改成黑底浅字。只改这块菜单。开 PR，不合并。
-- 做成了什么：菜单底 `#161616`，选项 `#f4f4f5`，标题「改为」用 72% 白。悬停是白字加一点亮的深底。当前项石灰 `#ccff00`、字 `#141414`。`styles.css` 缓存号改成 `block-menu-dark-v1`。六个选项和弹出逻辑没动。
-- 改了哪些文件：`public/styles.css`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地打开工作台，放入示例文章，在正文上右键。菜单黑底，六个字都能看清。当前项「正文」是石灰底黑字。鼠标移到「内容分隔」是深灰底白字，当前项仍是石灰。没有部署，没有合并。
-- 待办/风险：已 squash 合进 master `c010d7f`。左键点块仍不会弹出，原来就是右键。

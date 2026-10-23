@@ -584,7 +584,7 @@ export function applyWork(work: WorkPiece) {
     const skin = MOOD_SKIN[work.themeId];
     if (skin) localStorage.setItem("yooco-style-mood", JSON.stringify({ mood: work.themeId, skin }));
   }
-  window.location.assign("/works?panel=studio");
+  window.location.assign("/studio.html");
 }
 
 export function downloadWorkConfig(work: WorkPiece) {

@@ -99,9 +99,11 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> => {
         configureServer(server: ViteDevServer) {
           server.middlewares.use((request, _response, next) => {
             const [pathname, search = ""] = (request.url ?? "/").split("?");
-            if (pathname === "/studio" || pathname === "/studio/") {
+            const legacyStudio = (pathname === "/works" || pathname === "/works/")
+              && new URLSearchParams(search).get("panel") === "studio";
+            if (pathname === "/studio" || pathname === "/studio/" || legacyStudio) {
               _response.statusCode = 302;
-              _response.setHeader("Location", "/works?panel=studio");
+              _response.setHeader("Location", "/studio.html");
               _response.end();
               return;
             }

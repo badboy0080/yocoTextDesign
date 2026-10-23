@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return INDEXABLE_PATHS.map((path) => ({
     url: absoluteUrl(path),
     lastModified,
-    changeFrequency: path === "/" || path === "/works" || path === "/studio.html" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : path === "/works" ? 0.8 : path === "/studio.html" ? 0.7 : path === "/faq" ? 0.6 : 0.3,
+    changeFrequency: path === "/" || path === "/gongzhonghao-paiban" || path === "/works" || path === "/studio.html" ? "weekly" : "monthly",
+    priority: path === "/" ? 1 : path === "/gongzhonghao-paiban" ? 0.9 : path === "/works" ? 0.8 : path === "/studio.html" ? 0.7 : path === "/faq" ? 0.6 : 0.3,
   }));
 }

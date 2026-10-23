@@ -41,7 +41,7 @@ export default function GongzhonghaoPaibanPage() {
           <li>可换主题：清氧绿 / 深空青 / 静山 / 素墨 / 手札橙</li>
         </ul>
         <figure>
-          <Image src={COMPARE_SRC} width={1080} height={1759} alt="同一篇《出师表》节选，清氧绿主题下排版前的素文和 Yooco 优化后的对照" />
+          <Image src={COMPARE_SRC} width={1080} height={1440} alt="同一篇《出师表》节选，清氧绿主题下排版前的素文和 Yooco 优化后的对照" />
           <figcaption>同一篇《出师表》节选 · 上素文 · 下 Yooco 优化排版</figcaption>
         </figure>
 

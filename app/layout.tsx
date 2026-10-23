@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SITE_CONFIG } from "@/lib/site-config";
+import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site-seo";
 
 export const metadata: Metadata = {
-  title: "Yooco · 好文章值得好排版",
-  description: "好文章值得好排版",
+  metadataBase: new URL(SITE_CONFIG.siteUrl),
+  title: HOME_TITLE,
+  description: HOME_DESCRIPTION,
+  robots: { index: true, follow: true },
   icons: {
     icon: "/favicon.svg?v=bubble-c-v1",
   },

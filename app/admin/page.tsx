@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "账号权限 · Yooco",
   description: "站长人工开通账号等级和每天积分。",
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminPage() {

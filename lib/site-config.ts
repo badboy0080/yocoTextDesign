@@ -6,12 +6,10 @@
  */
 export const SITE_CONFIG = {
   /**
-   * 正式站点地址。
-   * 备案过渡期：EdgeOne 预览链有时效，Cloudflare 地址国内需代理。
-   * 备案下来并绑好 yooco.yokeaai.xyz 后，把这里换成 https://yooco.yokeaai.xyz。
-   * 用途：以后分享卡片、canonical、外链等统一从这里取，不要在页面里写死网址。
+   * 正式站点地址。标题、canonical、sitemap 从这里取。
+   * 不带 www 的 yoooco.com 目前也能打开，站内链接和这里统一用 www。
    */
-  siteUrl: "https://yooco-gxrxaiig.edgeone.cool",
+  siteUrl: "https://www.yoooco.com",
   wechat: {
     /** 公众号名称；未确定前留空，页脚不显示名称，只显示引导文案 */
     accountName: "",

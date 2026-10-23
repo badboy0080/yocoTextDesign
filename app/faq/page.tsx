@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { AccountLayout } from "@/components/account-layout";
 import { FaqTabsCard } from "@/components/faq-tabs-card";
+import { faqMetadata } from "@/lib/site-seo";
 
-export const metadata: Metadata = {
-  title: "常见问题 · Yooco",
-  description: "试用积分、邮箱验证码和邀请好友。",
-};
+export const metadata: Metadata = faqMetadata;
 
 export default function FaqPage() {
   return (

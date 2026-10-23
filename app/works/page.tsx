@@ -1,11 +1,9 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { WorksFrame } from "@/components/works-frame";
+import { worksMetadata } from "@/lib/site-seo";
 
-export const metadata: Metadata = {
-  title: "精品模板 · Yooco",
-  description: "看精品模板。排版去独立工作台。",
-};
+export const metadata: Metadata = worksMetadata;
 
 export default function WorksPage() {
   return (

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-21 邀请文案和头像上方礼盒
+
+- 想做什么：按张默终稿改邀请文案。发出邀请码改到工作台头像正上方的礼盒，菜单里不再留「邀请好友」。积分用完主引导改成邀请好友。不改积分加减。开 PR，不合并。
+- 做成了什么：礼盒只在登录后出现，作品侧栏和直接打开的工作台都有。旁边短标签是「邀请赢积分」，悬停仍是「邀请好友，双方各 +5 积分」。点礼盒或积分用完的「邀请好友」都打开邀请弹窗；没登录点横幅会去登录。弹窗改成深色、去掉外圈和内部描边：两张卡分别是你得 +5、好友得 +5，复制区是正式站链接和邀请码，按钮是金色渐变。没有假的邀请历史。`studio-ui.css` 缓存号是 `invite-noborder-v1`。个人信息仍只关掉菜单。注册页、常见问题和复制分享句按终稿。留邮箱表单还在，按钮改成次要。礼盒仍会轻轻晃一下并闪一次微光，颜色改成金。
+- 改了哪些文件：`lib/site-faq.ts`、`lib/invite-copy.ts`、`components/auth-page.tsx`、`components/account-menu.tsx`、`components/works-frame.tsx`、`components/invite-modal.tsx`、`components/invite-modal.css`、`app/works.css`、`public/studio.html`、`public/app.js`、`public/studio-ui.css`、`public/styles.css`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts` 通过。浏览器看了作品侧栏和直接打开的工作台：金色礼盒在头像正上方，短标签不压名字，点开是金色双卡弹窗，码是 THRW84，链接是 www.yoooco.com。菜单只有个人信息和退出。无头浏览器里剪贴板被拦住，页面会提示复制没成功；这是原来的复制方式，不是新逻辑。没有部署。
+- 待办/风险：PR #51。合进 master 会自动部署正式站。这次等阿超确认再合并。积分加减没动。
+
 ### 2026-10-21 去掉工作台顶栏的撤销
 
 - 想做什么：顶栏「工具」和积分之间的「撤销」去掉。确认「更具有人味」之后不要再出现这个按钮。工具箱、积分、示例文章、历史不动。开 PR，不合并。

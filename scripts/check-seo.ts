@@ -87,7 +87,7 @@ const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "u
 const worksPage = readFileSync(new URL("../app/works/page.tsx", import.meta.url), "utf8");
 const homePage = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const homeLanding = readFileSync(new URL("../app/home-landing.tsx", import.meta.url), "utf8");
-assert(homeLanding.includes("公众号排版工具 · 粘贴原文，一键优化版式"), "首页首屏有直白的产品说明");
+assert(homeLanding.includes("Yooco：粘贴文章，一键做好公众号排版。"), "首页首屏用张默短句");
 assert(homePage.includes("application/ld+json") && homePage.includes("homeJsonLd"), "首页挂上结构化数据");
 const metrics = readFileSync(new URL("../app/metrics/layout.tsx", import.meta.url), "utf8");
 const admin = readFileSync(new URL("../app/admin/page.tsx", import.meta.url), "utf8");

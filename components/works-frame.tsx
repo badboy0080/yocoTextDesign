@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import "@/app/works.css";
 import { BrandLogo } from "@/components/brand-logo";
 import { InviteModal } from "@/components/invite-modal";
 import { WorksGallery } from "@/components/works-gallery";
-
-type Panel = "works" | "studio";
 
 function IconStudio() {
   return (
@@ -62,22 +60,16 @@ function InviteGiftIcon() {
 }
 
 export function WorksFrame() {
-  const router = useRouter();
   const params = useSearchParams();
-  const [panel, setPanel] = useState<Panel>(params.get("panel") === "studio" ? "studio" : "works");
+  const legacyStudio = params.get("panel") === "studio";
   const [collapsed, setCollapsed] = useState(false);
-  const [studioReady, setStudioReady] = useState(panel === "studio");
   const [account, setAccount] = useState<{ email: string; name: string } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
-    setPanel(params.get("panel") === "studio" ? "studio" : "works");
-  }, [params]);
-
-  useEffect(() => {
-    if (panel === "studio") setStudioReady(true);
-  }, [panel]);
+    if (legacyStudio) window.location.replace("/studio.html");
+  }, [legacyStudio]);
 
   useEffect(() => {
     setCollapsed(localStorage.getItem("yooco-works-side") === "collapsed");
@@ -118,11 +110,6 @@ export function WorksFrame() {
     };
   }, [menuOpen]);
 
-  const choose = (next: Panel) => {
-    setPanel(next);
-    router.replace(next === "studio" ? "/works?panel=studio" : "/works", { scroll: false });
-  };
-
   const toggleSide = () => {
     setCollapsed((value) => {
       const next = !value;
@@ -130,6 +117,8 @@ export function WorksFrame() {
       return next;
     });
   };
+
+  if (legacyStudio) return null;
 
   return (
     <div className={`works-app${collapsed ? " is-side-collapsed" : ""}`}>
@@ -145,14 +134,14 @@ export function WorksFrame() {
           </button>
         </div>
         <nav className="works-nav" aria-label="页面">
-          <button type="button" aria-label="工作台" className={panel === "studio" ? "is-active" : ""} aria-current={panel === "studio" ? "page" : undefined} onClick={() => choose("studio")}>
+          <a href="/studio.html" aria-label="工作台">
             <IconStudio />
             <span>工作台</span>
-          </button>
-          <button type="button" aria-label="精品模板" className={panel === "works" ? "is-active" : ""} aria-current={panel === "works" ? "page" : undefined} onClick={() => choose("works")}>
+          </a>
+          <a href="/works" aria-label="精品模板" className="is-active" aria-current="page">
             <IconWorks />
             <span>精品模板</span>
-          </button>
+          </a>
         </nav>
         {account ? (
           <div className="works-account">
@@ -211,11 +200,8 @@ export function WorksFrame() {
         ) : null}
       </aside>
       <div className="works-main">
-        <div className="works-view" hidden={panel !== "works"}>
+        <div className="works-view">
           <WorksGallery />
-        </div>
-        <div className="works-view works-studio-view" hidden={panel !== "studio"}>
-          {studioReady ? <iframe className="works-studio-frame" title="工作台" src="/studio.html" /> : null}
         </div>
       </div>
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />

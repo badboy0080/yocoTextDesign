@@ -23,7 +23,7 @@ import { WorksRail } from "@/components/works-rail";
 import { TRIAL_LIMIT } from "@/lib/trial-quota";
 import "./home.css";
 
-const STUDIO_URL = "/works?panel=studio";
+const STUDIO_URL = "/studio.html";
 
 function HomeAccountLink() {
   const [email, setEmail] = useState("");

@@ -171,9 +171,9 @@
 .works-logo img { display:block; width:145px; height:auto; max-width:100%; }
 .works-brand-row .yooco-brand img { width:112px; }
 .works-nav { display:flex; flex-direction:column; gap:.45rem; }
-.works-nav button, .works-fold { display:flex; align-items:center; gap:.55rem; width:100%; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--yooco-color-muted); padding:.62rem .7rem; font-size:14px; font-weight:500; text-align:left; cursor:pointer; }
-.works-nav button svg, .works-fold svg { width:16px; height:16px; flex:none; }
-.works-nav button.is-active { border-color:var(--yooco-color-border); background:var(--yooco-color-soft); box-shadow:inset 3px 0 var(--yooco-color-primary); color:var(--yooco-color-ink); }
+.works-nav :is(a, button), .works-fold { display:flex; align-items:center; gap:.55rem; width:100%; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--yooco-color-muted); padding:.62rem .7rem; font-size:14px; font-weight:500; text-align:left; text-decoration:none; cursor:pointer; }
+.works-nav :is(a, button) svg, .works-fold svg { width:16px; height:16px; flex:none; }
+.works-nav :is(a, button).is-active { border-color:var(--yooco-color-border); background:var(--yooco-color-soft); box-shadow:inset 3px 0 var(--yooco-color-primary); color:var(--yooco-color-ink); }
 
 .works-brand-row .works-fold { width:32px; min-height:32px; margin:0; padding:0; justify-content:center; flex:none; color:var(--yooco-color-muted); }
 .works-account { position:relative; display:flex; align-items:flex-end; gap:8px; min-width:0; margin-top:auto; padding:8px 4px; }
@@ -192,12 +192,12 @@
 .works-account-popover { position:absolute; right:0; bottom:calc(100% + 6px); z-index:20; min-width:132px; display:grid; padding:6px; border:1px solid var(--yooco-color-border); border-radius:10px; background:var(--yooco-color-surface); box-shadow:0 8px 24px rgba(32, 37, 31, .12); }
 .works-account-popover button { min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:var(--yooco-color-ink); font:13px/1.3 var(--yooco-font-sans); text-align:left; cursor:pointer; }
 .works-account-popover button:hover { background:var(--yooco-color-soft); }
-.works-fold:hover, .works-nav button:hover { background:var(--yooco-color-soft); }
+.works-fold:hover, .works-nav :is(a, button):hover { background:var(--yooco-color-soft); }
 .works-app.is-side-collapsed .works-side { width:80px; padding-inline:8px; align-items:center; }
 .works-app.is-side-collapsed .works-logo img { width:28px; height:28px; }
 .works-app.is-side-collapsed .works-brand-row { width:100%; gap:2px; }
-.works-app.is-side-collapsed .works-nav button span { display:none; }
-.works-app.is-side-collapsed .works-nav button { justify-content:center; padding:.62rem; }
+.works-app.is-side-collapsed .works-nav :is(a, button) span { display:none; }
+.works-app.is-side-collapsed .works-nav :is(a, button) { justify-content:center; padding:.62rem; }
 .works-app.is-side-collapsed .works-account-copy,
 .works-app.is-side-collapsed .invite-gift-label { display:none; }
 .works-app.is-side-collapsed .works-account { justify-content:center; padding-inline:0; }
@@ -250,7 +250,7 @@
 @media(prefers-reduced-motion:reduce) { .work-cover { transition:none; } .works-fan .work-card { transform: none; } }
 
 /* Compact navigation keeps its labels accessible and never crops the wordmark. */
-.works-nav button { min-height:44px; }
+.works-nav :is(a, button) { min-height:44px; }
 .works-brand-row .works-fold { min-height:32px; }
 .works-logo { padding-block:8px; }
 .works-logo > .works-mark { display:none; }
@@ -266,9 +266,9 @@
  .works-app.is-side-collapsed .yooco-brand { display:inline-flex; }
  .works-app.is-side-collapsed .works-mark { display:none; }
  .works-app.is-side-collapsed .works-logo img { width:120px; height:auto; }
- .works-app.is-side-collapsed .works-nav button span { display:inline; }
+ .works-app.is-side-collapsed .works-nav :is(a, button) span { display:inline; }
  .works-logo img { width:120px; }
- .works-nav button { gap:4px; padding:8px; }
+ .works-nav :is(a, button) { gap:4px; padding:8px; }
  .works-page { padding:32px 16px 48px; }
  .works-filter-bar { flex-direction:column; gap:12px; }
  .works-studio-view { height:calc(100dvh - 85px); min-height:640px; }
@@ -301,14 +301,14 @@ body:has(.works-app) { background: #000; }
   color: #ebebeb;
 }
 .works-logo { color: #ebebeb; }
-.works-nav button, .works-fold { color: rgba(255,255,255,.6); border-radius: 999px; }
-.works-nav button.is-active {
+.works-nav :is(a, button), .works-fold { color: rgba(255,255,255,.6); border-radius: 999px; }
+.works-nav :is(a, button).is-active {
   border-color: rgba(204,255,0,.45);
   background: rgba(204,255,0,.12);
   box-shadow: inset 3px 0 #ccff00;
   color: #ebebeb;
 }
-.works-fold:hover, .works-nav button:hover { background: rgba(255,255,255,.06); }
+.works-fold:hover, .works-nav :is(a, button):hover { background: rgba(255,255,255,.06); }
 .works-app .works-brand-row .works-fold { color: #ebebeb; }
 .works-app .works-brand-row .works-fold:hover { color: #fff; background: rgba(255,255,255,.06); }
 .works-account-copy strong { color: #ebebeb; }

@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+乐几主题（2026-10-24，PR #62，未合并、未部署）：工作台主题列表末尾新增「乐几」（playful）。奶油纸、紫强调、琥珀高亮、板岩硬边，圆角 16。硬边投影跟柠边同一条路径，圆角和描边色各走各的参数。标题用色块，字是纸色。栏目胶囊会带出「专栏 / COLUMN」，紫底深字也发闷，所以没留。桌面预览图在 `docs/previews/playful-desktop-preview.png`。首页、落地页、精品模板没动。正式站要等合进 master。
+
 柠边主题（2026-10-24，PR #61，未合并、未部署）：工作台主题列表末尾新增「柠边」（citrus）。奶油纸、亮黄强调、墨黑硬边和实心投影。适合产品发布、增长笔记、工具安利、创业复盘。预览和复制稿都走这套参数。桌面预览图在 `docs/previews/citrus-desktop-preview.png`。首页和落地页没动，精品模板没加样张。正式站要等合进 master。
 
 首页搜索说明改直白（2026-10-23，未合并、未部署）：首页说明改成「Yooco 是公众号排版工具：粘贴或上传文章，一键优化排版、换主题，复制到微信公众号就能发。免费试用。」标题仍是「公众号排版 · AI 文章排版 | Yooco」。首页补了分享卡片和一条软件说明。大标题下面是「Yooco：粘贴文章，一键做好公众号排版。」。模板卡片正文没动。正式站要等合进 master。谷歌可能还要几天才换掉旧摘要。
@@ -143,6 +145,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-24 新增精选主题「乐几」
+
+- 想做什么：加一套精选主题「乐几」（playful）。气质来自 Playful Geometric，但点阵、波浪、纸屑、自定义字体和多套主色都不要。硬边跟柠边同一条路。只开 PR，不合并。
+- 做成了什么：主题列表末尾有「乐几」。紫 `#8B5CF6` 是唯一强调色，高亮是琥珀 `#FBBF24`，描边和实心投影是板岩 `#1E293B`，圆角 16。标题用色块、纸色字。配方偏生活、教程、观点、盘点，核心是段落、列表、卡片、高亮，不把步骤放进核心。缓存号 `playful-v1`。
+- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/playful-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开本地工作台，贴一段短文，点「乐几」。主题是 playful，卡片 16px 圆角、2px 板岩边、`4px 4px` 实心投影，标题紫底纸色字，高亮琥珀底深字。复制稿里有这些颜色和投影。再点「柠边」，卡片回到 6px、墨黑投影、标题黑字。没有调用优化。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。
+
 ### 2026-10-23 首页搜索说明改成产品介绍
 
 - 想做什么：Google 搜 yoooco.com 时，摘要还在用模板卡片里的排版散文。把首页说明改成直白的产品句，补上分享卡片，首屏加一句可见说明。只开 PR，不合并。
@@ -174,11 +184,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`components/works-frame.tsx`、`app/works.css`、`app/works/page.tsx`、`app/home-landing.tsx`、`lib/works.ts`、`public/studio.html`、`next.config.ts`、`vite.config.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：本地 5174。未登录打开 `/studio.html`，左侧是「登录后可看排版历史。」顶栏是工具、剩余积分、Log in，没有「历史」。首页「免费试用」、精品模板侧栏「工作台」、模板「做同款」都落到 `/studio.html`，页面里没有 iframe。`/works?panel=studio` 和 `/studio` 直接跳到 `/studio.html`。精品模板页仍是模板列表。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。登录后的历史列表还是原来的读取方式，这次只是不再把工作台嵌进去。
-
-### 2026-10-23 换成新的示例文章
-
-- 想做什么：把站内「用示例文章试一下」换成阿超这篇新稿。旧示例整篇替换。只开 PR，不合并。
-- 做成了什么：原文和默认主题的预制排版都换成《AI都会写文章了，公众号排版还得自己熬？》。`:::card`、`:::stat`、`:::steps`、引用、粗体、高亮原样保留。两处配图空链接仍是占位，没有编图片地址。首页没有第二份示例。缓存号 `sample-yooco-article-v1`。
-- 改了哪些文件：`public/samples/sample-try.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开本地工作台，点「用示例文章试一下」。原文和附件一致。预览标题是新标题，状态是「已放入示例。这是站内预制排版，没有调用优化，也不计积分。」预览里有卡片、引用、积分数据、三步和两块配图占位。切到「深空青」后仍是这篇，提示「已按当前主题重排示例」。没有旧文「写完先别发」。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。这篇正文没有二级标题和普通列表，预览里也就没有这两样。`https://yoooco.com/` 在原文里是纯网址，预览里是文字，点不了。配图没有真实图片。

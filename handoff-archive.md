@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-23 邀请说明和搜索标题
+
+- 想做什么：按李大力定稿改常见问题里的邀请说明。首页、精品模板、常见问题各对准一个搜索词。核对站点地图和 robots，别挡住公开页。不要新写落地页，不要改订阅页。只开 PR，不合并。
+- 做成了什么：邀请答案补上「未登录看不到这个入口。」并加粗。首页对准公众号排版和 AI 文章排版，精品模板对准微信文章排版模板，常见问题对准公众号排版工具。`/sitemap.xml` 收录首页、精品模板、常见问题、工作台、登录和注册。`/robots.txt` 只挡住后台、统计和接口。
+- 改了哪些文件：`lib/site-faq.ts`、`lib/site-seo.ts`、`lib/site-config.ts`、`app/layout.tsx`、`app/page.tsx`、`app/works/page.tsx`、`app/faq/page.tsx`、`app/sitemap.ts`、`app/robots.ts`、`app/admin/page.tsx`、`public/studio.html`、`scripts/check-invite.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 和 `npx tsx scripts/check-invite.ts` 通过。本地 5174 打开首页、`/works`、`/faq#invite`。邀请答案和定稿一致，未登录那句是加粗。三个标题和说明、`/sitemap.xml`、`/robots.txt` 都对。`npm run build:edgeone` 通过。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。不带 www 的 yoooco.com 现在也能打开，站内统一用 www。品牌手册和标题样式册没有放进站点地图。没有做「公众号排版」长文落地页。
+
 ### 2026-10-23 工作台改成独立页，历史留在左侧
 
 - 想做什么：工作台和精品模板分成两个页面。历史始终在工作台左侧栏，不要再因为嵌进 `/works?panel=studio` 跑到右上角。旧地址自动跳走。只开 PR，不合并。

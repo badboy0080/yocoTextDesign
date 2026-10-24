@@ -443,9 +443,12 @@ function renderMoodUI() {
     const primary = SKINS[mood.skins[0]]?.accentColor || "#71717a";
     return `<button type="button" class="theme-chip" data-mood="${id}" style="--theme-primary:${primary}" title="${mood.hint}"><b>${mood.label}</b></button>`;
   }).join("");
+  const gemThemes = new Set(["citrus", "playful", "grunge", "flat", "newsprint", "bauhaus"]);
+  const themeGem = `<svg class="theme-gem" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path fill="#6D28D9" d="M6 1.15 10.7 4.55 6 10.85 1.3 4.55Z"/><path fill="#F0C14A" d="M6 1.15 8.55 4.55 6 10.85 3.45 4.55Z"/><path fill="#DDD6FE" d="M3.35 4.55 6 1.15 8.65 4.55Z"/><path fill="none" stroke="#F8E7B0" stroke-linejoin="round" stroke-width=".55" d="M6 1.15 10.7 4.55 6 10.85 1.3 4.55Z"/><path fill="none" stroke="#F8E7B0" stroke-width=".4" d="M1.45 4.55h9.1"/></svg>`;
   const themeButtons = THEME_ORDER.map((id) => {
     const theme = THEMES[id];
-    return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b></button>`;
+    const gem = gemThemes.has(id) ? themeGem : "";
+    return `<button type="button" class="theme-chip" data-theme="${id}" style="--theme-primary:${theme.primary}" title="${theme.fit}"><b>${theme.label}</b>${gem}</button>`;
   }).join("");
   themeGrid.innerHTML = moodButtons + themeButtons;
   themeGrid.querySelectorAll("[data-mood]").forEach((button) => {

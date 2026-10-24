@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+主题按钮紫金钻石（2026-10-24，PR #63，未合并、未部署）：柠边、乐几、撕贴、平涂、报章、包豪这 6 个胶囊右侧各有一枚一样的小钻石，紫底加金面。别的主题没有。选中时绿框还在，钻石也能看清。主题色板没改。截图在 `docs/previews/theme-gem-badges.png`。
+
 四套精选主题（2026-10-24，同一条 PR，未合并、未部署）：工作台主题列表末尾新增撕贴（grunge）、平涂（flat）、报章（newsprint）、包豪（bauhaus）。撕贴是黄纸、绯红硬边、暗金只做重点。平涂是白底蓝块、灰软卡，确认没有硬投影。报章是暖灰纸、衬线标题、直角墨边，绯红只做下划线和链接。包豪是灰底、红块标题、黄重点、蓝链接、直角硬边，没有新字体、没有渐变。硬投影仍按主题名单开，平涂不在名单里。桌面预览在 `docs/previews/` 下四张图。首页、落地页、精品模板没动。正式站要等合进 master。
 
 乐几主题（2026-10-24，PR #62，未合并、未部署）：工作台主题列表末尾新增「乐几」（playful）。奶油纸、紫强调、琥珀高亮、板岩硬边，圆角 16。硬边投影跟柠边同一条路径，圆角和描边色各走各的参数。标题用色块，字是纸色。栏目胶囊会带出「专栏 / COLUMN」，紫底深字也发闷，所以没留。桌面预览图在 `docs/previews/playful-desktop-preview.png`。首页、落地页、精品模板没动。正式站要等合进 master。
@@ -147,6 +149,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-24 六个主题按钮右侧加紫金钻石
+
+- 想做什么：柠边、乐几、撕贴、平涂、报章、包豪的胶囊右侧加一枚统一的紫金钻石。别的主题不加。不改主题色板。仍在 PR #63。
+- 做成了什么：这 6 个按钮右侧是同一枚 12px 小钻石，紫底、金面、细金边。名字还在左边。选中包豪时绿框还在，钻石也清楚。缓存号 `theme-gem-v1`。
+- 改了哪些文件：`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`docs/previews/theme-gem-badges.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开工作台主题面板。这 6 个都有钻石，靠右，名字在钻的左边。清氧绿、素墨、静山、票据卡、手札橙、深空青和四套旧气质没有钻石。点包豪，绿框还在，钻石不发虚。截图在 `docs/previews/theme-gem-badges.png`。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。
+
 ### 2026-10-24 一次加上撕贴、平涂、报章、包豪
 
 - 想做什么：按 Superdesign 的配色，一次加四套精选主题，挂在同一个 PR，不合并。纹理、动画、新字体、多色轮换都不要。平涂不能有硬投影。包豪要直角硬边。
@@ -178,11 +188,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：本地打开 `/gongzhonghao-paiban`，主标题、图注、工作台按钮都在，页面没有 noindex。`/sitemap.xml` 里有这一页。`npx tsx scripts/check-seo.ts` 通过。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。图是上下排，图注已改成「上素文 · 下 Yooco 优化排版」。阿超第二次发来的原图，路径仍是空的，仓库里的图还是上次重做的那张，没有再重画。
-
-### 2026-10-23 邀请说明和搜索标题
-
-- 想做什么：按李大力定稿改常见问题里的邀请说明。首页、精品模板、常见问题各对准一个搜索词。核对站点地图和 robots，别挡住公开页。不要新写落地页，不要改订阅页。只开 PR，不合并。
-- 做成了什么：邀请答案补上「未登录看不到这个入口。」并加粗。首页对准公众号排版和 AI 文章排版，精品模板对准微信文章排版模板，常见问题对准公众号排版工具。`/sitemap.xml` 收录首页、精品模板、常见问题、工作台、登录和注册。`/robots.txt` 只挡住后台、统计和接口。
-- 改了哪些文件：`lib/site-faq.ts`、`lib/site-seo.ts`、`lib/site-config.ts`、`app/layout.tsx`、`app/page.tsx`、`app/works/page.tsx`、`app/faq/page.tsx`、`app/sitemap.ts`、`app/robots.ts`、`app/admin/page.tsx`、`public/studio.html`、`scripts/check-invite.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 和 `npx tsx scripts/check-invite.ts` 通过。本地 5174 打开首页、`/works`、`/faq#invite`。邀请答案和定稿一致，未登录那句是加粗。三个标题和说明、`/sitemap.xml`、`/robots.txt` 都对。`npm run build:edgeone` 通过。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。不带 www 的 yoooco.com 现在也能打开，站内统一用 www。品牌手册和标题样式册没有放进站点地图。没有做「公众号排版」长文落地页。

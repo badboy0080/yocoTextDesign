@@ -1826,7 +1826,7 @@ function nextNormalizeAssignment() {
   if (awaitingContentPick) return { mode: "choose" };
   const pool = typeof THEME_IDS !== "undefined"
     ? THEME_IDS
-    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "classic"];
+    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "classic"];
   const theme = pool[Math.floor(Math.random() * pool.length)];
   return { mode: "fixed", theme };
 }
@@ -2084,6 +2084,7 @@ function buildCopyHtml() {
     const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;${nightItalic}`;
     let style = `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
     if (headingKind === "line") style = `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
+    else if (headingKind === "block" && level === 2 && state.theme === "citrus") style = `${base}display:inline-block;max-width:100%;box-sizing:border-box;padding:6px 14px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${state.accentColor};color:${titleColor};box-shadow:4px 4px 0 ${state.borderColor};`;
     else if (headingKind === "block" && level === 2) style = `${base}display:inline-block;padding:6px 14px;border-radius:8px;background-color:${state.accentColor};color:${state.pageColor};`;
     else if (headingKind === "index" && level === 2) style = base;
     else if (headingKind === "poster" && level === 2) style = `${base}padding:0;border:0;`;
@@ -2137,6 +2138,10 @@ function buildCopyHtml() {
   };
   const cardBoxStyle = (kind, bgColor) => {
     const base = `margin:18px 0 22px;color:${state.textColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:${bodyAlign};`;
+    if (state.theme === "citrus") {
+      const fill = bgColor && bgColor !== "transparent" ? bgColor : state.cardColor;
+      return `${base}padding:${state.cardPadding}px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${fill};box-shadow:4px 4px 0 ${state.borderColor};`;
+    }
     if (kind === "outline") return `${base}padding:${state.cardPadding}px;border:${state.cardBorderWidth}px solid ${state.accentColor};border-radius:${state.cardRadius}px;background-color:transparent;`;
     if (kind === "soft") {
       const edge = state.theme === "nocturne" ? `border:1px solid ${state.borderColor};` : "border:0;";
@@ -2154,17 +2159,24 @@ function buildCopyHtml() {
   const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
   const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
   const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;text-align:left;`;
-  const imageBoxStyle = isDeepNight
+  const imageBoxStyle = state.theme === "citrus"
+    ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.highlightColor};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
+    : isDeepNight
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.pageColor};color:${mutedColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : `margin:22px 0 26px;padding:48px 12px;text-align:center;border-radius:${state.imageRadius}px;background-color:${state.accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.13em;`;
-  const codeStyle = `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;text-align:left;`;
+  const codeStyle = state.theme === "citrus"
+    ? `margin:22px 0 26px;padding:${state.cardPadding}px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};box-shadow:4px 4px 0 ${state.borderColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;text-align:left;`
+    : `margin:22px 0 26px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};word-wrap:break-word;text-align:left;`;
   const listBase = Math.max(1, Number(state.listIndent) || 1.5);
   // 精选主题复制版：自动目录（取前 3 个二级标题，纯派生）。
   const tocHeadings = model.blocks
     .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
     .slice(0, 3);
+  const tocFrame = state.theme === "citrus"
+    ? `border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;box-shadow:4px 4px 0 ${state.borderColor};`
+    : "border:1px solid " + state.borderColor + ";border-radius:10px;";
   const tocHtmlBlock = isTheme() && tocHeadings.length >= 2
-    ? `<section style="margin:0 0 30px;padding:16px 18px;border:1px solid ${state.borderColor};border-radius:10px;background-color:${state.cardColor};text-align:left;"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;text-align:left;">本文脉络</p>${tocHeadings.map((block, index) =>
+    ? `<section style="margin:0 0 30px;padding:16px 18px;${tocFrame}background-color:${state.cardColor};text-align:left;"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;text-align:left;">本文脉络</p>${tocHeadings.map((block, index) =>
       `<p style="margin:0 0 8px;text-align:left;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
     : "";
   const signatureHtmlBlock = isTheme() && state.showSignature
@@ -2180,12 +2192,14 @@ function buildCopyHtml() {
     if (t === "stub") return `${base}padding:20px 22px;margin-bottom:26px;border:1.5px solid ${state.accentColor};border-radius:12px;background-color:${state.pageColor};box-shadow:0 6px 18px -8px ${colorWithAlpha(state.accentColor, 0.55)};color:${titleColor};font-weight:700;`;
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
     if (t === "nocturne") return `${base}margin-bottom:22px;color:${state.accentColor};font-weight:700;`;
+    if (t === "citrus") return `${base}padding:16px 18px;margin-bottom:26px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${state.highlightColor};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-weight:800;`;
     return `${baseTextStyle}color:${state.accentColor};font-weight:750;`;
   };
   // 精选主题分隔线：票据卡用虚线装订，静山加大留白，其余沿用通用分隔线。
   const themeDividerHtml = () => {
     const t = isTheme() ? state.theme : "classic";
     if (t === "stub") return `<section style="margin:34px 0 30px;border-top:2px dashed ${state.dividerColor};text-align:left;"></section>`;
+    if (t === "citrus") return `<section style="margin:32px 0 28px;border-top:2px solid ${state.borderColor};text-align:left;"></section>`;
     if (t === "serene") return `<section style="margin:56px 0;border-top:1px solid ${state.dividerColor};text-align:left;"></section>`;
     return `<section style="margin:${state.dividerMargin}px 0;border-top:${state.dividerThickness}px solid ${state.dividerColor};text-align:left;"></section>`;
   };
@@ -2255,7 +2269,11 @@ function buildCopyHtml() {
       const marker = (ordered, index) => {
         const n = index + 1;
         if (ordered) {
-          if (listKind === "circle") return `<span style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background-color:${state.accentColor};color:${state.pageColor};font-size:${Math.max(11, state.fontSize - 4)}px;font-weight:800;margin-right:8px;">${n}</span>`;
+          if (listKind === "circle") {
+            const circleInk = state.theme === "citrus" ? titleColor : state.pageColor;
+            const circleEdge = state.theme === "citrus" ? `border:2px solid ${state.borderColor};` : "";
+            return `<span style="display:inline-block;box-sizing:border-box;width:22px;height:22px;line-height:18px;text-align:center;border-radius:50%;background-color:${state.accentColor};${circleEdge}color:${circleInk};font-size:${Math.max(11, state.fontSize - 4)}px;font-weight:800;margin-right:8px;">${n}</span>`;
+          }
           if (listKind === "ghost") return `<span style="display:inline-block;min-width:30px;color:${ghostAccent};font-size:${Math.round(state.fontSize * 1.4)}px;font-weight:${state.headingWeight};vertical-align:-2px;margin-right:6px;">${String(n).padStart(2, "0")}</span>`;
           if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">→</span>`;
           return `<span style="color:${state.accentColor};font-weight:700;margin-right:6px;">${n}.</span>`;

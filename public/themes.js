@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 六套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 七套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -213,9 +213,42 @@ const THEMES = {
       caseStudy: { core: ["steps", "list", "card"], accent: ["code", "quote"] },
     },
   },
+
+  // 柠边：奶油纸、亮黄强调、墨黑硬边。适合产品发布、增长笔记和创业复盘。
+  citrus: {
+    label: "柠边",
+    en: "CITRUS",
+    primary: "#E8B006",
+    fit: "产品发布 · 增长笔记 · 工具安利 · 创业复盘",
+    params: {
+      styleVariant: "standard",
+      textColor: "#3F3F46", accentColor: "#E8B006",
+      highlightColor: "#FFE566", highlightTextColor: "#1A1A1A",
+      cardColor: "#FFFFFF", quoteColor: "#FFF6D8", cardTitleColor: "#111111",
+      pageColor: "#FFFDF5", linkColor: "#E8B006",
+      codeBackground: "#F4F4F5", codeColor: "#111111", dividerColor: "#111111",
+      mutedColor: "#71717A", titleColor: "#111111", borderColor: "#111111",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 15, lineHeight: 1.9, letterSpacing: 0.4, paragraphSpacing: 20,
+      headingSize: 26, headingWeight: 900, headingSpacingBefore: 36, headingSpacingAfter: 14,
+      headingStyle: "block", cardStyle: "outline", listStyle: "circle",
+      highlightStyle: "marker", cardRadius: 6, imageRadius: 6, cardPadding: 20,
+      cardBorderWidth: 2, dividerThickness: 2,
+      showDivider: true,
+    },
+    recipe: {
+      tutorial: { core: ["steps", "list", "card"], accent: ["highlight", "code"] },
+      checklist: { core: ["list", "card"], accent: ["highlight"] },
+      opinion: { core: ["paragraph", "card"], accent: ["list", "highlight"] },
+      interview: { core: ["paragraph", "quote", "card"], accent: ["list"] },
+      dataReport: { core: ["card", "list"], accent: ["stat", "highlight"] },
+      lifestyle: { core: ["paragraph", "card"], accent: ["highlight"] },
+      caseStudy: { core: ["steps", "card", "list"], accent: ["highlight", "quote"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-23 工作台改成独立页，历史留在左侧
+
+- 想做什么：工作台和精品模板分成两个页面。历史始终在工作台左侧栏，不要再因为嵌进 `/works?panel=studio` 跑到右上角。旧地址自动跳走。只开 PR，不合并。
+- 做成了什么：进工作台的入口改成 `/studio.html`。精品模板页的「工作台」是跳转，不再用 iframe。`/studio` 和 `/works?panel=studio` 都会到独立工作台。
+- 改了哪些文件：`components/works-frame.tsx`、`app/works.css`、`app/works/page.tsx`、`app/home-landing.tsx`、`lib/works.ts`、`public/studio.html`、`next.config.ts`、`vite.config.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：本地 5174。未登录打开 `/studio.html`，左侧是「登录后可看排版历史。」顶栏是工具、剩余积分、Log in，没有「历史」。首页「免费试用」、精品模板侧栏「工作台」、模板「做同款」都落到 `/studio.html`，页面里没有 iframe。`/works?panel=studio` 和 `/studio` 直接跳到 `/studio.html`。精品模板页仍是模板列表。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。登录后的历史列表还是原来的读取方式，这次只是不再把工作台嵌进去。
+
 ### 2026-10-23 换成新的示例文章
 
 - 想做什么：把站内「用示例文章试一下」换成阿超这篇新稿。旧示例整篇替换。只开 PR，不合并。

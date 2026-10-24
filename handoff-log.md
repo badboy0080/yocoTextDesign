@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+四套精选主题（2026-10-24，同一条 PR，未合并、未部署）：工作台主题列表末尾新增撕贴（grunge）、平涂（flat）、报章（newsprint）、包豪（bauhaus）。撕贴是黄纸、绯红硬边、暗金只做重点。平涂是白底蓝块、灰软卡，确认没有硬投影。报章是暖灰纸、衬线标题、直角墨边，绯红只做下划线和链接。包豪是灰底、红块标题、黄重点、蓝链接、直角硬边，没有新字体、没有渐变。硬投影仍按主题名单开，平涂不在名单里。桌面预览在 `docs/previews/` 下四张图。首页、落地页、精品模板没动。正式站要等合进 master。
+
 乐几主题（2026-10-24，PR #62，未合并、未部署）：工作台主题列表末尾新增「乐几」（playful）。奶油纸、紫强调、琥珀高亮、板岩硬边，圆角 16。硬边投影跟柠边同一条路径，圆角和描边色各走各的参数。标题用色块，字是纸色。栏目胶囊会带出「专栏 / COLUMN」，紫底深字也发闷，所以没留。桌面预览图在 `docs/previews/playful-desktop-preview.png`。首页、落地页、精品模板没动。正式站要等合进 master。
 
 柠边主题（2026-10-24，PR #61，未合并、未部署）：工作台主题列表末尾新增「柠边」（citrus）。奶油纸、亮黄强调、墨黑硬边和实心投影。适合产品发布、增长笔记、工具安利、创业复盘。预览和复制稿都走这套参数。桌面预览图在 `docs/previews/citrus-desktop-preview.png`。首页和落地页没动，精品模板没加样张。正式站要等合进 master。
@@ -145,6 +147,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-24 一次加上撕贴、平涂、报章、包豪
+
+- 想做什么：按 Superdesign 的配色，一次加四套精选主题，挂在同一个 PR，不合并。纹理、动画、新字体、多色轮换都不要。平涂不能有硬投影。包豪要直角硬边。
+- 做成了什么：主题列表末尾是撕贴、平涂、报章、包豪。硬投影名单是柠边、乐几、撕贴、报章、包豪，平涂不在里面。平涂卡片和标题的投影是 none。包豪红块浅字、黄重点、蓝链接，圆角 0，投影是 `4px 4px 0` 纯色、没有模糊。缓存号 `picked-four-v1`。
+- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/grunge-desktop-preview.png`、`docs/previews/flat-desktop-preview.png`、`docs/previews/newsprint-desktop-preview.png`、`docs/previews/bauhaus-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开本地工作台，四套各贴一段短文。撕贴是黄纸、绯红标题、3px 圆角、墨色硬投影。平涂没有 `data-hard-edge`，卡片投影 none，复制稿里也没有硬投影。报章标题是衬线，卡片直角、墨色硬投影。包豪卡片直角、红块浅字、链接是蓝、复制稿投影是 `4px 4px 0 #121212`，没有渐变。再点柠边和乐几，圆角仍是 6 和 16，硬投影还在。没有调用优化。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。
+
 ### 2026-10-24 新增精选主题「乐几」
 
 - 想做什么：加一套精选主题「乐几」（playful）。气质来自 Playful Geometric，但点阵、波浪、纸屑、自定义字体和多套主色都不要。硬边跟柠边同一条路。只开 PR，不合并。
@@ -176,11 +186,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/site-faq.ts`、`lib/site-seo.ts`、`lib/site-config.ts`、`app/layout.tsx`、`app/page.tsx`、`app/works/page.tsx`、`app/faq/page.tsx`、`app/sitemap.ts`、`app/robots.ts`、`app/admin/page.tsx`、`public/studio.html`、`scripts/check-invite.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 和 `npx tsx scripts/check-invite.ts` 通过。本地 5174 打开首页、`/works`、`/faq#invite`。邀请答案和定稿一致，未登录那句是加粗。三个标题和说明、`/sitemap.xml`、`/robots.txt` 都对。`npm run build:edgeone` 通过。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。不带 www 的 yoooco.com 现在也能打开，站内统一用 www。品牌手册和标题样式册没有放进站点地图。没有做「公众号排版」长文落地页。
-
-### 2026-10-23 工作台改成独立页，历史留在左侧
-
-- 想做什么：工作台和精品模板分成两个页面。历史始终在工作台左侧栏，不要再因为嵌进 `/works?panel=studio` 跑到右上角。旧地址自动跳走。只开 PR，不合并。
-- 做成了什么：进工作台的入口改成 `/studio.html`。精品模板页的「工作台」是跳转，不再用 iframe。`/studio` 和 `/works?panel=studio` 都会到独立工作台。
-- 改了哪些文件：`components/works-frame.tsx`、`app/works.css`、`app/works/page.tsx`、`app/home-landing.tsx`、`lib/works.ts`、`public/studio.html`、`next.config.ts`、`vite.config.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地 5174。未登录打开 `/studio.html`，左侧是「登录后可看排版历史。」顶栏是工具、剩余积分、Log in，没有「历史」。首页「免费试用」、精品模板侧栏「工作台」、模板「做同款」都落到 `/studio.html`，页面里没有 iframe。`/works?panel=studio` 和 `/studio` 直接跳到 `/studio.html`。精品模板页仍是模板列表。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。登录后的历史列表还是原来的读取方式，这次只是不再把工作台嵌进去。

@@ -1137,7 +1137,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 
 /* =====================================================================
-   Yooco 六套精选主题盖层（data-theme）
+   Yooco 七套精选主题盖层（data-theme）
    颜色/字号由 state 的 CSS 变量注入，这里只定义各主题自己的组件外观。
    ===================================================================== */
 
@@ -1244,6 +1244,50 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-page[data-theme="editorial"] .steps-block,
 .article-page[data-theme="editorial"] .stat-block { border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-color); }
 .article-page[data-theme="editorial"] .article-divider { opacity: .7; margin-top: 28px; margin-bottom: 24px; }
+
+/* ---------- 柠边 citrus：奶油纸、亮黄色块、墨黑硬边、实心投影 ---------- */
+.article-page[data-theme="citrus"] .lead {
+  margin: 0 0 26px; padding: 16px 18px; border: 2px solid var(--border-color, #111111); border-radius: 6px;
+  background: var(--highlight-color, #ffe566); box-shadow: 4px 4px 0 var(--border-color, #111111);
+  color: var(--title-color, #111111); font-weight: 800; text-indent: 0;
+}
+.article-page[data-theme="citrus"][data-heading-style="block"] .section-title {
+  max-width: 100%; box-sizing: border-box; border: 2px solid var(--border-color, #111111); border-radius: 6px;
+  background: var(--accent-color, #e8b006); color: var(--title-color, #111111);
+  box-shadow: 4px 4px 0 var(--border-color, #111111);
+}
+.article-page[data-theme="citrus"] .content-card,
+.article-page[data-theme="citrus"] .quote-card,
+.article-page[data-theme="citrus"] .steps-block,
+.article-page[data-theme="citrus"] .stat-block,
+.article-page[data-theme="citrus"] .toc-card {
+  border: 2px solid var(--border-color, #111111); border-radius: 6px;
+  box-shadow: 4px 4px 0 var(--border-color, #111111);
+}
+.article-page[data-theme="citrus"] .content-card,
+.article-page[data-theme="citrus"] .steps-block,
+.article-page[data-theme="citrus"] .stat-block,
+.article-page[data-theme="citrus"] .toc-card { background: var(--card-color, #ffffff); }
+.article-page[data-theme="citrus"] .quote-card { background: var(--quote-color, #fff6d8); }
+.article-page[data-theme="citrus"] .content-card strong,
+.article-page[data-theme="citrus"] .quote-card strong,
+.article-page[data-theme="citrus"] .steps-block strong,
+.article-page[data-theme="citrus"] .stat-block strong { color: var(--card-title-color, #111111); }
+.article-page[data-theme="citrus"] .steps-index,
+.article-page[data-theme="citrus"] .stat-item b { color: var(--title-color, #111111); }
+.article-page[data-theme="citrus"][data-list-style="circle"] ol.article-list li::before {
+  box-sizing: border-box; border: 2px solid var(--border-color, #111111); color: var(--title-color, #111111);
+}
+.article-page[data-theme="citrus"] .article-divider {
+  border-top: 2px solid var(--border-color, #111111); opacity: 1; margin-top: 32px; margin-bottom: 28px;
+}
+.article-page[data-theme="citrus"] .fake-image,
+.article-page[data-theme="citrus"] .article-code {
+  border: 2px solid var(--border-color, #111111); border-radius: 6px; box-shadow: 4px 4px 0 var(--border-color, #111111);
+}
+.article-page[data-theme="citrus"] .fake-image {
+  background: var(--highlight-color, #ffe566); color: var(--title-color, #111111);
+}
 
 /* ---------- 精选主题通用：自动目录与结尾签名（颜色跟随 CSS 变量） ---------- */
 .toc-card { margin: 0 0 32px; padding: 18px 20px; border: 1px solid var(--border-color); border-radius: 10px; background: color-mix(in srgb, var(--card-color) 70%, transparent); }

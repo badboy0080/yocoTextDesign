@@ -2041,7 +2041,7 @@ function buildCopyHtml() {
   const highlightCss = highlightStyle === "underline"
     ? `${highlightPlain}border-bottom:3px solid ${highlightColor};`
     : highlightStyle === "bold"
-      ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:800;`
+      ? `padding:0;background-color:transparent;color:${state.theme === "bauhaus" ? state.linkColor : highlightTextColor};font-weight:800;`
       : highlightStyle === "strikethrough"
         ? `${highlightPlain}text-decoration:line-through;text-decoration-color:${highlightColor};`
         : highlightStyle === "text-underline"
@@ -2077,6 +2077,9 @@ function buildCopyHtml() {
     );
     if (state.theme === "nocturne") {
       html = html.replace(/<strong>/g, `<strong style="color:${state.accentColor};font-weight:700;">`);
+    }
+    if (state.theme === "bauhaus") {
+      html = html.replace(/<strong>/g, `<strong style="color:${state.linkColor};font-weight:700;">`);
     }
     return html;
   };
@@ -2209,7 +2212,7 @@ function buildCopyHtml() {
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
     if (t === "nocturne") return `${base}margin-bottom:22px;color:${state.accentColor};font-weight:700;`;
     if (isHardEdgeTheme(t)) {
-      const leadFill = t === "grunge" || t === "bauhaus" ? state.cardColor : t === "newsprint" ? state.quoteColor : state.highlightColor;
+      const leadFill = t === "grunge" ? state.cardColor : t === "newsprint" ? state.quoteColor : state.highlightColor;
       return `${base}padding:16px 18px;margin-bottom:26px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${leadFill};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-weight:800;`;
     }
     return `${baseTextStyle}color:${state.accentColor};font-weight:750;`;
@@ -2266,7 +2269,8 @@ function buildCopyHtml() {
       const cells = (item.items || []).map((entry) => {
         const value = escapeHtml(entry.value || "");
         const label = escapeHtml(entry.label || "");
-        return `<section style="display:inline-block;width:46%;margin:6px 2% 8px 0;vertical-align:top;text-align:center;"><p style="margin:0;padding:0;color:${state.accentColor};font-size:${Math.max(22, state.headingSize - 2)}px;font-weight:${state.headingWeight};line-height:1.2;text-align:center;">${value}</p><p style="margin:4px 0 0;padding:0;color:${mutedColor};font-size:${Math.max(11, state.captionSize)}px;line-height:1.5;text-align:center;">${label}</p></section>`;
+        const statInk = state.theme === "bauhaus" ? state.linkColor : state.accentColor;
+        return `<section style="display:inline-block;width:46%;margin:6px 2% 8px 0;vertical-align:top;text-align:center;"><p style="margin:0;padding:0;color:${statInk};font-size:${Math.max(22, state.headingSize - 2)}px;font-weight:${state.headingWeight};line-height:1.2;text-align:center;">${value}</p><p style="margin:4px 0 0;padding:0;color:${mutedColor};font-size:${Math.max(11, state.captionSize)}px;line-height:1.5;text-align:center;">${label}</p></section>`;
       }).join("");
       return `<section style="${cardBoxStyle("outline", state.cardColor)}"><p style="margin:0 0 12px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${title}</p><section style="margin:0;padding:0;text-align:left;">${cells}</section></section>`;
     }
@@ -2290,8 +2294,9 @@ function buildCopyHtml() {
         if (ordered) {
           if (listKind === "circle") {
             const circleInk = state.theme === "citrus" ? titleColor : state.pageColor;
+            const circleFill = state.theme === "bauhaus" ? state.linkColor : state.accentColor;
             const circleEdge = isHardEdgeTheme(state.theme) ? `border:2px solid ${state.borderColor};` : "";
-            return `<span style="display:inline-block;box-sizing:border-box;width:22px;height:22px;line-height:18px;text-align:center;border-radius:50%;background-color:${state.accentColor};${circleEdge}color:${circleInk};font-size:${Math.max(11, state.fontSize - 4)}px;font-weight:800;margin-right:8px;">${n}</span>`;
+            return `<span style="display:inline-block;box-sizing:border-box;width:22px;height:22px;line-height:18px;text-align:center;border-radius:50%;background-color:${circleFill};${circleEdge}color:${circleInk};font-size:${Math.max(11, state.fontSize - 4)}px;font-weight:800;margin-right:8px;">${n}</span>`;
           }
           if (listKind === "ghost") return `<span style="display:inline-block;min-width:30px;color:${ghostAccent};font-size:${Math.round(state.fontSize * 1.4)}px;font-weight:${state.headingWeight};vertical-align:-2px;margin-right:6px;">${String(n).padStart(2, "0")}</span>`;
           if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">→</span>`;

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-23 首页搜索说明改成产品介绍
+
+- 想做什么：Google 搜 yoooco.com 时，摘要还在用模板卡片里的排版散文。把首页说明改成直白的产品句，补上分享卡片，首屏加一句可见说明。只开 PR，不合并。
+- 做成了什么：首页说明换成那句「Yooco 是公众号排版工具…免费试用。」标题没改。首页有 Open Graph、Twitter 卡片，以及一段软件说明。大标题下是「Yooco：粘贴文章，一键做好公众号排版。」。没有现成分享大图，所以没写图片地址。精品模板、常见问题、落地页的说明没改。模板卡片正文没改。
+- 改了哪些文件：`lib/site-seo.ts`、`app/page.tsx`、`app/home-landing.tsx`、`app/home.css`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npm run build:edgeone` 通过。构建出的首页源码里，说明是新句子，有 og:description，首屏有那句副标题。精品模板、常见问题、落地页的说明还是原来的。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。谷歌对品牌词可能仍用旧摘要，要过几天，或在 Search Console 请求重新收录。
+
 ### 2026-10-23 挂上公众号排版落地页
 
 - 想做什么：在同一条未合并的 PR 上，按张默的稿加一页 `/gongzhonghao-paiban`。对比图用清氧绿《出师表》。主按钮进工作台。页面要进站点地图，不能被 noindex。FAQ 和原来的搜索标题留着。

@@ -235,6 +235,16 @@ html.studio-embedded .studio-navigation { display:none; }
   background:rgba(255,255,255,.03);
   color:#ebebeb;
 }
+.theme-chip:has(.theme-gem) { justify-content: flex-start; }
+.theme-gem {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: auto;
+  pointer-events: none;
+}
+.theme-chip.is-active .theme-gem { opacity: 1; }
 .theme-chip.is-active, .theme-chip.is-classic.is-active, .mood-card.is-active {
   border-color:#ccff00;
   background:rgba(204,255,0,.12);

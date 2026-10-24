@@ -2,6 +2,10 @@
 
 ## 当前接手摘要
 
+主题按钮紫金钻石（2026-10-24，PR #63，未合并、未部署）：深空青、柠边、乐几、撕贴、平涂、报章、包豪这 7 个胶囊右侧各有一枚一样的小钻石，紫底加金面。更早的主题没有。选中深空青时绿框还在，钻石也能看清。主题色板没改。截图在 `docs/previews/theme-gem-nocturne.png`。阿超口头同意合并，但还没合进 master。
+
+四套精选主题（2026-10-24，同一条 PR，未合并、未部署）：工作台主题列表末尾新增撕贴（grunge）、平涂（flat）、报章（newsprint）、包豪（bauhaus）。撕贴是黄纸、绯红硬边、暗金只做重点。平涂是白底蓝块、灰软卡，确认没有硬投影。报章是暖灰纸、衬线标题、直角墨边，绯红只做下划线和链接。包豪是灰底、红块标题、黄重点、蓝链接、直角硬边，没有新字体、没有渐变。硬投影仍按主题名单开，平涂不在名单里。桌面预览在 `docs/previews/` 下四张图。首页、落地页、精品模板没动。正式站要等合进 master。
+
 乐几主题（2026-10-24，PR #62，未合并、未部署）：工作台主题列表末尾新增「乐几」（playful）。奶油纸、紫强调、琥珀高亮、板岩硬边，圆角 16。硬边投影跟柠边同一条路径，圆角和描边色各走各的参数。标题用色块，字是纸色。栏目胶囊会带出「专栏 / COLUMN」，紫底深字也发闷，所以没留。桌面预览图在 `docs/previews/playful-desktop-preview.png`。首页、落地页、精品模板没动。正式站要等合进 master。
 
 柠边主题（2026-10-24，PR #61，未合并、未部署）：工作台主题列表末尾新增「柠边」（citrus）。奶油纸、亮黄强调、墨黑硬边和实心投影。适合产品发布、增长笔记、工具安利、创业复盘。预览和复制稿都走这套参数。桌面预览图在 `docs/previews/citrus-desktop-preview.png`。首页和落地页没动，精品模板没加样张。正式站要等合进 master。
@@ -145,6 +149,30 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-24 深空青按钮也加上紫金钻石
+
+- 想做什么：深空青的胶囊右侧加上和另外 6 个精选主题同一枚紫金钻石。仍在 PR #63。阿超说可以合并，但这一轮不要自己合。
+- 做成了什么：深空青（nocturne）进了钻石名单。选中时绿框还在，钻石也清楚。主题色板没改。缓存号 `theme-gem-v2`。
+- 改了哪些文件：`public/app.js`、`public/studio.html`、`docs/previews/theme-gem-nocturne.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开主题面板。深空青右侧有钻石，和柠边、乐几、撕贴、平涂、报章、包豪是同一枚。手札橙、清氧绿没有。截图在 `docs/previews/theme-gem-nocturne.png`。没有合并。
+- 待办/风险：合进 master 等阿超看完截图再操作。
+
+### 2026-10-24 六个主题按钮右侧加紫金钻石
+
+- 想做什么：柠边、乐几、撕贴、平涂、报章、包豪的胶囊右侧加一枚统一的紫金钻石。别的主题不加。不改主题色板。仍在 PR #63。
+- 做成了什么：这 6 个按钮右侧是同一枚 12px 小钻石，紫底、金面、细金边。名字还在左边。选中包豪时绿框还在，钻石也清楚。缓存号 `theme-gem-v1`。
+- 改了哪些文件：`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`docs/previews/theme-gem-badges.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开工作台主题面板。这 6 个都有钻石，靠右，名字在钻的左边。清氧绿、素墨、静山、票据卡、手札橙、深空青和四套旧气质没有钻石。点包豪，绿框还在，钻石不发虚。截图在 `docs/previews/theme-gem-badges.png`。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。
+
+### 2026-10-24 一次加上撕贴、平涂、报章、包豪
+
+- 想做什么：按 Superdesign 的配色，一次加四套精选主题，挂在同一个 PR，不合并。纹理、动画、新字体、多色轮换都不要。平涂不能有硬投影。包豪要直角硬边。
+- 做成了什么：主题列表末尾是撕贴、平涂、报章、包豪。硬投影名单是柠边、乐几、撕贴、报章、包豪，平涂不在里面。平涂卡片和标题的投影是 none。包豪红块浅字、黄重点、蓝链接，圆角 0，投影是 `4px 4px 0` 纯色、没有模糊。缓存号 `picked-four-v1`。
+- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/grunge-desktop-preview.png`、`docs/previews/flat-desktop-preview.png`、`docs/previews/newsprint-desktop-preview.png`、`docs/previews/bauhaus-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开本地工作台，四套各贴一段短文。撕贴是黄纸、绯红标题、3px 圆角、墨色硬投影。平涂没有 `data-hard-edge`，卡片投影 none，复制稿里也没有硬投影。报章标题是衬线，卡片直角、墨色硬投影。包豪卡片直角、红块浅字、链接是蓝、复制稿投影是 `4px 4px 0 #121212`，没有渐变。再点柠边和乐几，圆角仍是 6 和 16，硬投影还在。没有调用优化。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。
+
 ### 2026-10-24 新增精选主题「乐几」
 
 - 想做什么：加一套精选主题「乐几」（playful）。气质来自 Playful Geometric，但点阵、波浪、纸屑、自定义字体和多套主色都不要。硬边跟柠边同一条路。只开 PR，不合并。
@@ -160,27 +188,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/site-seo.ts`、`app/page.tsx`、`app/home-landing.tsx`、`app/home.css`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npm run build:edgeone` 通过。构建出的首页源码里，说明是新句子，有 og:description，首屏有那句副标题。精品模板、常见问题、落地页的说明还是原来的。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。谷歌对品牌词可能仍用旧摘要，要过几天，或在 Search Console 请求重新收录。
-
-### 2026-10-23 挂上公众号排版落地页
-
-- 想做什么：在同一条未合并的 PR 上，按张默的稿加一页 `/gongzhonghao-paiban`。对比图用清氧绿《出师表》。主按钮进工作台。页面要进站点地图，不能被 noindex。FAQ 和原来的搜索标题留着。
-- 做成了什么：页面有一个主标题、开篇、前后对比、五步、适合谁、和另外两个词的关系、三条短答。标题和说明用稿里的句子。站点地图加了这一页。
-- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地打开 `/gongzhonghao-paiban`，主标题、图注、工作台按钮都在，页面没有 noindex。`/sitemap.xml` 里有这一页。`npx tsx scripts/check-seo.ts` 通过。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。图是上下排，图注已改成「上素文 · 下 Yooco 优化排版」。阿超第二次发来的原图，路径仍是空的，仓库里的图还是上次重做的那张，没有再重画。
-
-### 2026-10-23 邀请说明和搜索标题
-
-- 想做什么：按李大力定稿改常见问题里的邀请说明。首页、精品模板、常见问题各对准一个搜索词。核对站点地图和 robots，别挡住公开页。不要新写落地页，不要改订阅页。只开 PR，不合并。
-- 做成了什么：邀请答案补上「未登录看不到这个入口。」并加粗。首页对准公众号排版和 AI 文章排版，精品模板对准微信文章排版模板，常见问题对准公众号排版工具。`/sitemap.xml` 收录首页、精品模板、常见问题、工作台、登录和注册。`/robots.txt` 只挡住后台、统计和接口。
-- 改了哪些文件：`lib/site-faq.ts`、`lib/site-seo.ts`、`lib/site-config.ts`、`app/layout.tsx`、`app/page.tsx`、`app/works/page.tsx`、`app/faq/page.tsx`、`app/sitemap.ts`、`app/robots.ts`、`app/admin/page.tsx`、`public/studio.html`、`scripts/check-invite.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 和 `npx tsx scripts/check-invite.ts` 通过。本地 5174 打开首页、`/works`、`/faq#invite`。邀请答案和定稿一致，未登录那句是加粗。三个标题和说明、`/sitemap.xml`、`/robots.txt` 都对。`npm run build:edgeone` 通过。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。不带 www 的 yoooco.com 现在也能打开，站内统一用 www。品牌手册和标题样式册没有放进站点地图。没有做「公众号排版」长文落地页。
-
-### 2026-10-23 工作台改成独立页，历史留在左侧
-
-- 想做什么：工作台和精品模板分成两个页面。历史始终在工作台左侧栏，不要再因为嵌进 `/works?panel=studio` 跑到右上角。旧地址自动跳走。只开 PR，不合并。
-- 做成了什么：进工作台的入口改成 `/studio.html`。精品模板页的「工作台」是跳转，不再用 iframe。`/studio` 和 `/works?panel=studio` 都会到独立工作台。
-- 改了哪些文件：`components/works-frame.tsx`、`app/works.css`、`app/works/page.tsx`、`app/home-landing.tsx`、`lib/works.ts`、`public/studio.html`、`next.config.ts`、`vite.config.ts`、`components/account-layout.tsx`、`components/auth-page.tsx`、`components/subscribe-page.tsx`、`CONTEXT.md`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地 5174。未登录打开 `/studio.html`，左侧是「登录后可看排版历史。」顶栏是工具、剩余积分、Log in，没有「历史」。首页「免费试用」、精品模板侧栏「工作台」、模板「做同款」都落到 `/studio.html`，页面里没有 iframe。`/works?panel=studio` 和 `/studio` 直接跳到 `/studio.html`。精品模板页仍是模板列表。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。登录后的历史列表还是原来的读取方式，这次只是不再把工作台嵌进去。

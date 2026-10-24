@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 八套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 十二套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -279,9 +279,140 @@ const THEMES = {
       caseStudy: { core: ["paragraph", "card", "list"], accent: ["highlight", "quote"] },
     },
   },
+
+  // 撕贴：黄纸、绯红强调、暗金点缀、墨黑硬边。适合活动海报和反叛口吻。不要纹理和抖动。
+  grunge: {
+    label: "撕贴",
+    en: "GRUNGE",
+    primary: "#DC143C",
+    fit: "活动海报感 · 摇滚/独立 · 反叛口吻稿",
+    params: {
+      styleVariant: "standard",
+      textColor: "#1A1A1A", accentColor: "#DC143C",
+      highlightColor: "#C5A945", highlightTextColor: "#1A1A1A",
+      cardColor: "#F7F2E3", quoteColor: "#E4DCC4", cardTitleColor: "#DC143C",
+      pageColor: "#F0EAD6", linkColor: "#DC143C",
+      codeBackground: "#E8E0C8", codeColor: "#1A1A1A", dividerColor: "#1A1A1A",
+      mutedColor: "#6E6758", titleColor: "#1A1A1A", borderColor: "#1A1A1A",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 15, lineHeight: 1.9, letterSpacing: 0.4, paragraphSpacing: 20,
+      headingSize: 26, headingWeight: 900, headingSpacingBefore: 36, headingSpacingAfter: 14,
+      headingStyle: "block", cardStyle: "outline", listStyle: "circle",
+      highlightStyle: "marker", cardRadius: 3, imageRadius: 3, cardPadding: 20,
+      cardBorderWidth: 2, dividerThickness: 2,
+      showDivider: true,
+    },
+    recipe: {
+      opinion: { core: ["paragraph", "quote", "card"], accent: ["highlight", "list"] },
+      lifestyle: { core: ["paragraph", "card"], accent: ["highlight", "quote"] },
+      checklist: { core: ["list", "card"], accent: ["highlight"] },
+      tutorial: { core: ["paragraph", "list", "card"], accent: ["highlight"] },
+      interview: { core: ["paragraph", "quote"], accent: ["card"] },
+      dataReport: { core: ["paragraph", "list", "card"], accent: ["highlight"] },
+      caseStudy: { core: ["paragraph", "card", "list"], accent: ["quote"] },
+    },
+  },
+
+  // 平涂：白底、蓝强调、琥珀高亮、灰底软卡。没有硬边投影。
+  flat: {
+    label: "平涂",
+    en: "FLAT",
+    primary: "#3B82F6",
+    fit: "产品说明 · SaaS 教程 · 清晰清单",
+    params: {
+      styleVariant: "standard",
+      textColor: "#374151", accentColor: "#3B82F6",
+      highlightColor: "#F59E0B", highlightTextColor: "#111827",
+      cardColor: "#F3F4F6", quoteColor: "#F3F4F6", cardTitleColor: "#3B82F6",
+      pageColor: "#FFFFFF", linkColor: "#3B82F6",
+      codeBackground: "#F3F4F6", codeColor: "#111827", dividerColor: "#E5E7EB",
+      mutedColor: "#6B7280", titleColor: "#111827", borderColor: "#E5E7EB",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 15, lineHeight: 1.85, letterSpacing: 0.2, paragraphSpacing: 18,
+      headingSize: 26, headingWeight: 800, headingSpacingBefore: 32, headingSpacingAfter: 12,
+      headingStyle: "block", cardStyle: "soft", listStyle: "check",
+      highlightStyle: "marker", cardRadius: 8, imageRadius: 8, cardPadding: 20,
+      showDivider: true,
+    },
+    recipe: {
+      tutorial: { core: ["steps", "list", "card"], accent: ["paragraph"] },
+      checklist: { core: ["list", "card"], accent: ["paragraph"] },
+      opinion: { core: ["paragraph", "list", "card"], accent: ["highlight"] },
+      interview: { core: ["paragraph", "quote", "list"], accent: ["card"] },
+      dataReport: { core: ["list", "card"], accent: ["paragraph"] },
+      lifestyle: { core: ["paragraph", "list"], accent: ["card"] },
+      caseStudy: { core: ["list", "card", "paragraph"], accent: ["quote"] },
+    },
+  },
+
+  // 报章：暖灰纸、衬线标题、绯红只做点睛、墨黑硬边。直角。
+  newsprint: {
+    label: "报章",
+    en: "PRESS",
+    primary: "#CC0000",
+    fit: "深度评论 · 行业快讯 · 权威口吻",
+    params: {
+      styleVariant: "standard",
+      textColor: "#404040", accentColor: "#CC0000",
+      highlightColor: "#F8E8E8", highlightTextColor: "#111111",
+      cardColor: "#FFFFFF", quoteColor: "#F5F5F5", cardTitleColor: "#111111",
+      pageColor: "#F9F9F7", linkColor: "#CC0000",
+      codeBackground: "#F5F5F5", codeColor: "#111111", dividerColor: "#E5E5E0",
+      mutedColor: "#737373", titleColor: "#111111", borderColor: "#111111",
+      bodyFont: "system", headingFont: "serif", textAlign: "justify",
+      fontSize: 15, lineHeight: 1.9, letterSpacing: 0.3, paragraphSpacing: 20,
+      headingSize: 26, headingWeight: 800, headingSpacingBefore: 40, headingSpacingAfter: 14,
+      headingStyle: "line", cardStyle: "outline", listStyle: "dot",
+      highlightStyle: "marker", cardRadius: 0, imageRadius: 0, cardPadding: 20,
+      cardBorderWidth: 2,
+      showDivider: true,
+    },
+    recipe: {
+      opinion: { core: ["paragraph", "quote"], accent: ["list", "card"] },
+      interview: { core: ["paragraph", "quote", "list"], accent: ["card"] },
+      checklist: { core: ["list", "paragraph"], accent: ["card"] },
+      tutorial: { core: ["paragraph", "list"], accent: ["card"] },
+      dataReport: { core: ["paragraph", "list"], accent: ["quote"] },
+      lifestyle: { core: ["paragraph", "quote"], accent: ["list"] },
+      caseStudy: { core: ["paragraph", "list", "quote"], accent: ["card"] },
+    },
+  },
+
+  // 包豪：灰底、红强调、黄高亮、蓝链接、直角墨黑硬边。不引新字体，不用渐变。
+  bauhaus: {
+    label: "包豪",
+    en: "BAUHAUS",
+    primary: "#D02020",
+    fit: "设计宣言 · 几何海报 · 品牌主张",
+    params: {
+      styleVariant: "standard",
+      textColor: "#121212", accentColor: "#D02020",
+      highlightColor: "#F0C020", highlightTextColor: "#121212",
+      cardColor: "#FFFFFF", quoteColor: "#FFFFFF", cardTitleColor: "#D02020",
+      pageColor: "#F0F0F0", linkColor: "#1040C0",
+      codeBackground: "#FFFFFF", codeColor: "#121212", dividerColor: "#121212",
+      mutedColor: "#5C5C5C", titleColor: "#121212", borderColor: "#121212",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 15, lineHeight: 1.85, letterSpacing: 0.2, paragraphSpacing: 20,
+      headingSize: 28, headingWeight: 900, headingSpacingBefore: 36, headingSpacingAfter: 14,
+      headingStyle: "block", cardStyle: "outline", listStyle: "circle",
+      highlightStyle: "marker", cardRadius: 0, imageRadius: 0, cardPadding: 20,
+      cardBorderWidth: 2, dividerThickness: 2,
+      showDivider: true,
+    },
+    recipe: {
+      opinion: { core: ["paragraph", "card", "highlight"], accent: ["list"] },
+      checklist: { core: ["list", "card"], accent: ["highlight"] },
+      tutorial: { core: ["list", "card", "paragraph"], accent: ["highlight"] },
+      lifestyle: { core: ["paragraph", "card"], accent: ["highlight"] },
+      interview: { core: ["paragraph", "quote", "card"], accent: ["list"] },
+      dataReport: { core: ["list", "card"], accent: ["highlight"] },
+      caseStudy: { core: ["paragraph", "card", "list"], accent: ["highlight"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

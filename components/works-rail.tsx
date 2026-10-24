@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { WORKS, type WorkPiece } from "@/lib/works";
+import { GEM_THEME_IDS, WORKS, type WorkPiece } from "@/lib/works";
 import { WorkModal, WorkPreview } from "@/components/work-modal";
 import "@/app/works.css";
 
@@ -73,6 +73,8 @@ function MarqueeCard({
   );
 }
 
+const HOME_WORKS = GEM_THEME_IDS.map((id) => WORKS.find((work) => work.themeId === id)).filter((work): work is WorkPiece => Boolean(work));
+
 export function WorksRail() {
   const [open, setOpen] = useState<WorkPiece | null>(null);
   const [origin, setOrigin] = useState<HTMLButtonElement | null>(null);
@@ -93,7 +95,7 @@ export function WorksRail() {
           <div className="works-marquee-track">
             {[false, true].map((clone) => (
               <div key={clone ? "clone" : "live"} className="works-marquee-group" aria-hidden={clone ? true : undefined}>
-                {WORKS.map((work) => (
+                {HOME_WORKS.map((work) => (
                   <MarqueeCard key={work.id} work={work} clone={clone} onOpen={onOpen} />
                 ))}
               </div>

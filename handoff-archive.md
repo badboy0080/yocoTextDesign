@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-23 挂上公众号排版落地页
+
+- 想做什么：在同一条未合并的 PR 上，按张默的稿加一页 `/gongzhonghao-paiban`。对比图用清氧绿《出师表》。主按钮进工作台。页面要进站点地图，不能被 noindex。FAQ 和原来的搜索标题留着。
+- 做成了什么：页面有一个主标题、开篇、前后对比、五步、适合谁、和另外两个词的关系、三条短答。标题和说明用稿里的句子。站点地图加了这一页。
+- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：本地打开 `/gongzhonghao-paiban`，主标题、图注、工作台按钮都在，页面没有 noindex。`/sitemap.xml` 里有这一页。`npx tsx scripts/check-seo.ts` 通过。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。图是上下排，图注已改成「上素文 · 下 Yooco 优化排版」。阿超第二次发来的原图，路径仍是空的，仓库里的图还是上次重做的那张，没有再重画。
+
 ### 2026-10-23 邀请说明和搜索标题
 
 - 想做什么：按李大力定稿改常见问题里的邀请说明。首页、精品模板、常见问题各对准一个搜索词。核对站点地图和 robots，别挡住公开页。不要新写落地页，不要改订阅页。只开 PR，不合并。

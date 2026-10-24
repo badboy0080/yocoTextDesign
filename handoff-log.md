@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-主题按钮紫金钻石（2026-10-24，PR #63，未合并、未部署）：柠边、乐几、撕贴、平涂、报章、包豪这 6 个胶囊右侧各有一枚一样的小钻石，紫底加金面。别的主题没有。选中时绿框还在，钻石也能看清。主题色板没改。截图在 `docs/previews/theme-gem-badges.png`。
+主题按钮紫金钻石（2026-10-24，PR #63，未合并、未部署）：深空青、柠边、乐几、撕贴、平涂、报章、包豪这 7 个胶囊右侧各有一枚一样的小钻石，紫底加金面。更早的主题没有。选中深空青时绿框还在，钻石也能看清。主题色板没改。截图在 `docs/previews/theme-gem-nocturne.png`。阿超口头同意合并，但还没合进 master。
 
 四套精选主题（2026-10-24，同一条 PR，未合并、未部署）：工作台主题列表末尾新增撕贴（grunge）、平涂（flat）、报章（newsprint）、包豪（bauhaus）。撕贴是黄纸、绯红硬边、暗金只做重点。平涂是白底蓝块、灰软卡，确认没有硬投影。报章是暖灰纸、衬线标题、直角墨边，绯红只做下划线和链接。包豪是灰底、红块标题、黄重点、蓝链接、直角硬边，没有新字体、没有渐变。硬投影仍按主题名单开，平涂不在名单里。桌面预览在 `docs/previews/` 下四张图。首页、落地页、精品模板没动。正式站要等合进 master。
 
@@ -149,6 +149,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-24 深空青按钮也加上紫金钻石
+
+- 想做什么：深空青的胶囊右侧加上和另外 6 个精选主题同一枚紫金钻石。仍在 PR #63。阿超说可以合并，但这一轮不要自己合。
+- 做成了什么：深空青（nocturne）进了钻石名单。选中时绿框还在，钻石也清楚。主题色板没改。缓存号 `theme-gem-v2`。
+- 改了哪些文件：`public/app.js`、`public/studio.html`、`docs/previews/theme-gem-nocturne.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开主题面板。深空青右侧有钻石，和柠边、乐几、撕贴、平涂、报章、包豪是同一枚。手札橙、清氧绿没有。截图在 `docs/previews/theme-gem-nocturne.png`。没有合并。
+- 待办/风险：合进 master 等阿超看完截图再操作。
+
 ### 2026-10-24 六个主题按钮右侧加紫金钻石
 
 - 想做什么：柠边、乐几、撕贴、平涂、报章、包豪的胶囊右侧加一枚统一的紫金钻石。别的主题不加。不改主题色板。仍在 PR #63。
@@ -180,11 +188,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/site-seo.ts`、`app/page.tsx`、`app/home-landing.tsx`、`app/home.css`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npm run build:edgeone` 通过。构建出的首页源码里，说明是新句子，有 og:description，首屏有那句副标题。精品模板、常见问题、落地页的说明还是原来的。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。谷歌对品牌词可能仍用旧摘要，要过几天，或在 Search Console 请求重新收录。
-
-### 2026-10-23 挂上公众号排版落地页
-
-- 想做什么：在同一条未合并的 PR 上，按张默的稿加一页 `/gongzhonghao-paiban`。对比图用清氧绿《出师表》。主按钮进工作台。页面要进站点地图，不能被 noindex。FAQ 和原来的搜索标题留着。
-- 做成了什么：页面有一个主标题、开篇、前后对比、五步、适合谁、和另外两个词的关系、三条短答。标题和说明用稿里的句子。站点地图加了这一页。
-- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地打开 `/gongzhonghao-paiban`，主标题、图注、工作台按钮都在，页面没有 noindex。`/sitemap.xml` 里有这一页。`npx tsx scripts/check-seo.ts` 通过。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。图是上下排，图注已改成「上素文 · 下 Yooco 优化排版」。阿超第二次发来的原图，路径仍是空的，仓库里的图还是上次重做的那张，没有再重画。

@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 七套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 八套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -246,9 +246,42 @@ const THEMES = {
       caseStudy: { core: ["steps", "card", "list"], accent: ["highlight", "quote"] },
     },
   },
+
+  // 乐几：奶油纸、紫强调、琥珀高亮、板岩硬边。圆角比柠边大。适合产品介绍和轻松教程。
+  playful: {
+    label: "乐几",
+    en: "PLAYFUL",
+    primary: "#8B5CF6",
+    fit: "产品介绍 · 活动安利 · 品牌故事 · 轻松教程",
+    params: {
+      styleVariant: "standard",
+      textColor: "#334155", accentColor: "#8B5CF6",
+      highlightColor: "#FBBF24", highlightTextColor: "#1E293B",
+      cardColor: "#FFFFFF", quoteColor: "#F1F5F9", cardTitleColor: "#8B5CF6",
+      pageColor: "#FFFDF5", linkColor: "#8B5CF6",
+      codeBackground: "#F1F5F9", codeColor: "#1E293B", dividerColor: "#E2E8F0",
+      mutedColor: "#64748B", titleColor: "#1E293B", borderColor: "#1E293B",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 15, lineHeight: 1.9, letterSpacing: 0.3, paragraphSpacing: 22,
+      headingSize: 26, headingWeight: 800, headingSpacingBefore: 36, headingSpacingAfter: 14,
+      headingStyle: "block", cardStyle: "outline", listStyle: "check",
+      highlightStyle: "marker", cardRadius: 16, imageRadius: 16, cardPadding: 20,
+      cardBorderWidth: 2,
+      showDivider: true,
+    },
+    recipe: {
+      lifestyle: { core: ["paragraph", "card", "highlight"], accent: ["list", "quote"] },
+      tutorial: { core: ["paragraph", "list", "card"], accent: ["highlight", "quote"] },
+      opinion: { core: ["paragraph", "card", "highlight"], accent: ["list", "quote"] },
+      checklist: { core: ["list", "card", "highlight"], accent: ["paragraph"] },
+      interview: { core: ["paragraph", "quote", "card"], accent: ["list", "highlight"] },
+      dataReport: { core: ["paragraph", "card", "list"], accent: ["highlight"] },
+      caseStudy: { core: ["paragraph", "card", "list"], accent: ["highlight", "quote"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

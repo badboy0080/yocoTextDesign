@@ -720,6 +720,14 @@ body:has(.ol-home) { background: #000; color: var(--ol-text); }
   padding: 12px 10px 14px;
   box-shadow: none;
 }
+.ol-home .works-marquee-fit .work-sheet--citrus,
+.ol-home .works-marquee-fit .work-sheet--playful,
+.ol-home .works-marquee-fit .work-sheet--grunge,
+.ol-home .works-marquee-fit .work-sheet--newsprint,
+.ol-home .works-marquee-fit .work-sheet--bauhaus {
+  border: 0;
+  box-shadow: none;
+}
 .ol-home .works-marquee-fit .work-sheet h3 {
   margin: 0 0 0.4rem;
   font-size: 1.35rem;

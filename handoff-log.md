@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-首页模板卡片出血（2026-10-25，只开 PR，未合并、未部署）：首页那排模板不再为了塞进全文而缩成窄条。预览纸左右各离卡片 10px，装不下的正文由卡片裁掉。精品模板页本来就是铺满的，左右大约 2px，这次没改它的缩放。截图在 `docs/previews/home-template-cards-bleed.png`。正式站要等合进 master。
+首页模板卡片出血和去黑框（2026-10-25，PR #65，未合并、未部署）：首页那排模板不再为了塞进全文而缩成窄条。预览纸左右各离卡片 10px，装不下的正文由卡片裁掉。柠边、乐几、撕贴、报章、包豪的黑边和硬投影只在卡片封面上去掉，弹窗里的硬边还在。截图在 `docs/previews/home-template-cards-no-border.png`。正式站要等合进 master。
 
 包豪四色和钻石主题模板（2026-10-24，PR #64，已合进 master）：包豪灰底仍是 #F0F0F0。红 #D02020 做标题块和卡片标题，蓝 #1040C0 做加粗和链接、序号圈，黄 #F0C020 做引导段和高亮，黑 #121212 做正文和硬投影。复制稿仍是纯色底加内联样式，没有渐变。排版提示词里加粗密度比「每块标记合计 1 至 3 处」上调一档，写成短句 1 处、普通段 2 至 3 处、长段 3 至 4 处，加粗约占该块两成。首页模板条只留深空青、柠边、乐几、撕贴、平涂、报章、包豪，文案是工作台示例文章的开头。精品模板这 7 套排在最前，后面仍是原来的模板。
 
@@ -153,6 +153,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-25 首页模板卡片去掉黑框
+
+- 想做什么：首页模板卡片里，柠边、乐几、撕贴、报章、包豪有一圈黑边，要去掉。弹窗里的硬边留下。仍在 PR #65，不合并。
+- 做成了什么：卡片封面上这五套的纸边和硬投影清掉了。深空青顶部那条绿线还在。点开柠边，弹窗里仍是 2px 黑边。主题本身没改。
+- 改了哪些文件：`app/home.css`、`app/works.css`、`docs/previews/home-template-cards-no-border.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 量首页七张卡，这五套纸边是 0，投影是 none。精品模板封面前七张同样没有这圈黑边。弹窗里柠边的纸边是 `2px solid #111`。截图在 `docs/previews/home-template-cards-no-border.png`。
+- 待办/风险：合进 master 才会上正式站。标题色块自己的小边还在，那是主题样子，不是卡片外框。
+
 ### 2026-10-25 首页模板卡片左右留 10px
 
 - 想做什么：首页模板条里，文章预览缩成窄列，两边大片空白。改成横向铺满，左右大约 10px，竖向可以裁切。精品模板如果是同一套缩放，一并改。只开 PR，不合并。
@@ -184,11 +192,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`docs/previews/theme-gem-badges.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头 Chrome 打开工作台主题面板。这 6 个都有钻石，靠右，名字在钻的左边。清氧绿、素墨、静山、票据卡、手札橙、深空青和四套旧气质没有钻石。点包豪，绿框还在，钻石不发虚。截图在 `docs/previews/theme-gem-badges.png`。没有部署，没有合并。
 - 待办/风险：合进 master 才会上正式站。
-
-### 2026-10-24 一次加上撕贴、平涂、报章、包豪
-
-- 想做什么：按 Superdesign 的配色，一次加四套精选主题，挂在同一个 PR，不合并。纹理、动画、新字体、多色轮换都不要。平涂不能有硬投影。包豪要直角硬边。
-- 做成了什么：主题列表末尾是撕贴、平涂、报章、包豪。硬投影名单是柠边、乐几、撕贴、报章、包豪，平涂不在里面。平涂卡片和标题的投影是 none。包豪红块浅字、黄重点、蓝链接，圆角 0，投影是 `4px 4px 0` 纯色、没有模糊。缓存号 `picked-four-v1`。
-- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/grunge-desktop-preview.png`、`docs/previews/flat-desktop-preview.png`、`docs/previews/newsprint-desktop-preview.png`、`docs/previews/bauhaus-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开本地工作台，四套各贴一段短文。撕贴是黄纸、绯红标题、3px 圆角、墨色硬投影。平涂没有 `data-hard-edge`，卡片投影 none，复制稿里也没有硬投影。报章标题是衬线，卡片直角、墨色硬投影。包豪卡片直角、红块浅字、链接是蓝、复制稿投影是 `4px 4px 0 #121212`，没有渐变。再点柠边和乐几，圆角仍是 6 和 16，硬投影还在。没有调用优化。没有部署，没有合并。
-- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。

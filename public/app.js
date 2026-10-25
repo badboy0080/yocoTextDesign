@@ -4,6 +4,8 @@ const TEMPLATE_DEFAULTS = {
   linkColor: "#3f6f9f", codeBackground: "#edf0e5", codeColor: "#2c4030", dividerColor: "#6e8e23",
   bodyFont: "system", headingFont: "system", textAlign: "left", textIndent: 0,
   fontSize: 16, lineHeight: 1.75, letterSpacing: 0.3, paragraphSpacing: 18, contentWidth: 620,
+  // 大标题字距，单位 em。-0.04em 等于字距 -40，落在 -20～-60。正文仍用上面的 letterSpacing（px）。
+  headingLetterSpacing: -0.04,
   readingDensity: "standard", titleSize: 26, headingSize: 27, subheadingSize: 23, minorHeadingSize: 20,
   headingWeight: 800, headingLineHeight: 1.35, headingSpacingBefore: 32, headingSpacingAfter: 12,
   headingStyle: "bar", cardStyle: "border", listStyle: "dot",
@@ -790,6 +792,12 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
     highlightRadius: [0, 12, 1], highlightPadding: [0, 8, 1], listIndent: [1, 3, .25], listItemSpacing: [0, 20, 1], quoteTitleSize: [10, 18, 1], cardTitleSize: [10, 18, 1], cardBorderWidth: [0, 4, 1], dividerThickness: [1, 4, 1], dividerMargin: [8, 48, 2], codeFontSize: [11, 18, 1], codeLineHeight: [1.2, 2, .1], captionSize: [9, 16, 1], cardRadius: [0, 24, 1], cardPadding: [12, 32, 2], imageRadius: [0, 24, 1],
   };
   Object.entries(ranges).forEach(([key, [min, max, step]]) => { if (input?.[key] !== undefined) next[key] = clampClientNumber(input[key], min, max, step, next[key]); });
+  if (input?.headingLetterSpacing !== undefined) {
+    const numeric = Number(input.headingLetterSpacing);
+    next.headingLetterSpacing = Number.isFinite(numeric)
+      ? Number(Math.min(0.08, Math.max(-0.08, numeric)).toFixed(2))
+      : next.headingLetterSpacing;
+  }
   ["linkUnderline", "showQuote", "showDivider", "showImage", "showSignature"].forEach((key) => { if (typeof input?.[key] === "boolean") next[key] = input[key]; });
   ["cardStyle", "listStyle"].forEach((key) => { if (typeof input?.[key] === "string") next[key] = input[key]; });
   if (typeof input?.mood === "string") next.mood = input.mood;
@@ -1235,6 +1243,51 @@ function renderStructureEditor() {
   return;
 }
 
+function polishArticleText(value) {
+  if (typeof value !== "string") return value;
+  if (typeof polishTypesetText !== "function") return value;
+  return polishTypesetText(value);
+}
+
+function polishArticleBlock(block) {
+  if (!block || block.type === "code") return block;
+  const next = { ...block };
+  if (typeof next.text === "string") next.text = polishArticleText(next.text);
+  if (typeof next.title === "string") next.title = polishArticleText(next.title);
+  if (typeof next.alt === "string") next.alt = polishArticleText(next.alt);
+  if (Array.isArray(next.items)) {
+    next.items = next.items.map((item) => {
+      if (typeof item === "string") return polishArticleText(item);
+      if (!item || typeof item !== "object") return item;
+      const copy = { ...item };
+      if (typeof copy.text === "string") copy.text = polishArticleText(copy.text);
+      if (typeof copy.value === "string") copy.value = polishArticleText(copy.value);
+      if (typeof copy.label === "string") copy.label = polishArticleText(copy.label);
+      return copy;
+    });
+  }
+  if (Array.isArray(next.headers)) next.headers = next.headers.map((cell) => polishArticleText(cell));
+  if (Array.isArray(next.rows)) {
+    next.rows = next.rows.map((row) => (Array.isArray(row) ? row.map((cell) => polishArticleText(cell)) : row));
+  }
+  return next;
+}
+
+function polishArticleModel(model) {
+  if (!model) return model;
+  return {
+    ...model,
+    title: polishArticleText(model.title || ""),
+    blocks: (model.blocks || []).map(polishArticleBlock),
+  };
+}
+
+function headingLetterSpacingCss() {
+  const numeric = Number(state.headingLetterSpacing);
+  const em = Number.isFinite(numeric) ? numeric : -0.04;
+  return `${em}em`;
+}
+
 function getArticleModel() {
   if (!articleSource.trim()) {
     return { title: "", blocks: [], isSample: true };
@@ -1243,12 +1296,12 @@ function getArticleModel() {
   const inferred = articleTitleOverride.trim()
     ? { title: "", blocks: parsed.blocks, inferred: false }
     : inferTitleFromFirstBlock(parsed);
-  return {
+  return polishArticleModel({
     ...parsed,
     title: articleTitleOverride.trim() || parsed.title || inferred.title || "",
     blocks: inferred.blocks,
     isSample: false,
-  };
+  });
 }
 
 function blockIndexAttr(item, index) {
@@ -1682,6 +1735,7 @@ function applyStyleVars() {
   articlePage.style.setProperty("--font-size", `${state.fontSize}px`);
   articlePage.style.setProperty("--line-height", state.lineHeight);
   articlePage.style.setProperty("--letter-spacing", `${state.letterSpacing}px`);
+  articlePage.style.setProperty("--heading-letter-spacing", headingLetterSpacingCss());
   articlePage.style.setProperty("--paragraph-spacing", `${state.paragraphSpacing}px`);
   articlePage.style.setProperty("--text-align", wechatTextAlign(state.textAlign));
   articlePage.style.setProperty("--text-indent", `${state.textIndent}em`);
@@ -2097,7 +2151,7 @@ function buildCopyHtml() {
     const size = getHeadingSize(level);
     const headingInk = state.theme === "nocturne" ? titleColor : state.textColor;
     const nightItalic = isDeepNight && state.theme !== "nocturne" ? "font-style:italic;" : "";
-    const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;${nightItalic}`;
+    const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};${nightItalic}`;
     let style = `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
     if (headingKind === "line") style = `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
     else if (headingKind === "block" && level === 2 && isHardEdgeTheme(state.theme)) {
@@ -2177,7 +2231,7 @@ function buildCopyHtml() {
   const cardStyle = cardBoxStyle(cardKind, state.cardColor);
   const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
   const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
-  const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:-.04em;text-align:left;`;
+  const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};text-align:left;`;
   const imageBoxStyle = isHardEdgeTheme(state.theme)
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.highlightColor};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : isDeepNight

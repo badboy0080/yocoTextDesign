@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-引擎三刀（2026-10-25，只开 PR，未合并、未部署）：大标题单独用 `headingLetterSpacing`，默认 -0.04em（字距 -40，落在 -20～-60）。正文仍用原来的 letterSpacing，不跟着收紧。预览和复制到微信时，全角数字改成半角，中文和英文或数字之间补一个普通空格。代码块、行内代码、网址内部不改，已有空格不重复加。复制稿仍是纯色底加内联样式，没有渐变。主题配色没动。截图在 `docs/previews/engine-trio-before-after.png`。正式站要等合进 master。
+引擎三刀（2026-10-25，PR #66，未合并、未部署）：大标题单独用 `headingLetterSpacing`，默认 -0.04em（字距 -40，落在 -20～-60）。正文仍用原来的 letterSpacing，不跟着收紧。预览和复制到微信时，全角数字改成半角，中文和英文或数字之间补一个普通空格。代码块、行内代码、网址内部不改，已有空格不重复加。复制稿仍是纯色底加内联样式，没有渐变。主题配色没动。截图在 `docs/previews/engine-trio-before-after.png`。正式站要等合进 master。
 
 首页模板卡片出血和去黑框（2026-10-25，PR #65，已合进 master）：首页那排模板不再为了塞进全文而缩成窄条。预览纸左右各离卡片 10px，装不下的正文由卡片裁掉。柠边、乐几、撕贴、报章、包豪的黑边和硬投影只在卡片封面上去掉，弹窗里的硬边还在。截图在 `docs/previews/home-template-cards-no-border.png`。
 
@@ -161,7 +161,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
 - 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
-- 待办/风险：没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
 
 ### 2026-10-25 首页模板卡片去掉黑框
 

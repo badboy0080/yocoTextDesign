@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-10-24 一次加上撕贴、平涂、报章、包豪
+
+- 想做什么：按 Superdesign 的配色，一次加四套精选主题，挂在同一个 PR，不合并。纹理、动画、新字体、多色轮换都不要。平涂不能有硬投影。包豪要直角硬边。
+- 做成了什么：主题列表末尾是撕贴、平涂、报章、包豪。硬投影名单是柠边、乐几、撕贴、报章、包豪，平涂不在里面。平涂卡片和标题的投影是 none。包豪红块浅字、黄重点、蓝链接，圆角 0，投影是 `4px 4px 0` 纯色、没有模糊。缓存号 `picked-four-v1`。
+- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/grunge-desktop-preview.png`、`docs/previews/flat-desktop-preview.png`、`docs/previews/newsprint-desktop-preview.png`、`docs/previews/bauhaus-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开本地工作台，四套各贴一段短文。撕贴是黄纸、绯红标题、3px 圆角、墨色硬投影。平涂没有 `data-hard-edge`，卡片投影 none，复制稿里也没有硬投影。报章标题是衬线，卡片直角、墨色硬投影。包豪卡片直角、红块浅字、链接是蓝、复制稿投影是 `4px 4px 0 #121212`，没有渐变。再点柠边和乐几，圆角仍是 6 和 16，硬投影还在。没有调用优化。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。
+
+### 2026-10-24 新增精选主题「乐几」
+
+- 想做什么：加一套精选主题「乐几」（playful）。气质来自 Playful Geometric，但点阵、波浪、纸屑、自定义字体和多套主色都不要。硬边跟柠边同一条路。只开 PR，不合并。
+- 做成了什么：主题列表末尾有「乐几」。紫 `#8B5CF6` 是唯一强调色，高亮是琥珀 `#FBBF24`，描边和实心投影是板岩 `#1E293B`，圆角 16。标题用色块、纸色字。配方偏生活、教程、观点、盘点，核心是段落、列表、卡片、高亮，不把步骤放进核心。缓存号 `playful-v1`。
+- 改了哪些文件：`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`CONTEXT.md`、`README.md`、`docs/previews/playful-desktop-preview.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开本地工作台，贴一段短文，点「乐几」。主题是 playful，卡片 16px 圆角、2px 板岩边、`4px 4px` 实心投影，标题紫底纸色字，高亮琥珀底深字。复制稿里有这些颜色和投影。再点「柠边」，卡片回到 6px、墨黑投影、标题黑字。没有调用优化。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。公众号后台粘贴后的硬投影还没在微信里看过。
+
 ### 2026-10-23 首页搜索说明改成产品介绍
 
 - 想做什么：Google 搜 yoooco.com 时，摘要还在用模板卡片里的排版散文。把首页说明改成直白的产品句，补上分享卡片，首屏加一句可见说明。只开 PR，不合并。

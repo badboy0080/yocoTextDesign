@@ -1,48 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { GEM_THEME_IDS, WORKS, type WorkPiece } from "@/lib/works";
 import { WorkModal, WorkPreview } from "@/components/work-modal";
 import "@/app/works.css";
 
-function FitPreview({ work }: { work: WorkPiece }) {
-  const frameRef = useRef<HTMLSpanElement>(null);
-  const sheetRef = useRef<HTMLSpanElement>(null);
-  const [scale, setScale] = useState(0);
-
-  useLayoutEffect(() => {
-    const frame = frameRef.current;
-    const sheet = sheetRef.current;
-    if (!frame || !sheet) return;
-
-    const measure = () => {
-      const page = sheet.querySelector(".work-sheet");
-      if (!(page instanceof HTMLElement)) return;
-      const width = page.offsetWidth;
-      const height = page.offsetHeight;
-      const frameWidth = frame.clientWidth;
-      const frameHeight = frame.clientHeight;
-      if (!width || !height || !frameWidth || !frameHeight) return;
-      const next = Math.min(frameWidth / width, frameHeight / height);
-      setScale(next);
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(frame);
-    return () => observer.disconnect();
-  }, [work.id]);
-
+/** 预览按卡片宽度铺开，左右留 10px。装不下的正文由卡片裁掉，不再整篇缩小。 */
+function CardPreview({ work }: { work: WorkPiece }) {
   return (
-    <span ref={frameRef} className="works-marquee-frame" style={{ background: work.pageColor }}>
-      <span
-        ref={sheetRef}
-        className="works-marquee-fit"
-        style={{
-          transform: `translate(-50%, -50%) scale(${scale || 0})`,
-          visibility: scale ? "visible" : "hidden",
-        }}
-      >
+    <span className="works-marquee-frame" style={{ background: work.pageColor }}>
+      <span className="works-marquee-fit">
         <WorkPreview work={work} />
       </span>
     </span>
@@ -68,7 +35,7 @@ function MarqueeCard({
       tabIndex={clone ? -1 : undefined}
       onClick={(event) => onOpen(work, event.currentTarget)}
     >
-      <FitPreview work={work} />
+      <CardPreview work={work} />
     </button>
   );
 }

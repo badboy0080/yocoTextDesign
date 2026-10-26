@@ -21,6 +21,9 @@ const canvasBlocks = document.querySelector("#canvasBlocks");
 const emptyHint = document.querySelector("#emptyHint");
 const layoutStatus = document.querySelector("#layoutStatus");
 const layoutError = document.querySelector("#layoutError");
+const imageFiles = document.querySelector("#imageFiles");
+const imageList = document.querySelector("#imageList");
+const trialMeter = document.querySelector("#trialMeter");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
 const canvasGrid = document.querySelector("#canvasGrid");
@@ -155,50 +158,83 @@ copyInput.addEventListener("input", () => {
   syncGenerateEnabled();
 });
 
-let generating = false;
+imageFiles.addEventListener("change", () => {
+  for (const url of state.images.map((item) => item.url)) URL.revokeObjectURL(url);
+  state.images = [];
+  const files = [...(imageFiles.files || [])].slice(0, 6);
+  for (const file of files) {
+    state.images.push({ name: file.name, url: URL.createObjectURL(file) });
+  }
+  imageList.innerHTML = state.images.map((item) => `<li>${escapeHtml(item.name)}</li>`).join("");
+  renderBlocks();
+});
 
-generateButton.addEventListener("click", async () => {
-  if (generating || !copyInput.value.trim()) return;
-  generating = true;
+function updateCredits(credits) {
+  if (!credits || !trialMeter) return;
+  trialMeter.hidden = false;
+  if (credits.unlimited) {
+    trialMeter.textContent = "不限积分";
+    trialMeter.classList.remove("is-empty");
+    return;
+  }
+  const remaining = credits.remaining ?? 0;
+  trialMeter.textContent = remaining <= 0 ? "积分已用完" : `剩余 ${remaining} 积分`;
+  trialMeter.classList.toggle("is-empty", remaining <= 0);
+}
+
+let filling = false;
+
+async function requestFill({ reroll }) {
+  if (filling || !copyInput.value.trim()) return;
+  if (reroll && !state.fill) return;
+  filling = true;
   layoutError.hidden = true;
   layoutError.textContent = "";
+  const slots = slotsFor(state.templateId, state.ratio).map(({ id, type }) => ({ id, type }));
+  const payload = {
+    source: copyInput.value.trim(),
+    imageCount: state.images.length,
+    ratio: state.ratio,
+    templateId: state.templateId,
+    slots,
+  };
+  if (reroll) payload.seed = Date.now() % 100000;
+  state.source = payload.source;
   generateButton.disabled = true;
-  layoutStatus.textContent = "正在生成…";
+  rerollButton.disabled = true;
+  layoutStatus.textContent = reroll ? "换槽重排中…" : "生成排版中…";
   try {
-    const slots = slotsFor(state.templateId, state.ratio).map((slot) => ({ id: slot.id, type: slot.type }));
-    state.source = copyInput.value;
     const response = await fetch("/api/layout-fill", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        source: state.source,
-        imageCount: state.images.length,
-        ratio: state.ratio,
-        templateId: state.templateId,
-        slots,
-      }),
+      body: JSON.stringify(payload),
     });
-    const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok || !payload.data) {
-      const message = payload?.error?.message || "排版失败，再试一次";
-      layoutError.textContent = message;
-      layoutError.hidden = false;
-      layoutStatus.textContent = message;
-      return;
+    const json = await response.json().catch(() => null);
+    if (!response.ok || !json?.ok) {
+      throw new Error(json?.error?.message || "排版失败，再试一次");
     }
-    state.fill = payload.data;
+    state.fill = json.data;
+    // 换槽重排：直接覆盖拖动结果，不弹确认。生成成功同样回到模板槽位。
     state.positions = {};
+    updateCredits(json.credits || json.trial?.credits);
     renderBlocks();
-    layoutStatus.textContent = `已生成 ${templateById(state.templateId).label} · ${state.ratio}`;
-  } catch {
-    layoutError.textContent = "排版失败，再试一次";
+    renderGrid();
+    layoutStatus.textContent = reroll ? "已换槽重排" : "已生成排版";
+  } catch (error) {
+    const message = error instanceof TypeError || error instanceof SyntaxError
+      ? "排版失败，再试一次"
+      : (error?.message || "排版失败，再试一次");
     layoutError.hidden = false;
-    layoutStatus.textContent = "排版失败，再试一次";
+    layoutError.textContent = message;
+    layoutStatus.textContent = "";
   } finally {
-    generating = false;
+    filling = false;
     syncGenerateEnabled();
   }
-});
+}
+
+generateButton.addEventListener("click", () => requestFill({ reroll: false }));
+rerollButton.addEventListener("click", () => requestFill({ reroll: true }));
 
 function renderGrid() {
   const n = clampGridN(state.gridN);
@@ -228,6 +264,5 @@ renderGrid();
 syncGenerateEnabled();
 layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;
 
-// 生成接线之前，控制台可以先写 state.fill = { slots: [] } 再 renderBlocks()，用来手测拖块。
 globalThis.state = state;
 globalThis.renderBlocks = renderBlocks;

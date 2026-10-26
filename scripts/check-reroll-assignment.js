@@ -61,4 +61,22 @@ assert(src.includes("本次是「换一版」"), "提示词写明换一版");
 assert(src.includes("不得编造原文没有的步骤"), "换一版仍禁止编造");
 assert(src.includes("不要改 theme，不要输出颜色"), "换一版不改主题和颜色");
 
+const app = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
+const html = readFileSync(new URL("../public/studio.html", import.meta.url), "utf8");
+assert(html.includes('id="rerollLayoutButton"'), "工作台有换一版按钮");
+assert(html.includes(">换一版</button>"), "按钮文案是换一版");
+assert(html.includes('id="undoLayoutButton"'), "工作台有回退按钮");
+assert(html.includes(">回退上一版</button>"), "按钮文案是回退上一版");
+assert(app.includes("const LAYOUT_SNAPSHOT_MAX = 5"), "回退栈最多 5 层");
+const rerollFn = app.slice(app.indexOf("async function rerollLayout"), app.indexOf("// 点「用示例文章试一下」"));
+assert(rerollFn.includes('mode: "fixed"'), "rerollLayout 写明 fixed");
+assert(rerollFn.includes('intent: "reroll"'), "rerollLayout 写明 reroll");
+assert(!rerollFn.includes("nextNormalizeAssignment"), "换一版不走随机抽主题");
+const normFn = app.slice(app.indexOf("async function normalizeWithDeepSeek"), app.indexOf("function wechatTextAlign"));
+assert(normFn.includes("coerceRerollAssignment(overrideAssignment)"), "换一版强制整理成 fixed");
+const pushAt = normFn.indexOf("pushLayoutSnapshot()");
+const applyAt = normFn.indexOf("applyAiNormalization(");
+assert(pushAt > 0 && applyAt > pushAt, "拿到结果后、应用前才压栈");
+assert(!app.slice(app.indexOf("function undoLayoutVariant"), app.indexOf("function coerceRerollAssignment")).includes("fetch("), "回退不请求接口");
+
 console.log("check-reroll-assignment: ok");

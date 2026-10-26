@@ -137,6 +137,8 @@ const copyFeedback = document.querySelector("#copyFeedback");
 const themeGrid = document.querySelector("#themeGrid");
 const articleInput = document.querySelector("#articleInput");
 const aiNormalizeButton = document.querySelector("#aiNormalizeButton");
+const rerollLayoutButton = document.querySelector("#rerollLayoutButton");
+const undoLayoutButton = document.querySelector("#undoLayoutButton");
 const optimizeHint = document.querySelector("#optimizeHint");
 const articleStatus = document.querySelector("#articleStatus");
 const trialMeter = document.querySelector("#trialMeter");
@@ -165,6 +167,116 @@ let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
 let blockTypeOverrides = {};
 let lastAiResult = null;
+const LAYOUT_SNAPSHOT_MAX = 5;
+let layoutSnapshots = [];
+
+function currentBlocksFingerprint() {
+  const blocks = lastAiResult?.document?.blocks;
+  if (!Array.isArray(blocks) || !blocks.length) return "";
+  return blocks
+    .slice(0, 40)
+    .map((block) => (block?.type === "heading" && Number.isFinite(block?.level) ? `heading:${Math.round(block.level)}` : (block?.type || "?")))
+    .join(">");
+}
+
+function captureLayoutSnapshot() {
+  const source = (articleInput ? articleInput.value : articleSource) || "";
+  return {
+    source,
+    titleOverride: articleTitleOverride || "",
+    blockTypeOverrides: { ...blockTypeOverrides },
+    lastAiResult: lastAiResult ? JSON.parse(JSON.stringify(lastAiResult)) : null,
+    fingerprint: currentBlocksFingerprint(),
+    theme: state.theme,
+    mood: currentMood,
+    skin: currentSkin,
+  };
+}
+
+function syncUndoButton() {
+  if (!undoLayoutButton || undoLayoutButton.dataset.busy) return;
+  undoLayoutButton.disabled = layoutSnapshots.length === 0;
+}
+
+function pushLayoutSnapshot() {
+  layoutSnapshots.push(captureLayoutSnapshot());
+  if (layoutSnapshots.length > LAYOUT_SNAPSHOT_MAX) layoutSnapshots.shift();
+  syncUndoButton();
+}
+
+function undoLayoutVariant() {
+  const snap = layoutSnapshots.pop();
+  syncUndoButton();
+  if (!snap) {
+    setFeedback("没有可回退的版本");
+    return;
+  }
+  articleTitleOverride = snap.titleOverride || "";
+  blockTypeOverrides = { ...(snap.blockTypeOverrides || {}) };
+  lastAiResult = snap.lastAiResult;
+  if (articleInput) articleInput.value = snap.source;
+  else articleSource = snap.source;
+  if (snap.theme && snap.theme !== state.theme) {
+    if (snap.theme === "classic") {
+      if (snap.skin && typeof SKINS !== "undefined" && SKINS[snap.skin]) {
+        currentSkin = snap.skin;
+        currentMood = skinMood(snap.skin);
+      }
+      applyTheme("classic", { fromUser: false });
+    } else if (THEMES[snap.theme]) {
+      applyTheme(snap.theme, { fromUser: false });
+    }
+  }
+  syncControls();
+  applyArticleSource(false);
+  setStatus("已回退到上一版");
+  setFeedback("已恢复上一版排版（不扣积分）");
+}
+
+function coerceRerollAssignment(overrideAssignment) {
+  const requested = overrideAssignment?.theme;
+  const theme = THEMES[requested] ? requested : (THEMES[state.theme] ? state.theme : "classic");
+  const seed = Number(overrideAssignment?.variantSeed);
+  const assignment = {
+    mode: "fixed",
+    theme,
+    intent: "reroll",
+    variantSeed: Number.isInteger(seed) && seed >= 0 && seed <= 999999
+      ? seed
+      : Math.floor(Math.random() * 1000000),
+  };
+  if (theme === "classic") {
+    assignment.mood = overrideAssignment?.mood || currentMood;
+    assignment.skin = overrideAssignment?.skin || currentSkin;
+  }
+  const fp = typeof overrideAssignment?.previousFingerprint === "string"
+    ? overrideAssignment.previousFingerprint.trim().slice(0, 200)
+    : "";
+  if (fp) assignment.previousFingerprint = fp;
+  return assignment;
+}
+
+async function rerollLayout() {
+  const source = (articleInput ? articleInput.value : articleSource).trim();
+  if (!source) {
+    showOptimizeHint("请先添加文章内容");
+    return;
+  }
+  const theme = THEMES[state.theme] ? state.theme : "classic";
+  const assignment = {
+    mode: "fixed",
+    theme,
+    intent: "reroll",
+    variantSeed: Math.floor(Math.random() * 1000000),
+  };
+  if (theme === "classic") {
+    assignment.mood = currentMood;
+    assignment.skin = currentSkin;
+  }
+  const fp = currentBlocksFingerprint();
+  if (fp) assignment.previousFingerprint = fp;
+  await normalizeWithDeepSeek(assignment);
+}
 // 点「用示例文章试一下」后，右侧先用站内静态 HTML，不走优化接口。
 let sampleStaticActive = false;
 let previewSyncTimer = 0;
@@ -233,6 +345,9 @@ function renderTrialMeter() {
     if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
       aiNormalizeButton.disabled = false;
     }
+    if (rerollLayoutButton && !rerollLayoutButton.dataset.busy) {
+      rerollLayoutButton.disabled = false;
+    }
     return;
   }
   const remaining = remainingTrialCount();
@@ -246,6 +361,9 @@ function renderTrialMeter() {
   if (trialBanner) trialBanner.hidden = remaining > 0;
   if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
     aiNormalizeButton.disabled = remaining <= 0;
+  }
+  if (rerollLayoutButton && !rerollLayoutButton.dataset.busy) {
+    rerollLayoutButton.disabled = remaining <= 0;
   }
 }
 
@@ -1975,7 +2093,7 @@ async function applyAiNormalization(data, assignment, source) {
   setFeedback("排版已更新");
 }
 
-async function normalizeWithDeepSeek() {
+async function normalizeWithDeepSeek(overrideAssignment) {
   const source = (articleInput ? articleInput.value : articleSource).trim();
   if (!source) {
     showOptimizeHint("请先添加文章内容");
@@ -1986,21 +2104,32 @@ async function normalizeWithDeepSeek() {
     showUpgradePrompt(UPGRADE_PROMPT);
     return;
   }
-  const originalLabel = aiNormalizeButton ? aiNormalizeButton.textContent : "";
+  const isReroll = overrideAssignment?.intent === "reroll";
+  const assignment = isReroll ? coerceRerollAssignment(overrideAssignment) : nextNormalizeAssignment();
+  const originalOptimizeLabel = aiNormalizeButton ? aiNormalizeButton.textContent : "";
+  const originalRerollLabel = rerollLayoutButton ? rerollLayoutButton.textContent : "";
   if (aiNormalizeButton) {
     aiNormalizeButton.dataset.busy = "1";
     aiNormalizeButton.disabled = true;
-    aiNormalizeButton.textContent = "优化中…";
+    if (!isReroll) aiNormalizeButton.textContent = "优化中…";
   }
-  setStatus("正在优化排版…");
+  if (rerollLayoutButton) {
+    rerollLayoutButton.dataset.busy = "1";
+    rerollLayoutButton.disabled = true;
+    if (isReroll) rerollLayoutButton.textContent = "换版中…";
+  }
+  if (undoLayoutButton) {
+    undoLayoutButton.dataset.busy = "1";
+    undoLayoutButton.disabled = true;
+  }
   if (articleInput) applyArticleSource(false);
   else {
     trimInvalidOverrides();
     persistArticleSource();
     render();
   }
+  setStatus(isReroll ? "正在换一版…" : "正在优化排版…");
   try {
-    const assignment = nextNormalizeAssignment();
     const response = await fetch("/api/normalize", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -2034,7 +2163,13 @@ async function normalizeWithDeepSeek() {
       writeLocalTrialUsed(readLocalTrialUsed() + 1);
       renderTrialMeter();
     }
+    pushLayoutSnapshot();
     await applyAiNormalization(payload.data, assignment, source);
+    if (isReroll) {
+      const blockCount = Array.isArray(lastAiResult?.document?.blocks) ? lastAiResult.document.blocks.length : 0;
+      setStatus(blockCount ? `已换一版，${blockCount} 个内容块` : "已换一版");
+      setFeedback("已换一版（主题不变）");
+    }
     awaitingContentPick = false;
     try {
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
@@ -2048,9 +2183,15 @@ async function normalizeWithDeepSeek() {
   } finally {
     if (aiNormalizeButton) {
       delete aiNormalizeButton.dataset.busy;
-      aiNormalizeButton.textContent = originalLabel;
-      renderTrialMeter();
+      aiNormalizeButton.textContent = originalOptimizeLabel || "优化排版";
     }
+    if (rerollLayoutButton) {
+      delete rerollLayoutButton.dataset.busy;
+      rerollLayoutButton.textContent = originalRerollLabel || "换一版";
+    }
+    if (undoLayoutButton) delete undoLayoutButton.dataset.busy;
+    renderTrialMeter();
+    syncUndoButton();
   }
 }
 
@@ -2772,7 +2913,14 @@ lockBrandColor?.addEventListener("change", () => {
   updateCompliancePanel();
 });
 if (lockBrandColor) lockBrandColor.checked = localStorage.getItem("yooco-lock-brand-color") === "1";
-aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
+aiNormalizeButton?.addEventListener("click", () => {
+  void normalizeWithDeepSeek();
+});
+rerollLayoutButton?.addEventListener("click", () => {
+  void rerollLayout();
+});
+undoLayoutButton?.addEventListener("click", undoLayoutVariant);
+syncUndoButton();
 document.querySelector("#sampleTryButton")?.addEventListener("click", loadSampleTry);
 articleInput?.addEventListener("paste", handleRichTextPaste);
 articleBody?.addEventListener("paste", handleRichTextPaste);

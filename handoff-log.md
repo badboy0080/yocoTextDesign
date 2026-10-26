@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-智能排版瑞士模板设计（2026-10-26，只开文档 PR，未合并）：定稿在 `docs/superpowers/specs/2026-10-26-智能排版-瑞士模板-design.md`。纯字 A/B，图文 C/D/E，用来换掉 #73 的 t1–t3。理论依据是两份备忘的文件名。没改页面和接口。实现要从 `feat/smart-layout-p0` 开工。#73 仍不合。
+智能排版瑞士模板设计（2026-10-26，PR #74，未合并）：定稿在 `docs/superpowers/specs/2026-10-26-智能排版-瑞士模板-design.md`。纯字 A/B，图文 C/D/E，用来换掉 #73 的 t1–t3。理论依据是两份备忘的文件名。没改页面和接口。实现要从 `feat/smart-layout-p0` 开工。#73 仍不合。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -169,7 +169,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：新定稿五套。A/B 纯字，C/D/E 图文。换掉 #73 的 t1–t3。每个比例一套整数格坐标。预置展览、自然、产品三条文案。
 - 改了哪些文件：`docs/superpowers/specs/2026-10-26-智能排版-瑞士模板-design.md`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：对照两份备忘和 #73 的槽模型读过。没有改 `layout-templates.js` 或接口。没有跑页面。
-- 待办/风险：请阿超审。通过后实现 PR 从 `feat/smart-layout-p0` 拉。#73 仍不合。竖排 P0 用右侧横排折行代替，真竖排在下期。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/74 已开，没有自己合并。通过后实现 PR 从 `feat/smart-layout-p0` 拉。#73 仍不合。竖排 P0 用右侧横排折行代替，真竖排在下期。
 
 ### 2026-10-26 答案页分支接到已合入的常见问题
 

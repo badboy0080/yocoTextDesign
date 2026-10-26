@@ -15,9 +15,9 @@ export const FAQ_DESCRIPTION =
   "用 Yooco 这款公众号排版工具前，先看试用积分、验证码和邀请：登录后复制邀请码发给朋友，注册成功双方各 +5 积分。";
 
 export const LANDING_PATH = "/gongzhonghao-paiban";
-export const LANDING_TITLE = "公众号排版怎么做好看？粘贴原文一键优化｜Yooco";
+export const LANDING_TITLE = "公众号排版工具怎么用？粘贴原文一键优化｜Yooco";
 export const LANDING_DESCRIPTION =
-  "写公众号文章排版费时？Yooco 把乱文变成可读排版：粘贴 → 点「优化排版」→ 换主题。免费试用 www.yoooco.com。";
+  "Yooco 是公众号排版工具：粘贴或上传文章，点「优化排版」、换主题，复制到微信公众号就能发。免费试用。适合写完正文、不想手工调格式的人。";
 
 /** 允许搜索引擎收录的公开页。后台、统计和接口不放进来。 */
 export const INDEXABLE_PATHS = ["/", LANDING_PATH, "/works", "/faq", "/studio.html", "/login", "/register"] as const;

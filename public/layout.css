@@ -1,0 +1,16 @@
+/* 本页不加载 styles.css。工作室顶栏的横排写在那边，这里补上，标题和按钮才在同一行。 */
+.studio-main .topbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.topbar-actions { display: flex; align-items: center; }
+.layout-brandline { margin: 0; color: var(--muted); font-size: 13px; }
+.layout-workspace { padding: 16px 20px 24px; min-height: 0; overflow: auto; }
+.layout-status { color: var(--muted); font-size: 14px; }
+.copy-button.is-disabled,
+.copy-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -1,5 +1,61 @@
 # 历史交接记录
 
+### 2026-10-26 智能排版三区和三套模板槽
+
+- 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。
+- 做成了什么：模板数据在 `public/layout-templates.js`。默认「上题下文 · 3:4」。切比例或模板，槽位跟着变。有字才让「生成排版」可点；「换槽重排」仍灰，因为还没有生成结果。窄屏改成上下排，可以滚到模板和按钮。精品模板页侧栏补了「智能排版」。
+- 改了哪些文件：`public/layout-templates.js`、`public/layout.html`、`public/layout.css`、`public/layout.js`、`components/works-frame.tsx`、`app/works.css`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：静态服务打开 `/layout.html`。无头浏览器点过 3:4、1:1、16:9，以及上题下文、左文右图、图文交错。槽都在画布里，彼此不重叠。贴「少说一句」后生成按钮可点，换槽重排仍禁用。格子列数拖到 18，旁边数字变成 18。390 宽能滚到模板按钮。精品模板页这轮没开浏览器，依赖还没装。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。点「生成排版」不会请求接口。选图片还不会出现在列表里。格子列数还不会画出网格。
+
+### 2026-10-26 智能排版空壳和侧栏入口
+
+- 想做什么：做智能排版 P0 的第一块。独立页 `/layout.html`，工作室侧栏能点进去。只预览壳，不导出，不接生成。
+- 做成了什么：`public/layout.html` 空壳，最小样式和能加载的空脚本。工作室和这一页的侧栏都是「工作台 / 智能排版 / 精品模板」。导出按钮禁用，文案是「导出（下期）」。
+- 改了哪些文件：`public/layout.html`、`public/layout.css`、`public/layout.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：静态服务打开 `/studio.html`，点「智能排版」进入 `/layout.html`。侧栏三项能互跳，本页标题是「智能排版」，「智能排版」高亮。导出按钮禁用，透明度 0.45，鼠标是禁止样式。控制台有 `[smart-layout] shell ready`。补了 border-box 之后，1280 宽下按钮在卡片里面，页面不再多出一截滚动条。手机宽 390 时三项横排，按钮仍禁用。
+- 待办/风险：还没合进 master，正式站不会出现这一页。精品模板页侧栏还没有「智能排版」。不要接 DeepSeek，也不要动公众号整理和「换一版」。
+
+### 2026-10-26 答案页分支接到已合入的常见问题
+
+- 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
+- 做成了什么：变基成功。摘要和最近记录里，答案页在上、常见问题定稿在下。两条原文都在。常见问题摘要改成已合进 master。多出来的旧记录挪进归档，最近仍是 5 条。答案页代码还是 #68 定稿。
+- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
+
+### 2026-10-26 公众号排版页升级成答案页
+
+- 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。
+- 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
+- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
+
+### 2026-10-26 常见问题按客服定稿改四条
+
+- 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
+- 做成了什么：验证码改成四步，并写明只有邮箱验证码。试用积分只留额度规则，防刷改成「一经核实，相关积分清零。」用完了的去处挪到「当天积分用完了怎么办」。邀请成功写成填码并且注册成功才核销。分类仍是积分、验证码、邀请。
+- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。
+
+### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
+
+- 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
+- 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
+- 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
+
+### 2026-10-25 首页模板卡片去掉黑框
+
+- 想做什么：首页模板卡片里，柠边、乐几、撕贴、报章、包豪有一圈黑边，要去掉。弹窗里的硬边留下。仍在 PR #65，不合并。
+- 做成了什么：卡片封面上这五套的纸边和硬投影清掉了。深空青顶部那条绿线还在。点开柠边，弹窗里仍是 2px 黑边。主题本身没改。
+- 改了哪些文件：`app/home.css`、`app/works.css`、`docs/previews/home-template-cards-no-border.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 量首页七张卡，这五套纸边是 0，投影是 none。精品模板封面前七张同样没有这圈黑边。弹窗里柠边的纸边是 `2px solid #111`。截图在 `docs/previews/home-template-cards-no-border.png`。
+- 待办/风险：合进 master 才会上正式站。标题色块自己的小边还在，那是主题样子，不是卡片外框。
+
 ### 2026-10-25 首页模板卡片左右留 10px
 
 - 想做什么：首页模板条里，文章预览缩成窄列，两边大片空白。改成横向铺满，左右大约 10px，竖向可以裁切。精品模板如果是同一套缩放，一并改。只开 PR，不合并。

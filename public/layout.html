@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>Yooco · 智能排版</title>
+    <meta name="description" content="Yooco 智能排版：贴文案、选模板与比例，生成网格预览。好文章值得好排版。" />
+    <link rel="canonical" href="https://www.yoooco.com/layout.html" />
+    <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
+    <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
+    <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
+    <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
+    <link rel="stylesheet" href="./layout.css?v=smart-layout-p0-v7" />
+  </head>
+  <body>
+    <div class="studio-layout">
+      <aside class="studio-navigation" aria-label="网站导航">
+        <a class="studio-logo" href="/" aria-label="Yooco 首页">
+          <img class="yooco-brand-bubble" src="./yooco-mark-lime.svg" alt="" width="40" height="32" />
+          <span class="yooco-brand-word">Yooco</span>
+        </a>
+        <nav>
+          <a href="/studio.html">工作台</a>
+          <a href="/layout.html" aria-current="page">智能排版</a>
+          <a href="/works">精品模板</a>
+        </nav>
+        <div class="studio-side-foot">
+          <a class="studio-home-link" href="/">返回首页</a>
+        </div>
+      </aside>
+      <div class="studio-main">
+        <header class="topbar topbar-buttons">
+          <h1 class="studio-title">智能排版</h1>
+          <p class="layout-brandline">Yooco · 好文章值得好排版</p>
+          <div class="topbar-actions">
+            <span class="trial-meter" id="trialMeter" hidden>剩余积分</span>
+            <button class="copy-button is-disabled" id="exportButton" type="button" disabled title="下期">导出（下期）</button>
+          </div>
+        </header>
+        <div class="layout-workspace" id="layoutWorkspace">
+          <section class="layout-side" aria-label="文案与图片">
+            <label class="layout-label" for="copyInput">文案</label>
+            <p class="layout-help">必填后才能生成。无图也可排。</p>
+            <textarea id="copyInput" rows="12" maxlength="20000" placeholder="把文章贴在这里…"></textarea>
+            <label class="layout-label" for="imageFiles">图片（可选，可多选）</label>
+            <input id="imageFiles" type="file" accept="image/*" multiple />
+            <ul class="layout-image-list" id="imageList"></ul>
+          </section>
+
+          <section class="layout-stage-wrap" aria-label="画布预览">
+            <div class="ratio-row" id="ratioRow" role="radiogroup" aria-label="画布比例"></div>
+            <p class="layout-truncation" id="truncationNote" hidden>已截断</p>
+            <div class="layout-fit" id="layoutFit">
+              <div class="canvas" id="canvas" data-ratio="3:4">
+                <div class="canvas-grid" id="canvasGrid" aria-hidden="true"></div>
+                <div class="canvas-blocks" id="canvasBlocks"></div>
+              </div>
+            </div>
+            <p class="layout-empty" id="emptyHint">选模板与比例后可见骨架；贴文案后点「生成排版」。</p>
+            <p class="layout-error" id="layoutError" hidden role="alert"></p>
+          </section>
+
+          <section class="layout-config" aria-label="模板与操作">
+            <h2 class="layout-label">模板骨架</h2>
+            <div class="template-grid" id="templateGrid" role="listbox" aria-label="模板"></div>
+            <label class="layout-label" for="gridN">格子列数 N</label>
+            <div class="grid-n-row">
+              <input id="gridN" type="range" min="6" max="24" step="1" value="12" />
+              <output id="gridNValue" for="gridN">12</output>
+            </div>
+            <div class="layout-actions">
+              <button class="ai-button" id="generateButton" type="button" disabled>生成排版</button>
+              <button class="ghost-button" id="rerollButton" type="button" disabled>换槽重排</button>
+            </div>
+            <p class="layout-status" id="layoutStatus" role="status"></p>
+            <button class="copy-button is-disabled" id="exportButtonBottom" type="button" disabled title="下期">导出（下期）</button>
+          </section>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./layout.js?v=smart-layout-p0-v8"></script>
+  </body>
+</html>

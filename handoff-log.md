@@ -2,6 +2,10 @@
 
 ## 当前接手摘要
 
+智能排版收尾（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：字装不进槽时，比例旁边出现「已截断」。短副标只高出几像素，不提示。两个导出仍是灰的「导出（下期）」。验收截图在 `docs/previews/layout-*.png`。合前要给阿超看这些图。只有阿超说「合并」才能合，合进去就会上正式站。这台机器没有密钥，图里的生成是假返回。
+
+智能排版拖块（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：生成结果出现之后，字块和图块可以拖。拖的时候就吸到网格交点，松手停在那里。只改位置，不改宽高。改列数时块先不跳，再拖才按新格子吸。生成接线前，控制台要先放一个空的生成结果才能拖。合进 master 才会上正式站。
+
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
 公众号排版答案页（2026-10-26，PR #68，未合并、未部署）：`/gongzhonghao-paiban` 仍是原地址，按张默 10-26 定稿改成答案页。有定义开篇、适谁、三步、和 135 / 秀米 / 花生的对照表、8 条问答、Last updated 2026-10-26，以及问答和软件说明。试用按钮进 https://www.yoooco.com。对比图换成上传的 1080×1440。图是上素文、下清氧绿，图注按画面写成上下，没有照抄稿里的左右。站点地图还收这一页，没有 noindex。顶栏「工作台」仍进工作台，那是全站导航。正式站要等合进 master。截图在 `docs/previews/gongzhonghao-geo-desktop.png`。
@@ -161,42 +165,42 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
-### 2026-10-26 答案页分支接到已合入的常见问题
+### 2026-10-26 智能排版截断提示与验收说明
 
-- 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
-- 做成了什么：变基成功。摘要和最近记录里，答案页在上、常见问题定稿在下。两条原文都在。常见问题摘要改成已合进 master。多出来的旧记录挪进归档，最近仍是 5 条。答案页代码还是 #68 定稿。
-- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
+- 想做什么：字太长时提示「已截断」。导出保持不可用。把验收截图和自检清单留下，合前给阿超看。不新开功能。
+- 做成了什么：画完格子后量字块。高出或宽出超过 8 像素就显示「已截断」。短副标只差大约 4 像素，不提示。顶栏和右侧导出仍是禁用的「导出（下期）」。截图七张在 `docs/previews/`。清单在 `docs/superpowers/plans/notes/2026-10-26-智能排版-qa.md`。
+- 改了哪些文件：`public/layout.js`、`public/layout.html`、`docs/previews/layout-studio-nav.png`、`docs/previews/layout-skeleton.png`、`docs/previews/layout-generated.png`、`docs/previews/layout-drag-snapped.png`、`docs/previews/layout-grid-n.png`、`docs/previews/layout-reroll.png`、`docs/previews/layout-truncated.png`、`docs/superpowers/plans/notes/2026-10-26-智能排版-qa.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 和 `node scripts/check-layout-fill.mjs` 都打印 ok。无头浏览器里，短文「已截断」藏着；长正文槽高 155、内容高 215，提示出现。两个导出按钮禁用，文案含「下期」。列数 12 是 13 条竖线，调到 8 变成 9 条。拖开的标题在换槽后回到 8%。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。合前请阿超看截图。本机没有 `DEEPSEEK_API_KEY`，真实填槽没打。站点地图没加这一页。
 
-### 2026-10-26 公众号排版页升级成答案页
+### 2026-10-26 智能排版换槽重排与图片列表
 
-- 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。
-- 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
-- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
+- 想做什么：换槽重排要清掉拖过的位置。选的图片要出现在列表里。失败写「排版失败，再试一次」。成功才在顶栏显示扣过的积分。导出保持灰色。
+- 做成了什么：「生成排版」和「换槽重排」走同一条请求。换槽会带整数 seed。两条成功路径都把 `state.positions` 清空。断网或接口失败不改位置、不改积分。图片最多收 6 张，文件名写进左侧列表。有填槽结果时，对应序号的图显示在图槽里。
+- 改了哪些文件：`public/layout.js`、`public/layout.html`、`public/layout.css`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头浏览器打开 `/layout.html`。没字时生成和换槽都禁用，两个导出按钮也禁用。贴文案并选两张图后，列表有文件名，尖括号只是文字。假失败时出现「排版失败，再试一次」，积分条仍藏着。假成功后顶栏是「剩余 2 积分」，图槽用上第一张图。把标题拖到 25% 后再断网换槽，标题还在 25%，积分仍是 2。再假成功换槽，标题回到 8%，字换成新的，积分变成「剩余 1 积分」，导出仍禁用。截图在 `layout-reroll.png`。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。本机没有 `DEEPSEEK_API_KEY`，也没装依赖，真实扣次没跑。换槽的字会不会变，要等真实接口。
 
-### 2026-10-26 常见问题按客服定稿改四条
+### 2026-10-26 智能排版 DeepSeek 填槽
 
-- 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
-- 做成了什么：验证码改成四步，并写明只有邮箱验证码。试用积分只留额度规则，防刷改成「一经核实，相关积分清零。」用完了的去处挪到「当天积分用完了怎么办」。邀请成功写成填码并且注册成功才核销。分类仍是积分、验证码、邀请。
-- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。
+- 想做什么：单独做填槽接口和新提示词。点「生成排版」成功后把字写进格子。槽不合法就用默认填法。不接换槽重排，不改导出。
+- 做成了什么：`POST /api/layout-fill`。提示词只做填槽，不走公众号整理。坏 JSON、超时、请求失败都显示「排版失败，再试一次」，不扣次。槽 id 不合法时回退默认填法，接口仍算成功，成功才扣 1 积分。页面生成成功后清空上次拖过的位置，再画出文字。
+- 改了哪些文件：`lib/layout-fill.js`、`app/api/layout-fill/route.ts`、`scripts/check-layout-fill.mjs`、`lib/credits.js`、`public/layout.js`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-fill.mjs` 打印 `check-layout-fill: ok`。假接口测过：没密钥不发请求；坏 JSON 和超时文案正确；非法槽回退成「标题一句」并给图 0。无头浏览器把生成请求换成假返回：失败时错误可见、格子仍空；成功后标题是原文（尖括号被转成文字）、换槽按钮变亮、标题能拖离原位。截图在 `layout-fill-generated.png`。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。本机没有 `DEEPSEEK_API_KEY`，真实 DeepSeek 没打通。本机也没装依赖，扣次那条路由没跑起来。换槽重排还没接线。选图片仍进不了格子。
 
-### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
+### 2026-10-26 智能排版画布拖块吸附
 
-- 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
-- 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
-- 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
+- 想做什么：字块和图块能拖，松手停在网格交点上。用已经写好的吸附函数。不接生成。
+- 做成了什么：拖的过程中就吸到交点。只改位置，宽高不动。没有生成结果时拖不动。改列数不让已放下的块跳动。往右下拖出画布时，左上角停在 99%。往左上拖时贴在 0，因为吸附会先把负数收成 0。
+- 改了哪些文件：`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头浏览器打开 `/layout.html`。没放生成结果时拖标题，位置不变。放上空的生成结果后，拖标题吸到格子上，宽高仍是 84 和 12。拖动过程中已经在交点上。列数改成 6，块不动；再拖仍按 6 列的格子算。图块同样能拖，宽高不变。拖出右下角后停在 99%、99%。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。页面上还不能自己生成，要等后面接线。拖之前控制台写 `state.fill = { slots: [] }` 再 `renderBlocks()`。
 
-### 2026-10-25 首页模板卡片去掉黑框
+### 2026-10-26 智能排版网格列数和吸附函数
 
-- 想做什么：首页模板卡片里，柠边、乐几、撕贴、报章、包豪有一圈黑边，要去掉。弹窗里的硬边留下。仍在 PR #65，不合并。
-- 做成了什么：卡片封面上这五套的纸边和硬投影清掉了。深空青顶部那条绿线还在。点开柠边，弹窗里仍是 2px 黑边。主题本身没改。
-- 改了哪些文件：`app/home.css`、`app/works.css`、`docs/previews/home-template-cards-no-border.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 量首页七张卡，这五套纸边是 0，投影是 none。精品模板封面前七张同样没有这圈黑边。弹窗里柠边的纸边是 `2px solid #111`。截图在 `docs/previews/home-template-cards-no-border.png`。
-- 待办/风险：合进 master 才会上正式站。标题色块自己的小边还在，那是主题样子，不是卡片外框。
+- 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
+- 做成了什么：`public/layout-grid.js` 负责列数 6–24、行数、吸到最近交点、块不要完全拖出画布。默认 12 列。3:4 画出 13 条竖线、17 条横线。改列数时槽块位置不动。
+- 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。

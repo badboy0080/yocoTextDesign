@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-智能排版拖块（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：生成结果出现之后，字块和图块可以拖。拖的时候就吸到网格交点，松手停在那里。只改位置，不改宽高。改列数时块先不跳，再拖才按新格子吸。还没真正接生成，控制台要先放一个空的生成结果才能拖。合进 master 才会上正式站。
+智能排版填槽（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：点「生成排版」会请求新的填槽接口。成功后字写进格子，块就能拖。模型把槽填错时，改用默认填法，仍算成功。坏结果、超时或请求失败，页面写「排版失败，再试一次」，格子保持空。换槽重排生成后会亮，但点了还没反应。这台机器没有 DeepSeek 密钥，没有打到真实接口。合进 master 才会上正式站。
+
+智能排版拖块（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：生成结果出现之后，字块和图块可以拖。拖的时候就吸到网格交点，松手停在那里。只改位置，不改宽高。改列数时块先不跳，再拖才按新格子吸。生成接线前，控制台要先放一个空的生成结果才能拖。合进 master 才会上正式站。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -163,6 +165,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版 DeepSeek 填槽
+
+- 想做什么：单独做填槽接口和新提示词。点「生成排版」成功后把字写进格子。槽不合法就用默认填法。不接换槽重排，不改导出。
+- 做成了什么：`POST /api/layout-fill`。提示词只做填槽，不走公众号整理。坏 JSON、超时、请求失败都显示「排版失败，再试一次」，不扣次。槽 id 不合法时回退默认填法，接口仍算成功，成功才扣 1 积分。页面生成成功后清空上次拖过的位置，再画出文字。
+- 改了哪些文件：`lib/layout-fill.js`、`app/api/layout-fill/route.ts`、`scripts/check-layout-fill.mjs`、`lib/credits.js`、`public/layout.js`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-fill.mjs` 打印 `check-layout-fill: ok`。假接口测过：没密钥不发请求；坏 JSON 和超时文案正确；非法槽回退成「标题一句」并给图 0。无头浏览器把生成请求换成假返回：失败时错误可见、格子仍空；成功后标题是原文（尖括号被转成文字）、换槽按钮变亮、标题能拖离原位。截图在 `layout-fill-generated.png`。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。本机没有 `DEEPSEEK_API_KEY`，真实 DeepSeek 没打通。本机也没装依赖，扣次那条路由没跑起来。换槽重排还没接线。选图片仍进不了格子。
+
 ### 2026-10-26 智能排版画布拖块吸附
 
 - 想做什么：字块和图块能拖，松手停在网格交点上。用已经写好的吸附函数。不接生成。
@@ -194,11 +204,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/layout.html`、`public/layout.css`、`public/layout.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：静态服务打开 `/studio.html`，点「智能排版」进入 `/layout.html`。侧栏三项能互跳，本页标题是「智能排版」，「智能排版」高亮。导出按钮禁用，透明度 0.45，鼠标是禁止样式。控制台有 `[smart-layout] shell ready`。补了 border-box 之后，1280 宽下按钮在卡片里面，页面不再多出一截滚动条。手机宽 390 时三项横排，按钮仍禁用。
 - 待办/风险：还没合进 master，正式站不会出现这一页。精品模板页侧栏还没有「智能排版」。不要接 DeepSeek，也不要动公众号整理和「换一版」。
-
-### 2026-10-26 答案页分支接到已合入的常见问题
-
-- 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
-- 做成了什么：变基成功。摘要和最近记录里，答案页在上、常见问题定稿在下。两条原文都在。常见问题摘要改成已合进 master。多出来的旧记录挪进归档，最近仍是 5 条。答案页代码还是 #68 定稿。
-- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。

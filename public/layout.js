@@ -20,6 +20,7 @@ const canvas = document.querySelector("#canvas");
 const canvasBlocks = document.querySelector("#canvasBlocks");
 const emptyHint = document.querySelector("#emptyHint");
 const layoutStatus = document.querySelector("#layoutStatus");
+const layoutError = document.querySelector("#layoutError");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
 const canvasGrid = document.querySelector("#canvasGrid");
@@ -47,6 +48,14 @@ function placeStyle(box) {
   return `left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%;`;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function renderBlocks() {
   const slots = slotsFor(state.templateId, state.ratio);
   canvasBlocks.innerHTML = slots.map((slot) => {
@@ -60,8 +69,8 @@ function renderBlocks() {
       : null;
     const empty = isImage ? !img : !text;
     const inner = isImage
-      ? (img ? `<img alt="" src="${img.url}" />` : `<span>图槽</span>`)
-      : (text || slot.type);
+      ? (img ? `<img alt="" src="${escapeHtml(img.url)}" />` : `<span>图槽</span>`)
+      : escapeHtml(text || slot.type);
     return `<div class="block${empty ? " is-empty" : ""}" data-id="${slot.id}" data-type="${slot.type}" style="${placeStyle(box)}">${inner}</div>`;
   }).join("");
   emptyHint.hidden = true;
@@ -141,7 +150,55 @@ templateGrid.addEventListener("click", (event) => {
   renderBlocks();
 });
 
-copyInput.addEventListener("input", syncGenerateEnabled);
+copyInput.addEventListener("input", () => {
+  layoutError.hidden = true;
+  syncGenerateEnabled();
+});
+
+let generating = false;
+
+generateButton.addEventListener("click", async () => {
+  if (generating || !copyInput.value.trim()) return;
+  generating = true;
+  layoutError.hidden = true;
+  layoutError.textContent = "";
+  generateButton.disabled = true;
+  layoutStatus.textContent = "正在生成…";
+  try {
+    const slots = slotsFor(state.templateId, state.ratio).map((slot) => ({ id: slot.id, type: slot.type }));
+    state.source = copyInput.value;
+    const response = await fetch("/api/layout-fill", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        source: state.source,
+        imageCount: state.images.length,
+        ratio: state.ratio,
+        templateId: state.templateId,
+        slots,
+      }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok || !payload.data) {
+      const message = payload?.error?.message || "排版失败，再试一次";
+      layoutError.textContent = message;
+      layoutError.hidden = false;
+      layoutStatus.textContent = message;
+      return;
+    }
+    state.fill = payload.data;
+    state.positions = {};
+    renderBlocks();
+    layoutStatus.textContent = `已生成 ${templateById(state.templateId).label} · ${state.ratio}`;
+  } catch {
+    layoutError.textContent = "排版失败，再试一次";
+    layoutError.hidden = false;
+    layoutStatus.textContent = "排版失败，再试一次";
+  } finally {
+    generating = false;
+    syncGenerateEnabled();
+  }
+});
 
 function renderGrid() {
   const n = clampGridN(state.gridN);

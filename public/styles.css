@@ -626,41 +626,47 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .article-page[data-highlight-style="underline"] .inline-highlight,
 .article-page[data-theme="nocturne"][data-highlight-style="underline"] .inline-highlight {
-  padding: 0; background: transparent; border-radius: 0;
-  border-bottom: 3px solid var(--highlight-color, #d7fa5c); box-shadow: none; font-weight: 700;
+  padding: 0; background: transparent; border-radius: 0; box-shadow: none;
+  color: inherit; font-weight: 700;
+  border-bottom: 3px solid var(--highlight-stroke, var(--accent-color, #718c25));
 }
 .article-page[data-highlight-style="bold"] .inline-highlight,
-.article-page[data-theme="nocturne"][data-highlight-style="bold"] .inline-highlight { padding: 0; background: transparent; font-weight: 800; }
+.article-page[data-theme="nocturne"][data-highlight-style="bold"] .inline-highlight {
+  padding: 0; background: transparent; border-radius: 0; box-shadow: none;
+  color: inherit; font-weight: 800;
+  text-decoration: none;
+}
 .article-page[data-highlight-style="strikethrough"] .inline-highlight,
 .article-page[data-theme="nocturne"][data-highlight-style="strikethrough"] .inline-highlight {
   padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
-  color: var(--highlight-text-color, inherit);
+  color: inherit;
   text-decoration: line-through;
-  text-decoration-color: var(--highlight-color, #d7fa5c);
+  text-decoration-color: var(--highlight-stroke, var(--accent-color, #718c25));
 }
 .article-page[data-highlight-style="text-underline"] .inline-highlight,
 .article-page[data-theme="nocturne"][data-highlight-style="text-underline"] .inline-highlight {
   padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
-  color: var(--highlight-text-color, inherit);
+  color: inherit;
   text-decoration: underline;
   text-underline-offset: .14em;
-  text-decoration-color: var(--highlight-color, #d7fa5c);
+  text-decoration-color: var(--highlight-stroke, var(--accent-color, #718c25));
 }
 .article-page[data-highlight-style="wavy"] .inline-highlight,
 .article-page[data-theme="nocturne"][data-highlight-style="wavy"] .inline-highlight {
   padding: 0; background: transparent; border-radius: 0; box-shadow: none; font-weight: 700;
-  color: var(--highlight-text-color, inherit);
+  color: inherit;
   text-decoration: underline;
   text-decoration-style: wavy;
   text-underline-offset: .16em;
-  text-decoration-color: var(--highlight-color, #d7fa5c);
+  text-decoration-color: var(--highlight-stroke, var(--accent-color, #718c25));
 }
 .article-content .inline-link { color: var(--link-color, #3f6f9f); text-decoration: underline; text-underline-offset: .14em; }
 .article-content .inline-strike { text-decoration: line-through; }
 .article-content .inline-underline { text-decoration: underline; text-underline-offset: .14em; }
 .article-page[data-highlight-style="underline"] .inline-underline {
   padding: 0; background: transparent; border-radius: 0; text-decoration: none;
-  border-bottom: 3px solid var(--highlight-color, #d7fa5c); font-weight: 700;
+  border-bottom: 3px solid var(--highlight-stroke, var(--accent-color, #718c25)); font-weight: 700;
+  color: inherit;
 }
 .article-content .inline-wavy {
   text-decoration: underline;
@@ -1123,7 +1129,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   background: var(--quote-color, #1f1f1f);
 }
 .article-page[data-theme="nocturne"] .highlight-line mark,
-.article-page[data-theme="nocturne"] .inline-highlight {
+.article-page[data-theme="nocturne"]:is([data-highlight-style="background"], [data-highlight-style="marker"]) .inline-highlight {
   background: var(--highlight-color, #f6d35a);
   color: var(--highlight-text-color, #1a1a1a);
 }

@@ -1,4 +1,5 @@
-/* 本页不加载 styles.css。工作室顶栏的横排写在那边，这里补上，标题和按钮才在同一行。 */
+/* 本页不加载 styles.css。那边有 border-box 和顶栏横排，这里补上，按钮才不会被卡片裁掉。 */
+*, *::before, *::after { box-sizing: border-box; }
 .studio-main .topbar {
   display: flex;
   align-items: center;

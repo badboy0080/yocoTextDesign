@@ -168,7 +168,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 想做什么：做智能排版 P0 的第一块。独立页 `/layout.html`，工作室侧栏能点进去。只预览壳，不导出，不接生成。
 - 做成了什么：`public/layout.html` 空壳，最小样式和能加载的空脚本。工作室和这一页的侧栏都是「工作台 / 智能排版 / 精品模板」。导出按钮禁用，文案是「导出（下期）」。
 - 改了哪些文件：`public/layout.html`、`public/layout.css`、`public/layout.js`、`public/studio.html`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：本地静态打开 `/studio.html` 和 `/layout.html`，侧栏能互跳，本页标题是「智能排版」，导出按钮是灰的。
+- 如何验证：静态服务打开 `/studio.html`，点「智能排版」进入 `/layout.html`。侧栏三项能互跳，本页标题是「智能排版」，「智能排版」高亮。导出按钮禁用，透明度 0.45，鼠标是禁止样式。控制台有 `[smart-layout] shell ready`。补了 border-box 之后，1280 宽下按钮在卡片里面，页面不再多出一截滚动条。手机宽 390 时三项横排，按钮仍禁用。
 - 待办/风险：还没合进 master，正式站不会出现这一页。精品模板页侧栏还没有「智能排版」。不要接 DeepSeek，也不要动公众号整理和「换一版」。
 
 ### 2026-10-26 答案页分支接到已合入的常见问题

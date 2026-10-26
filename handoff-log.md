@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+常见问题客服定稿（2026-10-26，未合并、未部署）：`/faq` 仍是积分、验证码、邀请三类，没有新地址。收不到邮箱验证码改成四步，并写明只有邮箱验证码。试用积分只留每天 3 积分和次日恢复，末句改成核实后积分清零，不写封号。「当天积分用完了怎么办」和「怎样算邀请成功」各自成题。首页底部读的是同一份问答。正式站要等合进 master。
+
 引擎三刀（2026-10-25，PR #66，未合并、未部署）：大标题单独用 `headingLetterSpacing`，默认 -0.04em（字距 -40，落在 -20～-60）。正文仍用原来的 letterSpacing，不跟着收紧。预览和复制到微信时，全角数字改成半角，中文和英文或数字之间补一个普通空格。代码块、行内代码、网址内部不改，已有空格不重复加。复制稿仍是纯色底加内联样式，没有渐变。主题配色没动。截图在 `docs/previews/engine-trio-before-after.png`。正式站要等合进 master。
 
 首页模板卡片出血和去黑框（2026-10-25，PR #65，已合进 master）：首页那排模板不再为了塞进全文而缩成窄条。预览纸左右各离卡片 10px，装不下的正文由卡片裁掉。柠边、乐几、撕贴、报章、包豪的黑边和硬投影只在卡片封面上去掉，弹窗里的硬边还在。截图在 `docs/previews/home-template-cards-no-border.png`。
@@ -155,6 +157,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 常见问题按客服定稿改四条
+
+- 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
+- 做成了什么：验证码改成四步，并写明只有邮箱验证码。试用积分只留额度规则，防刷改成「一经核实，相关积分清零。」用完了的去处挪到「当天积分用完了怎么办」。邀请成功写成填码并且注册成功才核销。分类仍是积分、验证码、邀请。
+- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts`。本地打开 `/faq` 看三类答案。没有部署，没有合并。
+- 待办/风险：合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。
+
 ### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
 
 - 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
@@ -186,11 +196,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`lib/works.ts`、`components/works-rail.tsx`、`app/works.css`、`docs/previews/bauhaus-desktop-preview.png`、`docs/previews/home-gem-themes.png`、`docs/previews/works-gem-themes.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头 Chrome 打开首页模板条、精品模板和包豪预览。加粗计算色是 #1040c0，标题块 #d02020，高亮 #f0c020，底 #f0f0f0，硬投影是 4px 纯黑。复制稿里有这四色，没有渐变。首页 7 张都是示例文标题。精品模板前 7 张是钻石主题，第 8 张仍是「少说一句」。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/64 已开，没有自己合并。公众号后台粘贴后的硬投影还没在微信里看过。
-
-### 2026-10-24 深空青按钮也加上紫金钻石
-
-- 想做什么：深空青的胶囊右侧加上和另外 6 个精选主题同一枚紫金钻石。仍在 PR #63。阿超说可以合并，但这一轮不要自己合。
-- 做成了什么：深空青（nocturne）进了钻石名单。选中时绿框还在，钻石也清楚。主题色板没改。缓存号 `theme-gem-v2`。
-- 改了哪些文件：`public/app.js`、`public/studio.html`、`docs/previews/theme-gem-nocturne.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开主题面板。深空青右侧有钻石，和柠边、乐几、撕贴、平涂、报章、包豪是同一枚。手札橙、清氧绿没有。截图在 `docs/previews/theme-gem-nocturne.png`。没有合并。
-- 待办/风险：合进 master 等阿超看完截图再操作。

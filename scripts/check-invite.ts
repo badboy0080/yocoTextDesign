@@ -38,7 +38,7 @@ assert(registerCopy.includes("有就填，没有也能注册"), "注册页占位
 assert(registerCopy.includes("填了邀请码并注册成功，双方各 +5 积分。"), "注册页提示");
 assert(!registerCopy.includes("没有也可以注册"), "注册页不要留旧占位");
 assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
-assert(SITE_FAQ.length === 4, "常见问题正好四条");
+assert(SITE_FAQ.length === 6, "常见问题六条");
 assert(faqCategories().join("|") === "积分|验证码|邀请", "常见问题按积分、验证码、邀请分组");
 const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "utf8");
 const faqTabs = readFileSync(new URL("../components/faq-tabs-card.tsx", import.meta.url), "utf8");
@@ -80,25 +80,50 @@ assert(!studioUi.includes(".invite-modal-copy") || studioUi.includes("linear-gra
 assert(!worksFrame.includes(">邀请好友</button>"), "侧栏菜单不再有邀请好友");
 assert(worksFrame.includes(">个人信息</button>"), "个人信息还在，不改去处");
 assert(!accountMenu.includes("邀请好友"), "登录页账号菜单不再放邀请");
-assert(SITE_FAQ.map((item) => item.title).join("|") === "试用积分|收不到邮箱验证码|邀请好友|邀请码用不了", "常见问题标题里，试用改成积分");
 assert(
-  SITE_FAQ[0].body === "未登录每天免费 3 积分，当天用完第二天自动恢复。用完了：留下邮箱等开放订阅通知，或注册拿额度；也可走邀请好友加积分。请勿重复注册刷积分。",
-  "试用积分说明",
+  SITE_FAQ.map((item) => item.title).join("|") ===
+    "试用积分|当天积分用完了怎么办|收不到邮箱验证码|邀请好友|怎样算邀请成功|邀请码用不了",
+  "常见问题标题里，试用改成积分，用完和邀请成功各自成题",
+);
+const trialFaq = SITE_FAQ.find((item) => item.id === "trial");
+const creditsOutFaq = SITE_FAQ.find((item) => item.id === "credits-out");
+const otpFaq = SITE_FAQ.find((item) => item.id === "otp");
+const inviteFaq = SITE_FAQ.find((item) => item.id === "invite");
+const inviteSuccessFaq = SITE_FAQ.find((item) => item.id === "invite-success");
+const inviteFailFaq = SITE_FAQ.find((item) => item.id === "invite-fail");
+assert(
+  trialFaq?.body === "未登录每天免费 3 积分，当天用完第二天自动恢复。请勿重复注册刷积分。一经核实，相关积分清零。",
+  "试用积分只留额度，防刷只写清零",
+);
+assert(trialFaq?.body.includes("请勿重复注册刷积分。一经核实，相关积分清零。"), "防刷末句写清零");
+assert(!trialFaq?.body.includes("用完了") && !trialFaq?.body.includes("封号"), "试用积分不再写用完了，也不写封号");
+assert(
+  creditsOutFaq?.category === "积分" &&
+    creditsOutFaq.body ===
+      "未登录每天 3 积分，当天用完第二天自动恢复。当天用完可：留下邮箱等订阅通知，或注册拿额度，或走邀请好友加积分。",
+  "当天用完单独一问，挂在积分",
 );
 assert(
-  SITE_FAQ[1].body === "① 查垃圾箱/广告邮件；② 确认邮箱后重发，等 1–2 分钟；③ 仍没有，把注册邮箱发给客服人工协助。（只有邮箱验证码。）",
+  otpFaq?.body ===
+    "① 别连点重发，等 1–2 分钟再试；② 查垃圾箱/广告邮件；③ 确认邮箱无误后再发一次；④ 仍没有，把注册邮箱发给客服。只有邮箱验证码。",
   "验证码说明用客服定稿",
 );
+assert(otpFaq?.body.endsWith("只有邮箱验证码。") && !otpFaq.body.includes("手机"), "只有邮箱验证码");
 assert(
-  SITE_FAQ[2].body === "登录后，点工作台头像上方的礼包图标，复制邀请码发给朋友。未登录看不到这个入口。朋友注册时填上这个码并注册成功后，你们俩各得 +5 积分。一个码最多给 5 个朋友用；同一个账号只能核销一次。",
+  inviteFaq?.body === "登录后，点工作台头像上方的礼包图标，复制邀请码发给朋友。未登录看不到这个入口。朋友注册时填上这个码并注册成功后，你们俩各得 +5 积分。一个码最多给 5 个朋友用；同一个账号只能核销一次。",
   "邀请说明指向头像上方礼包，并写明未登录看不到",
 );
 assert(
-  "emphasis" in SITE_FAQ[2] && SITE_FAQ[2].emphasis === "未登录看不到这个入口。",
+  inviteFaq && "emphasis" in inviteFaq && inviteFaq.emphasis === "未登录看不到这个入口。",
   "未登录看不到这个入口要加粗",
 );
 assert(
-  SITE_FAQ[3].body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",
+  inviteSuccessFaq?.category === "邀请" &&
+    inviteSuccessFaq.body === "好友注册时填上你的邀请码，并且注册成功，才算核销。只复制码、没注册成功，双方都不得分。",
+  "邀请成功要填码并且注册成功",
+);
+assert(
+  inviteFailFaq?.body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",
   "邀请码失败说明用客服定稿",
 );
 assert(readInviteInput("  ").kind === "absent", "空邀请码应当没填");

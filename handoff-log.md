@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-公众号排版答案页（2026-10-26，未合并、未部署）：`/gongzhonghao-paiban` 仍是原地址，按张默 10-26 定稿改成答案页。有定义开篇、适谁、三步、和 135 / 秀米 / 花生的对照表、8 条问答、Last updated 2026-10-26，以及问答和软件说明。试用按钮进 https://www.yoooco.com。对比图换成上传的 1080×1440。图是上素文、下清氧绿，图注按画面写成上下，没有照抄稿里的左右。站点地图还收这一页，没有 noindex。顶栏「工作台」仍进工作台，那是全站导航。正式站要等合进 master。截图在 `docs/previews/gongzhonghao-geo-desktop.png`。
+公众号排版答案页（2026-10-26，PR #68，未合并、未部署）：`/gongzhonghao-paiban` 仍是原地址，按张默 10-26 定稿改成答案页。有定义开篇、适谁、三步、和 135 / 秀米 / 花生的对照表、8 条问答、Last updated 2026-10-26，以及问答和软件说明。试用按钮进 https://www.yoooco.com。对比图换成上传的 1080×1440。图是上素文、下清氧绿，图注按画面写成上下，没有照抄稿里的左右。站点地图还收这一页，没有 noindex。顶栏「工作台」仍进工作台，那是全站导航。正式站要等合进 master。截图在 `docs/previews/gongzhonghao-geo-desktop.png`。
 
 常见问题客服定稿（2026-10-26，PR #67，未合并、未部署）：`/faq` 仍是积分、验证码、邀请三类，没有新地址。收不到邮箱验证码改成四步，并写明只有邮箱验证码。试用积分只留每天 3 积分和次日恢复，末句改成核实后积分清零，不写封号。「当天积分用完了怎么办」和「怎样算邀请成功」各自成题。首页底部读的是同一份问答。预览在 PR 里。正式站要等合进 master。
 
@@ -165,7 +165,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
 - 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
-- 待办/风险：合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
 
 ### 2026-10-26 常见问题按客服定稿改四条
 

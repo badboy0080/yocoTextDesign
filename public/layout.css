@@ -63,7 +63,7 @@
 .block {
   position: absolute; box-sizing: border-box; padding: 6px 8px; overflow: hidden;
   border: 1px dashed rgba(0,0,0,.18); background: rgba(255,255,255,.72);
-  cursor: grab; user-select: none;
+  cursor: grab; user-select: none; touch-action: none;
 }
 .block[data-type="H1"] { font-size: clamp(18px, 4.2vw, 28px); font-weight: 700; line-height: 1.2; }
 .block[data-type="H2"] { font-size: clamp(12px, 2.4vw, 16px); font-weight: 600; color: #3a3a3a; }

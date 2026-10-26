@@ -1,5 +1,5 @@
 import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById } from "./layout-templates.js";
-import { clampGridN, gridRows } from "./layout-grid.js";
+import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
 const state = {
   ratio: "3:4",
@@ -67,6 +67,59 @@ function renderBlocks() {
   emptyHint.hidden = true;
 }
 
+let drag = null;
+
+function slotBox(id) {
+  const slot = slotsFor(state.templateId, state.ratio).find((item) => item.id === id);
+  const pos = state.positions[id];
+  return { ...slot, x: pos?.x ?? slot.x, y: pos?.y ?? slot.y };
+}
+
+canvasBlocks.addEventListener("pointerdown", (event) => {
+  const block = event.target.closest(".block");
+  if (!block || !state.fill) return; // 生成前骨架也可拖的话去掉 !state.fill；design：生成后可拖
+  const id = block.dataset.id;
+  const box = slotBox(id);
+  const rect = canvas.getBoundingClientRect();
+  drag = {
+    id,
+    pointerId: event.pointerId,
+    offsetX: ((event.clientX - rect.left) / rect.width) * 100 - box.x,
+    offsetY: ((event.clientY - rect.top) / rect.height) * 100 - box.y,
+    w: box.w,
+    h: box.h,
+  };
+  block.classList.add("is-dragging");
+  block.setPointerCapture(event.pointerId);
+});
+
+canvasBlocks.addEventListener("pointermove", (event) => {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  const rect = canvas.getBoundingClientRect();
+  let x = ((event.clientX - rect.left) / rect.width) * 100 - drag.offsetX;
+  let y = ((event.clientY - rect.top) / rect.height) * 100 - drag.offsetY;
+  const n = clampGridN(state.gridN);
+  const ratio = RATIOS[state.ratio];
+  const m = gridRows(n, ratio.w, ratio.h);
+  const snapped = snapToGrid(x, y, n, m);
+  const clamped = clampBlock(snapped.x, snapped.y, drag.w, drag.h);
+  state.positions[drag.id] = { x: clamped.x, y: clamped.y };
+  const el = canvasBlocks.querySelector(`[data-id="${drag.id}"]`);
+  if (el) {
+    el.style.left = `${clamped.x}%`;
+    el.style.top = `${clamped.y}%`;
+  }
+});
+
+function endDrag(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  const el = canvasBlocks.querySelector(`[data-id="${drag.id}"]`);
+  el?.classList.remove("is-dragging");
+  drag = null;
+}
+canvasBlocks.addEventListener("pointerup", endDrag);
+canvasBlocks.addEventListener("pointercancel", endDrag);
+
 ratioRow.addEventListener("click", (event) => {
   const button = event.target.closest("[data-ratio]");
   if (!button) return;
@@ -117,3 +170,7 @@ renderBlocks();
 renderGrid();
 syncGenerateEnabled();
 layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;
+
+// 生成接线之前，控制台可以先写 state.fill = { slots: [] } 再 renderBlocks()，用来手测拖块。
+globalThis.state = state;
+globalThis.renderBlocks = renderBlocks;

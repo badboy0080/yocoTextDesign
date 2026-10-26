@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-智能排版网格（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：画布上有浅绿色网格线。列数默认 12，滑杆 6 到 24。3:4 是 16 行，1:1 是 12 行，16:9 是 7 行。改列数只改线，槽块先不跟着跳。吸附函数写好了，还没接到拖拽上。合进 master 才会上正式站。
+智能排版拖块（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：生成结果出现之后，字块和图块可以拖。拖的时候就吸到网格交点，松手停在那里。只改位置，不改宽高。改列数时块先不跳，再拖才按新格子吸。还没真正接生成，控制台要先放一个空的生成结果才能拖。合进 master 才会上正式站。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -163,6 +163,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版画布拖块吸附
+
+- 想做什么：字块和图块能拖，松手停在网格交点上。用已经写好的吸附函数。不接生成。
+- 做成了什么：拖的过程中就吸到交点。只改位置，宽高不动。没有生成结果时拖不动。改列数不让已放下的块跳动。往右下拖出画布时，左上角停在 99%。往左上拖时贴在 0，因为吸附会先把负数收成 0。
+- 改了哪些文件：`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头浏览器打开 `/layout.html`。没放生成结果时拖标题，位置不变。放上空的生成结果后，拖标题吸到格子上，宽高仍是 84 和 12。拖动过程中已经在交点上。列数改成 6，块不动；再拖仍按 6 列的格子算。图块同样能拖，宽高不变。拖出右下角后停在 99%、99%。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。页面上还不能自己生成，要等后面接线。拖之前控制台写 `state.fill = { slots: [] }` 再 `renderBlocks()`。
+
 ### 2026-10-26 智能排版网格列数和吸附函数
 
 - 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
@@ -194,11 +202,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
-
-### 2026-10-26 公众号排版页升级成答案页
-
-- 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。
-- 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
-- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。

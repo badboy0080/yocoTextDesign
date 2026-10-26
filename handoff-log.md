@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-换一版（2026-10-26，未合并、未部署）：工作台「优化排版」旁边有「换一版」和「回退上一版」。换一版扣 1 积分，主题和颜色不动，只重拆块。回退最多记 5 版，存在这台浏览器里，不扣积分。没有一次出多条结果。正式站要等合进 master。截图在 `docs/previews/reroll-layout-buttons.png`。
+换一版（2026-10-26，PR #70，未合并、未部署）：工作台「优化排版」旁边有「换一版」和「回退上一版」。换一版扣 1 积分，主题和颜色不动，只重拆块。回退最多记 5 版，存在这台浏览器里，不扣积分。没有一次出多条结果。正式站要等合进 master。截图在 `docs/previews/reroll-layout-buttons.png`。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -169,7 +169,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：接口认 `intent: "reroll"`，并带变体种子和上一版块序列。换一版时模型温度是 0.7，主题锁死，不改颜色。工作台两个按钮在「优化排版」旁边。成功换一版扣 1 积分。回退不打接口、不扣积分，最多留 5 版。
 - 改了哪些文件：`lib/deepseek-normalizer.js`、`scripts/check-reroll-assignment.js`、`public/app.js`、`public/studio.html`、`public/studio-ui.css`、`CONTEXT.md`、`docs/previews/reroll-layout-buttons.png`、`docs/previews/reroll-layout-empty-hint.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-reroll-assignment.js` 通过。无头 Chrome 打开工作台：两个按钮在优化旁边，没内容时点换一版会提示先加文章，回退一开始是灰的。用假接口连换两次，第二次请求带上一版块序列 `heading:2>card>quote`，主题仍是 fixed。再回退两次，原文回到粘贴前的样子，没有多打接口。手动把强调色改成 `#ff00aa` 后再换一版，颜色还在。
-- 待办/风险：还没合进 master，正式站不会变。真机 DeepSeek 偶发会编造步骤或数字，仍靠原文核对拦住。没有做多结果条、紧凑/留白版式、图文避让。公众号后台粘贴没在微信里看过。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/70 已开，没有自己合并。合进 master 才会上正式站。真机 DeepSeek 偶发会编造步骤或数字，仍靠原文核对拦住。没有做多结果条、紧凑/留白版式、图文避让。公众号后台粘贴没在微信里看过。
 
 ### 2026-10-26 答案页分支接到已合入的常见问题
 

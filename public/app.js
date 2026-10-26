@@ -502,6 +502,24 @@ function escapeHtml(value) {
   }[character]));
 }
 
+/** 内容卡片没有单独标题时，不再补「重点提示」。这四个字是旧的占位，不显示。 */
+function cardLabel(title) {
+  const label = String(title || "").trim();
+  return label && label !== "重点提示" ? label : "";
+}
+
+/** 浅色重点底做线条时几乎看不见。够深就用重点色，否则改用强调色。 */
+function highlightStrokeColor() {
+  const page = safeColor(state.pageColor, "#ffffff");
+  const wash = safeColor(state.highlightColor, safeColor(state.accentColor, "#d7fa5c"));
+  const accent = safeColor(state.accentColor, "#718c25");
+  const ink = safeColor(state.highlightTextColor, safeColor(state.textColor, "#333333"));
+  if (contrastRatio(wash, page) >= 1.8) return wash;
+  if (contrastRatio(accent, page) >= 2) return accent;
+  if (contrastRatio(ink, page) >= 2) return ink;
+  return wash;
+}
+
 /* 公众号行内冒烟样例（先长记号，再短记号，避免 ~~ 被 ~ 吃掉）：
 ~~删除~~ ++下划线++ ~波浪~ **加粗** *斜体* `代码` ==重点== [链接](https://yoooco.com)
 */
@@ -1039,7 +1057,7 @@ function parseArticle(source) {
   const flushFence = () => {
     if (fenceKind === "card") {
       const text = fenceLines.join("\n").trim();
-      if (text) blocks.push({ type: "card", title: fenceTitle || "重点提示", text });
+      if (text) blocks.push({ type: "card", title: cardLabel(fenceTitle), text });
     } else if (fenceKind === "steps") {
       const items = fenceLines.map(parseStepLine).filter(Boolean).slice(0, 40);
       if (items.length) blocks.push({ type: "steps", title: fenceTitle || "操作步骤", items });
@@ -1080,8 +1098,8 @@ function parseArticle(source) {
       flushList();
       const kind = fence[1].toLowerCase();
       fenceKind = kind === "stats" ? "stat" : kind;
-      fenceTitle = (fence[2] || "").trim()
-        || (fenceKind === "card" ? "重点提示" : fenceKind === "steps" ? "操作步骤" : "关键数据");
+      fenceTitle = (fence[2] || "").trim();
+      if (!fenceTitle && fenceKind !== "card") fenceTitle = fenceKind === "steps" ? "操作步骤" : "关键数据";
       continue;
     }
     if (!trimmed) {
@@ -1173,8 +1191,8 @@ function applyStructureOverrides(parsed) {
           next = { type: "divider" };
         } else if (["paragraph", "lead", "heading", "quote", "card"].includes(block.type)) {
           if (requestedType === "heading") next = { ...block, type: "heading", level: 2 };
-          else if (requestedType === "quote") next = { ...block, type: "quote", title: block.title || "重点提示" };
-          else if (requestedType === "card") next = { ...block, type: "card", title: block.title || "重点提示" };
+          else if (requestedType === "quote") next = { ...block, type: "quote", title: block.title || "引用" };
+          else if (requestedType === "card") next = { ...block, type: "card", title: cardLabel(block.title) };
           else next = { ...block, type: requestedType };
         }
       }
@@ -1493,7 +1511,11 @@ function renderBody() {
       if (state.showQuote) return `<aside class="quote-card" data-type="quote" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${inlineMarkdown(item.text)}</aside>`;
       return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<aside class="content-card" data-type="card" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${inlineMarkdown(item.text)}</aside>`;
+    if (item.type === "card") {
+      const label = cardLabel(item.title);
+      const titleHtml = label ? `<strong class="content-card-title">${escapeHtml(label)}</strong>` : "";
+      return `<aside class="content-card" data-type="card" ${idx} contenteditable="${editable}">${titleHtml}${inlineMarkdown(item.text)}</aside>`;
+    }
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, stepIndex) =>
@@ -1641,10 +1663,12 @@ function serializePreviewToMarkdown() {
       return;
     }
     if (type === "card") {
-      const title = el.querySelector("strong")?.textContent.trim() || "重点提示";
+      const titleEl = el.querySelector(":scope > .content-card-title");
+      const title = cardLabel(titleEl?.textContent || "");
       const clone = el.cloneNode(true);
-      clone.querySelector("strong")?.remove();
-      parts.push(`:::card ${title}\n${htmlToMd(clone)}\n:::`);
+      clone.querySelector(":scope > .content-card-title")?.remove();
+      const body = htmlToMd(clone);
+      parts.push(title ? `:::card ${title}\n${body}\n:::` : `:::card\n${body}\n:::`);
       return;
     }
     if (type === "steps") {
@@ -1760,6 +1784,7 @@ function applyStyleVars() {
   articlePage.style.setProperty("--code-line-height", state.codeLineHeight);
   articlePage.style.setProperty("--caption-size", `${state.captionSize}px`);
   articlePage.dataset.highlightStyle = state.highlightStyle || "background";
+  articlePage.style.setProperty("--highlight-stroke", highlightStrokeColor());
   articlePage.dataset.linkUnderline = String(Boolean(state.linkUnderline));
   articlePage.style.setProperty("--card-radius", `${state.cardRadius}px`);
   articlePage.style.setProperty("--card-padding", `${state.cardPadding}px`);
@@ -1866,7 +1891,8 @@ function structuredDocumentToMarkdown(document) {
       const quoteTitle = String(block.title || "引用").trim();
       lines.push(`> **${quoteTitle}**：${text}`);
     } else if (type === "card") {
-      lines.push(`:::card ${String(block.title || "重点提示").trim()}\n${text}\n:::`);
+      const cardTitle = cardLabel(block.title);
+      lines.push(cardTitle ? `:::card ${cardTitle}\n${text}\n:::` : `:::card\n${text}\n:::`);
     } else if (type === "code") {
       lines.push(`\`\`\`${String(block.language || "").trim()}\n${block.text}\n\`\`\``);
     } else {
@@ -2091,22 +2117,24 @@ function buildCopyHtml() {
   const useRegisteredCode = !isDeepNight || state.theme === "nocturne";
   const codeBackground = useRegisteredCode ? state.codeBackground : "#202727";
   const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
-  const highlightPlain = `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;`;
+  const stroke = highlightStrokeColor();
+  const bodyInk = safeColor(state.textColor, "#333333");
+  const highlightPlain = `padding:0;background-color:transparent;color:${bodyInk};font-weight:700;`;
   const highlightCss = highlightStyle === "underline"
-    ? `${highlightPlain}border-bottom:3px solid ${highlightColor};`
+    ? `${highlightPlain}border-bottom:3px solid ${stroke};`
     : highlightStyle === "bold"
-      ? `padding:0;background-color:transparent;color:${state.theme === "bauhaus" ? state.linkColor : highlightTextColor};font-weight:800;`
+      ? `padding:0;background-color:transparent;color:${state.theme === "bauhaus" ? state.linkColor : bodyInk};font-weight:800;`
       : highlightStyle === "strikethrough"
-        ? `${highlightPlain}text-decoration:line-through;text-decoration-color:${highlightColor};`
+        ? `${highlightPlain}text-decoration:line-through;text-decoration-color:${stroke};`
         : highlightStyle === "text-underline"
-          ? `${highlightPlain}text-decoration:underline;text-underline-offset:.14em;text-decoration-color:${highlightColor};`
+          ? `${highlightPlain}text-decoration:underline;text-underline-offset:.14em;text-decoration-color:${stroke};`
           : highlightStyle === "wavy"
-            ? `${highlightPlain}text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${highlightColor};`
+            ? `${highlightPlain}text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${stroke};`
             : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
   const linkCss = `color:${state.linkColor};${state.linkUnderline ? "text-decoration:underline;" : "text-decoration:none;"}`;
   const inlineCodeCss = `padding:0 .28em;border-radius:4px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;`;
   const underlineCss = highlightStyle === "underline"
-    ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;text-decoration:none;border-bottom:3px solid ${highlightColor};`
+    ? `padding:0;background-color:transparent;color:${bodyInk};font-weight:700;text-decoration:none;border-bottom:3px solid ${stroke};`
     : "text-decoration:underline;text-underline-offset:.14em;";
   const wavyCss = `text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${state.accentColor};`;
   const copyInlineMarkdown = (value) => {
@@ -2308,7 +2336,13 @@ function buildCopyHtml() {
       if (state.showQuote) return `<section style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
       return `<p style="${textStyle}font-style:italic;">${copyInlineMarkdown(item.text)}</p>`;
     }
-    if (item.type === "card") return `<section style="${cardStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+    if (item.type === "card") {
+      const label = cardLabel(item.title);
+      const titleHtml = label
+        ? `<p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(label)}</p>`
+        : "";
+      return `<section style="${cardStyle}">${titleHtml}<p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+    }
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {

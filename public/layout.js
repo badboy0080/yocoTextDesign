@@ -1,13 +1,53 @@
 import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById } from "./layout-templates.js";
 import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
+const PRESETS = {
+  exhibition: {
+    title: "遇见印象派",
+    subtitle: "三城真迹",
+    date: "5/26–8/07",
+    venue: "成都 · 博物馆",
+    body: "莫奈、马奈、雷诺阿。同一展览，三种画幅。",
+    credit: "网格工作坊",
+  },
+  nature: {
+    title: "绿野之约",
+    subtitle: "声动自然",
+    date: "6/8–6/9",
+    venue: "东滩湿地",
+    body: "自然为幕，音乐为歌。",
+    credit: "森林诗会",
+  },
+  product: {
+    title: "山野召集",
+    subtitle: "轻装两日",
+    date: "10/24–10/25",
+    venue: "城西绿道",
+    body: "同一句广告，方图、竖图、横幅各摆一次。",
+    credit: "Yooco",
+  },
+};
+
+const PRESET_LIST = [
+  { id: "exhibition", label: "展览" },
+  { id: "nature", label: "自然" },
+  { id: "product", label: "产品" },
+];
+
+const TEMPLATE_GROUPS = [
+  { id: "text", label: "纯字" },
+  { id: "image", label: "图文" },
+];
+
 const state = {
   ratio: "3:4",
-  templateId: "t1",
+  templateId: "a",
+  preset: "exhibition",
   gridN: 12,
   source: "",
   images: [], // { url, name }[]
-  fill: null, // { slots: [...] } | null
+  texts: { ...PRESETS.exhibition },
+  fill: null, // 生成结果。预置文案不写这里，也不扣积分。
   positions: {}, // id -> { x, y } 覆盖模板坐标
 };
 
@@ -16,6 +56,7 @@ const generateButton = document.querySelector("#generateButton");
 const rerollButton = document.querySelector("#rerollButton");
 const ratioRow = document.querySelector("#ratioRow");
 const templateGrid = document.querySelector("#templateGrid");
+const presetRow = document.querySelector("#presetRow");
 const canvas = document.querySelector("#canvas");
 const canvasBlocks = document.querySelector("#canvasBlocks");
 const emptyHint = document.querySelector("#emptyHint");
@@ -38,10 +79,19 @@ function renderChrome() {
   ratioRow.innerHTML = RATIO_IDS.map((id) =>
     `<button type="button" role="radio" aria-checked="${state.ratio === id}" data-ratio="${id}">${id}</button>`
   ).join("");
-  templateGrid.innerHTML = TEMPLATES.map((item) =>
-    `<button type="button" role="option" aria-selected="${state.templateId === item.id}" data-template="${item.id}">
-      <strong>${item.label}</strong><span class="blurb">${item.blurb}</span>
-    </button>`
+  templateGrid.innerHTML = TEMPLATE_GROUPS.map((group) => {
+    const buttons = TEMPLATES.filter((item) => item.group === group.id).map((item) =>
+      `<button type="button" role="option" aria-selected="${state.templateId === item.id}" data-template="${item.id}">
+        <strong>${item.label}</strong><span class="blurb">${item.blurb}</span>
+      </button>`
+    ).join("");
+    return `<div class="template-group" role="group" aria-label="${group.label}">
+      <p class="template-group-label">${group.label}</p>
+      ${buttons}
+    </div>`;
+  }).join("");
+  presetRow.innerHTML = PRESET_LIST.map((item) =>
+    `<button type="button" aria-pressed="${state.preset === item.id}" data-preset="${item.id}">${item.label}</button>`
   ).join("");
   canvas.dataset.ratio = state.ratio;
   layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;
@@ -59,22 +109,38 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function textFor(slotId) {
+  if (Object.prototype.hasOwnProperty.call(state.texts, slotId)) return state.texts[slotId] || "";
+  const filled = state.fill?.slots?.find((item) => item.id === slotId);
+  return filled?.text || "";
+}
+
+function imageFor(slot, filled) {
+  if (slot.type !== "image") return null;
+  if (Number.isInteger(filled?.imageIndex) && state.images[filled.imageIndex]) {
+    return state.images[filled.imageIndex];
+  }
+  return state.images[0] || null;
+}
+
 function renderBlocks() {
   const slots = slotsFor(state.templateId, state.ratio);
   canvasBlocks.innerHTML = slots.map((slot) => {
     const pos = state.positions[slot.id];
     const box = { ...slot, x: pos?.x ?? slot.x, y: pos?.y ?? slot.y };
     const filled = state.fill?.slots?.find((item) => item.id === slot.id);
-    const text = filled?.text || "";
     const isImage = slot.type === "image";
-    const img = isImage && Number.isInteger(filled?.imageIndex)
-      ? state.images[filled.imageIndex]
-      : null;
-    const empty = isImage ? !img : !text;
+    const img = imageFor(slot, filled);
+    const text = isImage ? "" : textFor(slot.id);
+    const placeholder = isImage && !img;
+    const empty = !isImage && !text;
     const inner = isImage
-      ? (img ? `<img alt="" src="${escapeHtml(img.url)}" />` : `<span>图槽</span>`)
-      : escapeHtml(text || slot.type);
-    return `<div class="block${empty ? " is-empty" : ""}" data-id="${slot.id}" data-type="${slot.type}" style="${placeStyle(box)}">${inner}</div>`;
+      ? (img ? `<img alt="" src="${escapeHtml(img.url)}" />` : "")
+      : escapeHtml(text);
+    const classes = ["block"];
+    if (placeholder) classes.push("is-placeholder");
+    if (empty) classes.push("is-empty");
+    return `<div class="${classes.join(" ")}" data-id="${slot.id}" data-type="${slot.type}" style="${placeStyle(box)}">${inner}</div>`;
   }).join("");
   emptyHint.hidden = true;
   const truncationNote = document.querySelector("#truncationNote");
@@ -102,7 +168,7 @@ function slotBox(id) {
 
 canvasBlocks.addEventListener("pointerdown", (event) => {
   const block = event.target.closest(".block");
-  if (!block || !state.fill) return; // 生成前骨架也可拖的话去掉 !state.fill；design：生成后可拖
+  if (!block || !state.fill) return; // 生成前不拖。预置字只是先摆上，不算生成结果。
   const id = block.dataset.id;
   const box = slotBox(id);
   const rect = canvas.getBoundingClientRect();
@@ -147,7 +213,7 @@ canvasBlocks.addEventListener("pointercancel", endDrag);
 
 ratioRow.addEventListener("click", (event) => {
   const button = event.target.closest("[data-ratio]");
-  if (!button) return;
+  if (!button || button.dataset.ratio === state.ratio) return;
   state.ratio = button.dataset.ratio;
   state.positions = {};
   renderChrome();
@@ -157,11 +223,21 @@ ratioRow.addEventListener("click", (event) => {
 
 templateGrid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-template]");
-  if (!button) return;
+  if (!button || button.dataset.template === state.templateId) return;
   state.templateId = button.dataset.template;
   state.positions = {};
-  state.fill = null;
   syncGenerateEnabled();
+  renderChrome();
+  renderBlocks();
+});
+
+presetRow.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-preset]");
+  if (!button || filling) return;
+  const preset = PRESETS[button.dataset.preset];
+  if (!preset) return;
+  state.preset = button.dataset.preset;
+  state.texts = { ...preset };
   renderChrome();
   renderBlocks();
 });
@@ -227,9 +303,14 @@ async function requestFill({ reroll }) {
       throw new Error(json?.error?.message || "排版失败，再试一次");
     }
     state.fill = json.data;
+    state.preset = null;
+    for (const item of json.data?.slots || []) {
+      if (item.type !== "image") state.texts[item.id] = String(item.text || "");
+    }
     // 换槽重排：直接覆盖拖动结果，不弹确认。生成成功同样回到模板槽位。
     state.positions = {};
     updateCredits(json.credits || json.trial?.credits);
+    renderChrome();
     renderBlocks();
     renderGrid();
     layoutStatus.textContent = reroll ? "已换槽重排" : "已生成排版";
@@ -275,7 +356,6 @@ renderChrome();
 renderBlocks();
 renderGrid();
 syncGenerateEnabled();
-layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;
 
 globalThis.state = state;
 globalThis.renderBlocks = renderBlocks;

@@ -19,24 +19,24 @@ const req = validateLayoutFillRequest({
   source: "标题一句\n\n副标\n\n正文段落一。\n正文段落二。",
   imageCount: 1,
   ratio: "3:4",
-  templateId: "t1",
+  templateId: "a",
   slots,
 });
-assert(req.templateId === "t1", "请求应收下 t1");
+assert(req.templateId === "a", "请求应收下 a");
 
 const fallback = defaultFill(req);
 assert(fallback.slots.find((s) => s.id === "h1").text.includes("标题"), "H1 默认首段");
 assert(fallback.slots.find((s) => s.id === "img1").imageIndex === 0, "有图填 img");
 
 const bad = normalizeFillResult(
-  { templateId: "t1", ratio: "3:4", slots: [{ id: "nope", type: "H1", text: "x" }] },
+  { templateId: "a", ratio: "3:4", slots: [{ id: "nope", type: "H1", text: "x" }] },
   req,
 );
 assert(bad.slots.find((s) => s.id === "h1"), "非法槽应回退默认填法");
 
 const good = normalizeFillResult(
   {
-    templateId: "t1",
+    templateId: "a",
     ratio: "3:4",
     seed: 7,
     slots: [
@@ -52,7 +52,7 @@ assert(good.slots.find((s) => s.id === "img1").imageIndex === 0, "合法 imageIn
 
 let threw = false;
 try {
-  validateLayoutFillRequest({ source: "", imageCount: 0, ratio: "3:4", templateId: "t1", slots });
+  validateLayoutFillRequest({ source: "", imageCount: 0, ratio: "3:4", templateId: "a", slots });
 } catch {
   threw = true;
 }

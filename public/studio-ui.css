@@ -504,6 +504,8 @@ html.studio-embedded .studio-navigation { display:none; }
 .history-list span { color:rgba(255,255,255,.55); font-size:11px; line-height:1.4; white-space:nowrap; }
 .history-list p { margin:0; color:rgba(255,255,255,.72); font-size:12px; line-height:1.45; white-space:normal; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; word-break:break-word; }
 .optimize-slot { display:inline-flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; max-width:100%; }
+.optimize-slot .ghost-button { min-height:48px; padding:8px 16px; }
+#undoLayoutButton:disabled { opacity:0.45; cursor:not-allowed; }
 .optimize-hint { margin:0; padding:8px 12px; border:1px solid #ccff00; border-radius:999px; background:rgba(204,255,0,.16); color:#ccff00; font-size:13px; font-weight:700; line-height:1.35; box-shadow:0 0 18px rgba(204,255,0,.28); }
 .optimize-hint[hidden] { display:none !important; }
 .preview-empty { display:none; width:min(100%,440px); }

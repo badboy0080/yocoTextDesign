@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=engine-trio-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=theme-gem-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=reroll-layout-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -153,6 +153,8 @@
               <span class="optimize-slot">
                 <p class="optimize-hint" id="optimizeHint" role="alert" hidden></p>
                 <button class="ai-button" id="aiNormalizeButton" type="button">优化排版</button>
+                <button class="ghost-button" id="rerollLayoutButton" type="button" title="同主题再拆一套块结构，扣 1 积分">换一版</button>
+                <button class="ghost-button" id="undoLayoutButton" type="button" title="回到上一版排版，不扣积分" disabled>回退上一版</button>
               </span>
             </div>
           </div>
@@ -421,6 +423,6 @@
     <script src="./themes.js?v=bauhaus-primaries-v1"></script>
     <script src="./typeset-polish.js?v=engine-trio-v1"></script>
     <script src="./samples/sample-try.js?v=sample-yooco-article-v1"></script>
-    <script src="./app.js?v=engine-trio-v1"></script>
+    <script src="./app.js?v=reroll-layout-v1"></script>
   </body>
 </html>

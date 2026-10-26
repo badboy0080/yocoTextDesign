@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-智能排版换槽（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：点「换槽重排」会再请求填槽，并带一个整数 seed。成功后拖过的位置清掉，块回到模板槽。失败仍写「排版失败，再试一次」，位置和积分不动。选最多 6 张图，名字出现在左侧列表，生成后图进图槽。顶栏在成功后显示剩余积分。导出仍是灰的。这台机器没有密钥，扣次只在页面上用假返回看过。合进 master 才会上正式站。
+智能排版收尾（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：字装不进槽时，比例旁边出现「已截断」。短副标只高出几像素，不提示。两个导出仍是灰的「导出（下期）」。验收截图在 `docs/previews/layout-*.png`。合前要给阿超看这些图。只有阿超说「合并」才能合，合进去就会上正式站。这台机器没有密钥，图里的生成是假返回。
 
 智能排版拖块（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：生成结果出现之后，字块和图块可以拖。拖的时候就吸到网格交点，松手停在那里。只改位置，不改宽高。改列数时块先不跳，再拖才按新格子吸。生成接线前，控制台要先放一个空的生成结果才能拖。合进 master 才会上正式站。
 
@@ -165,6 +165,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版截断提示与验收说明
+
+- 想做什么：字太长时提示「已截断」。导出保持不可用。把验收截图和自检清单留下，合前给阿超看。不新开功能。
+- 做成了什么：画完格子后量字块。高出或宽出超过 8 像素就显示「已截断」。短副标只差大约 4 像素，不提示。顶栏和右侧导出仍是禁用的「导出（下期）」。截图七张在 `docs/previews/`。清单在 `docs/superpowers/plans/notes/2026-10-26-智能排版-qa.md`。
+- 改了哪些文件：`public/layout.js`、`public/layout.html`、`docs/previews/layout-studio-nav.png`、`docs/previews/layout-skeleton.png`、`docs/previews/layout-generated.png`、`docs/previews/layout-drag-snapped.png`、`docs/previews/layout-grid-n.png`、`docs/previews/layout-reroll.png`、`docs/previews/layout-truncated.png`、`docs/superpowers/plans/notes/2026-10-26-智能排版-qa.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 和 `node scripts/check-layout-fill.mjs` 都打印 ok。无头浏览器里，短文「已截断」藏着；长正文槽高 155、内容高 215，提示出现。两个导出按钮禁用，文案含「下期」。列数 12 是 13 条竖线，调到 8 变成 9 条。拖开的标题在换槽后回到 8%。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。合前请阿超看截图。本机没有 `DEEPSEEK_API_KEY`，真实填槽没打。站点地图没加这一页。
+
 ### 2026-10-26 智能排版换槽重排与图片列表
 
 - 想做什么：换槽重排要清掉拖过的位置。选的图片要出现在列表里。失败写「排版失败，再试一次」。成功才在顶栏显示扣过的积分。导出保持灰色。
@@ -196,11 +204,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。
-
-### 2026-10-26 智能排版三区和三套模板槽
-
-- 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。
-- 做成了什么：模板数据在 `public/layout-templates.js`。默认「上题下文 · 3:4」。切比例或模板，槽位跟着变。有字才让「生成排版」可点；「换槽重排」仍灰，因为还没有生成结果。窄屏改成上下排，可以滚到模板和按钮。精品模板页侧栏补了「智能排版」。
-- 改了哪些文件：`public/layout-templates.js`、`public/layout.html`、`public/layout.css`、`public/layout.js`、`components/works-frame.tsx`、`app/works.css`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：静态服务打开 `/layout.html`。无头浏览器点过 3:4、1:1、16:9，以及上题下文、左文右图、图文交错。槽都在画布里，彼此不重叠。贴「少说一句」后生成按钮可点，换槽重排仍禁用。格子列数拖到 18，旁边数字变成 18。390 宽能滚到模板按钮。精品模板页这轮没开浏览器，依赖还没装。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。点「生成排版」不会请求接口。选图片还不会出现在列表里。格子列数还不会画出网格。

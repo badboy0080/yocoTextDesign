@@ -77,6 +77,19 @@ function renderBlocks() {
     return `<div class="block${empty ? " is-empty" : ""}" data-id="${slot.id}" data-type="${slot.type}" style="${placeStyle(box)}">${inner}</div>`;
   }).join("");
   emptyHint.hidden = true;
+  const truncationNote = document.querySelector("#truncationNote");
+  requestAnimationFrame(() => {
+    let truncated = false;
+    for (const block of canvasBlocks.querySelectorAll(".block")) {
+      if (block.dataset.type === "image") continue;
+      // 短副标的行盒会高出槽大约 4 像素，按 1 像素会一直显示「已截断」。超过 8 像素才当字太长。
+      if (block.scrollHeight > block.clientHeight + 8 || block.scrollWidth > block.clientWidth + 8) {
+        truncated = true;
+        break;
+      }
+    }
+    truncationNote.hidden = !truncated;
+  });
 }
 
 let drag = null;

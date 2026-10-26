@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+智能排版瑞士模板设计（2026-10-26，只开文档 PR，未合并）：定稿在 `docs/superpowers/specs/2026-10-26-智能排版-瑞士模板-design.md`。纯字 A/B，图文 C/D/E，用来换掉 #73 的 t1–t3。理论依据是两份备忘的文件名。没改页面和接口。实现要从 `feat/smart-layout-p0` 开工。#73 仍不合。
+
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
 公众号排版答案页（2026-10-26，PR #68，未合并、未部署）：`/gongzhonghao-paiban` 仍是原地址，按张默 10-26 定稿改成答案页。有定义开篇、适谁、三步、和 135 / 秀米 / 花生的对照表、8 条问答、Last updated 2026-10-26，以及问答和软件说明。试用按钮进 https://www.yoooco.com。对比图换成上传的 1080×1440。图是上素文、下清氧绿，图注按画面写成上下，没有照抄稿里的左右。站点地图还收这一页，没有 noindex。顶栏「工作台」仍进工作台，那是全站导航。正式站要等合进 master。截图在 `docs/previews/gongzhonghao-geo-desktop.png`。
@@ -161,6 +163,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版瑞士模板设计（纯字 + 图文）
+
+- 想做什么：重写智能排版模板设计。纯字和图文都要有。理论要显式引用两份备忘。只写文档，开 PR，不改业务代码。
+- 做成了什么：新定稿五套。A/B 纯字，C/D/E 图文。换掉 #73 的 t1–t3。每个比例一套整数格坐标。预置展览、自然、产品三条文案。
+- 改了哪些文件：`docs/superpowers/specs/2026-10-26-智能排版-瑞士模板-design.md`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：对照两份备忘和 #73 的槽模型读过。没有改 `layout-templates.js` 或接口。没有跑页面。
+- 待办/风险：请阿超审。通过后实现 PR 从 `feat/smart-layout-p0` 拉。#73 仍不合。竖排 P0 用右侧横排折行代替，真竖排在下期。
+
 ### 2026-10-26 答案页分支接到已合入的常见问题
 
 - 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
@@ -192,11 +202,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
-
-### 2026-10-25 首页模板卡片去掉黑框
-
-- 想做什么：首页模板卡片里，柠边、乐几、撕贴、报章、包豪有一圈黑边，要去掉。弹窗里的硬边留下。仍在 PR #65，不合并。
-- 做成了什么：卡片封面上这五套的纸边和硬投影清掉了。深空青顶部那条绿线还在。点开柠边，弹窗里仍是 2px 黑边。主题本身没改。
-- 改了哪些文件：`app/home.css`、`app/works.css`、`docs/previews/home-template-cards-no-border.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 量首页七张卡，这五套纸边是 0，投影是 none。精品模板封面前七张同样没有这圈黑边。弹窗里柠边的纸边是 `2px solid #111`。截图在 `docs/previews/home-template-cards-no-border.png`。
-- 待办/风险：合进 master 才会上正式站。标题色块自己的小边还在，那是主题样子，不是卡片外框。

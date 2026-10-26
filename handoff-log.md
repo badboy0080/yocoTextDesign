@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-智能排版三区（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：`/layout.html` 左边贴文案、中间画布、右边三套模板。比例是 3:4、1:1、16:9。选中的模板会在画布上画出槽位色块，槽和槽不叠。导出仍是灰的「导出（下期）」。有字之后「生成排版」会亮，但还没接生成。格子列数能改数字，还不会画网格。精品模板页侧栏也有「智能排版」。合进 master 才会上正式站。
+智能排版网格（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：画布上有浅绿色网格线。列数默认 12，滑杆 6 到 24。3:4 是 16 行，1:1 是 12 行，16:9 是 7 行。改列数只改线，槽块先不跟着跳。吸附函数写好了，还没接到拖拽上。合进 master 才会上正式站。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -163,6 +163,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版网格列数和吸附函数
+
+- 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
+- 做成了什么：`public/layout-grid.js` 负责列数 6–24、行数、吸到最近交点、块不要完全拖出画布。默认 12 列。3:4 画出 13 条竖线、17 条横线。改列数时槽块位置不动。
+- 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。
+
 ### 2026-10-26 智能排版三区和三套模板槽
 
 - 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。
@@ -194,11 +202,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
-
-### 2026-10-26 常见问题按客服定稿改四条
-
-- 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
-- 做成了什么：验证码改成四步，并写明只有邮箱验证码。试用积分只留额度规则，防刷改成「一经核实，相关积分清零。」用完了的去处挪到「当天积分用完了怎么办」。邀请成功写成填码并且注册成功才核销。分类仍是积分、验证码、邀请。
-- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。

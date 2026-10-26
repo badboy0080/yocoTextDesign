@@ -1,4 +1,5 @@
-import { RATIO_IDS, TEMPLATES, slotsFor, templateById } from "./layout-templates.js";
+import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById } from "./layout-templates.js";
+import { clampGridN, gridRows } from "./layout-grid.js";
 
 const state = {
   ratio: "3:4",
@@ -19,8 +20,9 @@ const canvas = document.querySelector("#canvas");
 const canvasBlocks = document.querySelector("#canvasBlocks");
 const emptyHint = document.querySelector("#emptyHint");
 const layoutStatus = document.querySelector("#layoutStatus");
-const gridN = document.querySelector("#gridN");
+const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
+const canvasGrid = document.querySelector("#canvasGrid");
 
 function syncGenerateEnabled() {
   const ok = copyInput.value.trim().length > 0;
@@ -72,6 +74,7 @@ ratioRow.addEventListener("click", (event) => {
   state.positions = {};
   renderChrome();
   renderBlocks();
+  renderGrid();
 });
 
 templateGrid.addEventListener("click", (event) => {
@@ -87,12 +90,30 @@ templateGrid.addEventListener("click", (event) => {
 
 copyInput.addEventListener("input", syncGenerateEnabled);
 
-gridN.addEventListener("input", () => {
-  state.gridN = Number(gridN.value);
-  gridNValue.textContent = gridN.value;
+function renderGrid() {
+  const n = clampGridN(state.gridN);
+  const ratio = RATIOS[state.ratio];
+  const m = gridRows(n, ratio.w, ratio.h);
+  const lines = [];
+  for (let i = 0; i <= n; i += 1) {
+    lines.push(`<span class="grid-v" style="left:${(i / n) * 100}%"></span>`);
+  }
+  for (let j = 0; j <= m; j += 1) {
+    lines.push(`<span class="grid-h" style="top:${(j / m) * 100}%"></span>`);
+  }
+  canvasGrid.innerHTML = lines.join("");
+  gridNInput.value = String(n);
+  gridNValue.textContent = String(n);
+}
+
+gridNInput.addEventListener("input", () => {
+  state.gridN = clampGridN(gridNInput.value);
+  // 调 N：只更新网格线；已放置块下次拖动再按新网格吸附（不瞬间重吸，避免跳动）
+  renderGrid();
 });
 
 renderChrome();
 renderBlocks();
+renderGrid();
 syncGenerateEnabled();
 layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;

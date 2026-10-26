@@ -84,3 +84,8 @@
   .studio-layout { height: auto; overflow: visible; }
   .layout-workspace { grid-template-columns: 1fr; height: auto; flex: none; overflow: visible; }
 }
+.canvas-grid .grid-v, .canvas-grid .grid-h {
+  position: absolute; background: rgba(110, 142, 35, 0.22);
+}
+.canvas-grid .grid-v { top: 0; bottom: 0; width: 1px; }
+.canvas-grid .grid-h { left: 0; right: 0; height: 1px; }

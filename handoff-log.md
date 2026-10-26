@@ -2,7 +2,11 @@
 
 ## 当前接手摘要
 
-常见问题客服定稿（2026-10-26，PR #67，未合并、未部署）：`/faq` 仍是积分、验证码、邀请三类，没有新地址。收不到邮箱验证码改成四步，并写明只有邮箱验证码。试用积分只留每天 3 积分和次日恢复，末句改成核实后积分清零，不写封号。「当天积分用完了怎么办」和「怎样算邀请成功」各自成题。首页底部读的是同一份问答。预览在 PR 里。正式站要等合进 master。
+答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
+
+公众号排版答案页（2026-10-26，PR #68，未合并、未部署）：`/gongzhonghao-paiban` 仍是原地址，按张默 10-26 定稿改成答案页。有定义开篇、适谁、三步、和 135 / 秀米 / 花生的对照表、8 条问答、Last updated 2026-10-26，以及问答和软件说明。试用按钮进 https://www.yoooco.com。对比图换成上传的 1080×1440。图是上素文、下清氧绿，图注按画面写成上下，没有照抄稿里的左右。站点地图还收这一页，没有 noindex。顶栏「工作台」仍进工作台，那是全站导航。正式站要等合进 master。截图在 `docs/previews/gongzhonghao-geo-desktop.png`。
+
+常见问题客服定稿（2026-10-26，PR #67，已合进 master）：`/faq` 仍是积分、验证码、邀请三类，没有新地址。收不到邮箱验证码改成四步，并写明只有邮箱验证码。试用积分只留每天 3 积分和次日恢复，末句改成核实后积分清零，不写封号。「当天积分用完了怎么办」和「怎样算邀请成功」各自成题。首页底部读的是同一份问答。预览在 PR 里。已合进 master。
 
 引擎三刀（2026-10-25，PR #66，未合并、未部署）：大标题单独用 `headingLetterSpacing`，默认 -0.04em（字距 -40，落在 -20～-60）。正文仍用原来的 letterSpacing，不跟着收紧。预览和复制到微信时，全角数字改成半角，中文和英文或数字之间补一个普通空格。代码块、行内代码、网址内部不改，已有空格不重复加。复制稿仍是纯色底加内联样式，没有渐变。主题配色没动。截图在 `docs/previews/engine-trio-before-after.png`。正式站要等合进 master。
 
@@ -157,6 +161,22 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 答案页分支接到已合入的常见问题
+
+- 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
+- 做成了什么：变基成功。摘要和最近记录里，答案页在上、常见问题定稿在下。两条原文都在。常见问题摘要改成已合进 master。多出来的旧记录挪进归档，最近仍是 5 条。答案页代码还是 #68 定稿。
+- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
+
+### 2026-10-26 公众号排版页升级成答案页
+
+- 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。
+- 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
+- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
+
 ### 2026-10-26 常见问题按客服定稿改四条
 
 - 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
@@ -180,19 +200,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/home.css`、`app/works.css`、`docs/previews/home-template-cards-no-border.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头 Chrome 量首页七张卡，这五套纸边是 0，投影是 none。精品模板封面前七张同样没有这圈黑边。弹窗里柠边的纸边是 `2px solid #111`。截图在 `docs/previews/home-template-cards-no-border.png`。
 - 待办/风险：合进 master 才会上正式站。标题色块自己的小边还在，那是主题样子，不是卡片外框。
-
-### 2026-10-25 首页模板卡片左右留 10px
-
-- 想做什么：首页模板条里，文章预览缩成窄列，两边大片空白。改成横向铺满，左右大约 10px，竖向可以裁切。精品模板如果是同一套缩放，一并改。只开 PR，不合并。
-- 做成了什么：首页不再按整篇高度缩小。预览纸贴着卡片宽度，左右各 10px，下面多出来的正文被卡片裁掉。精品模板用的是另一套铺满算法，左右大约 2px，没有大白边，所以没改。
-- 改了哪些文件：`components/works-rail.tsx`、`app/home.css`、`docs/previews/home-template-cards-bleed.png`、`docs/previews/works-template-cards-bleed.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开首页和精品模板。桌面卡片宽 200px，预览纸左右各 10px，纸比卡片高，底部被裁掉。手机宽 152px，左右仍是 10px。七张卡的字都在纸内，没有横向溢出。精品模板前四张左右大约 2px，也是裁切，不是窄条。
-- 待办/风险：合进 master 才会上正式站。字到卡片边大约 20px，因为纸边已经留了 10px，纸内还有一点内边距。阿超如果要字本身贴到 10px，再说。
-
-### 2026-10-24 包豪补齐四色，模板改用钻石主题
-
-- 想做什么：包豪按红 #D02020、蓝 #1040C0、黄 #F0C020、黑 #121212 补齐，加粗用蓝。排版提示词的加粗比例上调约一成。首页模板卡片改成带钻石的 7 套主题，文案用工作台示例文章。精品模板把这些新主题排到前面。PR #64 已开，不自己合并。
-- 做成了什么：标题块和卡片标题是红，加粗、链接和序号圈是蓝，引导段和高亮是黄，正文和硬投影是黑。硬投影名单没动，平涂仍没有硬投影。复制稿是纯色 pageColor 加内联样式。首页只滚这 7 张，精品模板这 7 张在最前。
-- 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`lib/works.ts`、`components/works-rail.tsx`、`app/works.css`、`docs/previews/bauhaus-desktop-preview.png`、`docs/previews/home-gem-themes.png`、`docs/previews/works-gem-themes.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开首页模板条、精品模板和包豪预览。加粗计算色是 #1040c0，标题块 #d02020，高亮 #f0c020，底 #f0f0f0，硬投影是 4px 纯黑。复制稿里有这四色，没有渐变。首页 7 张都是示例文标题。精品模板前 7 张是钻石主题，第 8 张仍是「少说一句」。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/64 已开，没有自己合并。公众号后台粘贴后的硬投影还没在微信里看过。

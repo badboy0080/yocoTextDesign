@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-10-25 首页模板卡片左右留 10px
+
+- 想做什么：首页模板条里，文章预览缩成窄列，两边大片空白。改成横向铺满，左右大约 10px，竖向可以裁切。精品模板如果是同一套缩放，一并改。只开 PR，不合并。
+- 做成了什么：首页不再按整篇高度缩小。预览纸贴着卡片宽度，左右各 10px，下面多出来的正文被卡片裁掉。精品模板用的是另一套铺满算法，左右大约 2px，没有大白边，所以没改。
+- 改了哪些文件：`components/works-rail.tsx`、`app/home.css`、`docs/previews/home-template-cards-bleed.png`、`docs/previews/works-template-cards-bleed.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开首页和精品模板。桌面卡片宽 200px，预览纸左右各 10px，纸比卡片高，底部被裁掉。手机宽 152px，左右仍是 10px。七张卡的字都在纸内，没有横向溢出。精品模板前四张左右大约 2px，也是裁切，不是窄条。
+- 待办/风险：合进 master 才会上正式站。字到卡片边大约 20px，因为纸边已经留了 10px，纸内还有一点内边距。阿超如果要字本身贴到 10px，再说。
+
+### 2026-10-24 包豪补齐四色，模板改用钻石主题
+
+- 想做什么：包豪按红 #D02020、蓝 #1040C0、黄 #F0C020、黑 #121212 补齐，加粗用蓝。排版提示词的加粗比例上调约一成。首页模板卡片改成带钻石的 7 套主题，文案用工作台示例文章。精品模板把这些新主题排到前面。PR #64 已开，不自己合并。
+- 做成了什么：标题块和卡片标题是红，加粗、链接和序号圈是蓝，引导段和高亮是黄，正文和硬投影是黑。硬投影名单没动，平涂仍没有硬投影。复制稿是纯色 pageColor 加内联样式。首页只滚这 7 张，精品模板这 7 张在最前。
+- 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`lib/works.ts`、`components/works-rail.tsx`、`app/works.css`、`docs/previews/bauhaus-desktop-preview.png`、`docs/previews/home-gem-themes.png`、`docs/previews/works-gem-themes.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开首页模板条、精品模板和包豪预览。加粗计算色是 #1040c0，标题块 #d02020，高亮 #f0c020，底 #f0f0f0，硬投影是 4px 纯黑。复制稿里有这四色，没有渐变。首页 7 张都是示例文标题。精品模板前 7 张是钻石主题，第 8 张仍是「少说一句」。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/64 已开，没有自己合并。公众号后台粘贴后的硬投影还没在微信里看过。
+
 ### 2026-10-24 深空青按钮也加上紫金钻石
 
 - 想做什么：深空青的胶囊右侧加上和另外 6 个精选主题同一枚紫金钻石。仍在 PR #63。阿超说可以合并，但这一轮不要自己合。

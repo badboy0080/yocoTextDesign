@@ -1,5 +1,5 @@
 .seo-landing {
-  width: min(100% - 32px, 760px);
+  width: min(100% - 32px, 920px);
   margin: 36px auto 72px;
 }
 .seo-landing h1 {
@@ -47,8 +47,102 @@
   font-size: 16px;
   line-height: 1.8;
 }
+.seo-landing .seo-landing-lead {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-left: 3px solid #ccff00;
+  border-radius: 0 16px 16px 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 17px;
+}
 .seo-landing-cta { margin-top: 22px; }
 .seo-landing-cta .account-primary-button { width: fit-content; }
+.seo-landing ol.seo-landing-steps {
+  margin: 12px 0 0;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.seo-landing-steps > li {
+  position: relative;
+  margin-top: 12px;
+  padding: 14px 16px 14px 58px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.seo-landing-steps > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #ccff00;
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 28px;
+  text-align: center;
+}
+.seo-landing-steps > li strong { display: block; }
+.seo-landing-steps > li p { margin-top: 6px; }
+.seo-landing-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: #0d0d0d;
+}
+.seo-landing table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.seo-landing th,
+.seo-landing td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 400;
+}
+.seo-landing thead th {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  background: #141414;
+}
+.seo-landing tbody th {
+  color: #fff;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.seo-landing tr:last-child th,
+.seo-landing tr:last-child td { border-bottom: 0; }
+.seo-landing td { background: #0d0d0d; }
+.seo-landing thead th:nth-child(2) { background: #1c260c; }
+.seo-landing td:nth-child(2) { background: #161c0c; }
+.seo-landing thead th:first-child,
+.seo-landing tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #111;
+}
+.seo-landing thead th:first-child { z-index: 2; background: #141414; }
+.seo-landing .seo-landing-end { margin-top: 36px; }
+.seo-landing .seo-landing-updated {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
 .seo-landing figure { margin: 22px 0 0; }
 .seo-landing img {
   display: block;

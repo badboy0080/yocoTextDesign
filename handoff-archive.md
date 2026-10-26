@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
+
+- 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
+- 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
+- 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。
+
 ### 2026-10-25 首页模板卡片去掉黑框
 
 - 想做什么：首页模板卡片里，柠边、乐几、撕贴、报章、包豪有一圈黑边，要去掉。弹窗里的硬边留下。仍在 PR #65，不合并。

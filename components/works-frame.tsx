@@ -16,6 +16,15 @@ function IconStudio() {
   );
 }
 
+function IconLayout() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="2.2" y="2.4" width="11.6" height="11.2" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M8 2.4v11.2M2.2 6.4h11.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
 function IconWorks() {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -137,6 +146,10 @@ export function WorksFrame() {
           <a href="/studio.html" aria-label="工作台">
             <IconStudio />
             <span>工作台</span>
+          </a>
+          <a href="/layout.html" aria-label="智能排版">
+            <IconLayout />
+            <span>智能排版</span>
           </a>
           <a href="/works" aria-label="精品模板" className="is-active" aria-current="page">
             <IconWorks />

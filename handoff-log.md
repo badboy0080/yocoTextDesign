@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-智能排版空壳（2026-10-26，分支 `feat/smart-layout-p0`，未合并、未部署）：侧栏「工作台」和「精品模板」之间加了「智能排版」，进 `/layout.html`。这一页标题是「智能排版」，导出按钮灰掉，写着「导出（下期）」。还没有三区、模板和生成。精品模板页自己的侧栏还没有这一项。合进 master 才会上正式站。
+智能排版三区（2026-10-26，分支 `feat/smart-layout-p0`，PR #73，未合并、未部署）：`/layout.html` 左边贴文案、中间画布、右边三套模板。比例是 3:4、1:1、16:9。选中的模板会在画布上画出槽位色块，槽和槽不叠。导出仍是灰的「导出（下期）」。有字之后「生成排版」会亮，但还没接生成。格子列数能改数字，还不会画网格。精品模板页侧栏也有「智能排版」。合进 master 才会上正式站。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
 
@@ -163,6 +163,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-26 智能排版三区和三套模板槽
+
+- 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。
+- 做成了什么：模板数据在 `public/layout-templates.js`。默认「上题下文 · 3:4」。切比例或模板，槽位跟着变。有字才让「生成排版」可点；「换槽重排」仍灰，因为还没有生成结果。窄屏改成上下排，可以滚到模板和按钮。精品模板页侧栏补了「智能排版」。
+- 改了哪些文件：`public/layout-templates.js`、`public/layout.html`、`public/layout.css`、`public/layout.js`、`components/works-frame.tsx`、`app/works.css`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：静态服务打开 `/layout.html`。无头浏览器点过 3:4、1:1、16:9，以及上题下文、左文右图、图文交错。槽都在画布里，彼此不重叠。贴「少说一句」后生成按钮可点，换槽重排仍禁用。格子列数拖到 18，旁边数字变成 18。390 宽能滚到模板按钮。精品模板页这轮没开浏览器，依赖还没装。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。点「生成排版」不会请求接口。选图片还不会出现在列表里。格子列数还不会画出网格。
+
 ### 2026-10-26 智能排版空壳和侧栏入口
 
 - 想做什么：做智能排版 P0 的第一块。独立页 `/layout.html`，工作室侧栏能点进去。只预览壳，不导出，不接生成。
@@ -194,11 +202,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。
-
-### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
-
-- 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
-- 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
-- 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。

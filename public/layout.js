@@ -1,4 +1,4 @@
-import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById } from "./layout-templates.js";
+import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById, closestCanvasRatio, closestImageTemplate } from "./layout-templates.js";
 import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
 const PRESETS = {
@@ -39,6 +39,17 @@ const TEMPLATE_GROUPS = [
   { id: "image", label: "图文" },
 ];
 
+const GUIDE_KEY = "yooco-layout-guides";
+
+function loadGuides() {
+  try {
+    if (sessionStorage.getItem(GUIDE_KEY) === "0") return false;
+  } catch {
+    // 隐私模式读不到时，辅助线默认开着。
+  }
+  return true;
+}
+
 const state = {
   ratio: "3:4",
   templateId: "a",
@@ -49,6 +60,7 @@ const state = {
   texts: { ...PRESETS.exhibition },
   fill: null, // 生成结果。预置文案不写这里，也不扣积分。
   positions: {}, // id -> { x, y } 覆盖模板坐标
+  guides: loadGuides(),
 };
 
 const copyInput = document.querySelector("#copyInput");
@@ -63,11 +75,26 @@ const emptyHint = document.querySelector("#emptyHint");
 const layoutStatus = document.querySelector("#layoutStatus");
 const layoutError = document.querySelector("#layoutError");
 const imageFiles = document.querySelector("#imageFiles");
+const uploadImageButton = document.querySelector("#uploadImageButton");
 const imageList = document.querySelector("#imageList");
+const guideToggle = document.querySelector("#guideToggle");
 const trialMeter = document.querySelector("#trialMeter");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
 const canvasGrid = document.querySelector("#canvasGrid");
+
+function applyGuides() {
+  canvas.classList.toggle("is-guides-off", !state.guides);
+  if (guideToggle) guideToggle.checked = state.guides;
+}
+
+function rememberGuides() {
+  try {
+    sessionStorage.setItem(GUIDE_KEY, state.guides ? "1" : "0");
+  } catch {
+    // 记不住就只留在这一页的内存里。
+  }
+}
 
 function syncGenerateEnabled() {
   const ok = copyInput.value.trim().length > 0;
@@ -247,7 +274,41 @@ copyInput.addEventListener("input", () => {
   syncGenerateEnabled();
 });
 
-imageFiles.addEventListener("change", () => {
+function measureImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => reject(new Error("读不出图片尺寸"));
+    img.src = url;
+  });
+}
+
+function applyMatchedLayout(width, height) {
+  const nextRatio = closestCanvasRatio(width, height);
+  const current = templateById(state.templateId);
+  const nextTemplate = current.group === "image"
+    ? state.templateId
+    : closestImageTemplate(width, height, nextRatio);
+  if (nextRatio !== state.ratio || nextTemplate !== state.templateId) {
+    state.positions = {};
+  }
+  state.ratio = nextRatio;
+  state.templateId = nextTemplate;
+  renderChrome();
+  renderBlocks();
+  renderGrid();
+  layoutStatus.textContent = `已按图片换成 ${templateById(state.templateId).label} · ${state.ratio}`;
+}
+
+let imageLoadToken = 0;
+
+uploadImageButton.addEventListener("click", () => {
+  imageFiles.value = "";
+  imageFiles.click();
+});
+
+imageFiles.addEventListener("change", async () => {
+  const token = ++imageLoadToken;
   for (const url of state.images.map((item) => item.url)) URL.revokeObjectURL(url);
   state.images = [];
   const files = [...(imageFiles.files || [])].slice(0, 6);
@@ -255,7 +316,33 @@ imageFiles.addEventListener("change", () => {
     state.images.push({ name: file.name, url: URL.createObjectURL(file) });
   }
   imageList.innerHTML = state.images.map((item) => `<li>${escapeHtml(item.name)}</li>`).join("");
-  renderBlocks();
+  layoutError.hidden = true;
+  if (!state.images[0]) {
+    renderBlocks();
+    return;
+  }
+  try {
+    const size = await measureImage(state.images[0].url);
+    if (token !== imageLoadToken) return;
+    applyMatchedLayout(size.width, size.height);
+  } catch {
+    if (token !== imageLoadToken) return;
+    const current = templateById(state.templateId);
+    if (current.group !== "image") {
+      state.templateId = "c";
+      state.positions = {};
+    }
+    renderChrome();
+    renderBlocks();
+    layoutError.hidden = false;
+    layoutError.textContent = "这张图读不出尺寸，已放进图槽。";
+  }
+});
+
+guideToggle.addEventListener("change", () => {
+  state.guides = guideToggle.checked;
+  rememberGuides();
+  applyGuides();
 });
 
 function updateCredits(credits) {
@@ -352,6 +439,7 @@ gridNInput.addEventListener("input", () => {
   renderGrid();
 });
 
+applyGuides();
 renderChrome();
 renderBlocks();
 renderGrid();

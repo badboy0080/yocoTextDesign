@@ -217,3 +217,61 @@ export function slotsFor(templateId, ratio) {
   const list = template.slotsByRatio[ratio] || template.slotsByRatio["3:4"];
   return list.map((item) => ({ ...item }));
 }
+
+/** 画布宽高比 = 宽 / 高。平局时更竖的优先：3:4，然后 1:1，然后 16:9。 */
+const RATIO_PREFERENCE = ["3:4", "1:1", "16:9"];
+
+function canvasRatioOf(ratioId) {
+  const item = RATIOS[ratioId];
+  return item.w / item.h;
+}
+
+export function closestCanvasRatio(width, height) {
+  const imgRatio = Number(width) / Number(height);
+  if (!Number.isFinite(imgRatio) || imgRatio <= 0) return "3:4";
+  let bestId = RATIO_PREFERENCE[0];
+  let bestErr = Infinity;
+  for (const id of RATIO_PREFERENCE) {
+    const canvasRatio = canvasRatioOf(id);
+    const err = Math.abs(imgRatio - canvasRatio) / canvasRatio;
+    if (err < bestErr - 1e-12) {
+      bestId = id;
+      bestErr = err;
+    }
+  }
+  return bestId;
+}
+
+function imageSlotOf(template, ratioId) {
+  const list = template.slotsByRatio[ratioId] || template.slotsByRatio["3:4"];
+  return list.find((slot) => slot.type === "image");
+}
+
+function slotPixelRatio(slot, ratioId) {
+  return (slot.w / slot.h) * canvasRatioOf(ratioId);
+}
+
+/** 在已选好的画布比例上，挑图槽宽高比最接近图片的图文模板。平局取更竖的图槽，再按 c、d、e。 */
+export function closestImageTemplate(width, height, ratioId) {
+  const imgRatio = Number(width) / Number(height);
+  const candidates = TEMPLATES.filter((item) => item.group === "image");
+  let best = candidates[0];
+  let bestErr = Infinity;
+  let bestSlotRatio = Infinity;
+  if (!Number.isFinite(imgRatio) || imgRatio <= 0) return best.id;
+  for (const template of candidates) {
+    const slot = imageSlotOf(template, ratioId);
+    if (!slot?.h) continue;
+    const slotRatio = slotPixelRatio(slot, ratioId);
+    const err = Math.abs(imgRatio - slotRatio) / slotRatio;
+    const tighter = err < bestErr - 1e-12;
+    const tied = Math.abs(err - bestErr) <= 1e-12;
+    const morePortrait = slotRatio < bestSlotRatio - 1e-12;
+    if (tighter || (tied && morePortrait)) {
+      best = template;
+      bestErr = err;
+      bestSlotRatio = slotRatio;
+    }
+  }
+  return best.id;
+}

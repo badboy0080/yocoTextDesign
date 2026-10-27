@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
-    <link rel="stylesheet" href="./layout.css?v=swiss-ae-v1" />
+    <link rel="stylesheet" href="./layout.css?v=swiss-guides-v1" />
   </head>
   <body>
     <div class="studio-layout">
@@ -46,13 +46,21 @@
             <label class="layout-label" for="copyInput">文案</label>
             <p class="layout-help">必填后才能生成。无图也可排。</p>
             <textarea id="copyInput" rows="12" maxlength="20000" placeholder="把文章贴在这里…"></textarea>
-            <label class="layout-label" for="imageFiles">图片（可选，可多选）</label>
-            <input id="imageFiles" type="file" accept="image/*" multiple />
+            <label class="layout-label" for="uploadImageButton">上传图片</label>
+            <p class="layout-help">按图片宽高自动选最接近的比例。纯字模板会切到图文。</p>
+            <button class="upload-button" id="uploadImageButton" type="button">上传图片</button>
+            <input id="imageFiles" type="file" accept="image/*" multiple hidden />
             <ul class="layout-image-list" id="imageList"></ul>
           </section>
 
           <section class="layout-stage-wrap" aria-label="画布预览">
-            <div class="ratio-row" id="ratioRow" role="radiogroup" aria-label="画布比例"></div>
+            <div class="stage-tools">
+              <div class="ratio-row" id="ratioRow" role="radiogroup" aria-label="画布比例"></div>
+              <label class="guide-toggle">
+                <input id="guideToggle" type="checkbox" checked />
+                辅助线
+              </label>
+            </div>
             <p class="layout-truncation" id="truncationNote" hidden>已截断</p>
             <div class="layout-fit" id="layoutFit">
               <div class="canvas" id="canvas" data-ratio="3:4">
@@ -85,6 +93,6 @@
         </div>
       </div>
     </div>
-    <script type="module" src="./layout.js?v=swiss-ae-v1"></script>
+    <script type="module" src="./layout.js?v=swiss-guides-v1"></script>
   </body>
 </html>

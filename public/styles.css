@@ -1348,8 +1348,75 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   border: 0; border-radius: var(--card-radius, 8px);
 }
 
-/* ---------- 报章 newsprint：章节标题用墨色衬线，绯红只留在下划线和链接 ---------- */
-.article-page[data-theme="newsprint"] .section-title { color: var(--title-color, #111111); }
+/* ---------- 报章 newsprint：章节标题用墨色衬线，底下一道粗墨线。绯红只留在重点下划线和链接 ---------- */
+.article-page[data-theme="newsprint"] .section-title {
+  color: var(--title-color, #111111);
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--border-color, #111111);
+}
+
+/* ---------- 六套精选：大标题气质分开。预览和复制稿用同一套内联意思 ---------- */
+.article-page[data-theme="citrus"] h2 {
+  display: inline-block; max-width: 100%; box-sizing: border-box;
+  margin: 0 0 18px; padding: 0 0 4px;
+  border-bottom: 8px solid var(--highlight-color, #ffe566);
+  background: transparent; color: var(--title-color, #111111);
+}
+.article-page[data-theme="playful"] h2 {
+  margin: 0 0 18px; padding: 0; border: 0; background: transparent;
+  color: var(--accent-color, #8b5cf6);
+}
+.article-page[data-theme="grunge"] h2 {
+  display: block; margin: 0 0 18px; padding: 0 0 0 14px;
+  border-left: 8px solid var(--accent-color, #dc143c);
+  background: transparent; color: var(--title-color, #1a1a1a);
+}
+.article-page[data-theme="flat"] h2 {
+  margin: 0 0 14px; padding: 0; border: 0; background: transparent;
+  color: var(--accent-color, #3b82f6); font-weight: 700;
+}
+.article-page[data-theme="newsprint"] h2 {
+  display: block; margin: 0 0 26px; padding: 0 0 8px;
+  border-bottom: 3px solid var(--border-color, #111111);
+  box-shadow: 0 5px 0 var(--accent-color, #cc0000);
+  background: transparent; color: var(--title-color, #111111);
+}
+.article-page[data-theme="bauhaus"] h2 {
+  display: inline-block; max-width: 100%; box-sizing: border-box;
+  margin: 0 0 22px; padding: 8px 14px;
+  border: 2px solid var(--border-color, #121212); border-radius: 0;
+  background: var(--accent-color, #d02020); color: var(--page-color, #f0f0f0);
+  box-shadow: 4px 4px 0 var(--border-color, #121212);
+}
+
+/* 六套重点长得不一样：柠边是黄条，乐几是琥珀胶囊，撕贴是暗金底，平涂是蓝字，报章是红线，包豪是直角黄底加黑边 */
+.article-page[data-theme="citrus"] .inline-highlight {
+  padding: 0; border-radius: 0; background: transparent; box-shadow: none;
+  color: var(--highlight-text-color, #1a1a1a); font-weight: 800; text-decoration: none;
+  border-bottom: 6px solid var(--highlight-color, #ffe566);
+}
+.article-page[data-theme="playful"] .inline-highlight {
+  padding: 1px 8px; border-radius: 12px; border-bottom: 0; box-shadow: none; text-decoration: none;
+  background: var(--highlight-color, #fbbf24); color: var(--highlight-text-color, #1e293b); font-weight: 800;
+}
+.article-page[data-theme="grunge"] .inline-highlight {
+  padding: 0 3px; border-radius: 2px; border-bottom: 0; box-shadow: none; text-decoration: none;
+  background: var(--highlight-color, #c5a945); color: var(--highlight-text-color, #1a1a1a); font-weight: 800;
+}
+.article-page[data-theme="flat"] .inline-highlight {
+  padding: 0; border-radius: 0; border-bottom: 0; box-shadow: none; text-decoration: none;
+  background: transparent; color: var(--accent-color, #3b82f6); font-weight: 800;
+}
+.article-page[data-theme="newsprint"] .inline-highlight {
+  padding: 0; border-radius: 0; background: transparent; box-shadow: none; text-decoration: none;
+  color: var(--highlight-text-color, #111111); font-weight: 700;
+  border-bottom: 2px solid var(--accent-color, #cc0000);
+}
+.article-page[data-theme="bauhaus"] .inline-highlight {
+  padding: 0 3px; border-radius: 0; box-shadow: none; text-decoration: none;
+  background: var(--highlight-color, #f0c020); color: var(--highlight-text-color, #121212); font-weight: 800;
+  border-bottom: 2px solid var(--border-color, #121212);
+}
 
 /* ---------- 精选主题通用：自动目录与结尾签名（颜色跟随 CSS 变量） ---------- */
 .toc-card { margin: 0 0 32px; padding: 18px 20px; border: 1px solid var(--border-color); border-radius: 10px; background: color-mix(in srgb, var(--card-color) 70%, transparent); }

@@ -2080,6 +2080,27 @@ function hardEdgePaperInk(themeId) {
   return themeId === "playful" || themeId === "grunge" || themeId === "bauhaus";
 }
 
+function sixThemeHighlightInline(highlightColor, highlightTextColor) {
+  const ink = highlightTextColor;
+  if (state.theme === "citrus") return `padding:0;background-color:transparent;color:${ink};font-weight:800;border-bottom:6px solid ${highlightColor};`;
+  if (state.theme === "playful") return `padding:1px 8px;border-radius:12px;background-color:${highlightColor};color:${ink};font-weight:800;`;
+  if (state.theme === "grunge") return `padding:0 3px;border-radius:2px;background-color:${highlightColor};color:${ink};font-weight:800;`;
+  if (state.theme === "flat") return `padding:0;background-color:transparent;color:${state.accentColor};font-weight:800;`;
+  if (state.theme === "newsprint") return `padding:0;background-color:transparent;color:${ink};font-weight:700;border-bottom:2px solid ${state.accentColor};`;
+  if (state.theme === "bauhaus") return `padding:0 3px;border-radius:0;background-color:${highlightColor};color:${ink};font-weight:800;border-bottom:2px solid ${state.borderColor};`;
+  return "";
+}
+
+function sixThemeTitleInline(base) {
+  if (state.theme === "citrus") return `${base}display:inline-block;max-width:100%;box-sizing:border-box;padding:0 0 4px;border-bottom:8px solid ${state.highlightColor};`;
+  if (state.theme === "playful") return `${base}color:${state.accentColor};`;
+  if (state.theme === "grunge") return `${base}padding-left:14px;border-left:8px solid ${state.accentColor};`;
+  if (state.theme === "flat") return `${base}color:${state.accentColor};font-weight:700;`;
+  if (state.theme === "newsprint") return `${base}display:block;padding-bottom:8px;margin:0 0 26px;border-bottom:3px solid ${state.borderColor};box-shadow:0 5px 0 ${state.accentColor};`;
+  if (state.theme === "bauhaus") return `${base}display:inline-block;max-width:100%;box-sizing:border-box;margin:0 0 22px;padding:8px 14px;border:2px solid ${state.borderColor};border-radius:0;background-color:${state.accentColor};color:${state.pageColor};box-shadow:4px 4px 0 ${state.borderColor};`;
+  return base;
+}
+
 function buildCopyHtml() {
   const isDeepNight = state.styleVariant === "deep-night";
   const mutedColor = state.mutedColor || "#8e9389";
@@ -2092,7 +2113,8 @@ function buildCopyHtml() {
   const codeBackground = useRegisteredCode ? state.codeBackground : "#202727";
   const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
   const highlightPlain = `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;`;
-  const highlightCss = highlightStyle === "underline"
+  const themedHighlight = sixThemeHighlightInline(highlightColor, highlightTextColor);
+  const highlightCss = themedHighlight || (highlightStyle === "underline"
     ? `${highlightPlain}border-bottom:3px solid ${highlightColor};`
     : highlightStyle === "bold"
       ? `padding:0;background-color:transparent;color:${state.theme === "bauhaus" ? state.linkColor : highlightTextColor};font-weight:800;`
@@ -2102,12 +2124,14 @@ function buildCopyHtml() {
           ? `${highlightPlain}text-decoration:underline;text-underline-offset:.14em;text-decoration-color:${highlightColor};`
           : highlightStyle === "wavy"
             ? `${highlightPlain}text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${highlightColor};`
-            : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`;
+            : `padding:0 ${state.highlightPadding}px;border-radius:${state.highlightRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-weight:700;`);
   const linkCss = `color:${state.linkColor};${state.linkUnderline ? "text-decoration:underline;" : "text-decoration:none;"}`;
   const inlineCodeCss = `padding:0 .28em;border-radius:4px;background-color:${codeBackground};color:${codeColor};font-size:${state.codeFontSize}px;`;
-  const underlineCss = highlightStyle === "underline"
-    ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;text-decoration:none;border-bottom:3px solid ${highlightColor};`
-    : "text-decoration:underline;text-underline-offset:.14em;";
+  const underlineCss = (state.theme === "citrus" || state.theme === "newsprint") && themedHighlight
+    ? themedHighlight
+    : highlightStyle === "underline"
+      ? `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;text-decoration:none;border-bottom:3px solid ${highlightColor};`
+      : "text-decoration:underline;text-underline-offset:.14em;";
   const wavyCss = `text-decoration:underline;text-decoration-style:wavy;text-underline-offset:.16em;text-decoration-color:${state.accentColor};`;
   const copyInlineMarkdown = (value) => {
     let html = inlineMarkdown(value).replace(
@@ -2153,7 +2177,10 @@ function buildCopyHtml() {
     const nightItalic = isDeepNight && state.theme !== "nocturne" ? "font-style:italic;" : "";
     const base = `margin:${state.headingSpacingBefore}px 0 ${state.headingSpacingAfter}px;color:${headingInk};font-size:${size}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};${nightItalic}`;
     let style = `${base}padding-left:12px;border-left:4px solid ${state.accentColor};`;
-    if (headingKind === "line") style = `${base}padding-bottom:10px;border-bottom:1px solid ${state.accentColor};`;
+    if (headingKind === "line") {
+      const rule = state.theme === "newsprint" ? `3px solid ${state.borderColor}` : `1px solid ${state.accentColor}`;
+      style = `${base}padding-bottom:8px;border-bottom:${rule};`;
+    }
     else if (headingKind === "block" && level === 2 && isHardEdgeTheme(state.theme)) {
       const ink = hardEdgePaperInk(state.theme) ? state.pageColor : titleColor;
       style = `${base}display:inline-block;max-width:100%;box-sizing:border-box;padding:6px 14px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${state.accentColor};color:${ink};box-shadow:4px 4px 0 ${state.borderColor};`;
@@ -2231,7 +2258,7 @@ function buildCopyHtml() {
   const cardStyle = cardBoxStyle(cardKind, state.cardColor);
   const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
   const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
-  const titleStyle = `margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};text-align:left;`;
+  const titleStyle = sixThemeTitleInline(`margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};text-align:left;`);
   const imageBoxStyle = isHardEdgeTheme(state.theme)
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.highlightColor};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : isDeepNight

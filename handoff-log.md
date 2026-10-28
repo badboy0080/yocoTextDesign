@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+图片素材库（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：左侧「图片」有 12 张内置小图，下面是「我的图片」。点中画布某一格再点图，只换这一格。没点中就填第一个空格。单图锁和布局锁都不拦手动换图。纯字版式点了会说「当前版式没有图槽」，不自动切模板。上传进本机列表，刷新还在；超过 8MB 拒收，大图先缩小。角标是这套作品里用了几次。截图在 `docs/previews/lotgo-p4-img-lib.png`、`lotgo-p4-img-apply.png`、`lotgo-p4-img-mine.png`。没有云端图床。不要合 master。
+
 LotGo 对齐 P4 四族版式（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：瑞士 A–E 还在。新增照片网格（三图叠放、四图田字）、字中图（题中嵌图、文中嵌图）、杂志（封面大题、右图左目）、中文排（横题双签、横题底签）。每套都有 3:4、9:16、1:1、4:3、16:9、2:1，换比例重摆。多图槽各用各的序号，图不够的槽空着，不共用一张。右侧「版式族」筛当前族，抽版式只在这一族里换。四锁、网格、海报改字、多页、真比例卡、导出全部页还在。中文排是横排。截图在 `docs/previews/lotgo-p4-*.png`。不要合 master。
 
 真比例起步卡（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：阿超要画布比例做成真形卡。3:4、9:16、1:1、4:3、16:9、2:1 的外轮廓按各自宽高比，底边对齐，选中是青柠描边。点卡片，画布跟着换。抽版式、改字、网格、辅助线、多页都还在。右侧模板骨架没有筛选条；精品模板只按主题名筛，作品没有画布比例，所以「尺寸」pill 还没做。截图在 `docs/previews/ratio-cards-row.png` 和 `ratio-cards-selected.png`。不要合 master。
@@ -181,6 +183,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-28 图片素材库
+
+- 想做什么：左侧加可点的素材和「我的图片」。点哪格换哪格。不上传到服务器。不合并、不部署。
+- 做成了什么：12 张内置小图。上传进本机，刷新还在，角标是用过几次。纯字版式只提示没有图槽。
+- 改了哪些文件：`public/layout-library.js`、`public/layout-assets/`、`public/layout.js`、`public/layout.html`、`public/layout.css`、`scripts/check-layout-library.mjs`、`docs/previews/lotgo-p4-img-lib.png`、`docs/previews/lotgo-p4-img-apply.png`、`docs/previews/lotgo-p4-img-mine.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-layout-library.mjs` 打印 ok。无头浏览器里，照片网格选中第二格点赤圆，只有这一格变了，单图锁仍开着。再选第三格上传蓝图，出现在「我的图片」，角标是 1，第二格的赤圆还在。纯字模板 A 点素材，提示没有图槽。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/75 还没合并。没有上正式站。图存在浏览器本机，换浏览器就没了。本机空间满了会提示存不下。
+
 ### 2026-10-28 四族版式
 
 - 想做什么：瑞士 A–E 之外再加四族，每族至少两套。按族筛选，抽版式只在当前族里换。多图不要共用一张。中文横排。不合并、不部署。
@@ -212,11 +222,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/layout-fill.js`、`app/api/layout-fill/route.ts`、`scripts/check-layout-fill.mjs`、`lib/credits.js`、`public/layout.js`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-layout-fill.mjs` 打印 `check-layout-fill: ok`。假接口测过：没密钥不发请求；坏 JSON 和超时文案正确；非法槽回退成「标题一句」并给图 0。无头浏览器把生成请求换成假返回：失败时错误可见、格子仍空；成功后标题是原文（尖括号被转成文字）、换槽按钮变亮、标题能拖离原位。截图在 `layout-fill-generated.png`。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。本机没有 `DEEPSEEK_API_KEY`，真实 DeepSeek 没打通。本机也没装依赖，扣次那条路由没跑起来。换槽重排还没接线。选图片仍进不了格子。
-
-### 2026-10-26 智能排版画布拖块吸附
-
-- 想做什么：字块和图块能拖，松手停在网格交点上。用已经写好的吸附函数。不接生成。
-- 做成了什么：拖的过程中就吸到交点。只改位置，宽高不动。没有生成结果时拖不动。改列数不让已放下的块跳动。往右下拖出画布时，左上角停在 99%。往左上拖时贴在 0，因为吸附会先把负数收成 0。
-- 改了哪些文件：`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头浏览器打开 `/layout.html`。没放生成结果时拖标题，位置不变。放上空的生成结果后，拖标题吸到格子上，宽高仍是 84 和 12。拖动过程中已经在交点上。列数改成 6，块不动；再拖仍按 6 列的格子算。图块同样能拖，宽高不变。拖出右下角后停在 99%、99%。控制台没有报错。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。页面上还不能自己生成，要等后面接线。拖之前控制台写 `state.fill = { slots: [] }` 再 `renderBlocks()`。

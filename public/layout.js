@@ -1,4 +1,5 @@
 import { RATIO_IDS, RATIOS, FAMILIES, TEMPLATE_IDS, slotsFor, templateById, templatesInFamily, closestCanvasRatio, closestImageTemplate, imageIndexFor } from "./layout-templates.js";
+import { BUILTIN_ASSETS, MINE_KEY, MAX_MINE, MAX_EDGE, rejectRawFile, dataUrlTooBig, pickTargetSlot, countUses, copySlotImages } from "./layout-library.js";
 import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
 const PRESETS = {
@@ -87,8 +88,11 @@ const state = {
   align: "left",
   gridN: 12,
   source: "",
-  images: [], // { url, name }[]
+  images: [], // { id, url, name }[] 上传后的这组，给抽版式换张用
   imagePick: 0,
+  slotImages: {}, // 图槽 id -> 素材或我的图片 id。只换这一格，不铺满别的格。
+  selectedSlotId: "",
+  mine: [], // { id, name, url } 存在本机，刷新还在
   texts: { ...PRESETS.exhibition },
   fill: null, // 生成结果。预置文案不写这里，也不扣积分。
   positions: {}, // id -> { x, y } 覆盖模板坐标
@@ -121,6 +125,7 @@ function capturePage() {
     texts: { ...state.texts },
     positions: copyPositions(state.positions),
     imagePick: state.imagePick,
+    slotImages: copySlotImages(state.slotImages),
   };
 }
 
@@ -130,6 +135,7 @@ function applyPage(page) {
   state.texts = { ...page.texts };
   state.positions = copyPositions(page.positions);
   state.imagePick = Number.isInteger(page.imagePick) ? page.imagePick : 0;
+  state.slotImages = copySlotImages(page.slotImages);
 }
 
 function commitPage() {
@@ -145,6 +151,7 @@ function normalizePage(raw) {
     texts: { ...PRESETS.exhibition, ...raw.texts },
     positions: copyPositions(raw.positions),
     imagePick: Number.isInteger(raw.imagePick) ? raw.imagePick : 0,
+    slotImages: copySlotImages(raw.slotImages),
   };
 }
 
@@ -212,7 +219,9 @@ const layoutError = document.querySelector("#layoutError");
 const drawLayoutButton = document.querySelector("#drawLayout");
 const imageFiles = document.querySelector("#imageFiles");
 const uploadImageButton = document.querySelector("#uploadImageButton");
-const imageList = document.querySelector("#imageList");
+const assetGrid = document.querySelector("#assetGrid");
+const mineGrid = document.querySelector("#mineGrid");
+const mineEmpty = document.querySelector("#mineEmpty");
 const guideToggle = document.querySelector("#guideToggle");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
@@ -347,6 +356,7 @@ function renderChrome() {
   const layoutNote = state.locks.layout ? "布局已锁定 · " : "";
   const family = FAMILIES.find((item) => item.id === state.familyId);
   layoutStatus.textContent = `${layoutNote}当前 ${family?.label || ""} · ${templateById(state.templateId).label} · ${state.ratio}`;
+  renderLibrary();
 }
 
 function placeStyle(box) {
@@ -367,9 +377,88 @@ function textFor(slotId) {
   return filled?.text || "";
 }
 
+function libraryImage(id) {
+  if (!id) return null;
+  return state.mine.find((item) => item.id === id) || BUILTIN_ASSETS.find((item) => item.id === id) || null;
+}
+
 function imageFor(slot) {
+  const pinned = libraryImage(state.slotImages?.[slot.id]);
+  if (pinned) return pinned;
   const index = imageIndexFor(slot, state.imagePick, state.images.length);
   return index < 0 ? null : state.images[index];
+}
+
+function loadMine() {
+  try {
+    const data = JSON.parse(localStorage.getItem(MINE_KEY) || "[]");
+    if (!Array.isArray(data)) return [];
+    return data.filter((item) => item && typeof item.id === "string" && typeof item.url === "string" && item.url.startsWith("data:")).slice(0, MAX_MINE);
+  } catch {
+    return [];
+  }
+}
+
+function saveMine() {
+  try {
+    localStorage.setItem(MINE_KEY, JSON.stringify(state.mine.map((item) => ({ id: item.id, name: item.name, url: item.url }))));
+    return "";
+  } catch {
+    return "本机存不下更多图了。";
+  }
+}
+
+state.mine = loadMine();
+
+function imageSlotsNow() {
+  return slotsFor(state.templateId, state.ratio).filter((slot) => slot.type === "image");
+}
+
+function usedImageIds() {
+  commitPage();
+  const ids = [];
+  for (const page of state.pages) {
+    const slots = slotsFor(page.templateId, state.ratio).filter((slot) => slot.type === "image");
+    for (const slot of slots) {
+      const pinned = page.slotImages?.[slot.id];
+      if (pinned) {
+        ids.push(pinned);
+        continue;
+      }
+      const index = imageIndexFor(slot, page.imagePick, state.images.length);
+      if (index >= 0 && state.images[index]?.id) ids.push(state.images[index].id);
+    }
+  }
+  return ids;
+}
+
+function renderLibrary() {
+  assetGrid.innerHTML = BUILTIN_ASSETS.map((item) =>
+    `<button type="button" class="asset-thumb" data-asset="${item.id}" title="${escapeHtml(item.name)}"><img alt="${escapeHtml(item.name)}" src="${item.url}" /></button>`
+  ).join("");
+  const used = usedImageIds();
+  mineGrid.innerHTML = state.mine.map((item) => {
+    const uses = countUses(item.id, used);
+    const badge = uses > 0 ? `<span class="asset-badge">${uses}</span>` : "";
+    return `<button type="button" class="asset-thumb" data-asset="${escapeHtml(item.id)}" title="${escapeHtml(item.name || "我的图片")}"><img alt="" src="${item.url}" />${badge}</button>`;
+  }).join("");
+  mineEmpty.hidden = state.mine.length > 0;
+}
+
+function placeLibraryImage(imageId) {
+  const slots = imageSlotsNow();
+  if (!slots.length) {
+    layoutStatus.textContent = "当前版式没有图槽。";
+    return;
+  }
+  const filled = new Set(slots.filter((slot) => imageFor(slot)).map((slot) => slot.id));
+  const targetId = pickTargetSlot(slots, state.selectedSlotId, filled);
+  state.slotImages = { ...state.slotImages, [targetId]: imageId };
+  state.selectedSlotId = targetId;
+  saveBoard();
+  renderBlocks();
+  renderLibrary();
+  layoutStatus.textContent = "已换这一格。别的图槽没动。";
 }
 
 let editingId = null;
@@ -399,6 +488,7 @@ function onEditKey(event) {
 function beginEdit(block) {
   if (!block || block.dataset.type === "image") return;
   commitLiveEdit();
+  state.selectedSlotId = "";
   canvasBlocks.querySelectorAll(".is-selected").forEach((el) => el.classList.remove("is-selected"));
   editingId = block.dataset.id;
   block.contentEditable = "true";
@@ -418,8 +508,9 @@ function beginEdit(block) {
 function selectImage(block) {
   commitLiveEdit();
   canvasBlocks.querySelectorAll(".is-selected,.is-editing").forEach((el) => el.classList.remove("is-selected", "is-editing"));
+  state.selectedSlotId = block.dataset.id || "";
   block.classList.add("is-selected");
-  layoutStatus.textContent = "已选中图片。点「上传图片」可替换。";
+  layoutStatus.textContent = "已选中这一格。点左边的图就换它。";
 }
 
 function renderBlocks() {
@@ -441,6 +532,11 @@ function renderBlocks() {
     if (empty) classes.push("is-empty");
     return `<div class="${classes.join(" ")}" data-id="${slot.id}" data-type="${slot.type}" style="${placeStyle(box)}">${inner}</div>`;
   }).join("");
+  if (state.selectedSlotId) {
+    const picked = canvasBlocks.querySelector(`[data-id="${state.selectedSlotId}"]`);
+    if (picked?.dataset.type === "image") picked.classList.add("is-selected");
+    else state.selectedSlotId = "";
+  }
   emptyHint.hidden = true;
   const truncationNote = document.querySelector("#truncationNote");
   requestAnimationFrame(() => {
@@ -603,9 +699,11 @@ function drawLayout() {
   const imageSlots = slotsFor(next, state.ratio).filter((slot) => slot.type === "image");
   if (!state.locks.image && state.images.length > 1) {
     state.imagePick = (state.imagePick + 1) % state.images.length;
-    imageNote = imageSlots.length > 1
-      ? `图片从第 ${state.imagePick + 1} 张排开，各槽不共用`
-      : `图片换成第 ${state.imagePick + 1} 张`;
+    imageNote = Object.keys(state.slotImages).length
+      ? "手动放上的图留着"
+      : imageSlots.length > 1
+        ? `图片从第 ${state.imagePick + 1} 张排开，各槽不共用`
+        : `图片换成第 ${state.imagePick + 1} 张`;
   } else if (!state.locks.image) {
     imageNote = "单图未锁，仍是这一张";
   }
@@ -740,25 +838,104 @@ uploadImageButton.addEventListener("click", () => {
   imageFiles.click();
 });
 
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const blobUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(blobUrl);
+      reject(new Error("这张图读不出来。"));
+    };
+    img.src = blobUrl;
+  });
+}
+
+async function compressImageFile(file) {
+  const tooBig = rejectRawFile(file.size);
+  if (tooBig) throw new Error(tooBig);
+  const img = await readImageFile(file);
+  const width = img.naturalWidth || img.width;
+  const height = img.naturalHeight || img.height;
+  if (!width || !height) throw new Error("这张图读不出尺寸。");
+  const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
+  const canvasEl = document.createElement("canvas");
+  canvasEl.width = Math.max(1, Math.round(width * scale));
+  canvasEl.height = Math.max(1, Math.round(height * scale));
+  canvasEl.getContext("2d").drawImage(img, 0, 0, canvasEl.width, canvasEl.height);
+  let quality = 0.82;
+  let url = canvasEl.toDataURL("image/jpeg", quality);
+  while (dataUrlTooBig(url.length) && quality > 0.4) {
+    quality -= 0.12;
+    url = canvasEl.toDataURL("image/jpeg", quality);
+  }
+  if (dataUrlTooBig(url.length)) throw new Error("压完还是太大，请换一张小的。");
+  return { url, width, height };
+}
+
+function rememberMine(item) {
+  state.mine = [item, ...state.mine.filter((entry) => entry.id !== item.id)].slice(0, MAX_MINE);
+  const error = saveMine();
+  if (error) {
+    state.mine = state.mine.filter((entry) => entry.id !== item.id);
+    throw new Error(error);
+  }
+}
+
+assetGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-asset]");
+  if (!button) return;
+  placeLibraryImage(button.dataset.asset);
+});
+
+mineGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-asset]");
+  if (!button) return;
+  placeLibraryImage(button.dataset.asset);
+});
+
 imageFiles.addEventListener("change", async () => {
   const token = ++imageLoadToken;
-  for (const url of state.images.map((item) => item.url)) URL.revokeObjectURL(url);
-  state.images = [];
-  state.imagePick = 0;
   const files = [...(imageFiles.files || [])].slice(0, 6);
+  const selected = state.selectedSlotId;
+  const added = [];
+  const errors = [];
   for (const file of files) {
-    state.images.push({ name: file.name, url: URL.createObjectURL(file) });
+    try {
+      const packed = await compressImageFile(file);
+      const item = { id: `mine-${Date.now().toString(36)}-${added.length}`, name: file.name || "我的图片", url: packed.url, width: packed.width, height: packed.height };
+      rememberMine(item);
+      added.push(item);
+    } catch (error) {
+      errors.push(error.message || "这张图没放进去。");
+    }
   }
-  imageList.innerHTML = state.images.map((item) => `<li>${escapeHtml(item.name)}</li>`).join("");
-  layoutError.hidden = true;
-  if (!state.images[0]) {
-    renderBlocks();
+  if (token !== imageLoadToken) return;
+  layoutError.hidden = errors.length === 0;
+  if (errors.length) layoutError.textContent = errors[0];
+  if (!added.length) {
+    renderLibrary();
     return;
   }
+  if (selected && imageSlotsNow().some((slot) => slot.id === selected)) {
+    state.selectedSlotId = selected;
+    placeLibraryImage(added[0].id);
+    layoutStatus.textContent = added.length > 1
+      ? "已换这一格，其余的进了「我的图片」。"
+      : "已换这一格，并放进「我的图片」。";
+    return;
+  }
+  state.images = added.map((item) => ({ id: item.id, name: item.name, url: item.url }));
+  state.imagePick = 0;
+  state.slotImages = {};
   try {
-    const size = await measureImage(state.images[0].url);
+    const size = await measureImage(added[0].url);
     if (token !== imageLoadToken) return;
     applyMatchedLayout(size.width, size.height);
+    layoutStatus.textContent = `已上传，放进「我的图片」。当前 ${templateById(state.templateId).label} · ${state.ratio}`;
   } catch {
     if (token !== imageLoadToken) return;
     const current = templateById(state.templateId);
@@ -767,6 +944,7 @@ imageFiles.addEventListener("change", async () => {
       state.familyId = "swiss";
       state.positions = {};
     }
+    saveBoard();
     renderChrome();
     renderBlocks();
     layoutError.hidden = false;
@@ -892,6 +1070,7 @@ function measureVisiblePage() {
     templateId: state.templateId,
     positions: copyPositions(state.positions),
     imagePick: state.imagePick,
+    slotImages: copySlotImages(state.slotImages),
   };
 }
 
@@ -961,7 +1140,9 @@ async function pageSvgGroup(shot, width, height, pageNo) {
   const byId = new Map(shot.blocks.map((item) => [item.id, item]));
   const parts = [`<rect id="page-${pageNo}-background" width="${width}" height="${height}" fill="${shot.bg}"/>`];
   const savedPick = state.imagePick;
+  const savedSlots = state.slotImages;
   state.imagePick = shot.imagePick;
+  state.slotImages = copySlotImages(shot.slotImages);
   try {
   for (const slot of slots) {
     const box = slotBoxPx(slot, shot.positions, width, height);
@@ -998,6 +1179,7 @@ async function pageSvgGroup(shot, width, height, pageNo) {
   return parts.join("\n");
   } finally {
     state.imagePick = savedPick;
+    state.slotImages = savedSlots;
   }
 }
 

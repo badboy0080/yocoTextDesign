@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
-    <link rel="stylesheet" href="./layout.css?v=families-v1" />
+    <link rel="stylesheet" href="./layout.css?v=img-lib-v1" />
   </head>
   <body>
     <div class="studio-layout">
@@ -43,11 +43,15 @@
         </header>
         <div class="layout-workspace" id="layoutWorkspace">
           <section class="layout-side" aria-label="图片">
-            <label class="layout-label" for="uploadImageButton">上传图片</label>
-            <p class="layout-help">按图片宽高自动选最接近的比例。纯字模板会切到图文。先点中图块，再上传，就是换图。</p>
+            <h2 class="layout-label">图片</h2>
+            <p class="layout-help">先点中画布上的图块，再点下面的图，就只换这一块。没点中时，填第一个空图槽。单图锁只拦住抽版式，不拦住这里。</p>
+            <div class="asset-grid" id="assetGrid" aria-label="素材"></div>
+            <h2 class="layout-label">我的图片</h2>
+            <p class="layout-help" id="mineEmpty">还没有。上传后会出现在这里，刷新还在。角标是这套作品里用了几次。</p>
+            <div class="asset-grid" id="mineGrid" aria-label="我的图片"></div>
             <button class="upload-button" id="uploadImageButton" type="button">上传图片</button>
             <input id="imageFiles" type="file" accept="image/*" multiple hidden />
-            <ul class="layout-image-list" id="imageList"></ul>
+            <p class="layout-help">没点中图块时，上传仍按第一张的宽高选比例。纯字模板会切到图文。单张超过 8MB 会拒收，大图会先缩小再存到本机。</p>
           </section>
 
           <section class="layout-stage-wrap" aria-label="画布预览">
@@ -117,6 +121,6 @@
         </div>
       </div>
     </div>
-    <script type="module" src="./layout.js?v=families-v1"></script>
+    <script type="module" src="./layout.js?v=img-lib-v1"></script>
   </body>
 </html>

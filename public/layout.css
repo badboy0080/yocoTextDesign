@@ -40,6 +40,18 @@
   background: var(--yooco-color-soft); box-shadow: inset 3px 0 var(--yooco-color-primary);
   color: var(--ink); font: inherit; font-weight: 600; cursor: pointer;
 }
+.asset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.asset-thumb {
+  position: relative; aspect-ratio: 1; padding: 0; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--line); background: #111; cursor: pointer;
+}
+.asset-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.asset-thumb:hover, .asset-thumb:focus-visible { outline: 2px solid var(--yooco-color-primary); outline-offset: 1px; }
+.asset-badge {
+  position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 999px; background: #d7fa5c; color: #111; font-size: 10px; font-weight: 700;
+  display: grid; place-items: center; line-height: 1;
+}
 .ratio-row, .template-grid, .layout-actions, .grid-n-row, .preset-row, .family-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .family-row button {
   min-height: 36px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line);

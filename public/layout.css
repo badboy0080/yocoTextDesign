@@ -40,7 +40,14 @@
   background: var(--yooco-color-soft); box-shadow: inset 3px 0 var(--yooco-color-primary);
   color: var(--ink); font: inherit; font-weight: 600; cursor: pointer;
 }
-.ratio-row, .template-grid, .layout-actions, .grid-n-row, .preset-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ratio-row, .template-grid, .layout-actions, .grid-n-row, .preset-row, .family-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.family-row button {
+  min-height: 36px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.04); color: var(--ink); cursor: pointer; font: inherit; font-size: 13px;
+}
+.family-row button[aria-checked="true"] {
+  background: var(--yooco-color-soft); box-shadow: inset 3px 0 var(--yooco-color-primary); font-weight: 700;
+}
 .ratio-row { --ratio-side: 64px; align-items: flex-end; gap: 10px 12px; }
 .ratio-card {
   display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px;
@@ -232,3 +239,9 @@
   outline: 2px solid #2f6fed;
   background-color: rgba(255,255,255,.55);
 }
+.block[data-type="image"] { z-index: 2; }
+.canvas[data-family="zh"] { font-family: "Noto Sans SC", "Space Grotesk", sans-serif; }
+.canvas[data-family="photo"] .block[data-type="H1"] { font-size: clamp(22px, 5.5vw, 40px); line-height: 1.05; }
+.canvas[data-family="type"] .block[data-type="H1"] { font-size: clamp(32px, 10vw, 60px); line-height: 0.88; }
+.canvas[data-family="magazine"] .block[data-type="H1"] { font-size: clamp(36px, 11vw, 64px); line-height: 0.85; }
+.canvas[data-family="zh"] .block[data-type="H1"] { font-size: clamp(32px, 9vw, 56px); line-height: 1.05; }

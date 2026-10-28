@@ -1,4 +1,4 @@
-import { RATIO_IDS, RATIOS, TEMPLATE_IDS, TEMPLATES, slotsFor, templateById, closestCanvasRatio, closestImageTemplate } from "./layout-templates.js";
+import { RATIO_IDS, RATIOS, FAMILIES, TEMPLATE_IDS, slotsFor, templateById, templatesInFamily, closestCanvasRatio, closestImageTemplate, imageIndexFor } from "./layout-templates.js";
 import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
 const PRESETS = {
@@ -79,6 +79,7 @@ function loadGuides() {
 
 const state = {
   ratio: "3:4",
+  familyId: "swiss",
   templateId: "a",
   preset: "exhibition",
   styleId: "swiss",
@@ -179,6 +180,9 @@ const savedBoard = loadBoard();
 if (savedBoard) {
   state.ratio = savedBoard.ratio;
   state.templateId = savedBoard.templateId;
+  state.familyId = FAMILIES.some((item) => item.id === savedBoard.familyId)
+    ? savedBoard.familyId
+    : (templateById(savedBoard.templateId).family || "swiss");
   state.texts = { ...PRESETS.exhibition, ...savedBoard.texts };
   state.preset = savedBoard.preset || null;
   if (STYLE_IDS.includes(savedBoard.styleId)) {
@@ -197,6 +201,7 @@ if (savedBoard) {
 }
 
 const ratioRow = document.querySelector("#ratioRow");
+const familyRow = document.querySelector("#familyRow");
 const templateGrid = document.querySelector("#templateGrid");
 const presetRow = document.querySelector("#presetRow");
 const canvas = document.querySelector("#canvas");
@@ -242,6 +247,7 @@ function saveBoard() {
   try {
     sessionStorage.setItem(BOARD_KEY, JSON.stringify({
       ratio: state.ratio,
+      familyId: state.familyId,
       templateId: state.templateId,
       preset: state.preset,
       texts: state.texts,
@@ -259,6 +265,7 @@ function saveBoard() {
 
 function applyPoster() {
   const style = styleById(state.styleId);
+  canvas.dataset.family = templateById(state.templateId).family || "swiss";
   canvas.dataset.style = style.id;
   canvas.dataset.tone = style.tone;
   canvas.dataset.size = state.size;
@@ -299,14 +306,22 @@ function renderChrome() {
       <span class="ratio-name">${id}</span>
     </button>`;
   }).join("");
-  templateGrid.innerHTML = TEMPLATE_GROUPS.map((group) => {
-    const buttons = TEMPLATES.filter((item) => item.group === group.id).map((item) =>
+  familyRow.innerHTML = FAMILIES.map((item) =>
+    `<button type="button" role="radio" aria-checked="${state.familyId === item.id}" data-family="${item.id}">${item.label}</button>`
+  ).join("");
+  const visible = templatesInFamily(state.familyId);
+  const groups = state.familyId === "swiss"
+    ? TEMPLATE_GROUPS.map((group) => ({ label: group.label, items: visible.filter((item) => item.group === group.id) })).filter((group) => group.items.length)
+    : [{ label: FAMILIES.find((item) => item.id === state.familyId)?.label || "", items: visible }];
+  templateGrid.innerHTML = groups.map((group) => {
+    const buttons = group.items.map((item) =>
       `<button type="button" role="option" aria-selected="${state.templateId === item.id}" data-template="${item.id}">
         <strong>${item.label}</strong><span class="blurb">${item.blurb}</span>
       </button>`
     ).join("");
+    const label = state.familyId === "swiss" ? `<p class="template-group-label">${group.label}</p>` : "";
     return `<div class="template-group" role="group" aria-label="${group.label}">
-      <p class="template-group-label">${group.label}</p>
+      ${label}
       ${buttons}
     </div>`;
   }).join("");
@@ -330,7 +345,8 @@ function renderChrome() {
   syncLocks();
   renderPager();
   const layoutNote = state.locks.layout ? "布局已锁定 · " : "";
-  layoutStatus.textContent = `${layoutNote}当前 ${templateById(state.templateId).label} · ${state.ratio}`;
+  const family = FAMILIES.find((item) => item.id === state.familyId);
+  layoutStatus.textContent = `${layoutNote}当前 ${family?.label || ""} · ${templateById(state.templateId).label} · ${state.ratio}`;
 }
 
 function placeStyle(box) {
@@ -352,9 +368,8 @@ function textFor(slotId) {
 }
 
 function imageFor(slot) {
-  if (slot.type !== "image" || !state.images.length) return null;
-  const index = Math.min(Math.max(0, state.imagePick), state.images.length - 1);
-  return state.images[index];
+  const index = imageIndexFor(slot, state.imagePick, state.images.length);
+  return index < 0 ? null : state.images[index];
 }
 
 let editingId = null;
@@ -524,6 +539,7 @@ templateGrid.addEventListener("click", (event) => {
   if (!button || button.dataset.template === state.templateId) return;
   commitLiveEdit();
   state.templateId = button.dataset.template;
+  state.familyId = templateById(state.templateId).family || state.familyId;
   state.positions = {};
   saveBoard();
   renderChrome();
@@ -570,7 +586,9 @@ function drawLayout() {
       pageNote = "已有 4 页，重抽这一页";
     }
   }
-  const pool = TEMPLATE_IDS.filter((id) => id !== state.templateId);
+  const familyPool = templatesInFamily(state.familyId).map((item) => item.id);
+  const others = familyPool.filter((id) => id !== state.templateId);
+  const pool = others.length ? others : familyPool;
   const next = pool[Math.floor(Math.random() * pool.length)];
   state.templateId = next;
   state.positions = {};
@@ -582,9 +600,12 @@ function drawLayout() {
     copyNote = `文案换成${PRESET_LIST.find((item) => item.id === presetId).label}`;
   }
   let imageNote = "图片留着";
+  const imageSlots = slotsFor(next, state.ratio).filter((slot) => slot.type === "image");
   if (!state.locks.image && state.images.length > 1) {
     state.imagePick = (state.imagePick + 1) % state.images.length;
-    imageNote = `图片换成第 ${state.imagePick + 1} 张`;
+    imageNote = imageSlots.length > 1
+      ? `图片从第 ${state.imagePick + 1} 张排开，各槽不共用`
+      : `图片换成第 ${state.imagePick + 1} 张`;
   } else if (!state.locks.image) {
     imageNote = "单图未锁，仍是这一张";
   }
@@ -593,8 +614,22 @@ function drawLayout() {
   renderBlocks();
   renderGrid();
   const elapsed = Math.max(1, Math.round(performance.now() - started));
-  layoutStatus.textContent = `已抽到 ${templateById(next).label} · ${state.ratio} · ${pageNote} · ${copyNote} · ${imageNote} · 用时 ${elapsed} 毫秒`;
+  const familyLabel = FAMILIES.find((item) => item.id === state.familyId)?.label || "";
+  layoutStatus.textContent = `已抽到 ${familyLabel} · ${templateById(next).label} · ${state.ratio} · ${pageNote} · ${copyNote} · ${imageNote} · 用时 ${elapsed} 毫秒`;
 }
+
+familyRow.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-family]");
+  if (!button || button.dataset.family === state.familyId) return;
+  state.familyId = button.dataset.family;
+  saveBoard();
+  renderChrome();
+  const family = FAMILIES.find((item) => item.id === state.familyId);
+  const onCanvas = templateById(state.templateId).family === state.familyId;
+  layoutStatus.textContent = onCanvas
+    ? `当前族 ${family.label}。抽版式只在这一族里换。`
+    : `已筛到${family.label}。抽版式会换成这一族。画布上的字还在。`;
+});
 
 drawLayoutButton.addEventListener("click", drawLayout);
 
@@ -690,6 +725,7 @@ function applyMatchedLayout(width, height) {
   }
   state.ratio = nextRatio;
   state.templateId = nextTemplate;
+  state.familyId = templateById(nextTemplate).family || state.familyId;
   saveBoard();
   renderChrome();
   renderBlocks();
@@ -728,6 +764,7 @@ imageFiles.addEventListener("change", async () => {
     const current = templateById(state.templateId);
     if (current.group !== "image") {
       state.templateId = "c";
+      state.familyId = "swiss";
       state.positions = {};
     }
     renderChrome();

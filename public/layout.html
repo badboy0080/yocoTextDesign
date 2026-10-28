@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
-    <link rel="stylesheet" href="./layout.css?v=lotgo-p1-v1" />
+    <link rel="stylesheet" href="./layout.css?v=lotgo-p2-v1" />
   </head>
   <body>
     <div class="studio-layout">
@@ -38,7 +38,7 @@
           <p class="layout-brandline">Yooco · 好文章值得好排版</p>
           <div class="topbar-actions">
             <span class="trial-meter" id="trialMeter" hidden>剩余积分</span>
-            <button class="copy-button is-disabled" id="exportButton" type="button" disabled title="下期">导出（下期）</button>
+            <button class="copy-button" id="exportButton" type="button">导出 SVG</button>
           </div>
         </header>
         <div class="layout-workspace" id="layoutWorkspace">
@@ -53,6 +53,11 @@
           <section class="layout-stage-wrap" aria-label="画布预览">
             <button class="draw-layout" id="drawLayout" type="button">抽版式</button>
             <p class="layout-status" id="layoutStatus" role="status"></p>
+            <div class="page-row" id="pageRow">
+              <button type="button" id="pagePrev">上一页</button>
+              <span id="pageLabel">第 1 / 1 页</span>
+              <button type="button" id="pageNext">下一页</button>
+            </div>
             <div class="stage-tools">
               <div class="ratio-row" id="ratioRow" role="radiogroup" aria-label="画布比例"></div>
               <label class="guide-toggle">
@@ -74,7 +79,7 @@
           <section class="layout-config" aria-label="模板与操作">
             <div id="lockPanel">
               <h2 class="layout-label">抽版式锁定</h2>
-              <p class="layout-help" id="pagesTodo">锁住的项，点抽版式时不动。多页分页还没做，这个开关只记住状态。</p>
+              <p class="layout-help" id="pagesTodo">锁住的项，点抽版式时不动。多页解锁时，抽版式会生成并切到第 2 页；锁住时只改当前页。</p>
               <div class="lock-grid" id="lockGrid">
                 <button type="button" data-lock="copy" aria-pressed="true">文案 · 锁定</button>
                 <button type="button" data-lock="layout" aria-pressed="false">布局 · 解锁</button>
@@ -103,11 +108,11 @@
             <div class="preset-row" id="presetRow" role="group" aria-label="预置文案"></div>
             <h2 class="layout-label">模板骨架</h2>
             <div class="template-grid" id="templateGrid" aria-label="模板"></div>
-            <button class="copy-button is-disabled" id="exportButtonBottom" type="button" disabled title="下期">导出（下期）</button>
+            <button class="copy-button" id="exportButtonBottom" type="button">导出 SVG</button>
           </section>
         </div>
       </div>
     </div>
-    <script type="module" src="./layout.js?v=lotgo-p1-v1"></script>
+    <script type="module" src="./layout.js?v=lotgo-p2-v2"></script>
   </body>
 </html>

@@ -4,14 +4,16 @@ export const RATIOS = {
   "3:4": { w: 3, h: 4, label: "3:4" },
   "9:16": { w: 9, h: 16, label: "9:16" },
   "1:1": { w: 1, h: 1, label: "1:1" },
+  "4:3": { w: 4, h: 3, label: "4:3" },
   "16:9": { w: 16, h: 9, label: "16:9" },
+  "2:1": { w: 2, h: 1, label: "2:1" },
 };
 
 export const RATIO_IDS = Object.keys(RATIOS);
 export const TEMPLATE_IDS = ["a", "b", "c", "d", "e"];
 
 const COLS = 12;
-const ROWS = { "3:4": 16, "9:16": 21, "1:1": 12, "16:9": 7 };
+const ROWS = { "3:4": 16, "9:16": 21, "1:1": 12, "4:3": 9, "16:9": 7, "2:1": 6 };
 
 function cell(id, type, colStart, colEnd, rowStart, rowEnd, rows) {
   return {
@@ -76,6 +78,22 @@ export const TEMPLATES = [
         ["body", TEXT.body, 8, 9, 5, 7],
         ["credit", TEXT.credit, 10, 12, 5, 7],
       ]),
+      "4:3": slots(ROWS["4:3"], [
+        ["title", TEXT.title, 2, 11, 1, 4],
+        ["subtitle", TEXT.subtitle, 2, 8, 5, 5],
+        ["date", TEXT.date, 2, 6, 7, 8],
+        ["venue", TEXT.venue, 7, 11, 7, 8],
+        ["body", TEXT.body, 2, 6, 9, 9],
+        ["credit", TEXT.credit, 7, 11, 9, 9],
+      ]),
+      "2:1": slots(ROWS["2:1"], [
+        ["title", TEXT.title, 1, 6, 1, 3],
+        ["subtitle", TEXT.subtitle, 1, 6, 4, 4],
+        ["date", TEXT.date, 8, 9, 1, 2],
+        ["venue", TEXT.venue, 10, 12, 1, 2],
+        ["body", TEXT.body, 8, 9, 4, 6],
+        ["credit", TEXT.credit, 10, 12, 4, 6],
+      ]),
     },
   },
   {
@@ -115,6 +133,22 @@ export const TEMPLATES = [
         ["subtitle", TEXT.subtitle, 8, 12, 4, 4],
         ["date", TEXT.date, 8, 10, 6, 7],
         ["venue", TEXT.venue, 11, 12, 6, 7],
+      ]),
+      "4:3": slots(ROWS["4:3"], [
+        ["title", TEXT.title, 8, 12, 1, 3],
+        ["subtitle", TEXT.subtitle, 8, 12, 4, 4],
+        ["body", TEXT.body, 2, 6, 1, 6],
+        ["date", TEXT.date, 8, 12, 6, 7],
+        ["venue", TEXT.venue, 8, 12, 8, 8],
+        ["credit", TEXT.credit, 2, 6, 8, 9],
+      ]),
+      "2:1": slots(ROWS["2:1"], [
+        ["body", TEXT.body, 2, 6, 1, 4],
+        ["credit", TEXT.credit, 2, 6, 5, 6],
+        ["title", TEXT.title, 8, 12, 1, 2],
+        ["subtitle", TEXT.subtitle, 8, 12, 3, 3],
+        ["date", TEXT.date, 8, 10, 5, 6],
+        ["venue", TEXT.venue, 11, 12, 5, 6],
       ]),
     },
   },
@@ -160,6 +194,24 @@ export const TEMPLATES = [
         ["body", TEXT.body, 8, 10, 7, 7],
         ["credit", TEXT.credit, 11, 12, 7, 7],
       ]),
+      "4:3": slots(ROWS["4:3"], [
+        ["image", "image", 1, 8, 1, 6],
+        ["title", TEXT.title, 9, 12, 1, 4],
+        ["subtitle", TEXT.subtitle, 9, 12, 5, 6],
+        ["date", TEXT.date, 1, 3, 7, 8],
+        ["venue", TEXT.venue, 1, 3, 9, 9],
+        ["body", TEXT.body, 4, 8, 7, 9],
+        ["credit", TEXT.credit, 9, 12, 7, 9],
+      ]),
+      "2:1": slots(ROWS["2:1"], [
+        ["image", "image", 1, 6, 1, 6],
+        ["title", TEXT.title, 8, 12, 1, 2],
+        ["subtitle", TEXT.subtitle, 8, 12, 3, 3],
+        ["date", TEXT.date, 8, 9, 4, 4],
+        ["venue", TEXT.venue, 10, 12, 4, 4],
+        ["body", TEXT.body, 8, 10, 5, 6],
+        ["credit", TEXT.credit, 11, 12, 5, 6],
+      ]),
     },
   },
   {
@@ -203,6 +255,24 @@ export const TEMPLATES = [
         ["venue", TEXT.venue, 7, 9, 5, 6],
         ["body", TEXT.body, 10, 12, 5, 6],
         ["credit", TEXT.credit, 7, 12, 7, 7],
+      ]),
+      "4:3": slots(ROWS["4:3"], [
+        ["title", TEXT.title, 2, 10, 1, 2],
+        ["subtitle", TEXT.subtitle, 2, 7, 3, 3],
+        ["image", "image", 2, 7, 4, 8],
+        ["date", TEXT.date, 9, 12, 4, 5],
+        ["venue", TEXT.venue, 9, 12, 6, 6],
+        ["body", TEXT.body, 9, 12, 7, 8],
+        ["credit", TEXT.credit, 2, 7, 9, 9],
+      ]),
+      "2:1": slots(ROWS["2:1"], [
+        ["title", TEXT.title, 1, 7, 1, 1],
+        ["subtitle", TEXT.subtitle, 1, 5, 2, 2],
+        ["image", "image", 1, 5, 3, 6],
+        ["date", TEXT.date, 7, 12, 2, 3],
+        ["venue", TEXT.venue, 7, 9, 4, 5],
+        ["body", TEXT.body, 10, 12, 4, 5],
+        ["credit", TEXT.credit, 7, 12, 6, 6],
       ]),
     },
   },
@@ -248,6 +318,24 @@ export const TEMPLATES = [
         ["credit", TEXT.credit, 1, 4, 7, 7],
         ["image", "image", 6, 12, 1, 7],
       ]),
+      "4:3": slots(ROWS["4:3"], [
+        ["title", TEXT.title, 1, 4, 1, 3],
+        ["subtitle", TEXT.subtitle, 1, 4, 4, 4],
+        ["body", TEXT.body, 1, 4, 5, 6],
+        ["date", TEXT.date, 1, 4, 7, 7],
+        ["venue", TEXT.venue, 1, 4, 8, 8],
+        ["credit", TEXT.credit, 1, 4, 9, 9],
+        ["image", "image", 6, 12, 1, 8],
+      ]),
+      "2:1": slots(ROWS["2:1"], [
+        ["title", TEXT.title, 1, 4, 1, 2],
+        ["subtitle", TEXT.subtitle, 1, 4, 3, 3],
+        ["body", TEXT.body, 1, 4, 4, 4],
+        ["date", TEXT.date, 1, 4, 5, 5],
+        ["venue", TEXT.venue, 1, 2, 6, 6],
+        ["credit", TEXT.credit, 3, 4, 6, 6],
+        ["image", "image", 6, 12, 1, 6],
+      ]),
     },
   },
 ];
@@ -262,8 +350,8 @@ export function slotsFor(templateId, ratio) {
   return list.map((item) => ({ ...item }));
 }
 
-/** 画布宽高比 = 宽 / 高。平局时更竖的优先：9:16，然后 3:4，然后 1:1，然后 16:9。 */
-const RATIO_PREFERENCE = ["9:16", "3:4", "1:1", "16:9"];
+/** 画布宽高比 = 宽 / 高。平局时更竖的优先。 */
+const RATIO_PREFERENCE = ["9:16", "3:4", "1:1", "4:3", "16:9", "2:1"];
 
 function canvasRatioOf(ratioId) {
   const item = RATIOS[ratioId];

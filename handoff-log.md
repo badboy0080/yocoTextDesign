@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-LotGo 对齐 P2（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：多页最多两页，每页自己的模板、字和拖拽位置。多页解锁时抽版式生成或切到第 2 页；锁住时只改当前页。上一页 / 下一页可以翻。顶栏「导出 SVG」下载当前页，一块一个 `<g>`，文字按槽宽折行。图能内嵌就内嵌，不能就留对角叉。不导出 PSD，两页也不塞进同一个文件。比例加了 4:3 和 2:1。截图在 `docs/previews/lotgo-p2-pages.png` 和 `lotgo-p2-svg.png`。几十套风格和正式站都没做。不要合 master。
+LotGo 对齐 P3（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：最多 4 页。多页解锁时，抽版式在后面加一页并切过去；已经 4 页就重抽当前页。锁住时只改当前页。页点可以在 1 到 4 之间跳。「导出全部页」把各页竖着拼进一个 SVG，中间留空。断行按画布上量到的行来，不再按字宽估算。截图在 `docs/previews/lotgo-p3-pages.png` 和 `lotgo-p3-svg.png`。不导出 PSD。不要合 master。
+
+LotGo 对齐 P2（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：当时最多两页，导出的是当前页。比例有 4:3 和 2:1。截图在 `docs/previews/lotgo-p2-pages.png` 和 `lotgo-p2-svg.png`。不要合 master。
 
 LotGo 对齐 P1（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：右侧有四锁。文案和单图默认锁住，抽版式留下当前字和图；布局默认解锁，锁住后抽版式按钮变灰。风格五套。右侧有字号档、对齐、格子列数。截图在 `docs/previews/lotgo-p1-*.png`。不要合 master。
 

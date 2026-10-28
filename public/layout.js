@@ -94,9 +94,12 @@ const state = {
   guides: loadGuides(),
   pageIndex: 0,
   pages: [],
-  // 抽版式时：锁住的项不动。文案和单图默认锁住。多页默认解锁，抽版式会生成或切到第 2 页。
+  // 抽版式时：锁住的项不动。文案和单图默认锁住。
+  // 多页默认解锁：页数少于 4 就在后面加一页并切过去；已经 4 页就重抽当前页。
   locks: { copy: true, layout: false, image: true, pages: false },
 };
+
+const MAX_PAGES = 4;
 
 function styleById(id) {
   return STYLES.find((item) => item.id === id) || STYLES[0];
@@ -147,7 +150,7 @@ function normalizePage(raw) {
 function hydratePages() {
   const stored = savedBoard?.pages;
   if (Array.isArray(stored)) {
-    const pages = stored.map(normalizePage).filter(Boolean).slice(0, 2);
+    const pages = stored.map(normalizePage).filter(Boolean).slice(0, MAX_PAGES);
     if (pages.length) {
       state.pages = pages;
       const index = Number.isInteger(savedBoard.pageIndex) ? savedBoard.pageIndex : 0;
@@ -217,6 +220,7 @@ const alignRow = document.querySelector("#alignRow");
 const pagePrev = document.querySelector("#pagePrev");
 const pageNext = document.querySelector("#pageNext");
 const pageLabel = document.querySelector("#pageLabel");
+const pageDots = document.querySelector("#pageDots");
 const exportButton = document.querySelector("#exportButton");
 const exportButtonBottom = document.querySelector("#exportButtonBottom");
 
@@ -282,6 +286,9 @@ function renderPager() {
   pageLabel.textContent = `第 ${state.pageIndex + 1} / ${total} 页`;
   pagePrev.disabled = state.pageIndex <= 0;
   pageNext.disabled = state.pageIndex >= state.pages.length - 1;
+  pageDots.innerHTML = state.pages.map((_, index) =>
+    `<button type="button" data-page="${index}" aria-pressed="${index === state.pageIndex ? "true" : "false"}">${index + 1}</button>`
+  ).join("");
 }
 
 function renderChrome() {
@@ -550,13 +557,13 @@ function drawLayout() {
   commitPage();
   let pageNote = "多页锁定，只动这一页";
   if (!state.locks.pages) {
-    if (state.pages.length < 2) state.pages.push(capturePage());
-    if (state.pageIndex !== 1) {
-      state.pageIndex = 1;
-      applyPage(state.pages[1]);
-      pageNote = "切到第 2 页";
+    if (state.pages.length < MAX_PAGES) {
+      state.pages.push(capturePage());
+      state.pageIndex = state.pages.length - 1;
+      applyPage(state.pages[state.pageIndex]);
+      pageNote = `新加第 ${state.pageIndex + 1} 页`;
     } else {
-      pageNote = "仍在第 2 页";
+      pageNote = "已有 4 页，重抽这一页";
     }
   }
   const pool = TEMPLATE_IDS.filter((id) => id !== state.templateId);
@@ -598,7 +605,7 @@ lockGrid.addEventListener("click", (event) => {
   if (key === "pages") {
     layoutStatus.textContent = state.locks.pages
       ? "多页已锁定。抽版式只改当前页。"
-      : "多页已解锁。抽版式会生成或切到第 2 页。";
+      : "多页已解锁。抽版式会在后面加一页，最多 4 页。满了就重抽当前页。";
     return;
   }
   if (key === "layout") {
@@ -769,6 +776,11 @@ function showPage(index) {
 
 pagePrev.addEventListener("click", () => showPage(state.pageIndex - 1));
 pageNext.addEventListener("click", () => showPage(state.pageIndex + 1));
+pageDots.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-page]");
+  if (!button) return;
+  showPage(Number(button.dataset.page));
+});
 
 const EXPORT_PX = {
   "3:4": [1080, 1440],
@@ -779,23 +791,89 @@ const EXPORT_PX = {
   "2:1": [1920, 960],
 };
 
-function wrapSvgText(text, maxWidth, fontSize) {
+function linesFromBlock(block) {
   const lines = [];
   let line = "";
-  let width = 0;
-  for (const ch of Array.from(String(text || ""))) {
-    const advance = ch.charCodeAt(0) < 128 ? fontSize * 0.56 : fontSize;
-    if (line && width + advance > maxWidth) {
-      lines.push(line);
-      line = ch;
-      width = advance;
-    } else {
+  let lastTop = null;
+  const range = document.createRange();
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    for (let i = 0; i < node.textContent.length; i += 1) {
+      range.setStart(node, i);
+      range.setEnd(node, i + 1);
+      const rect = range.getClientRects()[0];
+      const ch = node.textContent[i];
+      if (rect && lastTop != null && rect.top > lastTop + 1) {
+        lines.push(line);
+        line = "";
+      }
       line += ch;
-      width += advance;
+      if (rect) lastTop = rect.top;
     }
+    node = walker.nextNode();
   }
   if (line) lines.push(line);
   return lines.length ? lines : [""];
+}
+
+function cssPx(value, fallback) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+const PAGE_GAP = 48;
+
+function measureVisiblePage() {
+  const canvasRect = canvas.getBoundingClientRect();
+  const poster = getComputedStyle(canvas);
+  const blocks = [...canvasBlocks.querySelectorAll(".block")].map((el) => {
+    const cs = getComputedStyle(el);
+    return {
+      id: el.dataset.id,
+      type: el.dataset.type,
+      lines: el.dataset.type === "image" ? [] : linesFromBlock(el),
+      fontSize: cssPx(cs.fontSize, 16),
+      lineHeight: cssPx(cs.lineHeight, cssPx(cs.fontSize, 16) * 1.2),
+      fontWeight: cs.fontWeight,
+      letterSpacing: cs.letterSpacing,
+      color: cs.color,
+      textAlign: cs.textAlign,
+      paddingLeft: cssPx(cs.paddingLeft, 8),
+      paddingTop: cssPx(cs.paddingTop, 6),
+    };
+  });
+  return {
+    canvasWidth: canvasRect.width || 1,
+    bg: poster.getPropertyValue("--poster-bg").trim() || "#f7f6f2",
+    ink: poster.getPropertyValue("--poster-ink").trim() || "#1c1c1c",
+    blocks,
+    templateId: state.templateId,
+    positions: copyPositions(state.positions),
+    imagePick: state.imagePick,
+  };
+}
+
+function withEachPage(read) {
+  commitLiveEdit();
+  commitPage();
+  const origin = state.pageIndex;
+  const shots = [];
+  try {
+    for (let i = 0; i < state.pages.length; i += 1) {
+      state.pageIndex = i;
+      applyPage(state.pages[i]);
+      renderBlocks();
+      canvas.offsetHeight;
+      shots.push(read());
+    }
+  } finally {
+    state.pageIndex = origin;
+    applyPage(state.pages[origin]);
+    renderBlocks();
+    renderGrid();
+  }
+  return shots;
 }
 
 function xmlEscape(value) {
@@ -826,64 +904,76 @@ async function embeddedImageHref(img) {
   }
 }
 
-// 扩展点：每一页单独调用。现在只下载正在看的这一页，一个 svg 文件。
-// 每个槽一个 <g id="slot-...">。不导出 PSD，也不把两页拼进同一个文件。
-async function buildPageSvg() {
-  commitPage();
-  const [width, height] = EXPORT_PX[state.ratio] || EXPORT_PX["3:4"];
-  const style = getComputedStyle(canvas);
-  const bg = style.getPropertyValue("--poster-bg").trim() || "#f7f6f2";
-  const ink = style.getPropertyValue("--poster-ink").trim() || "#1c1c1c";
-  const muted = style.getPropertyValue("--poster-muted").trim() || "#3a3a3a";
-  const track = style.getPropertyValue("--poster-track").trim() || "0em";
-  const titleWeight = style.getPropertyValue("--poster-title-weight").trim() || "700";
-  const subWeight = style.getPropertyValue("--poster-sub-weight").trim() || "600";
-  const scale = { s: 0.055, m: 0.072, l: 0.096 }[state.size] || 0.072;
-  const titleSize = Math.round(width * scale);
-  const subSize = Math.round(titleSize * 0.48);
-  const bodySize = Math.round(titleSize * 0.36);
-  const anchor = state.align === "center" ? "middle" : "start";
-  const slots = slotsFor(state.templateId, state.ratio);
-  const parts = [];
+function slotBoxPx(slot, positions, width, height) {
+  const pos = positions[slot.id];
+  return {
+    x: ((pos?.x ?? slot.x) / 100) * width,
+    y: ((pos?.y ?? slot.y) / 100) * height,
+    w: (slot.w / 100) * width,
+    h: (slot.h / 100) * height,
+  };
+}
+
+async function pageSvgGroup(shot, width, height, pageNo) {
+  const scale = width / shot.canvasWidth;
+  const slots = slotsFor(shot.templateId, state.ratio);
+  const byId = new Map(shot.blocks.map((item) => [item.id, item]));
+  const parts = [`<rect id="page-${pageNo}-background" width="${width}" height="${height}" fill="${shot.bg}"/>`];
+  const savedPick = state.imagePick;
+  state.imagePick = shot.imagePick;
+  try {
   for (const slot of slots) {
-    const pos = state.positions[slot.id];
-    const box = {
-      x: ((pos?.x ?? slot.x) / 100) * width,
-      y: ((pos?.y ?? slot.y) / 100) * height,
-      w: (slot.w / 100) * width,
-      h: (slot.h / 100) * height,
-    };
-    const clip = `clip-${slot.id}`;
+    const box = slotBoxPx(slot, shot.positions, width, height);
+    const clip = `page-${pageNo}-clip-${slot.id}`;
+    const measured = byId.get(slot.id);
     parts.push(`<clipPath id="${clip}"><rect x="${box.x.toFixed(1)}" y="${box.y.toFixed(1)}" width="${box.w.toFixed(1)}" height="${box.h.toFixed(1)}"/></clipPath>`);
     if (slot.type === "image") {
       const href = await embeddedImageHref(imageFor(slot));
       const inner = href
         ? `<image href="${xmlEscape(href)}" x="${box.x.toFixed(1)}" y="${box.y.toFixed(1)}" width="${box.w.toFixed(1)}" height="${box.h.toFixed(1)}" preserveAspectRatio="xMidYMid slice"/>`
-        : `<line x1="${box.x.toFixed(1)}" y1="${box.y.toFixed(1)}" x2="${(box.x + box.w).toFixed(1)}" y2="${(box.y + box.h).toFixed(1)}" stroke="${ink}" stroke-width="2"/>
-           <line x1="${(box.x + box.w).toFixed(1)}" y1="${box.y.toFixed(1)}" x2="${box.x.toFixed(1)}" y2="${(box.y + box.h).toFixed(1)}" stroke="${ink}" stroke-width="2"/>`;
-      parts.push(`<g id="slot-${slot.id}" data-type="image">${inner}</g>`);
+        : `<line x1="${box.x.toFixed(1)}" y1="${box.y.toFixed(1)}" x2="${(box.x + box.w).toFixed(1)}" y2="${(box.y + box.h).toFixed(1)}" stroke="${shot.ink}" stroke-width="2"/>
+           <line x1="${(box.x + box.w).toFixed(1)}" y1="${box.y.toFixed(1)}" x2="${box.x.toFixed(1)}" y2="${(box.y + box.h).toFixed(1)}" stroke="${shot.ink}" stroke-width="2"/>`;
+      parts.push(`<g id="page-${pageNo}-slot-${slot.id}" data-type="image">${inner}</g>`);
       continue;
     }
-    const size = slot.type === "H1" ? titleSize : slot.type === "H2" ? subSize : bodySize;
-    const weight = slot.type === "H1" ? titleWeight : slot.type === "H2" ? subWeight : "400";
-    const fill = slot.type === "H2" ? muted : ink;
-    const pad = 12;
-    const maxWidth = Math.max(8, box.w - pad * 2);
-    const lines = wrapSvgText(textFor(slot.id), maxWidth, size);
-    const x = state.align === "center" ? box.x + box.w / 2 : box.x + pad;
-    const lineH = size * 1.25;
-    const y = box.y + Math.min(size * 1.05, Math.max(size, (box.h - lineH * (lines.length - 1)) / 2 + size * 0.8));
+    const size = (measured?.fontSize || 16) * scale;
+    const lineH = (measured?.lineHeight || size * 1.2) * scale;
+    const padL = (measured?.paddingLeft || 8) * scale;
+    const padT = (measured?.paddingTop || 6) * scale;
+    const align = measured?.textAlign === "center" ? "middle" : "start";
+    const x = align === "middle" ? box.x + box.w / 2 : box.x + padL;
+    const y = box.y + padT + size * 0.86;
+    const tracking = measured?.letterSpacing && measured.letterSpacing !== "normal"
+      ? `${(cssPx(measured.letterSpacing, 0) * scale).toFixed(2)}px`
+      : "0px";
+    const lines = measured?.lines?.length ? measured.lines : [""];
     const tspans = lines.map((line, index) =>
       `<tspan x="${x.toFixed(1)}" dy="${index === 0 ? 0 : lineH.toFixed(1)}">${xmlEscape(line)}</tspan>`
     ).join("");
-    parts.push(`<g id="slot-${slot.id}" data-type="${slot.type}" clip-path="url(#${clip})">
-      <text x="${x.toFixed(1)}" y="${y.toFixed(1)}" fill="${fill}" font-family="Noto Sans SC, sans-serif" font-size="${size}" font-weight="${weight}" letter-spacing="${xmlEscape(track)}" text-anchor="${anchor}">${tspans}</text>
+    parts.push(`<g id="page-${pageNo}-slot-${slot.id}" data-type="${slot.type}" clip-path="url(#${clip})">
+      <text y="${y.toFixed(1)}" fill="${measured?.color || shot.ink}" font-family="Noto Sans SC, sans-serif" font-size="${size.toFixed(1)}" font-weight="${measured?.fontWeight || 400}" letter-spacing="${tracking}" text-anchor="${align}">${tspans}</text>
     </g>`);
   }
+  return parts.join("\n");
+  } finally {
+    state.imagePick = savedPick;
+  }
+}
+
+// 扩展点：每一页先按画布上的真实换行量好，再纵向拼进一个文件。不导出 PSD。
+async function buildAllPagesSvg() {
+  const [width, height] = EXPORT_PX[state.ratio] || EXPORT_PX["3:4"];
+  const shots = withEachPage(measureVisiblePage);
+  const totalH = shots.length * height + Math.max(0, shots.length - 1) * PAGE_GAP;
+  const groups = [];
+  for (let i = 0; i < shots.length; i += 1) {
+    const y = i * (height + PAGE_GAP);
+    const inner = await pageSvgGroup(shots[i], width, height, i + 1);
+    groups.push(`<g id="page-${i + 1}" transform="translate(0 ${y})">${inner}</g>`);
+  }
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect id="background" width="100%" height="100%" fill="${bg}"/>
-  ${parts.join("\n  ")}
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalH}" viewBox="0 0 ${width} ${totalH}">
+  ${groups.join("\n  ")}
 </svg>`;
 }
 
@@ -902,13 +992,14 @@ function downloadText(filename, text, type) {
 async function exportSvg() {
   commitLiveEdit();
   try {
-    const svg = await buildPageSvg();
-    downloadText(`yooco-第${state.pageIndex + 1}页.svg`, svg, "image/svg+xml");
-    layoutStatus.textContent = `已下载第 ${state.pageIndex + 1} 页 SVG。一块一个图层，只含当前页。`;
+    const svg = await buildAllPagesSvg();
+    const count = state.pages.length;
+    downloadText("yooco-全部页.svg", svg, "image/svg+xml");
+    layoutStatus.textContent = `已下载 ${count} 页 SVG。页与页上下相接，一块一个图层。`;
     layoutError.hidden = true;
   } catch {
     layoutError.hidden = false;
-    layoutError.textContent = "这一页导出失败。";
+    layoutError.textContent = "导出失败。";
   }
 }
 
@@ -924,4 +1015,5 @@ renderGrid();
 
 globalThis.state = state;
 globalThis.renderBlocks = renderBlocks;
-globalThis.buildPageSvg = buildPageSvg;
+globalThis.linesFromBlock = linesFromBlock;
+globalThis.buildAllPagesSvg = buildAllPagesSvg;

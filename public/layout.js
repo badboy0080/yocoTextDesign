@@ -39,6 +39,32 @@ const TEMPLATE_GROUPS = [
   { id: "image", label: "图文" },
 ];
 
+const STYLES = [
+  { id: "swiss", label: "瑞士纸", blurb: "浅底，左齐，常规字距", tone: "light", size: "m", align: "left", swatch: "#f7f6f2" },
+  { id: "ink", label: "墨底", blurb: "深底，标题收紧", tone: "dark", size: "l", align: "left", swatch: "#141414" },
+  { id: "gallery", label: "展签", blurb: "居中，字距拉开", tone: "light", size: "m", align: "center", swatch: "#f4f1ea" },
+  { id: "signal", label: "信号黄", blurb: "亮底，标题更重", tone: "light", size: "l", align: "left", swatch: "#e4ef3a" },
+  { id: "dusk", label: "夜蓝", blurb: "蓝底，字稍疏", tone: "dark", size: "m", align: "left", swatch: "#163a78" },
+];
+
+const STYLE_IDS = STYLES.map((item) => item.id);
+const SIZE_IDS = [
+  { id: "s", label: "小" },
+  { id: "m", label: "中" },
+  { id: "l", label: "大" },
+];
+const ALIGN_IDS = [
+  { id: "left", label: "左对齐" },
+  { id: "center", label: "居中" },
+];
+
+const LOCK_LABELS = {
+  copy: "文案",
+  layout: "布局",
+  image: "单图",
+  pages: "多页",
+};
+
 const GUIDE_KEY = "yooco-layout-guides";
 const BOARD_KEY = "yooco-layout-board";
 
@@ -55,20 +81,32 @@ const state = {
   ratio: "3:4",
   templateId: "a",
   preset: "exhibition",
+  styleId: "swiss",
+  size: "m",
+  align: "left",
   gridN: 12,
   source: "",
   images: [], // { url, name }[]
+  imagePick: 0,
   texts: { ...PRESETS.exhibition },
   fill: null, // 生成结果。预置文案不写这里，也不扣积分。
   positions: {}, // id -> { x, y } 覆盖模板坐标
   guides: loadGuides(),
+  // 抽版式时：锁住的项不动。文案和单图默认锁住，这样和以前一样留下当前字和图。
+  // TODO(P2): locks.pages 只给界面记住锁定或解锁。多页分页还没做，不要在这里加翻页。
+  locks: { copy: true, layout: false, image: true, pages: false },
 };
+
+function styleById(id) {
+  return STYLES.find((item) => item.id === id) || STYLES[0];
+}
 
 function loadBoard() {
   try {
     const data = JSON.parse(sessionStorage.getItem(BOARD_KEY) || "null");
     if (!data || typeof data.texts !== "object") return null;
     if (!TEMPLATE_IDS.includes(data.templateId) || !RATIO_IDS.includes(data.ratio)) return null;
+    if (data.styleId != null && !STYLE_IDS.includes(data.styleId)) return null;
     return data;
   } catch {
     return null;
@@ -81,6 +119,19 @@ if (savedBoard) {
   state.templateId = savedBoard.templateId;
   state.texts = { ...PRESETS.exhibition, ...savedBoard.texts };
   state.preset = savedBoard.preset || null;
+  if (STYLE_IDS.includes(savedBoard.styleId)) {
+    const style = styleById(savedBoard.styleId);
+    state.styleId = style.id;
+    state.size = style.size;
+    state.align = style.align;
+  }
+  if (SIZE_IDS.some((item) => item.id === savedBoard.size)) state.size = savedBoard.size;
+  if (savedBoard.align === "left" || savedBoard.align === "center") state.align = savedBoard.align;
+  if (savedBoard.locks && typeof savedBoard.locks === "object") {
+    for (const key of ["copy", "layout", "image", "pages"]) {
+      if (typeof savedBoard.locks[key] === "boolean") state.locks[key] = savedBoard.locks[key];
+    }
+  }
 }
 
 const ratioRow = document.querySelector("#ratioRow");
@@ -99,6 +150,11 @@ const guideToggle = document.querySelector("#guideToggle");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
 const canvasGrid = document.querySelector("#canvasGrid");
+const lockGrid = document.querySelector("#lockGrid");
+const styleList = document.querySelector("#styleList");
+const styleFold = document.querySelector("#styleFold");
+const sizeRow = document.querySelector("#sizeRow");
+const alignRow = document.querySelector("#alignRow");
 
 function applyGuides() {
   canvas.classList.toggle("is-guides-off", !state.guides);
@@ -120,10 +176,38 @@ function saveBoard() {
       templateId: state.templateId,
       preset: state.preset,
       texts: state.texts,
+      styleId: state.styleId,
+      size: state.size,
+      align: state.align,
+      locks: state.locks,
     }));
   } catch {
     // 记不住就只留在这一页。
   }
+}
+
+function applyPoster() {
+  const style = styleById(state.styleId);
+  canvas.dataset.style = style.id;
+  canvas.dataset.tone = style.tone;
+  canvas.dataset.size = state.size;
+  canvas.dataset.align = state.align;
+}
+
+function applyDrawButton() {
+  const locked = state.locks.layout;
+  drawLayoutButton.disabled = locked;
+  drawLayoutButton.title = locked ? "布局已锁定，抽版式先不动" : "";
+}
+
+function syncLocks() {
+  for (const button of lockGrid.querySelectorAll("[data-lock]")) {
+    const key = button.dataset.lock;
+    const on = Boolean(state.locks[key]);
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+    button.textContent = `${LOCK_LABELS[key]} · ${on ? "锁定" : "解锁"}`;
+  }
+  applyDrawButton();
 }
 
 function renderChrome() {
@@ -144,8 +228,23 @@ function renderChrome() {
   presetRow.innerHTML = PRESET_LIST.map((item) =>
     `<button type="button" aria-pressed="${state.preset === item.id}" data-preset="${item.id}">${item.label}</button>`
   ).join("");
+  styleList.innerHTML = STYLES.map((item) =>
+    `<button type="button" role="option" aria-selected="${state.styleId === item.id}" data-style="${item.id}">
+      <i class="style-swatch" style="background:${item.swatch}"></i>
+      <span><strong>${item.label}</strong><small>${item.blurb}</small></span>
+    </button>`
+  ).join("");
+  sizeRow.innerHTML = SIZE_IDS.map((item) =>
+    `<button type="button" role="radio" aria-checked="${state.size === item.id}" data-size="${item.id}">${item.label}</button>`
+  ).join("");
+  alignRow.innerHTML = ALIGN_IDS.map((item) =>
+    `<button type="button" role="radio" aria-checked="${state.align === item.id}" data-align="${item.id}">${item.label}</button>`
+  ).join("");
   canvas.dataset.ratio = state.ratio;
-  layoutStatus.textContent = `当前 ${templateById(state.templateId).label} · ${state.ratio}`;
+  applyPoster();
+  syncLocks();
+  const layoutNote = state.locks.layout ? "布局已锁定 · " : "";
+  layoutStatus.textContent = `${layoutNote}当前 ${templateById(state.templateId).label} · ${state.ratio}`;
 }
 
 function placeStyle(box) {
@@ -166,12 +265,10 @@ function textFor(slotId) {
   return filled?.text || "";
 }
 
-function imageFor(slot, filled) {
-  if (slot.type !== "image") return null;
-  if (Number.isInteger(filled?.imageIndex) && state.images[filled.imageIndex]) {
-    return state.images[filled.imageIndex];
-  }
-  return state.images[0] || null;
+function imageFor(slot) {
+  if (slot.type !== "image" || !state.images.length) return null;
+  const index = Math.min(Math.max(0, state.imagePick), state.images.length - 1);
+  return state.images[index];
 }
 
 let editingId = null;
@@ -230,9 +327,8 @@ function renderBlocks() {
   canvasBlocks.innerHTML = slots.map((slot) => {
     const pos = state.positions[slot.id];
     const box = { ...slot, x: pos?.x ?? slot.x, y: pos?.y ?? slot.y };
-    const filled = state.fill?.slots?.find((item) => item.id === slot.id);
     const isImage = slot.type === "image";
-    const img = imageFor(slot, filled);
+    const img = imageFor(slot);
     const text = isImage ? "" : textFor(slot.id);
     const placeholder = isImage && !img;
     const empty = !isImage && !text;
@@ -360,22 +456,118 @@ presetRow.addEventListener("click", (event) => {
   renderBlocks();
 });
 
+function pickOtherPreset() {
+  const others = PRESET_LIST.filter((item) => PRESETS[item.id].title !== state.texts.title);
+  const pool = others.length ? others : PRESET_LIST.filter((item) => item.id !== state.preset);
+  const list = pool.length ? pool : PRESET_LIST;
+  return list[Math.floor(Math.random() * list.length)].id;
+}
+
 function drawLayout() {
   const started = performance.now();
   commitLiveEdit();
+  if (state.locks.layout) {
+    layoutStatus.textContent = "布局已锁定。抽版式先不动。";
+    applyDrawButton();
+    return;
+  }
   const pool = TEMPLATE_IDS.filter((id) => id !== state.templateId);
   const next = pool[Math.floor(Math.random() * pool.length)];
   state.templateId = next;
   state.positions = {};
+  let copyNote = "文案留着";
+  if (!state.locks.copy) {
+    const presetId = pickOtherPreset();
+    state.preset = presetId;
+    state.texts = { ...PRESETS[presetId] };
+    copyNote = `文案换成${PRESET_LIST.find((item) => item.id === presetId).label}`;
+  }
+  let imageNote = "图片留着";
+  if (!state.locks.image && state.images.length > 1) {
+    state.imagePick = (state.imagePick + 1) % state.images.length;
+    imageNote = `图片换成第 ${state.imagePick + 1} 张`;
+  } else if (!state.locks.image) {
+    imageNote = "单图未锁，仍是这一张";
+  }
   saveBoard();
   renderChrome();
   renderBlocks();
   renderGrid();
   const elapsed = Math.max(1, Math.round(performance.now() - started));
-  layoutStatus.textContent = `已抽到 ${templateById(next).label} · ${state.ratio} · 用时 ${elapsed} 毫秒`;
+  layoutStatus.textContent = `已抽到 ${templateById(next).label} · ${state.ratio} · ${copyNote} · ${imageNote} · 用时 ${elapsed} 毫秒`;
 }
 
 drawLayoutButton.addEventListener("click", drawLayout);
+
+lockGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-lock]");
+  if (!button) return;
+  const key = button.dataset.lock;
+  if (!Object.prototype.hasOwnProperty.call(state.locks, key)) return;
+  state.locks[key] = !state.locks[key];
+  saveBoard();
+  syncLocks();
+  // TODO(P2): 多页只切换这句话和开关。不要在这里生成第二页。
+  if (key === "pages") {
+    layoutStatus.textContent = state.locks.pages
+      ? "多页已锁定。分页还没做，不会翻页。"
+      : "多页已解锁。分页还没做，不会翻页。";
+    return;
+  }
+  if (key === "layout") {
+    layoutStatus.textContent = state.locks.layout
+      ? "布局已锁定。抽版式先不动。"
+      : "布局已解锁。可以抽版式。";
+    return;
+  }
+  if (key === "copy") {
+    layoutStatus.textContent = state.locks.copy
+      ? "文案已锁定。抽版式会留下现在的字。"
+      : "文案已解锁。抽版式会换成另一套预置文案。";
+    return;
+  }
+  layoutStatus.textContent = state.locks.image
+    ? "单图已锁定。换布局时仍用这一张。"
+    : "单图已解锁。有多张图时，抽版式会换下一张。";
+});
+
+styleFold.addEventListener("click", () => {
+  const open = styleFold.getAttribute("aria-expanded") !== "true";
+  styleFold.setAttribute("aria-expanded", open ? "true" : "false");
+  styleList.hidden = !open;
+  styleFold.textContent = open ? "收起风格" : "展开 5 套风格";
+});
+
+styleList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-style]");
+  if (!button || button.dataset.style === state.styleId) return;
+  const style = styleById(button.dataset.style);
+  commitLiveEdit();
+  state.styleId = style.id;
+  state.size = style.size;
+  state.align = style.align;
+  saveBoard();
+  renderChrome();
+  layoutStatus.textContent = `已换成${style.label}。字还在。`;
+});
+
+sizeRow.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-size]");
+  if (!button || button.dataset.size === state.size) return;
+  state.size = button.dataset.size;
+  saveBoard();
+  renderChrome();
+  layoutStatus.textContent = `字号档已改成${SIZE_IDS.find((item) => item.id === state.size).label}。字还在。`;
+});
+
+alignRow.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-align]");
+  if (!button || button.dataset.align === state.align) return;
+  state.align = button.dataset.align;
+  saveBoard();
+  renderChrome();
+  layoutStatus.textContent = state.align === "center" ? "已改成居中。字还在。" : "已改成左对齐。字还在。";
+});
 
 function measureImage(url) {
   return new Promise((resolve, reject) => {
@@ -414,6 +606,7 @@ imageFiles.addEventListener("change", async () => {
   const token = ++imageLoadToken;
   for (const url of state.images.map((item) => item.url)) URL.revokeObjectURL(url);
   state.images = [];
+  state.imagePick = 0;
   const files = [...(imageFiles.files || [])].slice(0, 6);
   for (const file of files) {
     state.images.push({ name: file.name, url: URL.createObjectURL(file) });
@@ -471,6 +664,7 @@ gridNInput.addEventListener("input", () => {
 });
 
 applyGuides();
+applyPoster();
 renderChrome();
 renderBlocks();
 renderGrid();

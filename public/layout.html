@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
-    <link rel="stylesheet" href="./layout.css?v=lotgo-p0-v1" />
+    <link rel="stylesheet" href="./layout.css?v=lotgo-p1-v1" />
   </head>
   <body>
     <div class="studio-layout">
@@ -62,7 +62,7 @@
             </div>
             <p class="layout-truncation" id="truncationNote" hidden>已截断</p>
             <div class="layout-fit" id="layoutFit">
-              <div class="canvas" id="canvas" data-ratio="3:4">
+              <div class="canvas" id="canvas" data-ratio="3:4" data-style="swiss" data-tone="light" data-size="m" data-align="left">
                 <div class="canvas-grid" id="canvasGrid" aria-hidden="true"></div>
                 <div class="canvas-blocks" id="canvasBlocks"></div>
               </div>
@@ -72,21 +72,42 @@
           </section>
 
           <section class="layout-config" aria-label="模板与操作">
+            <div id="lockPanel">
+              <h2 class="layout-label">抽版式锁定</h2>
+              <p class="layout-help" id="pagesTodo">锁住的项，点抽版式时不动。多页分页还没做，这个开关只记住状态。</p>
+              <div class="lock-grid" id="lockGrid">
+                <button type="button" data-lock="copy" aria-pressed="true">文案 · 锁定</button>
+                <button type="button" data-lock="layout" aria-pressed="false">布局 · 解锁</button>
+                <button type="button" data-lock="image" aria-pressed="true">单图 · 锁定</button>
+                <button type="button" data-lock="pages" aria-pressed="false" aria-describedby="pagesTodo">多页 · 解锁</button>
+              </div>
+            </div>
+            <div id="stylePanel">
+              <h2 class="layout-label">风格</h2>
+              <button class="style-fold" id="styleFold" type="button" aria-expanded="true" aria-controls="styleList">收起风格</button>
+              <div class="style-list" id="styleList" role="listbox" aria-label="风格"></div>
+            </div>
+            <div id="typePanel">
+              <h2 class="layout-label">字号与网格</h2>
+              <p class="layout-help">换风格会把字号档和对齐设回那一套。你再改过之后，以这里为准。</p>
+              <div class="seg-row" id="sizeRow" role="radiogroup" aria-label="字号档"></div>
+              <div class="seg-row" id="alignRow" role="radiogroup" aria-label="对齐"></div>
+              <label class="layout-label" for="gridN">格子列数 N</label>
+              <div class="grid-n-row">
+                <input id="gridN" type="range" min="6" max="24" step="1" value="12" />
+                <output id="gridNValue" for="gridN">12</output>
+              </div>
+            </div>
             <h2 class="layout-label">预置文案</h2>
             <p class="layout-help">只换画布上的字。不请求生成，不扣积分。</p>
             <div class="preset-row" id="presetRow" role="group" aria-label="预置文案"></div>
             <h2 class="layout-label">模板骨架</h2>
             <div class="template-grid" id="templateGrid" aria-label="模板"></div>
-            <label class="layout-label" for="gridN">格子列数 N</label>
-            <div class="grid-n-row">
-              <input id="gridN" type="range" min="6" max="24" step="1" value="12" />
-              <output id="gridNValue" for="gridN">12</output>
-            </div>
             <button class="copy-button is-disabled" id="exportButtonBottom" type="button" disabled title="下期">导出（下期）</button>
           </section>
         </div>
       </div>
     </div>
-    <script type="module" src="./layout.js?v=lotgo-p0-v1"></script>
+    <script type="module" src="./layout.js?v=lotgo-p1-v1"></script>
   </body>
 </html>

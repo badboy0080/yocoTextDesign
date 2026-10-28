@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
     <title>Yooco · 智能排版</title>
-    <meta name="description" content="Yooco 智能排版：贴文案、选模板与比例，生成网格预览。好文章值得好排版。" />
+    <meta name="description" content="Yooco 智能排版：选比例，抽一套版式，在海报上直接改字换图。好文章值得好排版。" />
     <link rel="canonical" href="https://www.yoooco.com/layout.html" />
     <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./studio-ui.css?v=smart-layout-p0-v1" />
-    <link rel="stylesheet" href="./layout.css?v=swiss-guides-v1" />
+    <link rel="stylesheet" href="./layout.css?v=lotgo-p0-v1" />
   </head>
   <body>
     <div class="studio-layout">
@@ -42,18 +42,17 @@
           </div>
         </header>
         <div class="layout-workspace" id="layoutWorkspace">
-          <section class="layout-side" aria-label="文案与图片">
-            <label class="layout-label" for="copyInput">文案</label>
-            <p class="layout-help">必填后才能生成。无图也可排。</p>
-            <textarea id="copyInput" rows="12" maxlength="20000" placeholder="把文章贴在这里…"></textarea>
+          <section class="layout-side" aria-label="图片">
             <label class="layout-label" for="uploadImageButton">上传图片</label>
-            <p class="layout-help">按图片宽高自动选最接近的比例。纯字模板会切到图文。</p>
+            <p class="layout-help">按图片宽高自动选最接近的比例。纯字模板会切到图文。先点中图块，再上传，就是换图。</p>
             <button class="upload-button" id="uploadImageButton" type="button">上传图片</button>
             <input id="imageFiles" type="file" accept="image/*" multiple hidden />
             <ul class="layout-image-list" id="imageList"></ul>
           </section>
 
           <section class="layout-stage-wrap" aria-label="画布预览">
+            <button class="draw-layout" id="drawLayout" type="button">抽版式</button>
+            <p class="layout-status" id="layoutStatus" role="status"></p>
             <div class="stage-tools">
               <div class="ratio-row" id="ratioRow" role="radiogroup" aria-label="画布比例"></div>
               <label class="guide-toggle">
@@ -68,7 +67,7 @@
                 <div class="canvas-blocks" id="canvasBlocks"></div>
               </div>
             </div>
-            <p class="layout-empty" id="emptyHint" hidden>贴文案后点「生成排版」，会盖掉画布上的预置字。</p>
+            <p class="layout-empty" id="emptyHint" hidden>点海报上的字就能改。点「抽版式」换一套布局。</p>
             <p class="layout-error" id="layoutError" hidden role="alert"></p>
           </section>
 
@@ -83,16 +82,11 @@
               <input id="gridN" type="range" min="6" max="24" step="1" value="12" />
               <output id="gridNValue" for="gridN">12</output>
             </div>
-            <div class="layout-actions">
-              <button class="ai-button" id="generateButton" type="button" disabled>生成排版</button>
-              <button class="ghost-button" id="rerollButton" type="button" disabled>换槽重排</button>
-            </div>
-            <p class="layout-status" id="layoutStatus" role="status"></p>
             <button class="copy-button is-disabled" id="exportButtonBottom" type="button" disabled title="下期">导出（下期）</button>
           </section>
         </div>
       </div>
     </div>
-    <script type="module" src="./layout.js?v=swiss-guides-v1"></script>
+    <script type="module" src="./layout.js?v=lotgo-p0-v1"></script>
   </body>
 </html>

@@ -2,6 +2,7 @@
 
 export const RATIOS = {
   "3:4": { w: 3, h: 4, label: "3:4" },
+  "9:16": { w: 9, h: 16, label: "9:16" },
   "1:1": { w: 1, h: 1, label: "1:1" },
   "16:9": { w: 16, h: 9, label: "16:9" },
 };
@@ -10,7 +11,7 @@ export const RATIO_IDS = Object.keys(RATIOS);
 export const TEMPLATE_IDS = ["a", "b", "c", "d", "e"];
 
 const COLS = 12;
-const ROWS = { "3:4": 16, "1:1": 12, "16:9": 7 };
+const ROWS = { "3:4": 16, "9:16": 21, "1:1": 12, "16:9": 7 };
 
 function cell(id, type, colStart, colEnd, rowStart, rowEnd, rows) {
   return {
@@ -59,6 +60,14 @@ export const TEMPLATES = [
         ["body", TEXT.body, 2, 6, 11, 12],
         ["credit", TEXT.credit, 7, 11, 11, 12],
       ]),
+      "9:16": slots(ROWS["9:16"], [
+        ["title", TEXT.title, 2, 11, 2, 7],
+        ["subtitle", TEXT.subtitle, 2, 8, 8, 9],
+        ["date", TEXT.date, 2, 6, 11, 13],
+        ["venue", TEXT.venue, 7, 11, 11, 13],
+        ["body", TEXT.body, 2, 6, 15, 18],
+        ["credit", TEXT.credit, 7, 11, 15, 18],
+      ]),
       "16:9": slots(ROWS["16:9"], [
         ["title", TEXT.title, 1, 6, 1, 3],
         ["subtitle", TEXT.subtitle, 1, 6, 4, 5],
@@ -90,6 +99,14 @@ export const TEMPLATES = [
         ["credit", TEXT.credit, 2, 6, 11, 12],
         ["date", TEXT.date, 8, 12, 8, 9],
         ["venue", TEXT.venue, 8, 12, 10, 11],
+      ]),
+      "9:16": slots(ROWS["9:16"], [
+        ["title", TEXT.title, 8, 12, 2, 6],
+        ["subtitle", TEXT.subtitle, 8, 12, 7, 8],
+        ["body", TEXT.body, 2, 6, 3, 14],
+        ["date", TEXT.date, 8, 12, 12, 15],
+        ["venue", TEXT.venue, 8, 12, 17, 19],
+        ["credit", TEXT.credit, 2, 6, 16, 19],
       ]),
       "16:9": slots(ROWS["16:9"], [
         ["body", TEXT.body, 2, 6, 2, 5],
@@ -124,6 +141,15 @@ export const TEMPLATES = [
         ["venue", TEXT.venue, 1, 4, 11, 12],
         ["body", TEXT.body, 5, 8, 9, 12],
         ["credit", TEXT.credit, 9, 12, 9, 12],
+      ]),
+      "9:16": slots(ROWS["9:16"], [
+        ["image", "image", 1, 9, 1, 12],
+        ["title", TEXT.title, 10, 12, 2, 8],
+        ["subtitle", TEXT.subtitle, 10, 12, 9, 11],
+        ["date", TEXT.date, 2, 4, 14, 16],
+        ["venue", TEXT.venue, 2, 4, 17, 19],
+        ["body", TEXT.body, 5, 9, 14, 19],
+        ["credit", TEXT.credit, 10, 12, 14, 19],
       ]),
       "16:9": slots(ROWS["16:9"], [
         ["image", "image", 1, 6, 1, 7],
@@ -160,6 +186,15 @@ export const TEMPLATES = [
         ["body", TEXT.body, 8, 12, 9, 10],
         ["credit", TEXT.credit, 8, 12, 11, 12],
       ]),
+      "9:16": slots(ROWS["9:16"], [
+        ["title", TEXT.title, 2, 10, 2, 4],
+        ["subtitle", TEXT.subtitle, 2, 7, 5, 6],
+        ["image", "image", 2, 7, 8, 16],
+        ["date", TEXT.date, 9, 12, 8, 11],
+        ["venue", TEXT.venue, 9, 12, 12, 14],
+        ["body", TEXT.body, 9, 12, 15, 17],
+        ["credit", TEXT.credit, 2, 7, 17, 19],
+      ]),
       "16:9": slots(ROWS["16:9"], [
         ["title", TEXT.title, 1, 7, 1, 2],
         ["subtitle", TEXT.subtitle, 1, 5, 3, 3],
@@ -195,6 +230,15 @@ export const TEMPLATES = [
         ["credit", TEXT.credit, 1, 4, 10, 11],
         ["image", "image", 6, 12, 1, 10],
       ]),
+      "9:16": slots(ROWS["9:16"], [
+        ["title", TEXT.title, 1, 4, 2, 7],
+        ["subtitle", TEXT.subtitle, 1, 4, 8, 9],
+        ["body", TEXT.body, 1, 4, 11, 13],
+        ["date", TEXT.date, 1, 4, 15, 16],
+        ["venue", TEXT.venue, 1, 4, 17, 17],
+        ["credit", TEXT.credit, 1, 4, 18, 19],
+        ["image", "image", 6, 12, 2, 18],
+      ]),
       "16:9": slots(ROWS["16:9"], [
         ["title", TEXT.title, 1, 4, 1, 2],
         ["subtitle", TEXT.subtitle, 1, 4, 3, 3],
@@ -218,8 +262,8 @@ export function slotsFor(templateId, ratio) {
   return list.map((item) => ({ ...item }));
 }
 
-/** 画布宽高比 = 宽 / 高。平局时更竖的优先：3:4，然后 1:1，然后 16:9。 */
-const RATIO_PREFERENCE = ["3:4", "1:1", "16:9"];
+/** 画布宽高比 = 宽 / 高。平局时更竖的优先：9:16，然后 3:4，然后 1:1，然后 16:9。 */
+const RATIO_PREFERENCE = ["9:16", "3:4", "1:1", "16:9"];
 
 function canvasRatioOf(ratioId) {
   const item = RATIOS[ratioId];

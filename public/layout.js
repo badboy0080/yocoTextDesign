@@ -1,4 +1,4 @@
-import { RATIO_IDS, RATIOS, TEMPLATES, slotsFor, templateById, closestCanvasRatio, closestImageTemplate } from "./layout-templates.js";
+import { RATIO_IDS, RATIOS, TEMPLATE_IDS, TEMPLATES, slotsFor, templateById, closestCanvasRatio, closestImageTemplate } from "./layout-templates.js";
 import { snapToGrid, clampBlock, gridRows, clampGridN } from "./layout-grid.js";
 
 const PRESETS = {
@@ -40,6 +40,7 @@ const TEMPLATE_GROUPS = [
 ];
 
 const GUIDE_KEY = "yooco-layout-guides";
+const BOARD_KEY = "yooco-layout-board";
 
 function loadGuides() {
   try {
@@ -63,9 +64,25 @@ const state = {
   guides: loadGuides(),
 };
 
-const copyInput = document.querySelector("#copyInput");
-const generateButton = document.querySelector("#generateButton");
-const rerollButton = document.querySelector("#rerollButton");
+function loadBoard() {
+  try {
+    const data = JSON.parse(sessionStorage.getItem(BOARD_KEY) || "null");
+    if (!data || typeof data.texts !== "object") return null;
+    if (!TEMPLATE_IDS.includes(data.templateId) || !RATIO_IDS.includes(data.ratio)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+const savedBoard = loadBoard();
+if (savedBoard) {
+  state.ratio = savedBoard.ratio;
+  state.templateId = savedBoard.templateId;
+  state.texts = { ...PRESETS.exhibition, ...savedBoard.texts };
+  state.preset = savedBoard.preset || null;
+}
+
 const ratioRow = document.querySelector("#ratioRow");
 const templateGrid = document.querySelector("#templateGrid");
 const presetRow = document.querySelector("#presetRow");
@@ -74,11 +91,11 @@ const canvasBlocks = document.querySelector("#canvasBlocks");
 const emptyHint = document.querySelector("#emptyHint");
 const layoutStatus = document.querySelector("#layoutStatus");
 const layoutError = document.querySelector("#layoutError");
+const drawLayoutButton = document.querySelector("#drawLayout");
 const imageFiles = document.querySelector("#imageFiles");
 const uploadImageButton = document.querySelector("#uploadImageButton");
 const imageList = document.querySelector("#imageList");
 const guideToggle = document.querySelector("#guideToggle");
-const trialMeter = document.querySelector("#trialMeter");
 const gridNInput = document.querySelector("#gridN");
 const gridNValue = document.querySelector("#gridNValue");
 const canvasGrid = document.querySelector("#canvasGrid");
@@ -96,10 +113,17 @@ function rememberGuides() {
   }
 }
 
-function syncGenerateEnabled() {
-  const ok = copyInput.value.trim().length > 0;
-  generateButton.disabled = !ok;
-  rerollButton.disabled = !ok || !state.fill;
+function saveBoard() {
+  try {
+    sessionStorage.setItem(BOARD_KEY, JSON.stringify({
+      ratio: state.ratio,
+      templateId: state.templateId,
+      preset: state.preset,
+      texts: state.texts,
+    }));
+  } catch {
+    // 记不住就只留在这一页。
+  }
 }
 
 function renderChrome() {
@@ -150,7 +174,58 @@ function imageFor(slot, filled) {
   return state.images[0] || null;
 }
 
+let editingId = null;
+
+function commitEdit(block) {
+  if (!block?.classList.contains("is-editing")) return;
+  const id = block.dataset.id;
+  state.texts[id] = block.innerText.replace(/\u00a0/g, " ").replace(/\n+/g, "");
+  block.removeEventListener("keydown", onEditKey);
+  block.contentEditable = "false";
+  block.classList.remove("is-editing");
+  if (editingId === id) editingId = null;
+  saveBoard();
+}
+
+function commitLiveEdit() {
+  if (!editingId) return;
+  const live = canvasBlocks.querySelector(`[data-id="${editingId}"]`);
+  if (live) commitEdit(live);
+}
+
+function onEditKey(event) {
+  if (event.key === "Enter") event.preventDefault();
+  if (event.key === "Escape") event.currentTarget.blur();
+}
+
+function beginEdit(block) {
+  if (!block || block.dataset.type === "image") return;
+  commitLiveEdit();
+  canvasBlocks.querySelectorAll(".is-selected").forEach((el) => el.classList.remove("is-selected"));
+  editingId = block.dataset.id;
+  block.contentEditable = "true";
+  block.spellcheck = false;
+  block.classList.add("is-editing");
+  block.focus();
+  const range = document.createRange();
+  range.selectNodeContents(block);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  block.addEventListener("keydown", onEditKey);
+  block.addEventListener("blur", () => commitEdit(block), { once: true });
+}
+
+function selectImage(block) {
+  commitLiveEdit();
+  canvasBlocks.querySelectorAll(".is-selected,.is-editing").forEach((el) => el.classList.remove("is-selected", "is-editing"));
+  block.classList.add("is-selected");
+  layoutStatus.textContent = "已选中图片。点「上传图片」可替换。";
+}
+
 function renderBlocks() {
+  commitLiveEdit();
   const slots = slotsFor(state.templateId, state.ratio);
   canvasBlocks.innerHTML = slots.map((slot) => {
     const pos = state.positions[slot.id];
@@ -185,7 +260,7 @@ function renderBlocks() {
   });
 }
 
-let drag = null;
+let press = null;
 
 function slotBox(id) {
   const slot = slotsFor(state.templateId, state.ratio).find((item) => item.id === id);
@@ -195,54 +270,67 @@ function slotBox(id) {
 
 canvasBlocks.addEventListener("pointerdown", (event) => {
   const block = event.target.closest(".block");
-  if (!block || !state.fill) return; // 生成前不拖。预置字只是先摆上，不算生成结果。
-  const id = block.dataset.id;
-  const box = slotBox(id);
+  if (!block) return;
+  if (editingId === block.dataset.id) return;
+  const box = slotBox(block.dataset.id);
   const rect = canvas.getBoundingClientRect();
-  drag = {
-    id,
+  press = {
+    id: block.dataset.id,
+    type: block.dataset.type,
     pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    moved: false,
     offsetX: ((event.clientX - rect.left) / rect.width) * 100 - box.x,
     offsetY: ((event.clientY - rect.top) / rect.height) * 100 - box.y,
     w: box.w,
     h: box.h,
   };
-  block.classList.add("is-dragging");
   block.setPointerCapture(event.pointerId);
 });
 
 canvasBlocks.addEventListener("pointermove", (event) => {
-  if (!drag || event.pointerId !== drag.pointerId) return;
+  if (!press || event.pointerId !== press.pointerId) return;
+  if (!press.moved && Math.hypot(event.clientX - press.startX, event.clientY - press.startY) < 5) return;
+  press.moved = true;
   const rect = canvas.getBoundingClientRect();
-  let x = ((event.clientX - rect.left) / rect.width) * 100 - drag.offsetX;
-  let y = ((event.clientY - rect.top) / rect.height) * 100 - drag.offsetY;
+  let x = ((event.clientX - rect.left) / rect.width) * 100 - press.offsetX;
+  let y = ((event.clientY - rect.top) / rect.height) * 100 - press.offsetY;
   const n = clampGridN(state.gridN);
   const ratio = RATIOS[state.ratio];
   const m = gridRows(n, ratio.w, ratio.h);
   const snapped = snapToGrid(x, y, n, m);
-  const clamped = clampBlock(snapped.x, snapped.y, drag.w, drag.h);
-  state.positions[drag.id] = { x: clamped.x, y: clamped.y };
-  const el = canvasBlocks.querySelector(`[data-id="${drag.id}"]`);
+  const clamped = clampBlock(snapped.x, snapped.y, press.w, press.h);
+  state.positions[press.id] = { x: clamped.x, y: clamped.y };
+  const el = canvasBlocks.querySelector(`[data-id="${press.id}"]`);
   if (el) {
+    el.classList.add("is-dragging");
     el.style.left = `${clamped.x}%`;
     el.style.top = `${clamped.y}%`;
   }
 });
 
-function endDrag(event) {
-  if (!drag || event.pointerId !== drag.pointerId) return;
-  const el = canvasBlocks.querySelector(`[data-id="${drag.id}"]`);
+function endPress(event) {
+  if (!press || event.pointerId !== press.pointerId) return;
+  const info = press;
+  press = null;
+  const el = canvasBlocks.querySelector(`[data-id="${info.id}"]`);
   el?.classList.remove("is-dragging");
-  drag = null;
+  if (!info.moved && el) {
+    if (info.type === "image") selectImage(el);
+    else beginEdit(el);
+  }
 }
-canvasBlocks.addEventListener("pointerup", endDrag);
-canvasBlocks.addEventListener("pointercancel", endDrag);
+canvasBlocks.addEventListener("pointerup", endPress);
+canvasBlocks.addEventListener("pointercancel", endPress);
 
 ratioRow.addEventListener("click", (event) => {
   const button = event.target.closest("[data-ratio]");
   if (!button || button.dataset.ratio === state.ratio) return;
+  commitLiveEdit();
   state.ratio = button.dataset.ratio;
   state.positions = {};
+  saveBoard();
   renderChrome();
   renderBlocks();
   renderGrid();
@@ -251,28 +339,43 @@ ratioRow.addEventListener("click", (event) => {
 templateGrid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-template]");
   if (!button || button.dataset.template === state.templateId) return;
+  commitLiveEdit();
   state.templateId = button.dataset.template;
   state.positions = {};
-  syncGenerateEnabled();
+  saveBoard();
   renderChrome();
   renderBlocks();
 });
 
 presetRow.addEventListener("click", (event) => {
   const button = event.target.closest("[data-preset]");
-  if (!button || filling) return;
+  if (!button) return;
   const preset = PRESETS[button.dataset.preset];
   if (!preset) return;
+  commitLiveEdit();
   state.preset = button.dataset.preset;
   state.texts = { ...preset };
+  saveBoard();
   renderChrome();
   renderBlocks();
 });
 
-copyInput.addEventListener("input", () => {
-  layoutError.hidden = true;
-  syncGenerateEnabled();
-});
+function drawLayout() {
+  const started = performance.now();
+  commitLiveEdit();
+  const pool = TEMPLATE_IDS.filter((id) => id !== state.templateId);
+  const next = pool[Math.floor(Math.random() * pool.length)];
+  state.templateId = next;
+  state.positions = {};
+  saveBoard();
+  renderChrome();
+  renderBlocks();
+  renderGrid();
+  const elapsed = Math.max(1, Math.round(performance.now() - started));
+  layoutStatus.textContent = `已抽到 ${templateById(next).label} · ${state.ratio} · 用时 ${elapsed} 毫秒`;
+}
+
+drawLayoutButton.addEventListener("click", drawLayout);
 
 function measureImage(url) {
   return new Promise((resolve, reject) => {
@@ -345,78 +448,6 @@ guideToggle.addEventListener("change", () => {
   applyGuides();
 });
 
-function updateCredits(credits) {
-  if (!credits || !trialMeter) return;
-  trialMeter.hidden = false;
-  if (credits.unlimited) {
-    trialMeter.textContent = "不限积分";
-    trialMeter.classList.remove("is-empty");
-    return;
-  }
-  const remaining = credits.remaining ?? 0;
-  trialMeter.textContent = remaining <= 0 ? "积分已用完" : `剩余 ${remaining} 积分`;
-  trialMeter.classList.toggle("is-empty", remaining <= 0);
-}
-
-let filling = false;
-
-async function requestFill({ reroll }) {
-  if (filling || !copyInput.value.trim()) return;
-  if (reroll && !state.fill) return;
-  filling = true;
-  layoutError.hidden = true;
-  layoutError.textContent = "";
-  const slots = slotsFor(state.templateId, state.ratio).map(({ id, type }) => ({ id, type }));
-  const payload = {
-    source: copyInput.value.trim(),
-    imageCount: state.images.length,
-    ratio: state.ratio,
-    templateId: state.templateId,
-    slots,
-  };
-  if (reroll) payload.seed = Date.now() % 100000;
-  state.source = payload.source;
-  generateButton.disabled = true;
-  rerollButton.disabled = true;
-  layoutStatus.textContent = reroll ? "换槽重排中…" : "生成排版中…";
-  try {
-    const response = await fetch("/api/layout-fill", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const json = await response.json().catch(() => null);
-    if (!response.ok || !json?.ok) {
-      throw new Error(json?.error?.message || "排版失败，再试一次");
-    }
-    state.fill = json.data;
-    state.preset = null;
-    for (const item of json.data?.slots || []) {
-      if (item.type !== "image") state.texts[item.id] = String(item.text || "");
-    }
-    // 换槽重排：直接覆盖拖动结果，不弹确认。生成成功同样回到模板槽位。
-    state.positions = {};
-    updateCredits(json.credits || json.trial?.credits);
-    renderChrome();
-    renderBlocks();
-    renderGrid();
-    layoutStatus.textContent = reroll ? "已换槽重排" : "已生成排版";
-  } catch (error) {
-    const message = error instanceof TypeError || error instanceof SyntaxError
-      ? "排版失败，再试一次"
-      : (error?.message || "排版失败，再试一次");
-    layoutError.hidden = false;
-    layoutError.textContent = message;
-    layoutStatus.textContent = "";
-  } finally {
-    filling = false;
-    syncGenerateEnabled();
-  }
-}
-
-generateButton.addEventListener("click", () => requestFill({ reroll: false }));
-rerollButton.addEventListener("click", () => requestFill({ reroll: true }));
-
 function renderGrid() {
   const n = clampGridN(state.gridN);
   const ratio = RATIOS[state.ratio];
@@ -443,7 +474,6 @@ applyGuides();
 renderChrome();
 renderBlocks();
 renderGrid();
-syncGenerateEnabled();
 
 globalThis.state = state;
 globalThis.renderBlocks = renderBlocks;

@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-10-26 智能排版画布拖块吸附
+
+- 想做什么：字块和图块能拖，松手停在网格交点上。用已经写好的吸附函数。不接生成。
+- 做成了什么：拖的过程中就吸到交点。只改位置，宽高不动。没有生成结果时拖不动。改列数不让已放下的块跳动。往右下拖出画布时，左上角停在 99%。往左上拖时贴在 0，因为吸附会先把负数收成 0。
+- 改了哪些文件：`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：无头浏览器打开 `/layout.html`。没放生成结果时拖标题，位置不变。放上空的生成结果后，拖标题吸到格子上，宽高仍是 84 和 12。拖动过程中已经在交点上。列数改成 6，块不动；再拖仍按 6 列的格子算。图块同样能拖，宽高不变。拖出右下角后停在 99%、99%。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。页面上还不能自己生成，要等后面接线。拖之前控制台写 `state.fill = { slots: [] }` 再 `renderBlocks()`。
+
+### 2026-10-26 智能排版网格列数和吸附函数
+
+- 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
+- 做成了什么：`public/layout-grid.js` 负责列数 6–24、行数、吸到最近交点、块不要完全拖出画布。默认 12 列。3:4 画出 13 条竖线、17 条横线。改列数时槽块位置不动。
+- 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。
+
 ### 2026-10-26 智能排版三区和三套模板槽
 
 - 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。

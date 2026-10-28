@@ -18,6 +18,8 @@ assert(clampGridN(NaN) === 12, "非法回默认");
 assert(gridRows(12, 3, 4) === 16, "3:4 → M=16");
 assert(gridRows(12, 1, 1) === 12, "1:1 → M=12");
 assert(gridRows(12, 16, 9) === 7, "16:9 → M=7");
+assert(gridRows(12, 4, 3) === 9, "4:3 → M=9");
+assert(gridRows(12, 2, 1) === 6, "2:1 → M=6");
 assert(gridRows(0, 3, 4) === 1, "M 至少 1");
 
 const near = snapToGrid(4.1, 3.1, 12, 16);

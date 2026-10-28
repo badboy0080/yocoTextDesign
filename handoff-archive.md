@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-26 智能排版网格列数和吸附函数
+
+- 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
+- 做成了什么：`public/layout-grid.js` 负责列数 6–24、行数、吸到最近交点、块不要完全拖出画布。默认 12 列。3:4 画出 13 条竖线、17 条横线。改列数时槽块位置不动。
+- 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。
+
 ### 2026-10-26 智能排版三区和三套模板槽
 
 - 想做什么：在空壳页上做左文案、中画布、右模板。三种比例，三套槽。画布按选中的模板画出占位。不接生成，不做拖拽。

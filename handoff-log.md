@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+LotGo 对齐 P4 四族版式（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：瑞士 A–E 还在。新增照片网格（三图叠放、四图田字）、字中图（题中嵌图、文中嵌图）、杂志（封面大题、右图左目）、中文排（横题双签、横题底签）。每套都有 3:4、9:16、1:1、4:3、16:9、2:1，换比例重摆。多图槽各用各的序号，图不够的槽空着，不共用一张。右侧「版式族」筛当前族，抽版式只在这一族里换。四锁、网格、海报改字、多页、真比例卡、导出全部页还在。中文排是横排。截图在 `docs/previews/lotgo-p4-*.png`。不要合 master。
+
 真比例起步卡（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：阿超要画布比例做成真形卡。3:4、9:16、1:1、4:3、16:9、2:1 的外轮廓按各自宽高比，底边对齐，选中是青柠描边。点卡片，画布跟着换。抽版式、改字、网格、辅助线、多页都还在。右侧模板骨架没有筛选条；精品模板只按主题名筛，作品没有画布比例，所以「尺寸」pill 还没做。截图在 `docs/previews/ratio-cards-row.png` 和 `ratio-cards-selected.png`。不要合 master。
 
 LotGo 对齐 P3（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：最多 4 页。多页解锁时，抽版式在后面加一页并切过去；已经 4 页就重抽当前页。锁住时只改当前页。页点可以在 1 到 4 之间跳。「导出全部页」把各页竖着拼进一个 SVG，中间留空。断行按画布上量到的行来，不再按字宽估算。截图在 `docs/previews/lotgo-p3-pages.png` 和 `lotgo-p3-svg.png`。不导出 PSD。不要合 master。
@@ -179,6 +181,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-28 四族版式
+
+- 想做什么：瑞士 A–E 之外再加四族，每族至少两套。按族筛选，抽版式只在当前族里换。多图不要共用一张。中文横排。不合并、不部署。
+- 做成了什么：照片网格、字中图、杂志、中文排各两套，六种比例都有格子。右侧一族一排按钮。图槽带自己的序号。
+- 改了哪些文件：`public/layout-templates.js`、`public/layout.js`、`public/layout.html`、`public/layout.css`、`lib/layout-fill.js`、`scripts/check-layout-families.mjs`、`docs/previews/lotgo-p4-photo.png`、`docs/previews/lotgo-p4-type.png`、`docs/previews/lotgo-p4-magazine.png`、`docs/previews/lotgo-p4-zh.png`、`docs/previews/lotgo-p4-families.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-layout-families.mjs`、`check-layout-fill.mjs`、`check-layout-grid.mjs` 都打印 ok。无头浏览器里，三张不同色的图进了三个槽；只剩一张时另外两槽是空叉。锁住多页后抽版式仍停在照片网格。文案锁、单图锁、布局锁和原来一样。换成 16:9 后宽图槽变窄。中文标题是横排。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/75 还没合并。没有上正式站。图库、扣次、导出打磨、风格扩、PSD 都没做。
+
 ### 2026-10-26 智能排版截断提示与验收说明
 
 - 想做什么：字太长时提示「已截断」。导出保持不可用。把验收截图和自检清单留下，合前给阿超看。不新开功能。
@@ -210,11 +220,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：无头浏览器打开 `/layout.html`。没放生成结果时拖标题，位置不变。放上空的生成结果后，拖标题吸到格子上，宽高仍是 84 和 12。拖动过程中已经在交点上。列数改成 6，块不动；再拖仍按 6 列的格子算。图块同样能拖，宽高不变。拖出右下角后停在 99%、99%。控制台没有报错。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。页面上还不能自己生成，要等后面接线。拖之前控制台写 `state.fill = { slots: [] }` 再 `renderBlocks()`。
-
-### 2026-10-26 智能排版网格列数和吸附函数
-
-- 想做什么：格子列数能改，画布画出网格线。吸附和钳制做成纯函数，并用脚本检查。不做拖拽，不接生成。
-- 做成了什么：`public/layout-grid.js` 负责列数 6–24、行数、吸到最近交点、块不要完全拖出画布。默认 12 列。3:4 画出 13 条竖线、17 条横线。改列数时槽块位置不动。
-- 改了哪些文件：`public/layout-grid.js`、`scripts/check-layout-grid.mjs`、`public/layout.js`、`public/layout.css`、`public/layout.html`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`node scripts/check-layout-grid.mjs` 打印 `check-layout-grid: ok`。无头浏览器打开 `/layout.html`，12 列是 13 竖 17 横，拖到 6 列变成 7 竖 9 横，标题块坐标没变。再切 16:9，列数仍是 6 时横线变成 4 条。控制台没有报错。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/73 还没合并。拖块还没做。行数函数不在内部把 0 收成 6，否则检查里的「至少 1 行」对不上。3.2 这个点已经越过半格，吸到下一行，不是原点。

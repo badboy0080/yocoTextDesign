@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+真比例起步卡（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：阿超要画布比例做成真形卡。3:4、9:16、1:1、4:3、16:9、2:1 的外轮廓按各自宽高比，底边对齐，选中是青柠描边。点卡片，画布跟着换。抽版式、改字、网格、辅助线、多页都还在。右侧模板骨架没有筛选条；精品模板只按主题名筛，作品没有画布比例，所以「尺寸」pill 还没做。截图在 `docs/previews/ratio-cards-row.png` 和 `ratio-cards-selected.png`。不要合 master。
+
 LotGo 对齐 P3（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：最多 4 页。多页解锁时，抽版式在后面加一页并切过去；已经 4 页就重抽当前页。锁住时只改当前页。页点可以在 1 到 4 之间跳。「导出全部页」把各页竖着拼进一个 SVG，中间留空。断行按画布上量到的行来，不再按字宽估算。截图在 `docs/previews/lotgo-p3-pages.png` 和 `lotgo-p3-svg.png`。不导出 PSD。不要合 master。
 
 LotGo 对齐 P2（2026-10-28，仍是 `cursor/swiss-templates-ae-3d6e` / PR #75，未合并、未部署）：当时最多两页，导出的是当前页。比例有 4:3 和 2:1。截图在 `docs/previews/lotgo-p2-pages.png` 和 `lotgo-p2-svg.png`。不要合 master。

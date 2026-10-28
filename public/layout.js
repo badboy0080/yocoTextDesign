@@ -292,9 +292,13 @@ function renderPager() {
 }
 
 function renderChrome() {
-  ratioRow.innerHTML = RATIO_IDS.map((id) =>
-    `<button type="button" role="radio" aria-checked="${state.ratio === id}" data-ratio="${id}">${id}</button>`
-  ).join("");
+  ratioRow.innerHTML = RATIO_IDS.map((id) => {
+    const ratio = RATIOS[id];
+    return `<button type="button" role="radio" class="ratio-card" aria-checked="${state.ratio === id}" data-ratio="${id}" style="--rw:${ratio.w};--rh:${ratio.h}">
+      <span class="ratio-shape" aria-hidden="true"></span>
+      <span class="ratio-name">${id}</span>
+    </button>`;
+  }).join("");
   templateGrid.innerHTML = TEMPLATE_GROUPS.map((group) => {
     const buttons = TEMPLATES.filter((item) => item.group === group.id).map((item) =>
       `<button type="button" role="option" aria-selected="${state.templateId === item.id}" data-template="${item.id}">

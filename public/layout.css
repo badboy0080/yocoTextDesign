@@ -32,7 +32,7 @@
 .layout-label { margin: 8px 0 0; font-size: 13px; font-weight: 600; color: var(--ink); }
 .layout-help { margin: 0; font-size: 12px; color: var(--muted); }
 .layout-stage-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
-.stage-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.stage-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-end; justify-content: space-between; }
 .guide-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); cursor: pointer; user-select: none; }
 .guide-toggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--yooco-color-primary); }
 .upload-button {
@@ -41,11 +41,32 @@
   color: var(--ink); font: inherit; font-weight: 600; cursor: pointer;
 }
 .ratio-row, .template-grid, .layout-actions, .grid-n-row, .preset-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.ratio-row button, .template-grid button, .preset-row button, .ghost-button, .ai-button {
+.ratio-row { --ratio-side: 64px; align-items: flex-end; gap: 10px 12px; }
+.ratio-card {
+  display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px;
+  min-height: 0; min-width: 0; padding: 2px 2px 0; border: 0; border-radius: 0;
+  appearance: none; background: transparent; box-shadow: none; color: var(--muted);
+  font: inherit; font-size: 12px; line-height: 1.2; cursor: pointer;
+}
+.ratio-shape {
+  display: block; box-sizing: border-box;
+  width: calc(var(--ratio-side) * var(--rw) / max(var(--rw), var(--rh)));
+  height: calc(var(--ratio-side) * var(--rh) / max(var(--rw), var(--rh)));
+  border-radius: 8px; border: 1.5px solid #1c1c1c; background: #f7f6f2;
+  box-shadow: 0 8px 18px rgba(0,0,0,.35);
+}
+.ratio-name { white-space: nowrap; }
+.ratio-card:hover .ratio-shape { border-color: var(--yooco-color-primary); }
+.ratio-card[aria-checked="true"] { color: var(--ink); font-weight: 700; }
+.ratio-card[aria-checked="true"] .ratio-shape {
+  border: 2px solid var(--yooco-color-primary);
+  box-shadow: 0 0 0 2px #0c0c0c, 0 0 0 4px var(--yooco-color-primary), 0 8px 18px rgba(0,0,0,.35);
+}
+.ratio-card:focus-visible { outline: 2px solid var(--yooco-color-primary); outline-offset: 3px; }
+.template-grid button, .preset-row button, .ghost-button, .ai-button {
   min-height: 40px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: rgba(255,255,255,.04); color: var(--ink); cursor: pointer; font: inherit;
 }
-.ratio-row button[aria-checked="true"],
 .template-grid button[aria-selected="true"],
 .preset-row button[aria-pressed="true"],
 .lock-grid button[aria-pressed="true"],
@@ -187,6 +208,10 @@
 @media (max-width: 960px) {
   .studio-layout { height: auto; overflow: visible; }
   .layout-workspace { grid-template-columns: 1fr; height: auto; flex: none; overflow: visible; }
+  .ratio-row { --ratio-side: 56px; }
+}
+@media (max-width: 520px) {
+  .ratio-row { --ratio-side: 48px; gap: 8px; }
 }
 .canvas-grid .grid-v, .canvas-grid .grid-h {
   position: absolute; background: none; pointer-events: none;

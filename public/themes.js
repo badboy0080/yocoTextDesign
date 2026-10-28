@@ -392,7 +392,7 @@ const THEMES = {
     },
   },
 
-  // 包豪：灰底 #F0F0F0。四原色都要用：红 #D02020 做标题块和卡片标题，蓝 #1040C0 做加粗（strong/b）和链接，黄 #F0C020 做引导段和高亮，黑 #121212 做正文、描边和硬投影。直角，不渐变，不纹理。
+  // 包豪：灰底 #F0F0F0。红 #D02020 做标题块和卡片标题，蓝 #1040C0 做加粗、链接和重点底（白字），黄 #F0C020 只做引导段，黑 #121212 做正文、描边和硬投影。直角，不渐变，不纹理。
   bauhaus: {
     label: "包豪",
     en: "BAUHAUS",
@@ -401,7 +401,7 @@ const THEMES = {
     params: {
       styleVariant: "standard",
       textColor: "#121212", accentColor: "#D02020",
-      highlightColor: "#F0C020", highlightTextColor: "#121212",
+      highlightColor: "#1040C0", highlightTextColor: "#FFFFFF",
       cardColor: "#FFFFFF", quoteColor: "#FFFFFF", cardTitleColor: "#D02020",
       pageColor: "#F0F0F0", linkColor: "#1040C0",
       codeBackground: "#FFFFFF", codeColor: "#121212", dividerColor: "#121212",

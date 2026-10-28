@@ -2259,8 +2259,9 @@ function buildCopyHtml() {
   const quoteTitleStyle = cardTitleStyle(cardKind, state.quoteTitleSize);
   const contentCardTitleStyle = cardTitleStyle(cardKind, state.cardTitleSize);
   const titleStyle = sixThemeTitleInline(`margin:0 0 18px;color:${titleColor};font-size:${state.titleSize}px;line-height:${state.headingLineHeight};font-weight:${state.headingWeight};letter-spacing:${headingLetterSpacingCss()};text-align:left;`);
+  const hardEdgeImageFill = state.theme === "bauhaus" ? "#F0C020" : state.highlightColor;
   const imageBoxStyle = isHardEdgeTheme(state.theme)
-    ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.highlightColor};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
+    ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${hardEdgeImageFill};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : isDeepNight
     ? `margin:22px 0 26px;padding:48px 12px;text-align:center;border:2px solid ${state.borderColor};border-radius:${state.imageRadius}px;background-color:${state.pageColor};color:${mutedColor};font-size:11px;font-weight:800;letter-spacing:.13em;`
     : `margin:22px 0 26px;padding:48px 12px;text-align:center;border-radius:${state.imageRadius}px;background-color:${state.accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.13em;`;
@@ -2293,7 +2294,7 @@ function buildCopyHtml() {
     if (t === "editorial") return `${base}padding:16px 18px;margin-bottom:22px;border-left:4px solid #1e1f23;border-radius:0 6px 6px 0;background-color:${state.cardColor};color:${titleColor};font-weight:650;`;
     if (t === "nocturne") return `${base}margin-bottom:22px;color:${state.accentColor};font-weight:700;`;
     if (isHardEdgeTheme(t)) {
-      const leadFill = t === "grunge" ? state.cardColor : t === "newsprint" ? state.quoteColor : state.highlightColor;
+      const leadFill = t === "grunge" ? state.cardColor : t === "newsprint" ? state.quoteColor : t === "bauhaus" ? "#F0C020" : state.highlightColor;
       return `${base}padding:16px 18px;margin-bottom:26px;border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;background-color:${leadFill};box-shadow:4px 4px 0 ${state.borderColor};color:${titleColor};font-weight:800;`;
     }
     return `${baseTextStyle}color:${state.accentColor};font-weight:750;`;

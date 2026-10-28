@@ -1254,7 +1254,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 .article-page[data-theme="citrus"] .lead,
 .article-page[data-theme="playful"] .lead { background: var(--highlight-color, #ffe566); }
 .article-page[data-theme="grunge"] .lead { background: var(--card-color, #ffffff); }
-.article-page[data-theme="bauhaus"] .lead { background: var(--highlight-color, #F0C020); color: var(--title-color, #121212); }
+.article-page[data-theme="bauhaus"] .lead { background: #F0C020; color: var(--title-color, #121212); }
 .article-page[data-theme="newsprint"] .lead { background: var(--quote-color, #f5f5f5); }
 .article-page[data-hard-edge="1"][data-heading-style="block"] .section-title {
   max-width: 100%; box-sizing: border-box; border: 2px solid var(--border-color, #111111); border-radius: var(--card-radius, 6px);
@@ -1328,6 +1328,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   border-radius: var(--image-radius, 6px);
   background: var(--highlight-color, #ffe566); color: var(--title-color, #111111);
 }
+.article-page[data-theme="bauhaus"] .fake-image { background: #F0C020; color: var(--title-color, #121212); }
 
 /* ---------- 平涂 flat：软底色块，明确不要硬投影 ---------- */
 .article-page[data-theme="flat"] .content-card,
@@ -1389,7 +1390,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   box-shadow: 4px 4px 0 var(--border-color, #121212);
 }
 
-/* 六套重点长得不一样：柠边是黄条，乐几是琥珀胶囊，撕贴是暗金底，平涂是蓝字，报章是红线，包豪是直角黄底加黑边 */
+/* 六套重点长得不一样：柠边是黄条，乐几是琥珀胶囊，撕贴是暗金底，平涂是蓝字，报章是红线，包豪是直角蓝底加黑边 */
 .article-page[data-theme="citrus"] .inline-highlight {
   padding: 0; border-radius: 0; background: transparent; box-shadow: none;
   color: var(--highlight-text-color, #1a1a1a); font-weight: 800; text-decoration: none;
@@ -1414,7 +1415,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
 }
 .article-page[data-theme="bauhaus"] .inline-highlight {
   padding: 0 3px; border-radius: 0; box-shadow: none; text-decoration: none;
-  background: var(--highlight-color, #f0c020); color: var(--highlight-text-color, #121212); font-weight: 800;
+  background: var(--highlight-color, #1040C0); color: var(--highlight-text-color, #ffffff); font-weight: 800;
   border-bottom: 2px solid var(--border-color, #121212);
 }
 

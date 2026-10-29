@@ -3,8 +3,8 @@ import { ensureInviteCode, inviteFailureMessage } from "@/lib/invite-store";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const account = await currentAccount();
+export async function GET(request: Request) {
+  const account = await currentAccount(request);
   if (!account) {
     return Response.json(
       { ok: false, message: "请先登录。" },

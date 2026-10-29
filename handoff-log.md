@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+排版 401 和超时（2026-10-29，未合并、未部署）：控制台里的 401 是 `POST /api/history`，正文是「请先登录。」。没登录也会在优化成功后去记历史，所以浏览器会打出 401。登录票以前只挂在当前网址上，`www.yoooco.com` 和 `yoooco.com` 对不上；登录响应也不一定带上 `Set-Cookie`。现在登录和注册的响应自己写登录票，正式站同时写给 `.yoooco.com`。历史、邀请、账号和排版配额都从这一次请求的 Cookie 里认人。没登录调用历史仍是 401。排版接口仍不要求登录，试用还在。DeepSeek Flash 默认先想再写，长文会拖过网关，浏览器看到 504。排版已关掉思考；26 秒还没回来就自己停，回中文说明，状态是 503。改之前，线上短文约 4 秒、约 900 字约 8 秒能成功。正式站要等合进 master。
+
 六套工作台主题拉开差别（2026-10-28，未合并、未部署）：柠边、乐几、撕贴、平涂、报章、包豪的大标题、重点、字号和段距分开了。包豪重点后来改成蓝底白字（#1040C0），直角和细黑边还在，引导段仍是黄。重点以前看不见，是因为正文里没有 `==重点==` 时切换主题不会自己加；六套又都用同一种荧光笔底，报章的浅粉和纸色几乎一样。现在有记号就能看见六种不同重点。没记号的旧稿还是没有，要点一次优化。智能排版没动。截图在 `docs/previews/studio-theme-diff-sheet.png`。正式站要等合进 master。
 
 答案页分支已接到含常见问题定稿的 master（2026-10-26，PR #68，未合并）：FAQ #67 已在 master。交接日志里答案页和常见问题两条都留着。`/gongzhonghao-paiban` 仍是 #68 定稿，没有退回。还没合并。
@@ -163,6 +165,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-10-29 登录票和排版超时
+
+- 想做什么：浏览器里 `POST /api/history` 是 401，`/api/normalize` 有时是 504。登录后的排版和记历史要能过。没登录仍是 401。只开 PR，不合并。
+- 做成了什么：登录和注册的响应自己带登录票，正式站同时写给 `.yoooco.com`，`www` 和裸域名能共用。历史等接口从这次请求的 Cookie 认人。没登录不再去记历史，所以控制台不会多一条 401。排版关掉模型思考，26 秒停下来回中文说明，不再把 504 丢给网关。
+- 改了哪些文件：`lib/local-accounts.ts`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、登录注册退出和历史等接口、`public/app.js`、`public/studio.html`、`scripts/check-session-cookie.ts`、`scripts/check-normalize-timeout.js`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-normalize-timeout.js`、`npx tsx scripts/check-session-cookie.ts`、积分和账号检查、`tsc --noEmit` 通过。线上改之前：没登录的历史是 401，正文「请先登录。」；短文排版约 4 秒、约 900 字约 8 秒是 200。没在浏览器里重新登录。
+- 待办/风险：已经登在 `www` 上的人要再登一次，新的登录票才会两边通用。站点仍开着 `http://yoooco.com`，登录票没加 Secure。很长的文章仍可能超过 26 秒，那时是 503 和中文说明，不是网关 504。合进 master 才会上正式站。
+
 ### 2026-10-28 六套主题标题、重点、间距拉开
 
 - 想做什么：工作台里柠边、乐几、撕贴、平涂、报章、包豪排出来太像，而且看不见重点。先查原因再改。不动智能排版。只开 PR，不合并。
@@ -194,11 +204,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。
-
-### 2026-10-25 引擎三刀：标题负字距、数字半角、中英空格
-
-- 想做什么：按「一个字没换排版贵10倍」先做引擎三刀。标题收紧字距，数字改半角，中英之间加空格。不改主题暖黑、配色、SEO、模板卡片。只开 PR，不合并。
-- 做成了什么：文章标题和章节标题用单独的 headingLetterSpacing，默认 -0.04em（字距 -40）。正文仍是原来的 letterSpacing。预览和微信复制稿一起做半角数字和中英空格。代码和网址内部不动。
-- 改了哪些文件：`public/typeset-polish.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/engine-trio-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 打开工作台，贴含「和Latte」「¥１９」「日期 １０.２１」和大标题的样文。标题算出 -1.04px，小标题 -1.08px，正文 0.3px。正文变成「和 Latte」「¥19」「10.21」。代码里仍是「和Latte１９」。复制稿标题是 -0.04em，正文是 0.3px，没有渐变。截图在 `docs/previews/engine-trio-before-after.png`。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/66 已开，没有自己合并。公众号后台粘贴后，空格和负字距还没在微信里看过。

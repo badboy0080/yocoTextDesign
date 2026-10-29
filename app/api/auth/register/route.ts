@@ -7,7 +7,7 @@ import {
   redeemInviteCode,
 } from "@/lib/invite-store";
 import { verifyEmailCode } from "@/lib/email-otp";
-import { deleteAccount, registerAccount } from "@/lib/local-accounts";
+import { deleteAccount, registerAccount, withSessionCookie } from "@/lib/local-accounts";
 
 function accountDeviceId(userId: number, raw: unknown): string {
   return sanitizeDeviceId(raw) || `acct-${String(userId).padStart(4, "0")}`;
@@ -64,17 +64,19 @@ export async function POST(request: Request) {
     const redeemed = await redeemInviteCode({ code: invite.code, userId: result.id });
     if (!redeemed.ok) {
       await deleteAccount(result.id);
-      return Response.json(
+      const response = Response.json(
         { ok: false, message: inviteFailureMessage(redeemed.reason) },
         { status: inviteFailureStatus(redeemed.reason), headers: { "cache-control": "no-store" } },
       );
+      return withSessionCookie(response, request, null);
     }
     inviteBonus = redeemed.bonusRemaining;
     await recordFunnelEvent("invite_redeem", accountDeviceId(result.id, body?.deviceId));
   }
 
-  return Response.json(
+  const response = Response.json(
     { ok: true, email: result.email, name: result.name, inviteBonus },
     { status: 201, headers: { "cache-control": "no-store" } },
   );
+  return withSessionCookie(response, request, result.sessionToken);
 }

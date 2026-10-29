@@ -1,6 +1,7 @@
-import { logoutAccount } from "@/lib/local-accounts";
+import { logoutAccount, withSessionCookie } from "@/lib/local-accounts";
 
-export async function POST() {
+export async function POST(request: Request) {
   await logoutAccount();
-  return Response.json({ ok: true }, { headers: { "cache-control": "no-store" } });
+  const response = Response.json({ ok: true }, { headers: { "cache-control": "no-store" } });
+  return withSessionCookie(response, request, null);
 }

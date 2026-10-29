@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 const headers = { "cache-control": "no-store" };
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const account = await currentAccount();
+  const account = await currentAccount(request);
   if (!account) {
     return Response.json({ ok: false, message: "请先登录。" }, { status: 401, headers });
   }

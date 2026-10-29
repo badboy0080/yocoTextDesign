@@ -1,7 +1,7 @@
 import { currentAccount } from "@/lib/local-accounts";
 
-export async function GET() {
-  const account = await currentAccount();
+export async function GET(request: Request) {
+  const account = await currentAccount(request);
   if (!account) {
     return Response.json({ ok: false }, { status: 401, headers: { "cache-control": "no-store" } });
   }

@@ -6,8 +6,8 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "cache-control": "no-store" } });
 }
 
-async function requireAdmin() {
-  const account = await currentAccount();
+async function requireAdmin(request: Request) {
+  const account = await currentAccount(request);
   if (!account) return { ok: false as const, response: json({ ok: false, message: "请先登录。" }, 401) };
   if (!isAdminAccount(account)) {
     return { ok: false as const, response: json({ ok: false, message: "只有管理员能看账号权限。" }, 403) };
@@ -16,7 +16,7 @@ async function requireAdmin() {
 }
 
 export async function GET(request: Request) {
-  const auth = await requireAdmin();
+  const auth = await requireAdmin(request);
   if (!auth.ok) return auth.response;
   try {
     const query = new URL(request.url).searchParams.get("q") || "";
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const auth = await requireAdmin();
+  const auth = await requireAdmin(request);
   if (!auth.ok) return auth.response;
   const body = await request.json().catch(() => null);
   try {

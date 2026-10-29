@@ -142,9 +142,9 @@ function presentQuota(trial: TrialQuota, extra?: { action?: string; cost?: numbe
   return { ...trial, credits };
 }
 
-type AccountQuotaReader = () => Promise<Partial<QuotaAccount> | null>;
+type AccountQuotaReader = (request?: Request) => Promise<Partial<QuotaAccount> | null>;
 
-let readAccountForQuota: AccountQuotaReader = () => currentQuotaAccount();
+let readAccountForQuota: AccountQuotaReader = (request) => currentQuotaAccount(request);
 
 /** 检查脚本用来换掉当前登录账号。传入 null 则恢复读真实会话。 */
 export function useAccountReaderForTests(reader: AccountQuotaReader | null) {
@@ -156,9 +156,9 @@ function effectiveDailyLimit(account: Partial<QuotaAccount> | null): number {
   return custom === undefined ? TRIAL_LIMIT : custom;
 }
 
-async function readQuotaAccount(): Promise<Partial<QuotaAccount> | null> {
+async function readQuotaAccount(request?: Request): Promise<Partial<QuotaAccount> | null> {
   try {
-    return await readAccountForQuota();
+    return await readAccountForQuota(request);
   } catch (error) {
     console.warn("[rate-limit] account check failed", error);
     return null;
@@ -283,8 +283,8 @@ type QuotaSubject = {
 };
 
 /** 不限积分直接返回。已登录用账号每天额度和 userId 计数；访客仍按 IP 和全站 3 积分。 */
-async function readQuotaSubject(): Promise<{ unlimited: true } | { unlimited: false; subject: QuotaSubject }> {
-  const account = await readQuotaAccount();
+async function readQuotaSubject(request?: Request): Promise<{ unlimited: true } | { unlimited: false; subject: QuotaSubject }> {
+  const account = await readQuotaAccount(request);
   if (account?.unlimitedUses === true) return { unlimited: true };
   const userId = typeof account?.id === "number" && Number.isInteger(account.id) && account.id > 0 ? account.id : null;
   return {
@@ -304,7 +304,7 @@ async function readQuotaSubject(): Promise<{ unlimited: true } | { unlimited: fa
  * No-op when the backing store is unavailable.
  */
 export async function peekNormalizeQuota(request: Request): Promise<TrialQuota> {
-  const subject = await readQuotaSubject();
+  const subject = await readQuotaSubject(request);
   if (subject.unlimited) return presentQuota(unlimitedQuota());
   if (!isRateLimitEnabled()) return presentQuota(skippedQuota());
   const { limit, bonus } = subject.subject;
@@ -359,7 +359,7 @@ export async function prepareCreditSpend(request: Request, cost: number): Promis
   if (!Number.isInteger(cost) || cost < 1) {
     throw new AppError("INVALID_INPUT", "这次扣分不对。", 400);
   }
-  const subject = await readQuotaSubject();
+  const subject = await readQuotaSubject(request);
   if (subject.unlimited) return creditUserFrom(request, subject, false);
   const { userId, limit, bonus } = subject.subject;
   if (!isRateLimitEnabled()) return creditUserFrom(request, subject, true);

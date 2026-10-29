@@ -9,6 +9,7 @@ export { normalizeEmail, validEmail };
 
 const SESSION_COOKIE = "yooco_session";
 const SESSION_DAYS = 30;
+const SESSION_MAX_AGE = SESSION_DAYS * 24 * 60 * 60;
 const STORE_NAME = "yooco-accounts";
 const DOC_KEY = "accounts";
 
@@ -257,7 +258,82 @@ function passwordMatches(password: string, stored: string) {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-async function startSession(doc: AccountDoc, userId: number) {
+function requestHost(request?: Request): string {
+  const raw = request?.headers.get("x-forwarded-host") || request?.headers.get("host") || "";
+  return raw.split(",")[0]?.trim().split(":")[0]?.toLowerCase() || "";
+}
+
+function yoocoSharedHost(host: string): boolean {
+  return host === "yoooco.com" || host.endsWith(".yoooco.com");
+}
+
+/** 从请求头里取出全部 yooco_session。www 和裸域名可能各带一枚。 */
+export function sessionTokensFromHeader(cookieHeader: string | null | undefined): string[] {
+  if (!cookieHeader) return [];
+  const tokens: string[] = [];
+  for (const part of cookieHeader.split(";")) {
+    const trimmed = part.trim();
+    const eq = trimmed.indexOf("=");
+    if (eq <= 0) continue;
+    if (trimmed.slice(0, eq).trim() !== SESSION_COOKIE) continue;
+    let value = trimmed.slice(eq + 1).trim();
+    if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) value = value.slice(1, -1);
+    if (!value) continue;
+    try {
+      tokens.push(decodeURIComponent(value));
+    } catch {
+      tokens.push(value);
+    }
+  }
+  return tokens;
+}
+
+function sessionCookieLine(token: string, maxAge: number, domain?: string): string {
+  const parts = [
+    `${SESSION_COOKIE}=${token}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${maxAge}`,
+  ];
+  if (domain) parts.push(`Domain=${domain}`);
+  return parts.join("; ");
+}
+
+/**
+ * 登录成功时写到响应上。
+ * EdgeOne 不一定会带上 cookies().set() 的 Set-Cookie。
+ * 正式站同时给当前主机和 .yoooco.com，www 和裸域名才能共用这一次登录。
+ * 站点还有 http://yoooco.com，所以这里不加 Secure，否则浏览器会丢掉这枚 cookie。
+ */
+export function sessionSetCookieHeaders(token: string, request?: Request): string[] {
+  const lines = [sessionCookieLine(token, SESSION_MAX_AGE)];
+  if (yoocoSharedHost(requestHost(request))) lines.push(sessionCookieLine(token, SESSION_MAX_AGE, ".yoooco.com"));
+  return lines;
+}
+
+export function sessionClearCookieHeaders(request?: Request): string[] {
+  const lines = [sessionCookieLine("", 0)];
+  if (yoocoSharedHost(requestHost(request))) lines.push(sessionCookieLine("", 0, ".yoooco.com"));
+  return lines;
+}
+
+export function withSessionCookie(response: Response, request: Request, token: string | null): Response {
+  const lines = token ? sessionSetCookieHeaders(token, request) : sessionClearCookieHeaders(request);
+  for (const line of lines) response.headers.append("set-cookie", line);
+  return response;
+}
+
+async function tokenFromCookieJar(): Promise<string> {
+  try {
+    const jar = await cookies();
+    return jar.get(SESSION_COOKIE)?.value || "";
+  } catch {
+    return "";
+  }
+}
+
+async function startSession(doc: AccountDoc, userId: number): Promise<string> {
   const token = randomBytes(32).toString("base64url");
   doc.sessions.push({
     tokenHash: hashToken(token),
@@ -269,8 +345,9 @@ async function startSession(doc: AccountDoc, userId: number) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
+    maxAge: SESSION_MAX_AGE,
   });
+  return token;
 }
 
 export async function registerAccount(input: { name: string; email: string; password: string }) {
@@ -285,9 +362,9 @@ export async function registerAccount(input: { name: string; email: string; pass
   }
   const id = doc.users.reduce((max, user) => Math.max(max, user.id), 0) + 1;
   doc.users.push({ id, email, name, passwordHash: hashPassword(input.password), createdAt: new Date().toISOString() });
-  await startSession(doc, id);
+  const sessionToken = await startSession(doc, id);
   await save(doc);
-  return { ok: true as const, id, email, name };
+  return { ok: true as const, id, email, name, sessionToken };
 }
 
 export async function loginAccount(input: { email: string; password: string }) {
@@ -297,23 +374,28 @@ export async function loginAccount(input: { email: string; password: string }) {
   if (!user || !passwordMatches(input.password, user.passwordHash)) {
     return { ok: false as const, status: 401, message: "邮箱或密码不正确。" };
   }
-  await startSession(doc, user.id);
+  const sessionToken = await startSession(doc, user.id);
   await save(doc);
-  return { ok: true as const, email: user.email, name: user.name };
+  return { ok: true as const, email: user.email, name: user.name, sessionToken };
 }
 
-async function currentUserRecord(): Promise<UserRecord | null> {
-  const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+async function currentUserRecord(request?: Request): Promise<UserRecord | null> {
+  const headerTokens = request ? sessionTokensFromHeader(request.headers.get("cookie")) : [];
+  const tokens = headerTokens.length ? headerTokens : [await tokenFromCookieJar()].filter(Boolean);
+  if (!tokens.length) return null;
   const { doc } = await openDoc();
-  const session = doc.sessions.find((item) => item.tokenHash === hashToken(token) && item.expiresAt > Date.now());
-  if (!session) return null;
-  return doc.users.find((item) => item.id === session.userId) ?? null;
+  const now = Date.now();
+  for (const token of tokens) {
+    const session = doc.sessions.find((item) => item.tokenHash === hashToken(token) && item.expiresAt > now);
+    if (!session) continue;
+    const user = doc.users.find((item) => item.id === session.userId);
+    if (user) return user;
+  }
+  return null;
 }
 
-export async function currentAccount() {
-  const user = await currentUserRecord();
+export async function currentAccount(request?: Request) {
+  const user = await currentUserRecord(request);
   return user ? toPublicAccount(user) : null;
 }
 
@@ -324,8 +406,8 @@ export type QuotaAccount = {
 };
 
 /** 排版配额用。带上每日额度，不带密码。 */
-export async function currentQuotaAccount(): Promise<QuotaAccount | null> {
-  const user = await currentUserRecord();
+export async function currentQuotaAccount(request?: Request): Promise<QuotaAccount | null> {
+  const user = await currentUserRecord(request);
   if (!user) return null;
   return {
     id: user.id,

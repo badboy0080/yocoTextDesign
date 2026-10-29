@@ -10,8 +10,8 @@ function unauthorized() {
   return Response.json({ ok: false, message: "请先登录。" }, { status: 401, headers });
 }
 
-export async function GET() {
-  const account = await currentAccount();
+export async function GET(request: Request) {
+  const account = await currentAccount(request);
   if (!account) return unauthorized();
   const items = await listLayoutHistory(account.id);
   if (!items) {
@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const account = await currentAccount();
+  const account = await currentAccount(request);
   if (!account) return unauthorized();
   const contentLength = Number(request.headers.get("content-length") || 0);
   if (contentLength > MAX_BODY_BYTES) {

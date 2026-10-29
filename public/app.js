@@ -2008,6 +2008,9 @@ async function normalizeWithDeepSeek() {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
+      if (response.status === 504 && !payload?.error?.message) {
+        throw new Error("排版超时了，请缩短文章后再试。");
+      }
       const message = formatNormalizeError(payload);
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {
         serverTrialUnlimited = false;
@@ -3017,9 +3020,24 @@ function oneLineExcerpt(text) {
   return String(text || "").replace(/\s+/g, " ").trim().slice(0, 80);
 }
 
+let studioLoggedIn = false;
+let studioSessionChecked = false;
+
 async function rememberLayoutHistory(originalSource) {
   const source = (articleInput ? articleInput.value : articleSource).trim().slice(0, 40000);
   if (!source) return;
+  if (!studioSessionChecked) {
+    try {
+      const me = await fetch("/api/auth/me", { cache: "no-store" });
+      const data = me.ok ? await me.json().catch(() => ({})) : {};
+      studioLoggedIn = Boolean(data?.email);
+    } catch {
+      studioLoggedIn = false;
+    }
+    studioSessionChecked = true;
+  }
+  // 没登录不记历史。未登录再打这个接口，浏览器控制台会留下 401。
+  if (!studioLoggedIn) return;
   try {
     const response = await fetch("/api/history", {
       method: "POST",
@@ -3203,7 +3221,6 @@ async function showLocalAccount() {
     more.setAttribute("aria-expanded", open ? "true" : "false");
   });
   document.querySelector("#studioProfile")?.addEventListener("click", closeMenu);
-  let studioLoggedIn = false;
   const goToLogin = () => {
     const url = "/login";
     try {
@@ -3299,18 +3316,21 @@ async function showLocalAccount() {
   });
   if (!account) return;
   try {
-    const response = await fetch("/api/auth/me");
+    const response = await fetch("/api/auth/me", { cache: "no-store" });
+    studioSessionChecked = true;
     if (!response.ok) {
+      studioLoggedIn = false;
       if (login) login.hidden = false;
       return;
     }
     const data = await response.json();
     if (!data?.email) {
+      studioLoggedIn = false;
       if (login) login.hidden = false;
       return;
     }
-    account.hidden = false;
     studioLoggedIn = true;
+    account.hidden = false;
     if (login) login.hidden = true;
     setupHistoryUi();
     if (studioEmbedded()) {

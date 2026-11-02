@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+表情主题（2026-11-02，PR #81，未合并、未部署）：工作台主题列表末尾新增「表情」（emoji）。浅纸色，小标题、无序列表、分隔和很短的结尾按语义加小图标。同一篇只留 3 到 5 种，图标在文字前，中间一个空格；带【】的小标题，图标放在括号前面。大标题、有序列表和代码不加。模型漏标时服务端会补，标多了会收。切到这个主题，预览会马上带上图标。已变基到含日扫三条和 #79 的 master，日扫的划选标重点、气质和缩略墙都留着。柠边、乐几、撕贴、平涂、报章、包豪的差别没动。正式站要等合进 master。
+
 外网交互日扫三条（2026-11-02，PR #80，已接到含 #79 的 master，未合并、未部署）：工作台右侧预览划一段文字，上方出黑胶囊，主按钮「标重点」，旁边「复制」。标重点写成 `==原文==`，当前块如果本来就有 marks，会再补一条 highlight，文字必须是这块原文里的连续片段。换主题重点样式还在，不重新优化，不扣积分。主题选择下面加了气质芯片：默认、瑞士大字、极简、杂志。只改字号和留白/行距，配色仍是当前主题，可以回到默认。精品模板详情改成左边大预览、右边大约三列缩略图，下面是「用这篇排版」。原来的「做同款」、列表点开、风格筛选都还在。截图在 `docs/previews/scan-1102-*.png`。正式站要等合进 master。
 
 优化排版重点（2026-11-02，PR #79，已合进 master）：十三套主题都要在段落、引语、卡片里标 highlight。不足 12 字可以不标，普通段至少 1 处，80 字及以上 1 到 2 处，每处 4 到 16 字，不能整段刷黄。结论、行动、数字、金句用重点，术语用加粗。原文 `==重点==` 会收成 highlight。模型没标时，服务端从原文里补短片段，不编句子。人味改写会保住 `==重点==`。这台机器没有密钥，用假返回验证。已合进 master。
@@ -171,6 +173,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-02 新增表情主题
+
+- 想做什么：给文章小标题、列表、分隔加上一套小图标。同一篇只留 3 到 5 种。只开 PR，不合 master。
+- 做成了什么：工作台末尾加了「表情」（emoji）。浅纸、蜂蜜色重点，不抢图标。小标题按语义加在文字前，【】前面也可以加。无序列表整列一种符号，分隔是整行符号，很短的结尾可以加留言、赞叹这类。种类多了会收掉。
+- 改了哪些文件：`public/emoji-theme.js`、`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`scripts/check-highlight-marks.js`、`CONTEXT.md`、`README.md`、`docs/previews/emoji-theme-desktop.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了带小标题、列表、分隔的样文，点「表情」。预览里是浅纸，知识点、秋天、总结各有图标，列表是菱形，分隔是整行，结尾有留言图标。列表没有再画一个圆点。柠边和包豪的按钮还在。截图在 `docs/previews/emoji-theme-desktop.png`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/81 已开，没有自己合并。这次变基到最新 master，冲突留在交接日志、`public/app.js`、`public/studio.html`。日扫三条（划选标重点、气质、缩略墙）和 #79 重点规则都留着。合进 master 才会上正式站。优化成表情时，正文段开头如果已经是这套图标，会拿掉一个，避免一篇堆太多；字还在。在预览里改过带图标的字，再换别的主题，图标会留在原文里。
+
 ### 2026-11-02 外网交互日扫三条
 
 - 想做什么：按 2026-11-02 日扫做三件事。预览里划选标重点，主题旁加气质，精品模板详情加缩略墙。不改订阅、文案、漏斗、常见问题，不碰空状态和风格筛选。只开 PR，不合并。
@@ -202,11 +212,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/local-accounts.ts`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、登录注册退出和历史等接口、`public/app.js`、`public/studio.html`、`scripts/check-session-cookie.ts`、`scripts/check-normalize-timeout.js`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-normalize-timeout.js`、`npx tsx scripts/check-session-cookie.ts`、积分和账号检查、`tsc --noEmit` 通过。线上改之前：没登录的历史是 401，正文「请先登录。」；短文排版约 4 秒、约 900 字约 8 秒是 200。没在浏览器里重新登录。
 - 待办/风险：已经登在 `www` 上的人要再登一次，新的登录票才会两边通用。站点仍开着 `http://yoooco.com`，登录票没加 Secure。很长的文章仍可能超过 26 秒，那时是 503 和中文说明，不是网关 504。合进 master 才会上正式站。
-
-### 2026-10-28 六套主题标题、重点、间距拉开
-
-- 想做什么：工作台里柠边、乐几、撕贴、平涂、报章、包豪排出来太像，而且看不见重点。先查原因再改。不动智能排版。只开 PR，不合并。
-- 做成了什么：六套大标题、重点、正文字号和段距分开。重点分别是黄条、琥珀胶囊、暗金底、蓝字、红线和包豪直角蓝底（#1040C0，白字，细黑边还在）。整理提示词要求这六套必须标出重点。报章和平涂的配方也补上了重点。
-- 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`docs/previews/studio-theme-diff-sheet.png` 及六张分图、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：无头 Chrome 用同一篇带 `==重点==` 的长文切六套。每套都有 5 个重点，复制稿里的内联样式和预览一致。去掉 `==` 后再切，重点是 0。截图在 `docs/previews/`。没有调用优化，没有合并。
-- 待办/风险：原文里没有重点记号时，只换主题仍然不会凭空出现重点，要点一次优化。公众号后台还没真贴。合进 master 才会上正式站。

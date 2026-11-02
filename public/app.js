@@ -1218,6 +1218,12 @@ function parseArticle(source) {
       blocks.push({ type: "divider" });
       continue;
     }
+    if (typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(trimmed)) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: "divider", text: trimmed });
+      continue;
+    }
     const list = line.match(/^(\s*)([-*+]|\d+[.)])\s+(.+)$/);
     if (list) {
       flushParagraph();
@@ -1402,12 +1408,16 @@ function getArticleModel() {
   const inferred = articleTitleOverride.trim()
     ? { title: "", blocks: parsed.blocks, inferred: false }
     : inferTitleFromFirstBlock(parsed);
-  return polishArticleModel({
+  const model = polishArticleModel({
     ...parsed,
     title: articleTitleOverride.trim() || parsed.title || inferred.title || "",
     blocks: inferred.blocks,
     isSample: false,
   });
+  if (state.theme === "emoji" && typeof globalThis.applyEmojiTheme === "function") {
+    return globalThis.applyEmojiTheme(model);
+  }
+  return model;
 }
 
 function blockIndexAttr(item, index) {
@@ -1612,7 +1622,13 @@ function renderBody() {
         `<div class="stat-item"><b contenteditable="${editable}">${escapeHtml(entry.value || "")}</b><span contenteditable="${editable}">${escapeHtml(entry.label || "")}</span></div>`).join("");
       return `<section class="stat-block" data-type="stat" ${idx}><strong contenteditable="${editable}">${title}</strong><div class="stat-grid">${cells}</div></section>`;
     }
-    if (item.type === "divider" && state.showDivider) return `<hr class="article-divider" data-type="divider" ${idx} />`;
+    if (item.type === "divider" && state.showDivider) {
+      if (state.theme === "emoji") {
+        const rule = escapeHtml(item.text || "✦──────✦");
+        return `<p class="emoji-rule" data-type="divider" ${idx} contenteditable="false">${rule}</p>`;
+      }
+      return `<hr class="article-divider" data-type="divider" ${idx} />`;
+    }
     if (item.type === "image") {
       if (item.url) return `<figure class="article-image" data-type="image" data-url="${escapeHtml(item.url)}" ${idx}><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt)}" loading="lazy" /><figcaption contenteditable="${editable}">${escapeHtml(item.alt || "文章配图")}</figcaption></figure>`;
       if (state.showImage) return `<div class="fake-image" data-type="image" role="img" aria-label="文章配图占位" ${idx} contenteditable="${editable}">${escapeHtml(item.alt || "文章配图占位")}</div>`;
@@ -1773,7 +1789,8 @@ function serializePreviewToMarkdown() {
       return;
     }
     if (type === "divider") {
-      parts.push("---");
+      const text = el.textContent.replace(/\u00a0/g, " ").trim();
+      parts.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : "---");
       return;
     }
     if (type === "image") {
@@ -1921,7 +1938,8 @@ function structuredDocumentToMarkdown(document) {
   document.blocks.forEach((block) => {
     const type = block?.type;
     if (type === "divider") {
-      lines.push("---");
+      const text = String(block.text || "").trim();
+      lines.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : "---");
       return;
     }
     if (type === "image") {
@@ -1991,7 +2009,7 @@ function nextNormalizeAssignment() {
   if (awaitingContentPick) return { mode: "choose" };
   const pool = typeof THEME_IDS !== "undefined"
     ? THEME_IDS
-    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "classic"];
+    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "classic"];
   const theme = pool[Math.floor(Math.random() * pool.length)];
   return { mode: "fixed", theme };
 }
@@ -2469,7 +2487,13 @@ function buildCopyHtml() {
       }).join("");
       return `<section style="${cardBoxStyle("outline", state.cardColor)}"><p style="margin:0 0 12px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${title}</p><section style="margin:0;padding:0;text-align:left;">${cells}</section></section>`;
     }
-    if (item.type === "divider" && state.showDivider) return themeDividerHtml();
+    if (item.type === "divider" && state.showDivider) {
+      if (state.theme === "emoji") {
+        const rule = escapeHtml(item.text || "✦──────✦");
+        return `<p style="margin:28px 0;padding:0;text-align:center;color:${mutedColor};font-size:15px;line-height:1.6;letter-spacing:.08em;">${rule}</p>`;
+      }
+      return themeDividerHtml();
+    }
     if (item.type === "image") {
       if (item.url) {
         const meta = getCopyImageMeta(item.url);
@@ -2497,18 +2521,22 @@ function buildCopyHtml() {
           if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">→</span>`;
           return `<span style="color:${state.accentColor};font-weight:700;margin-right:6px;">${n}.</span>`;
         }
+        if (state.theme === "emoji") return "";
         if (listKind === "circle") return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:${state.accentColor};margin:0 10px 2px 2px;vertical-align:middle;"></span>`;
         if (listKind === "ghost") return `<span style="color:${ghostAccent};margin-right:8px;">—</span>`;
         if (listKind === "check") return `<span style="color:${state.accentColor};font-weight:800;margin-right:8px;">✓</span>`;
         return `<span style="color:${state.accentColor};margin-right:6px;">•</span>`;
       };
-      const itemStyleFor = (depth) => {
-        const pad = depth ? (listBase + depth * 1.25).toFixed(2) : listBase;
+      const itemStyleFor = (depth, ordered) => {
+        const emojiPlain = state.theme === "emoji" && !ordered;
+        const pad = emojiPlain
+          ? (depth ? (depth * 1.25).toFixed(2) : "0")
+          : (depth ? (listBase + depth * 1.25).toFixed(2) : listBase);
         return `margin:0 0 ${state.listItemSpacing}px;padding-left:${pad}em;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};letter-spacing:${state.letterSpacing}px;text-align:left;text-indent:0;`;
       };
       const renderNodes = (nodes, ordered, depth) => (nodes || []).map((node, index) => {
         const nested = groupListChildren(node.children).map((group) => renderNodes(group.nodes, group.ordered, depth + 1)).join("");
-        return `<p style="${itemStyleFor(depth)}">${marker(ordered, index)}<span>${copyInlineMarkdown(node.text)}</span></p>${nested}`;
+        return `<p style="${itemStyleFor(depth, ordered)}">${marker(ordered, index)}<span>${copyInlineMarkdown(node.text)}</span></p>${nested}`;
       }).join("");
       const itemsHtml = renderNodes(nestListItems(item.items), Boolean(item.ordered), 0);
       return `<section style="margin:0 0 ${state.paragraphSpacing}px;text-align:left;">${itemsHtml}</section>`;
@@ -2562,7 +2590,7 @@ function buildCopyPlain(html) {
     }
     if (item.type === "steps") return [item.title, ...(item.items || [])].filter(Boolean).join("\n");
     if (item.type === "stat") return [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
-    if (item.type === "divider") return "——";
+    if (item.type === "divider") return item.text || "——";
     if (item.type === "image") return [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
     if (["quote", "card"].includes(item.type)) return [item.title, item.text].filter(Boolean).join("：");
     return item.text || "";
@@ -3094,28 +3122,33 @@ if (saved) {
     syncMoodUI();
   } catch { /* ignore stale local config */ }
 }
-reconcileVibe();
-if (articleInput) articleInput.value = articleSource;
-if (articleSource) setStatus(`已载入上次文章：${parseArticle(articleSource).blocks.length} 个内容块`);
-renderMoodUI();
-renderVibeUI();
-syncControls();
-render();
+import("/emoji-theme.js?v=emoji-theme-v1").then((mod) => {
+  globalThis.applyEmojiTheme = mod.applyEmojiTheme;
+  globalThis.isEmojiRuleLine = mod.isEmojiRuleLine;
+}).catch(() => { /* 图标模块没加载到时，整理结果里已经写好的图标仍能显示 */ }).finally(() => {
+  reconcileVibe();
+  if (articleInput) articleInput.value = articleSource;
+  if (articleSource) setStatus(`已载入上次文章：${parseArticle(articleSource).blocks.length} 个内容块`);
+  renderMoodUI();
+  renderVibeUI();
+  syncControls();
+  render();
 
-try {
-  if (localStorage.getItem("yooco-auto-optimize") === "1") {
-    localStorage.removeItem("yooco-auto-optimize");
-    if (articleSource.trim()) {
-      queueMicrotask(() => {
-        normalizeWithDeepSeek();
-      });
+  try {
+    if (localStorage.getItem("yooco-auto-optimize") === "1") {
+      localStorage.removeItem("yooco-auto-optimize");
+      if (articleSource.trim()) {
+        queueMicrotask(() => {
+          normalizeWithDeepSeek();
+        });
+      }
     }
-  }
-} catch { /* ignore */ }
+  } catch { /* ignore */ }
 
-renderTrialMeter();
-refreshTrialFromServer();
-showLocalAccount();
+  renderTrialMeter();
+  refreshTrialFromServer();
+  showLocalAccount();
+});
 
 function historyThemeLabel() {
   if (isTheme() && THEMES[state.theme]) return THEMES[state.theme].label;

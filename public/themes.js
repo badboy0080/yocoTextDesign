@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 十二套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 十三套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -426,9 +426,44 @@ const THEMES = {
       caseStudy: { core: ["paragraph", "card", "list"], accent: ["highlight"] },
     },
   },
+
+  // 表情：浅纸色，图标自己说话。不要硬边，不要抢图标的颜色。
+  emoji: {
+    label: "表情",
+    en: "EMOJI",
+    primary: "#C4A574",
+    fit: "旅行打卡 · 读书笔记 · 生活随笔 · 科普小文",
+    params: {
+      styleVariant: "standard",
+      textColor: "#3E3832", accentColor: "#8C7355",
+      highlightColor: "#F3E4C4", highlightTextColor: "#3E3832",
+      cardColor: "#F7F1E8", quoteColor: "#F7F1E8", cardTitleColor: "#6E5B45",
+      pageColor: "#FBF7F2", linkColor: "#6E5B45",
+      codeBackground: "#F4EFE7", codeColor: "#3E3832", dividerColor: "#E6DCCA",
+      mutedColor: "#9A9084", titleColor: "#2C2824", borderColor: "#E6DCCA",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 16, lineHeight: 1.85, letterSpacing: 0.4, paragraphSpacing: 20,
+      titleSize: 26, headingSize: 22, subheadingSize: 18, minorHeadingSize: 16,
+      headingWeight: 700, headingLineHeight: 1.45, headingLetterSpacing: 0,
+      headingSpacingBefore: 28, headingSpacingAfter: 10,
+      headingStyle: "line", cardStyle: "soft", listStyle: "dot",
+      highlightStyle: "marker", highlightRadius: 3, highlightPadding: 2,
+      cardRadius: 12, imageRadius: 10, cardPadding: 18,
+      showDivider: true,
+    },
+    recipe: {
+      lifestyle: { core: ["paragraph", "list"], accent: ["divider", "quote", "highlight"] },
+      tutorial: { core: ["list", "paragraph"], accent: ["divider", "highlight"] },
+      checklist: { core: ["list", "card"], accent: ["paragraph", "highlight"] },
+      opinion: { core: ["paragraph", "quote"], accent: ["list", "divider", "highlight"] },
+      interview: { core: ["paragraph", "quote"], accent: ["list", "highlight"] },
+      dataReport: { core: ["paragraph", "list"], accent: ["card", "highlight"] },
+      caseStudy: { core: ["list", "paragraph"], accent: ["quote", "highlight"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

@@ -1503,3 +1503,13 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .heading-atlas.atlas-ticket { padding: 14px !important; }
   .heading-atlas.atlas-index .heading-atlas-main { padding: 16px 13px 13px; }
 }
+
+/* 表情：图标在文字里。无序列表不再另画圆点，分隔线用整行符号。 */
+.article-page[data-theme="emoji"] ul.article-list li::before { content: none; }
+.article-page[data-theme="emoji"] .article-content ul.article-list,
+.article-page[data-theme="emoji"] .article-content ul.article-list li { padding-left: 0; }
+.article-page[data-theme="emoji"] .emoji-rule {
+  margin: 28px 0; padding: 0; border: 0; text-align: center;
+  color: var(--muted-color, #9A9084); font-size: 15px; line-height: 1.6; letter-spacing: .08em;
+}
+.article-page[data-theme="emoji"] .section-title { border-bottom-color: var(--divider-color, #E6DCCA); }

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-29 登录票和排版超时
+
+- 想做什么：浏览器里 `POST /api/history` 是 401，`/api/normalize` 有时是 504。登录后的排版和记历史要能过。没登录仍是 401。只开 PR，不合并。
+- 做成了什么：登录和注册的响应自己带登录票，正式站同时写给 `.yoooco.com`，`www` 和裸域名能共用。历史等接口从这次请求的 Cookie 认人。没登录不再去记历史，所以控制台不会多一条 401。排版关掉模型思考，26 秒停下来回中文说明，不再把 504 丢给网关。
+- 改了哪些文件：`lib/local-accounts.ts`、`lib/edgeone-rate-limit.ts`、`lib/deepseek-normalizer.js`、登录注册退出和历史等接口、`public/app.js`、`public/studio.html`、`scripts/check-session-cookie.ts`、`scripts/check-normalize-timeout.js`、`tsconfig.json`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-normalize-timeout.js`、`npx tsx scripts/check-session-cookie.ts`、积分和账号检查、`tsc --noEmit` 通过。线上改之前：没登录的历史是 401，正文「请先登录。」；短文排版约 4 秒、约 900 字约 8 秒是 200。没在浏览器里重新登录。
+- 待办/风险：已经登在 `www` 上的人要再登一次，新的登录票才会两边通用。站点仍开着 `http://yoooco.com`，登录票没加 Secure。很长的文章仍可能超过 26 秒，那时是 503 和中文说明，不是网关 504。合进 master 才会上正式站。
+
 ### 2026-10-28 六套主题标题、重点、间距拉开
 
 - 想做什么：工作台里柠边、乐几、撕贴、平涂、报章、包豪排出来太像，而且看不见重点。先查原因再改。不动智能排版。只开 PR，不合并。

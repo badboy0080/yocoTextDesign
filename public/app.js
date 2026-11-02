@@ -1580,6 +1580,12 @@ function loadSampleTry() {
   setFeedback("");
 }
 
+function emojiDividerText(text) {
+  const raw = String(text || "").trim();
+  if (typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(raw)) return raw;
+  return "✦──────✦";
+}
+
 function renderBody() {
   if (sampleStaticActive && isSampleTrySource()) {
     paintSampleTry();
@@ -1624,7 +1630,7 @@ function renderBody() {
     }
     if (item.type === "divider" && state.showDivider) {
       if (state.theme === "emoji") {
-        const rule = escapeHtml(item.text || "✦──────✦");
+        const rule = escapeHtml(emojiDividerText(item.text));
         return `<p class="emoji-rule" data-type="divider" ${idx} contenteditable="false">${rule}</p>`;
       }
       return `<hr class="article-divider" data-type="divider" ${idx} />`;
@@ -1790,6 +1796,10 @@ function serializePreviewToMarkdown() {
     }
     if (type === "divider") {
       const text = el.textContent.replace(/\u00a0/g, " ").trim();
+      if (state.theme === "emoji") {
+        parts.push(emojiDividerText(text));
+        return;
+      }
       parts.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : "---");
       return;
     }
@@ -1939,6 +1949,10 @@ function structuredDocumentToMarkdown(document) {
     const type = block?.type;
     if (type === "divider") {
       const text = String(block.text || "").trim();
+      if (state.theme === "emoji") {
+        lines.push(emojiDividerText(text));
+        return;
+      }
       lines.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : "---");
       return;
     }
@@ -1951,9 +1965,10 @@ function structuredDocumentToMarkdown(document) {
     if (type === "list" && Array.isArray(block.items)) {
       let rootIndex = 0;
       const list = block.items.map((item) => {
-        const raw = String(item ?? "");
-        const nested = /^\s{2,}/.test(raw);
-        const body = nested ? raw.trim().replace(/^(?:[-*+]|\d+[.)])\s+/, "") : raw.trim();
+        const raw = typeof item === "string" ? item : String(item?.text || "");
+        const depth = item && typeof item === "object" ? Math.max(0, Number(item.depth) || 0) : 0;
+        const nested = depth > 0 || /^\s{2,}/.test(raw);
+        const body = raw.trim().replace(/^(?:[-*+]|\d+[.)])\s+/, "");
         if (!body) return "";
         if (nested) return `  - ${body}`;
         rootIndex += 1;
@@ -2489,7 +2504,7 @@ function buildCopyHtml() {
     }
     if (item.type === "divider" && state.showDivider) {
       if (state.theme === "emoji") {
-        const rule = escapeHtml(item.text || "✦──────✦");
+        const rule = escapeHtml(emojiDividerText(item.text));
         return `<p style="margin:28px 0;padding:0;text-align:center;color:${mutedColor};font-size:15px;line-height:1.6;letter-spacing:.08em;">${rule}</p>`;
       }
       return themeDividerHtml();
@@ -2511,6 +2526,9 @@ function buildCopyHtml() {
       const marker = (ordered, index) => {
         const n = index + 1;
         if (ordered) {
+          if (state.theme === "emoji") {
+            return `<span style="display:inline-block;min-width:1.4em;margin-right:6px;color:${mutedColor};font-size:${state.fontSize}px;font-weight:650;line-height:${state.lineHeight};vertical-align:baseline;">${n}.</span>`;
+          }
           if (listKind === "circle") {
             const circleInk = state.theme === "citrus" ? titleColor : state.pageColor;
             const circleFill = state.theme === "bauhaus" ? state.linkColor : state.accentColor;
@@ -3122,7 +3140,7 @@ if (saved) {
     syncMoodUI();
   } catch { /* ignore stale local config */ }
 }
-import("/emoji-theme.js?v=emoji-theme-v1").then((mod) => {
+import("/emoji-theme.js?v=emoji-ordered-v1").then((mod) => {
   globalThis.applyEmojiTheme = mod.applyEmojiTheme;
   globalThis.isEmojiRuleLine = mod.isEmojiRuleLine;
 }).catch(() => { /* 图标模块没加载到时，整理结果里已经写好的图标仍能显示 */ }).finally(() => {

@@ -38,7 +38,7 @@ assert(registerCopy.includes("有就填，没有也能注册"), "注册页占位
 assert(registerCopy.includes("填了邀请码并注册成功，双方各 +5 积分。"), "注册页提示");
 assert(!registerCopy.includes("没有也可以注册"), "注册页不要留旧占位");
 assert(!registerCopy.includes("填了多 5 次免费"), "注册页不要留旧提示");
-assert(SITE_FAQ.length === 6, "常见问题六条");
+assert(SITE_FAQ.length === 9, "常见问题九条");
 assert(faqCategories().join("|") === "积分|验证码|邀请", "常见问题按积分、验证码、邀请分组");
 const faqPage = readFileSync(new URL("../app/faq/page.tsx", import.meta.url), "utf8");
 const faqTabs = readFileSync(new URL("../components/faq-tabs-card.tsx", import.meta.url), "utf8");
@@ -82,8 +82,8 @@ assert(worksFrame.includes(">个人信息</button>"), "个人信息还在，不�
 assert(!accountMenu.includes("邀请好友"), "登录页账号菜单不再放邀请");
 assert(
   SITE_FAQ.map((item) => item.title).join("|") ===
-    "试用积分|当天积分用完了怎么办|收不到邮箱验证码|邀请好友|怎样算邀请成功|邀请码用不了",
-  "常见问题标题里，试用改成积分，用完和邀请成功各自成题",
+    "试用积分|当天积分用完了怎么办|积分／邀请加的额度没显示？|加分了但看不到，先对邮箱|收不到邮箱验证码|邀请好友|怎样算邀请成功|邀请码用不了|邀请码能不能挂公开群？",
+  "常见问题标题里，试用改成积分，用完和邀请成功各自成题，客服周扫三条接在对应分类后面",
 );
 const trialFaq = SITE_FAQ.find((item) => item.id === "trial");
 const creditsOutFaq = SITE_FAQ.find((item) => item.id === "credits-out");
@@ -126,6 +126,29 @@ assert(
   inviteFailFaq?.body === "常见原因：码不对 / 已用满 5 次 / 该账号已领过。仍失败把邀请码截图发客服核实。",
   "邀请码失败说明用客服定稿",
 );
+const creditsMissingFaq = SITE_FAQ.find((item) => item.id === "credits-missing");
+const creditsEmailFaq = SITE_FAQ.find((item) => item.id === "credits-email");
+const invitePublicFaq = SITE_FAQ.find((item) => item.id === "invite-public");
+assert(
+  creditsMissingFaq?.category === "积分" &&
+    creditsMissingFaq.body === "先退出账号，再用同一邮箱登录一次。多数是页面还没刷新到。仍没有，把注册邮箱发客服。",
+  "额度没显示用客服周扫定稿",
+);
+assert(
+  creditsMissingFaq && "emphasis" in creditsMissingFaq && creditsMissingFaq.emphasis === "同一邮箱",
+  "同一邮箱要加粗",
+);
+assert(
+  creditsEmailFaq?.category === "积分" &&
+    creditsEmailFaq.body === "先确认登录的是填邀请码、拿积分的那个邮箱。换邮箱登录看不到另一个账号的积分。",
+  "加分看不到先对邮箱",
+);
+assert(
+  invitePublicFaq?.category === "邀请" &&
+    invitePublicFaq.body === "一个码最多 5 人用，用满就失效；同一账号只能核销一次。别把码长期挂公开群让人随便领，避免被刷完你自己用不了。",
+  "公开群邀请码说明用客服周扫定稿",
+);
+assert(invitePublicFaq?.body.includes("最多 5 人") && invitePublicFaq.body.includes("同一账号只能核销一次"), "公开群仍写 5 人和同账号一次");
 assert(readInviteInput("  ").kind === "absent", "空邀请码应当没填");
 assert(readInviteInput("abc234").kind === "code", "小写邀请码要能认");
 assert(readInviteInput("000000").kind === "invalid", "不合法的码要拒绝");

@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+常见问题补客服周扫三条（2026-11-02，PR #78，未合并、未部署）：`/faq` 仍是积分、验证码、邀请三类。积分里新增「积分／邀请加的额度没显示？」和「加分了但看不到，先对邮箱」。前一条里「同一邮箱」加粗。邀请里新增「邀请码能不能挂公开群？」，仍写一个码最多 5 人、同一账号只能核销一次。首页底部读的是同一份问答，这三条也会出现在首页底部。没改答案页、订阅、漏斗、首页主句，也没改邀请核销。正式站要等阿超说合并。
+
 排版 401 和超时（2026-10-29，未合并、未部署）：控制台里的 401 是 `POST /api/history`，正文是「请先登录。」。没登录也会在优化成功后去记历史，所以浏览器会打出 401。登录票以前只挂在当前网址上，`www.yoooco.com` 和 `yoooco.com` 对不上；登录响应也不一定带上 `Set-Cookie`。现在登录和注册的响应自己写登录票，正式站同时写给 `.yoooco.com`。历史、邀请、账号和排版配额都从这一次请求的 Cookie 里认人。没登录调用历史仍是 401。排版接口仍不要求登录，试用还在。DeepSeek Flash 默认先想再写，长文会拖过网关，浏览器看到 504。排版已关掉思考；26 秒还没回来就自己停，回中文说明，状态是 503。改之前，线上短文约 4 秒、约 900 字约 8 秒能成功。正式站要等合进 master。
 
 六套工作台主题拉开差别（2026-10-28，未合并、未部署）：柠边、乐几、撕贴、平涂、报章、包豪的大标题、重点、字号和段距分开了。包豪重点后来改成蓝底白字（#1040C0），直角和细黑边还在，引导段仍是黄。重点以前看不见，是因为正文里没有 `==重点==` 时切换主题不会自己加；六套又都用同一种荧光笔底，报章的浅粉和纸色几乎一样。现在有记号就能看见六种不同重点。没记号的旧稿还是没有，要点一次优化。智能排版没动。截图在 `docs/previews/studio-theme-diff-sheet.png`。正式站要等合进 master。
@@ -165,6 +167,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-02 常见问题补客服周扫三条
+
+- 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。
+- 做成了什么：额度没显示、先对邮箱，挂在积分。「同一邮箱」用现成的加粗。能不能挂公开群，挂在邀请，仍是一码最多 5 人、同一账号只能核销一次。旧的六条没改字。
+- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本改用内存，最后是 invite checks ok）。`npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分两条和邀请公开群一条，正文与定稿一致。截图在运行产物里，没有放进仓库。没有部署，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/78 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这三条也会出现在首页。
+
 ### 2026-10-29 登录票和排版超时
 
 - 想做什么：浏览器里 `POST /api/history` 是 401，`/api/normalize` 有时是 504。登录后的排版和记历史要能过。没登录仍是 401。只开 PR，不合并。
@@ -196,11 +206,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。
-
-### 2026-10-26 常见问题按客服定稿改四条
-
-- 想做什么：按客服定稿改 `/faq` 文案。收不到验证码整段换掉；当天用完、怎样算邀请成功各自成题；试用积分末句只写清零。不开新地址，不改样式，不合并。
-- 做成了什么：验证码改成四步，并写明只有邮箱验证码。试用积分只留额度规则，防刷改成「一经核实，相关积分清零。」用完了的去处挪到「当天积分用完了怎么办」。邀请成功写成填码并且注册成功才核销。分类仍是积分、验证码、邀请。
-- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-invite.ts` 和 `npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分、验证码、邀请。桌面和 390 宽都能看全四条新文案，分类没挤乱。首页底部是同一份六条，仍有「更多问题」。没有部署，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/67 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这两道新题也会出现在首页。

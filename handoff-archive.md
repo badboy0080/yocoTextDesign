@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-10-26 答案页分支接到已合入的常见问题
+
+- 想做什么：FAQ #67 已合进 master。把答案页 PR #68 变基到最新 master，解开交接日志冲突。答案页内容不能退。不合并。
+- 做成了什么：变基成功。摘要和最近记录里，答案页在上、常见问题定稿在下。两条原文都在。常见问题摘要改成已合进 master。多出来的旧记录挪进归档，最近仍是 5 条。答案页代码还是 #68 定稿。
+- 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
+
 ### 2026-10-26 公众号排版页升级成答案页
 
 - 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。

@@ -16,6 +16,8 @@ const TEMPLATE_DEFAULTS = {
   cardRadius: 12, cardPadding: 20, imageRadius: 12,
   showQuote: true, showDivider: true, showImage: true,
   theme: "classic", articleType: "auto", showSignature: false,
+  // 气质只改字号和留白，不改配色。default 跟当前主题自己的字号。
+  vibe: "default",
 };
 
 // 四个旧气质现在和精选主题放在同一个「主题」列表里。点某一项，套用该方向的第一套皮肤。
@@ -393,13 +395,16 @@ initParameterAccordion();
 
 function applySkin(skinId, { fromUser = true } = {}) {
   if (!SKINS[skinId]) return;
+  const vibe = state.vibe;
   currentSkin = skinId;
   currentMood = skinMood(skinId);
   Object.assign(state, buildSkinState(skinId));
   state.theme = "classic";
+  restoreVibeAfterTheme(vibe);
   const sampleSource = fromUser && isSampleTrySource();
   if (fromUser) styleTouched = true;
   syncMoodUI();
+  syncVibeUI();
   syncControls();
   render();
   if (sampleSource) setFeedback("已按当前主题重排示例，没有调用优化。");
@@ -413,6 +418,7 @@ function isTheme() {
 function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   if (themeId !== "classic" && !THEMES[themeId]) return;
   const previousArticleType = state.articleType;
+  const vibe = state.vibe;
   if (themeId === "classic") {
     Object.assign(state, buildSkinState(currentSkin));
   } else {
@@ -421,9 +427,11 @@ function applyTheme(themeId, { fromUser = true, articleType } = {}) {
   // 用户此前手动指定过文章类型时，换主题不重置它（类型是对文章的判断，与主题无关）。
   if (previousArticleType && previousArticleType !== "auto") state.articleType = previousArticleType;
   if (articleType) state.articleType = articleType;
+  restoreVibeAfterTheme(vibe);
   const sampleSource = fromUser && isSampleTrySource();
   if (fromUser) styleTouched = true;
   syncMoodUI();
+  syncVibeUI();
   syncControls();
   render();
   if (sampleSource) setFeedback("已按当前主题重排示例，没有调用优化。");
@@ -778,6 +786,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   const enums = {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
     textAlign: ["left", "right", "center", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
+    vibe: ["default", "swiss", "quiet", "magazine", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold", "strikethrough", "text-underline", "wavy"],
     headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
     cardStyle: ["border", "outline", "soft", "band"],
@@ -812,6 +821,103 @@ function applyReadingDensity(density) {
     comfortable: { fontSize: 17, lineHeight: 1.92, paragraphSpacing: 24 },
   };
   Object.assign(state, densities[density] || densities.standard, { readingDensity: densities[density] ? density : "standard" });
+}
+
+// 主题旁边的气质。只动字号档和留白/行距，配色仍走当前主题。
+const VIBE_KEYS = ["fontSize", "lineHeight", "paragraphSpacing", "contentWidth", "titleSize", "headingSize", "subheadingSize", "minorHeadingSize", "headingLineHeight", "headingSpacingBefore", "headingSpacingAfter"];
+const VIBE_PRESETS = {
+  swiss: {
+    label: "瑞士大字",
+    fontSize: 22, lineHeight: 1.4, paragraphSpacing: 28, contentWidth: 560,
+    titleSize: 36, headingSize: 34, subheadingSize: 28, minorHeadingSize: 24,
+    headingLineHeight: 1.15, headingSpacingBefore: 40, headingSpacingAfter: 14,
+  },
+  quiet: {
+    label: "极简",
+    fontSize: 16, lineHeight: 2.1, paragraphSpacing: 36, contentWidth: 520,
+    titleSize: 28, headingSize: 24, subheadingSize: 20, minorHeadingSize: 18,
+    headingLineHeight: 1.45, headingSpacingBefore: 44, headingSpacingAfter: 20,
+  },
+  magazine: {
+    label: "杂志",
+    fontSize: 15, lineHeight: 1.5, paragraphSpacing: 8, contentWidth: 640,
+    titleSize: 32, headingSize: 26, subheadingSize: 22, minorHeadingSize: 18,
+    headingLineHeight: 1.2, headingSpacingBefore: 16, headingSpacingAfter: 6,
+  },
+};
+
+function sameMetric(left, right) {
+  const a = Number(left);
+  const b = Number(right);
+  if (Number.isFinite(a) && Number.isFinite(b)) return Math.abs(a - b) < 0.001;
+  return left === right;
+}
+
+function themeTypographyBaseline() {
+  const base = isTheme() ? buildThemeState(state.theme) : buildSkinState(currentSkin);
+  return VIBE_KEYS.reduce((picked, key) => {
+    picked[key] = base[key];
+    return picked;
+  }, {});
+}
+
+function vibeMetricsMatch(source) {
+  return VIBE_KEYS.every((key) => sameMetric(state[key], source[key]));
+}
+
+function reconcileVibe() {
+  if (state.vibe === "custom") return;
+  if (VIBE_PRESETS[state.vibe]) {
+    if (!vibeMetricsMatch(VIBE_PRESETS[state.vibe])) state.vibe = "custom";
+    return;
+  }
+  state.vibe = vibeMetricsMatch(themeTypographyBaseline()) ? "default" : "custom";
+}
+
+function restoreVibeAfterTheme(vibe) {
+  if (vibe === "custom") {
+    state.vibe = "custom";
+    return;
+  }
+  if (!VIBE_PRESETS[vibe]) {
+    state.vibe = "default";
+    return;
+  }
+  Object.assign(state, VIBE_PRESETS[vibe], { vibe, readingDensity: "custom" });
+}
+
+function applyVibe(id) {
+  if (id === "default") Object.assign(state, themeTypographyBaseline(), { vibe: "default", readingDensity: "custom" });
+  else if (VIBE_PRESETS[id]) Object.assign(state, VIBE_PRESETS[id], { vibe: id, readingDensity: "custom" });
+  else return;
+  styleTouched = true;
+  syncControls();
+  syncVibeUI();
+  render();
+  setFeedback(id === "default" ? "已回到这套主题自己的字号和留白" : "已换气质。没有重新优化，也没有扣积分。");
+}
+
+function syncVibeUI() {
+  document.querySelectorAll("[data-vibe]").forEach((button) => {
+    button.setAttribute("aria-pressed", button.dataset.vibe === state.vibe ? "true" : "false");
+  });
+}
+
+function renderVibeUI() {
+  const mount = document.querySelector("#vibeChips");
+  if (!mount) return;
+  const items = [{ id: "default", label: "默认" }, ...Object.entries(VIBE_PRESETS).map(([id, preset]) => ({ id, label: preset.label }))];
+  mount.replaceChildren();
+  items.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "vibe-chip";
+    button.dataset.vibe = item.id;
+    button.textContent = item.label;
+    button.addEventListener("click", () => applyVibe(item.id));
+    mount.append(button);
+  });
+  syncVibeUI();
 }
 
 function cleanMarkdown(value) {
@@ -1892,12 +1998,14 @@ function nextNormalizeAssignment() {
 
 function applyAiLook(aiParams, assignment) {
   if (styleTouched) return;
+  const vibe = state.vibe;
   const requested = assignment?.mode === "fixed" ? assignment.theme : "";
   const aiTheme = THEMES[aiParams.theme] ? aiParams.theme : "";
   const theme = requested && requested !== "classic" ? requested : (!requested ? aiTheme : "");
   if (theme) {
     Object.assign(state, buildThemeState(theme));
     if (aiParams.articleType && aiParams.articleType !== "auto") state.articleType = aiParams.articleType;
+    restoreVibeAfterTheme(vibe);
     return;
   }
   state.theme = "classic";
@@ -1916,6 +2024,7 @@ function applyAiLook(aiParams, assignment) {
   state.mutedColor = SKINS[currentSkin]?.mutedColor || state.mutedColor;
   state.titleColor = SKINS[currentSkin]?.titleColor || state.textColor;
   state.borderColor = SKINS[currentSkin]?.borderColor || "#dedfd8";
+  restoreVibeAfterTheme(vibe);
 }
 
 const NORMALIZE_ERROR_FALLBACK = "暂时无法完成优化，请稍后重试。";
@@ -1963,6 +2072,7 @@ async function applyAiNormalization(data, assignment, source) {
   const aiParams = normalizeTemplateParams(data?.template?.params || data?.params || {});
   applyAiLook(aiParams, assignment);
   syncMoodUI();
+  syncVibeUI();
   articleTitleOverride = "";
   blockTypeOverrides = {};
   lastAiResult = { ...data, document };
@@ -2571,6 +2681,7 @@ function applyStoredParams(incoming) {
     state.theme = "classic";
     allowed.forEach((key) => { if (incoming[key] !== undefined) state[key] = normalized[key]; });
   }
+  reconcileVibe();
   return retiredTheme;
 }
 
@@ -2591,6 +2702,7 @@ function importConfig(file) {
       }
       styleTouched = true;
       syncMoodUI();
+      syncVibeUI();
       syncControls();
       render();
     copyFeedback.textContent = retiredTheme ? "原主题已移除，已切换为经典主题。" : "配置已导入。";
@@ -2769,10 +2881,14 @@ controls.forEach((control) => {
   const updateControl = () => {
     const key = control.dataset.key;
     state[key] = control.type === "checkbox" ? control.checked : control.type === "range" ? Number(control.value) : control.value;
-    if (key === "readingDensity" && state.readingDensity !== "custom") applyReadingDensity(state.readingDensity);
-    else if (["fontSize", "lineHeight", "paragraphSpacing"].includes(key)) state.readingDensity = "custom";
+    if (key === "readingDensity" && state.readingDensity !== "custom") {
+      applyReadingDensity(state.readingDensity);
+      state.vibe = "custom";
+    } else if (["fontSize", "lineHeight", "paragraphSpacing"].includes(key)) state.readingDensity = "custom";
+    if (VIBE_KEYS.includes(key)) state.vibe = "custom";
     styleTouched = true;
     syncControls();
+    syncVibeUI();
     render({ body: ["showQuote", "showDivider", "showImage", "showSignature", "highlightStyle", "headingStyle", "cardStyle", "listStyle", "bodyFont", "headingFont"].includes(key) });
   };
   control.addEventListener("input", updateControl);
@@ -2787,6 +2903,7 @@ document.querySelector("#resetButton").addEventListener("click", () => {
   styleTouched = false;
   awaitingContentPick = true;
   syncMoodUI();
+  syncVibeUI();
   syncControls();
   render();
   setFeedback("已恢复默认");
@@ -2977,9 +3094,11 @@ if (saved) {
     syncMoodUI();
   } catch { /* ignore stale local config */ }
 }
+reconcileVibe();
 if (articleInput) articleInput.value = articleSource;
 if (articleSource) setStatus(`已载入上次文章：${parseArticle(articleSource).blocks.length} 个内容块`);
 renderMoodUI();
+renderVibeUI();
 syncControls();
 render();
 
@@ -3154,6 +3273,7 @@ function applyHistoryRecord(item) {
   persistArticleSource();
   styleTouched = true;
   syncMoodUI();
+  syncVibeUI();
   syncControls();
   render();
   selectEditorView(0);
@@ -3935,9 +4055,276 @@ function setupHumanizeFloat() {
   });
 }
 
+const MARK_HOST_TYPES = new Set(["paragraph", "lead", "quote", "card"]);
+let markLayer = null;
+let markPick = null;
+
+function markHostFromNode(node) {
+  const el = node?.nodeType === 1 ? node : node?.parentElement;
+  const host = el?.closest?.("[data-type]");
+  if (!host || !articleBody?.contains(host)) return null;
+  if (!MARK_HOST_TYPES.has(host.dataset.type)) return null;
+  return host;
+}
+
+function markTitleNode(host) {
+  if (host.dataset.type !== "quote" && host.dataset.type !== "card") return null;
+  return host.querySelector(":scope > strong");
+}
+
+function plainPieces(host) {
+  const title = markTitleNode(host);
+  const pieces = [];
+  const walk = (node) => {
+    if (title && node === title) return;
+    if (node.nodeType === 3) {
+      pieces.push({ node, text: (node.textContent || "").replace(/\u00a0/g, " ") });
+      return;
+    }
+    if (node.nodeName === "BR") {
+      pieces.push({ node, text: "\n", br: true });
+      return;
+    }
+    if (node.nodeType === 1) node.childNodes.forEach(walk);
+  };
+  walk(host);
+  let cursor = 0;
+  pieces.forEach((piece) => {
+    piece.start = cursor;
+    cursor += piece.text.length;
+  });
+  return { pieces, plain: pieces.map((piece) => piece.text).join("") };
+}
+
+function boundaryOffset(pieces, container, offset) {
+  if (!container) return -1;
+  if (container.nodeType === 3) {
+    const piece = pieces.find((item) => item.node === container);
+    if (!piece) return -1;
+    return piece.start + Math.max(0, Math.min(offset, piece.text.length));
+  }
+  if (container.nodeType !== 1) return -1;
+  if (offset >= container.childNodes.length) {
+    const inside = pieces.filter((item) => item.node && container.contains(item.node));
+    const last = inside[inside.length - 1];
+    return last ? last.start + last.text.length : -1;
+  }
+  const child = container.childNodes[offset];
+  if (!child) return -1;
+  const next = pieces.find((item) => item.node === child || (item.node && child.contains?.(item.node)));
+  return next ? next.start : -1;
+}
+
+function inspectMarkSelection() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !articleBody) return null;
+  const range = selection.getRangeAt(0);
+  if (!articleBody.contains(range.commonAncestorContainer)) return null;
+  const host = markHostFromNode(range.commonAncestorContainer);
+  if (!host) return null;
+  const startHost = markHostFromNode(range.startContainer);
+  const endHost = markHostFromNode(range.endContainer);
+  if (startHost !== host || endHost !== host) return null;
+  const title = markTitleNode(host);
+  if (title && (title.contains(range.startContainer) || title.contains(range.endContainer))) return null;
+  const { pieces, plain } = plainPieces(host);
+  const start = boundaryOffset(pieces, range.startContainer, range.startOffset);
+  const end = boundaryOffset(pieces, range.endContainer, range.endOffset);
+  if (start < 0 || end <= start || end > plain.length) return null;
+  const fragment = plain.slice(start, end);
+  if (!fragment.trim() || fragment.includes("\n") || fragment.includes("=")) return null;
+  if (!plain.includes(fragment)) return null;
+  const slice = pieces.filter((piece) => piece.start < end && piece.start + piece.text.length > start);
+  if (!slice.length || slice.some((piece) => piece.node?.parentElement?.closest("code"))) return null;
+  const highlighted = slice.length > 0 && slice.every((piece) => piece.node?.parentElement?.closest("mark.inline-highlight"));
+  const overlaps = slice.some((piece) => piece.node?.parentElement?.closest("mark.inline-highlight"));
+  return { range: range.cloneRange(), fragment, hostPlain: plain, highlighted, overlaps };
+}
+
+function appendHighlightMark(doc, fragment, hostPlain) {
+  const blocks = doc?.blocks;
+  if (!Array.isArray(blocks)) return false;
+  const needle = String(fragment || "");
+  const plain = String(hostPlain || "");
+  if (!needle || !plain.includes(needle)) return false;
+  const candidates = blocks.filter((block) => {
+    if (!block || !["paragraph", "quote", "card"].includes(block.type) || !Array.isArray(block.marks)) return false;
+    return String(block.text).includes(needle);
+  });
+  const exact = candidates.filter((block) => String(block.text) === plain);
+  const pool = exact.length ? exact : candidates;
+  if (pool.length !== 1) return false;
+  const block = pool[0];
+  if (block.marks.some((mark) => mark?.type === "highlight" && mark.text === needle)) return true;
+  block.marks.push({ text: needle, type: "highlight" });
+  return true;
+}
+
+function appendHighlightToDocument(fragment, hostPlain) {
+  if (!lastAiResult?.document) return false;
+  return appendHighlightMark(lastAiResult.document, fragment, hostPlain);
+}
+
+function wrapRangeWithHighlight(range) {
+  const mark = document.createElement("mark");
+  mark.className = "inline-highlight";
+  const contents = range.extractContents();
+  if (!contents || !contents.textContent) return false;
+  mark.append(contents);
+  range.insertNode(mark);
+  return true;
+}
+
+function applyPreviewHighlight() {
+  const pick = markPick;
+  if (!pick?.range || !pick.range.startContainer?.isConnected) {
+    hideMarkCapsule();
+    return;
+  }
+  const live = normalizeSelectedText(pick.range.toString());
+  if (live !== pick.fragment) {
+    setFeedback("选区已经变了，请重新划一段。");
+    hideMarkCapsule();
+    return;
+  }
+  if (pick.highlighted) {
+    setFeedback("这段已经是重点。");
+    return;
+  }
+  if (pick.overlaps) {
+    setFeedback("请选还没标过的连续文字。");
+    return;
+  }
+  if (!wrapRangeWithHighlight(pick.range)) {
+    setFeedback("这段标不上重点。");
+    return;
+  }
+  sampleStaticActive = false;
+  const before = articleSource;
+  syncPreviewEdits();
+  const saved = articleSource.includes(`==${pick.fragment}==`);
+  if (!saved) {
+    articleSource = before;
+    if (articleInput && document.activeElement !== articleInput) articleInput.value = before;
+    persistArticleSource();
+    render();
+    setFeedback("这段标不上重点。");
+    hideMarkCapsule();
+    return;
+  }
+  appendHighlightToDocument(pick.fragment, pick.hostPlain);
+  render();
+  window.getSelection()?.removeAllRanges();
+  hideMarkCapsule();
+  setFeedback("已标为重点。换主题也会留着。");
+}
+
+async function copyPreviewHighlight() {
+  const text = markPick?.fragment || "";
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    setFeedback("已复制这段文字。");
+  } catch {
+    setFeedback("复制失败，请检查剪贴板权限。");
+  }
+}
+
+function hideMarkCapsule() {
+  markPick = null;
+  if (markLayer) markLayer.hidden = true;
+}
+
+function ensureMarkLayer() {
+  if (markLayer) return;
+  markLayer = document.createElement("div");
+  markLayer.id = "previewMarkLayer";
+  markLayer.hidden = true;
+  const capsule = document.createElement("div");
+  capsule.className = "mark-capsule";
+  capsule.setAttribute("role", "toolbar");
+  capsule.setAttribute("aria-label", "划选文字");
+  const markButton = document.createElement("button");
+  markButton.type = "button";
+  markButton.className = "mark-capsule-main";
+  markButton.textContent = "标重点";
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "mark-capsule-copy";
+  copyButton.textContent = "复制";
+  [markButton, copyButton].forEach((button) => {
+    button.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+  });
+  markButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    applyPreviewHighlight();
+  });
+  copyButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void copyPreviewHighlight();
+  });
+  capsule.append(markButton, copyButton);
+  markLayer.append(capsule);
+  document.body.append(markLayer);
+}
+
+function placeMarkCapsule(rect) {
+  const capsule = markLayer.querySelector(".mark-capsule");
+  if (!capsule) return;
+  const width = capsule.offsetWidth || 132;
+  const height = capsule.offsetHeight || 36;
+  const gap = 8;
+  let left = rect.left + (rect.right - rect.left) / 2 - width / 2;
+  let top = rect.top - height - gap;
+  const maxLeft = window.innerWidth - width - 8;
+  if (top < 8) top = rect.bottom + gap;
+  capsule.style.left = `${Math.round(Math.max(8, Math.min(left, maxLeft)))}px`;
+  capsule.style.top = `${Math.round(Math.max(8, Math.min(top, window.innerHeight - height - 8)))}px`;
+}
+
+function paintMarkCapsule() {
+  ensureMarkLayer();
+  if (humanizeDialogOpen() || activeEditorKind() !== "preview") {
+    hideMarkCapsule();
+    return;
+  }
+  const pick = inspectMarkSelection();
+  if (!pick) {
+    hideMarkCapsule();
+    return;
+  }
+  markPick = pick;
+  markLayer.hidden = false;
+  const rect = pick.range.getBoundingClientRect();
+  placeMarkCapsule(rect);
+}
+
+function scheduleMarkCapsule() {
+  window.requestAnimationFrame(() => paintMarkCapsule());
+}
+
+function setupHighlightFloat() {
+  ensureMarkLayer();
+  document.addEventListener("selectionchange", scheduleMarkCapsule);
+  document.addEventListener("scroll", scheduleMarkCapsule, true);
+  window.addEventListener("resize", scheduleMarkCapsule);
+  previewStage?.addEventListener("scroll", scheduleMarkCapsule, { passive: true });
+  document.addEventListener("pointerdown", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest(".mark-capsule")) return;
+  });
+}
+
 function setupStudioTools() {
   renderToolMenu();
   setupHumanizeFloat();
+  setupHighlightFloat();
   document.querySelector("#toolMenuButton")?.addEventListener("click", (event) => {
     event.stopPropagation();
     openToolMenu();

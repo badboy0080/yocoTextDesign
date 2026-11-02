@@ -1,13 +1,28 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { applyWork, downloadWorkConfig, type WorkPiece } from "@/lib/works";
 
-export function WorkPreview({ work }: { work: WorkPiece }) {
+function rhythmLabel(block: WorkPiece["blocks"][number], index: number) {
+  if (block.type === "h2") return "小标题";
+  if (block.type === "quote") return "引用";
+  if (block.type === "list") return "清单";
+  if (index === 0) return "开篇";
+  return "正文";
+}
+
+export function WorkPreview({ work, focusIndex }: { work: WorkPiece; focusIndex?: number }) {
+  const thumb = focusIndex != null;
+  const blocks = thumb ? work.blocks.slice(focusIndex, focusIndex + 1) : work.blocks;
   return (
-    <article className={`work-sheet work-sheet--${work.sheet}`} style={{ background: work.pageColor, color: work.textColor }}>
+    <article className={`work-sheet work-sheet--${work.sheet}${thumb ? " work-sheet--beat" : ""}`} style={{ background: work.pageColor, color: work.textColor }}>
+      {thumb ? (
+        <header className="work-sheet-header work-sheet-header--beat">
+          <h3 style={{ color: work.titleColor }}>{work.title}</h3>
+        </header>
+      ) : (
       <header className="work-sheet-header">
         <div className="work-sheet-meta"><span>YOOCO / TEMPLATE</span><span>{work.themeLabel} · {work.sheetNo}</span></div>
         {work.sheet === "serene" && <div className="work-sheet-landscape" aria-hidden="true"><i /><b /><em /></div>}
@@ -22,34 +37,36 @@ export function WorkPreview({ work }: { work: WorkPiece }) {
         <h3 style={{ color: work.titleColor }}>{work.title}</h3>
         <p className="work-sheet-deck">{work.fit} <span>／</span> {work.deck}</p>
       </header>
-      <div className="work-sheet-content">{work.blocks.map((block, index) => {
+      )}
+      <div className="work-sheet-content">{blocks.map((block, index) => {
+        const rhythm = thumb ? focusIndex : index;
         if (block.type === "h2") {
           return (
-            <h4 key={index} style={{ color: work.titleColor }}>
+            <h4 key={rhythm} data-rhythm={rhythm} style={{ color: work.titleColor }}>
               {block.text}
             </h4>
           );
         }
         if (block.type === "quote") {
           return (
-            <blockquote key={index} style={{ borderColor: work.accentColor }}>
+            <blockquote key={rhythm} data-rhythm={rhythm} style={{ borderColor: work.accentColor }}>
               {block.text}
             </blockquote>
           );
         }
         if (block.type === "list") {
           return (
-            <ul key={index}>
+            <ul key={rhythm} data-rhythm={rhythm}>
               {block.items.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           );
         }
-        if (block.type === "p") return <p key={index} className={index === 0 ? "work-sheet-lead" : undefined}>{block.text}</p>;
+        if (block.type === "p") return <p key={rhythm} data-rhythm={rhythm} className={!thumb && rhythm === 0 ? "work-sheet-lead" : undefined}>{block.text}</p>;
         return null;
       })}</div>
-      <footer className="work-sheet-end">YOOCO <span>·</span> FIN.</footer>
+      {thumb ? null : <footer className="work-sheet-end">YOOCO <span>·</span> FIN.</footer>}
     </article>
   );
 }
@@ -65,6 +82,8 @@ export function WorkModal({
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [beat, setBeat] = useState(0);
   const closeRef = useRef<() => void>(() => {});
   const callbackRef = useRef(onClose);
   useLayoutEffect(() => { callbackRef.current = onClose; });
@@ -134,22 +153,42 @@ export function WorkModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="work-dialog-body">
-          <div className="work-source-compare">
-            <section className="work-source-col" aria-labelledby="work-source-label">
-              <p id="work-source-label" className="work-source-label">原文</p>
-              <div className="work-source-scroll" tabIndex={0}>
-                {work.plain?.trim() ? (
-                  <pre className="work-plain">{work.plain}</pre>
-                ) : (
-                  <p className="work-plain work-plain-empty">这套模板还没有配套原文。</p>
-                )}
-              </div>
-            </section>
-            <section className="work-source-col" aria-labelledby="work-result-label">
-              <p id="work-result-label" className="work-source-label">排版后</p>
-              <div className="work-source-scroll" tabIndex={0}>
+          <div className="work-detail-stage">
+            <section className="work-detail-hero" aria-labelledby="work-result-label">
+              <p id="work-result-label" className="work-source-label">排版预览</p>
+              <div className="work-source-scroll" tabIndex={0} ref={heroRef}>
                 <WorkPreview work={work} />
               </div>
+            </section>
+            <section className="work-rhythm" aria-labelledby="work-rhythm-label">
+              <p id="work-rhythm-label" className="work-source-label">版式节奏</p>
+              <ul className="work-rhythm-wall">
+                {work.blocks.map((block, index) => (
+                  <li key={`${block.type}-${index}`}>
+                    <button
+                      type="button"
+                      className={beat === index ? "work-rhythm-card is-active" : "work-rhythm-card"}
+                      aria-pressed={beat === index}
+                      onClick={() => {
+                        setBeat(index);
+                        const scroller = heroRef.current;
+                        const node = scroller?.querySelector<HTMLElement>(`[data-rhythm="${index}"]`);
+                        if (!scroller || !node) return;
+                        const top = node.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+                        scroller.scrollTo({ top: Math.max(0, top - 12), behavior: "smooth" });
+                      }}
+                    >
+                      <span className="work-rhythm-paper" style={{ background: work.pageColor }}>
+                        <WorkPreview work={work} focusIndex={index} />
+                      </span>
+                      <small>{rhythmLabel(block, index)}</small>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" className="work-btn work-btn-primary work-rhythm-use" onClick={() => applyWork(work)}>
+                用这篇排版
+              </button>
             </section>
           </div>
         </div>
@@ -167,6 +206,16 @@ export function WorkModal({
         </header>
         <p className="work-description">{work.fit}</p>
         <p className="work-detail-note">从这套排版开始，换上你的文章，再调整成自己的样子。</p>
+        <div className="work-plain-aside">
+          <p className="work-source-label" id="work-source-label">原文</p>
+          <div className="work-plain-aside-scroll" tabIndex={0}>
+            {work.plain?.trim() ? (
+              <pre className="work-plain work-plain-compact">{work.plain}</pre>
+            ) : (
+              <p className="work-plain work-plain-empty">这套模板还没有配套原文。</p>
+            )}
+          </div>
+        </div>
         <div className="work-swatches" aria-label="模板配色">{[work.pageColor, work.titleColor, work.accentColor].map((color, index) => <span key={index} style={{ background: color }} />)}</div>
         <footer className="work-dialog-actions">
           <button type="button" className="work-btn work-btn-primary" onClick={() => applyWork(work)}>

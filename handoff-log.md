@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+优化排版重点（2026-11-02，未合并、未部署）：十三套主题都要在段落、引语、卡片里标 highlight。不足 12 字可以不标，普通段至少 1 处，80 字及以上 1 到 2 处，每处 4 到 16 字，不能整段刷黄。结论、行动、数字、金句用重点，术语用加粗。原文 `==重点==` 会收成 highlight。模型没标时，服务端从原文里补短片段，不编句子。人味改写会保住 `==重点==`。这台机器没有密钥，用假返回验证。正式站要等合进 master。
+
 常见问题补客服周扫三条（2026-11-02，PR #78，未合并、未部署）：`/faq` 仍是积分、验证码、邀请三类。积分里新增「积分／邀请加的额度没显示？」和「加分了但看不到，先对邮箱」。前一条里「同一邮箱」加粗。邀请里新增「邀请码能不能挂公开群？」，仍写一个码最多 5 人、同一账号只能核销一次。首页底部读的是同一份问答，这三条也会出现在首页底部。没改答案页、订阅、漏斗、首页主句，也没改邀请核销。正式站要等阿超说合并。
 
 排版 401 和超时（2026-10-29，未合并、未部署）：控制台里的 401 是 `POST /api/history`，正文是「请先登录。」。没登录也会在优化成功后去记历史，所以浏览器会打出 401。登录票以前只挂在当前网址上，`www.yoooco.com` 和 `yoooco.com` 对不上；登录响应也不一定带上 `Set-Cookie`。现在登录和注册的响应自己写登录票，正式站同时写给 `.yoooco.com`。历史、邀请、账号和排版配额都从这一次请求的 Cookie 里认人。没登录调用历史仍是 401。排版接口仍不要求登录，试用还在。DeepSeek Flash 默认先想再写，长文会拖过网关，浏览器看到 504。排版已关掉思考；26 秒还没回来就自己停，回中文说明，状态是 503。改之前，线上短文约 4 秒、约 900 字约 8 秒能成功。正式站要等合进 master。
@@ -167,6 +169,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-02 优化排版要能看见重点
+
+- 想做什么：优化排版后重点太少，预览里几乎看不到重点底色。所有主题都要有能执行的密度，原文不能编，不能整段刷黄。只开 PR，不合并。
+- 做成了什么：系统提示改成十三套都要标 highlight。不足 12 字可不标，普通段至少 1 处，长段 1 到 2 处，每处 4 到 16 字。结论和数字用重点，术语用加粗。`==重点==` 收成 highlight。模型少标或整段刷黄时，从本段原文补短片段。人味改写写明不要拿掉 `==重点==`。
+- 改了哪些文件：`lib/deepseek-normalizer.js`、`lib/tool-prompts.js`、`scripts/check-highlight-marks.js`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-highlight-marks.js` 和 `node scripts/check-normalize-timeout.js` 通过。没有 `DEEPSEEK_API_KEY`，用假返回模拟模型只给加粗。同一段《出师表》长段从 0 处重点变成「不宜妄自菲薄」「先帝创业未半而中道崩殂」。短句「宫中府中，俱为一体。」仍是 0。清氧绿前后对比图在 PR 里。没有打开工作台，没有真调模型，没有合并。
+- 待办/风险：真模型仍可能标偏，但少标时服务端会补。合进 master 才会上正式站。
+
 ### 2026-11-02 常见问题补客服周扫三条
 
 - 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。
@@ -198,11 +208,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`npx tsx scripts/check-seo.ts` 通过。`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本自己改用内存，最后是 invite checks ok）。本地模拟合并没有冲突。没有合并 PR。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 还没合并。合进 master 才会上正式站。
-
-### 2026-10-26 公众号排版页升级成答案页
-
-- 想做什么：把现有 `/gongzhonghao-paiban` 按张默 10-26 定稿升级成答案页。地址不变，不跳转。试用去官网首页。要进站点地图，不能 noindex。只开 PR，不合并。
-- 做成了什么：页面有定义开篇、适谁和不适合、三步、对照表、出师表前后对比、8 条问答、页尾试用和 Last updated。标题和说明换成定稿。结构化数据里的问答和开篇是同一句话。对比图放在 `/gongzhonghao-paiban/compare-1080x1440.png`。
-- 改了哪些文件：`app/gongzhonghao-paiban/page.tsx`、`app/gongzhonghao-paiban/landing.css`、`lib/landing-answer.ts`、`lib/site-seo.ts`、`app/sitemap.ts`、`scripts/check-seo.ts`、`public/gongzhonghao-paiban/compare-1080x1440.png`、`docs/previews/gongzhonghao-geo-desktop.png`、`docs/previews/gongzhonghao-geo-mobile.png`、`docs/previews/gongzhonghao-geo-table.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-seo.ts` 通过。本地打开这一页，标题、说明、主标题、8 条问答、对照表 7 行、三步都在。正文里的试用链接都是 https://www.yoooco.com。图片地址能打开，尺寸 1080×1440。`/sitemap.xml` 仍有这一页，更新日期是 2026-10-26。页面没有 noindex。桌面和手机截图在 `docs/previews/`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/68 已开，没有自己合并。合进 master 才会上正式站。定稿图注写「左 / 右」，这张图实际是上 / 下，页面按图改了。顶栏「工作台」仍去工作台。

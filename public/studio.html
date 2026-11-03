@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=emoji-ordered-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=scan-1102-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=vibe-density-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -171,7 +171,7 @@
                 <div class="group-body">
                   <div class="theme-grid" id="themeGrid"></div>
                   <div class="vibe-row">
-                    <span class="vibe-label" id="vibeLabel">气质</span>
+                    <span class="vibe-label" id="vibeLabel" title="只改字号和留白，不改配色">气质</span>
                     <div class="vibe-chips" id="vibeChips" role="group" aria-labelledby="vibeLabel"></div>
                   </div>
                 </div>
@@ -253,7 +253,7 @@
                   <label class="select-control"><span>正文字体</span><select data-key="bodyFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
                   <label class="select-control"><span>标题字体</span><select data-key="headingFont"><option value="system">系统阅读体</option><option value="serif">宋体阅读体</option><option value="modern">现代简洁体</option></select></label>
                   <label class="select-control"><span>阅读密度</span><select data-key="readingDensity"><option value="compact">紧凑</option><option value="standard">标准</option><option value="comfortable">舒适</option><option value="custom">自定义</option></select></label>
-                  <label class="range-control"><span>正文字号 <output data-output="fontSize"></output></span><input data-key="fontSize" type="range" min="14" max="22" step="1" /></label>
+                  <label class="range-control"><span>正文字号 <output data-output="fontSize"></output></span><input data-key="fontSize" type="range" min="13" max="22" step="1" /></label>
                   <label class="range-control"><span>正文行高 <output data-output="lineHeight"></output></span><input data-key="lineHeight" type="range" min="1.35" max="2.2" step="0.05" /></label>
                   <label class="range-control"><span>字距 <output data-output="letterSpacing"></output></span><input data-key="letterSpacing" type="range" min="-0.5" max="2" step="0.1" /></label>
                   <label class="range-control"><span>段落间距 <output data-output="paragraphSpacing"></output></span><input data-key="paragraphSpacing" type="range" min="4" max="40" step="2" /></label>
@@ -425,6 +425,6 @@
     <script src="./themes.js?v=emoji-ordered-v1"></script>
     <script src="./typeset-polish.js?v=engine-trio-v1"></script>
     <script src="./samples/sample-try.js?v=sample-yooco-article-v1"></script>
-    <script src="./app.js?v=emoji-ordered-v1"></script>
+    <script src="./app.js?v=vibe-density-v1"></script>
   </body>
 </html>

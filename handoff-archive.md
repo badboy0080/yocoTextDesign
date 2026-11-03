@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-02 常见问题补客服周扫三条
+
+- 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。
+- 做成了什么：额度没显示、先对邮箱，挂在积分。「同一邮箱」用现成的加粗。能不能挂公开群，挂在邀请，仍是一码最多 5 人、同一账号只能核销一次。旧的六条没改字。
+- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本改用内存，最后是 invite checks ok）。`npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分两条和邀请公开群一条，正文与定稿一致。截图在运行产物里，没有放进仓库。没有部署，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/78 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这三条也会出现在首页。
+
 ### 2026-10-29 登录票和排版超时
 
 - 想做什么：浏览器里 `POST /api/history` 是 401，`/api/normalize` 有时是 504。登录后的排版和记历史要能过。没登录仍是 401。只开 PR，不合并。

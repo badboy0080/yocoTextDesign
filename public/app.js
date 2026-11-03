@@ -16,8 +16,8 @@ const TEMPLATE_DEFAULTS = {
   cardRadius: 12, cardPadding: 20, imageRadius: 12,
   showQuote: true, showDivider: true, showImage: true,
   theme: "classic", articleType: "auto", showSignature: false,
-  // 气质只改字号和留白，不改配色。default 跟当前主题自己的字号。
-  vibe: "default",
+  // 气质档只改疏密。舒适等于当前主题自己的字号和留白。
+  vibe: "comfortable",
 };
 
 // 四个旧气质现在和精选主题放在同一个「主题」列表里。点某一项，套用该方向的第一套皮肤。
@@ -777,6 +777,7 @@ function clampClientNumber(value, min, max, step, fallback) {
 
 function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   const next = { ...fallback };
+  if (input && input.vibe === "default") input = { ...input, vibe: "comfortable" };
   if (input && typeof input.textAlign === "string") {
     const raw = input.textAlign.trim().toLowerCase();
     if (raw === "start" || raw === "end") input = { ...input, textAlign: wechatTextAlign(raw) };
@@ -786,7 +787,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   const enums = {
     bodyFont: ["system", "serif", "modern"], headingFont: ["system", "serif", "modern"],
     textAlign: ["left", "right", "center", "justify"], readingDensity: ["compact", "standard", "comfortable", "custom"],
-    vibe: ["default", "swiss", "quiet", "magazine", "custom"],
+    vibe: ["compact", "comfortable", "airy", "custom"],
     highlightStyle: ["background", "marker", "underline", "bold", "strikethrough", "text-underline", "wavy"],
     headingStyle: ["bar", "line", "index", "block", "poster", "panel", "oval", "atlas-editorial", "atlas-index", "atlas-quote", "atlas-pill", "atlas-vertical", "atlas-ticket", "atlas-marker", "atlas-shadow", "atlas-weight"],
     cardStyle: ["border", "outline", "soft", "band"],
@@ -796,7 +797,7 @@ function normalizeTemplateParams(input, fallback = getTemplateParams()) {
   };
   Object.entries(enums).forEach(([key, allowed]) => { if (input?.[key] !== undefined && allowed.includes(input[key])) next[key] = input[key]; });
   const ranges = {
-    textIndent: [0, 2, .25], fontSize: [14, 22, 1], lineHeight: [1.35, 2.2, .05], letterSpacing: [-.5, 2, .1], paragraphSpacing: [4, 40, 2], contentWidth: [280, 680, 10],
+    textIndent: [0, 2, .25], fontSize: [13, 22, 1], lineHeight: [1.35, 2.2, .05], letterSpacing: [-.5, 2, .1], paragraphSpacing: [4, 40, 2], contentWidth: [280, 680, 10],
     titleSize: [22, 36, 1], headingSize: [20, 34, 1], subheadingSize: [18, 30, 1], minorHeadingSize: [16, 26, 1], headingWeight: [500, 900, 100], headingLineHeight: [1.1, 1.7, .05], headingSpacingBefore: [8, 48, 2], headingSpacingAfter: [4, 32, 2],
     highlightRadius: [0, 12, 1], highlightPadding: [0, 8, 1], listIndent: [1, 3, .25], listItemSpacing: [0, 20, 1], quoteTitleSize: [10, 18, 1], cardTitleSize: [10, 18, 1], cardBorderWidth: [0, 4, 1], dividerThickness: [1, 4, 1], dividerMargin: [8, 48, 2], codeFontSize: [11, 18, 1], codeLineHeight: [1.2, 2, .1], captionSize: [9, 16, 1], cardRadius: [0, 24, 1], cardPadding: [12, 32, 2], imageRadius: [0, 24, 1],
   };
@@ -823,27 +824,25 @@ function applyReadingDensity(density) {
   Object.assign(state, densities[density] || densities.standard, { readingDensity: densities[density] ? density : "standard" });
 }
 
-// 主题旁边的气质。只动字号档和留白/行距，配色仍走当前主题。
-const VIBE_KEYS = ["fontSize", "lineHeight", "paragraphSpacing", "contentWidth", "titleSize", "headingSize", "subheadingSize", "minorHeadingSize", "headingLineHeight", "headingSpacingBefore", "headingSpacingAfter"];
+// vibe-preset:start
+// 主题旁边的气质档。按当前主题自己的字号和留白缩放，不改配色、字体和造型。
+const VIBE_SIZE_KEYS = ["fontSize", "titleSize", "headingSize", "subheadingSize", "minorHeadingSize", "codeFontSize", "captionSize", "quoteTitleSize", "cardTitleSize"];
+const VIBE_LINE_KEYS = ["lineHeight", "headingLineHeight", "codeLineHeight"];
+const VIBE_SPACE_KEYS = ["paragraphSpacing", "headingSpacingBefore", "headingSpacingAfter", "listItemSpacing", "dividerMargin"];
+const VIBE_PAD_KEYS = ["cardPadding"];
+const VIBE_KEYS = [...VIBE_SIZE_KEYS, ...VIBE_LINE_KEYS, ...VIBE_SPACE_KEYS, ...VIBE_PAD_KEYS, "letterSpacing", "contentWidth"];
+const VIBE_RANGES = {
+  fontSize: [13, 22, 1], titleSize: [22, 36, 1], headingSize: [20, 34, 1], subheadingSize: [18, 30, 1], minorHeadingSize: [16, 26, 1],
+  codeFontSize: [11, 18, 1], captionSize: [9, 16, 1], quoteTitleSize: [10, 18, 1], cardTitleSize: [10, 18, 1],
+  lineHeight: [1.35, 2.2, .05], headingLineHeight: [1.1, 1.7, .05], codeLineHeight: [1.2, 2, .1],
+  paragraphSpacing: [4, 40, 2], headingSpacingBefore: [8, 48, 2], headingSpacingAfter: [4, 32, 2], listItemSpacing: [0, 20, 1], dividerMargin: [8, 48, 2],
+  cardPadding: [12, 32, 2], letterSpacing: [-.5, 2, .1], contentWidth: [280, 680, 10],
+};
+const VIBE_ORDER = ["compact", "comfortable", "airy"];
 const VIBE_PRESETS = {
-  swiss: {
-    label: "瑞士大字",
-    fontSize: 22, lineHeight: 1.4, paragraphSpacing: 28, contentWidth: 560,
-    titleSize: 36, headingSize: 34, subheadingSize: 28, minorHeadingSize: 24,
-    headingLineHeight: 1.15, headingSpacingBefore: 40, headingSpacingAfter: 14,
-  },
-  quiet: {
-    label: "极简",
-    fontSize: 16, lineHeight: 2.1, paragraphSpacing: 36, contentWidth: 520,
-    titleSize: 28, headingSize: 24, subheadingSize: 20, minorHeadingSize: 18,
-    headingLineHeight: 1.45, headingSpacingBefore: 44, headingSpacingAfter: 20,
-  },
-  magazine: {
-    label: "杂志",
-    fontSize: 15, lineHeight: 1.5, paragraphSpacing: 8, contentWidth: 640,
-    titleSize: 32, headingSize: 26, subheadingSize: 22, minorHeadingSize: 18,
-    headingLineHeight: 1.2, headingSpacingBefore: 16, headingSpacingAfter: 6,
-  },
+  compact: { label: "紧凑", hint: "字小一点，段距更紧", size: 0.92, line: -0.2, space: 0.5, pad: 0.75, track: -0.2, width: 40 },
+  comfortable: { label: "舒适", hint: "这套主题原本的疏密", size: 1, line: 0, space: 1, pad: 1, track: 0, width: 0 },
+  airy: { label: "疏朗", hint: "字大一点，留白更多", size: 1.1, line: 0.2, space: 1.7, pad: 1.3, track: 0.2, width: -40 },
 };
 
 function sameMetric(left, right) {
@@ -861,41 +860,78 @@ function themeTypographyBaseline() {
   }, {});
 }
 
+function clampVibeValue(key, value, fallback) {
+  const range = VIBE_RANGES[key];
+  if (!range) return value;
+  return clampClientNumber(value, range[0], range[1], range[2], fallback);
+}
+
+function scaleVibeFromBaseline(baseline, id) {
+  const preset = VIBE_PRESETS[id] || VIBE_PRESETS.comfortable;
+  const next = {};
+  VIBE_SIZE_KEYS.forEach((key) => { next[key] = clampVibeValue(key, baseline[key] * preset.size, baseline[key]); });
+  VIBE_LINE_KEYS.forEach((key) => { next[key] = clampVibeValue(key, baseline[key] + preset.line, baseline[key]); });
+  VIBE_SPACE_KEYS.forEach((key) => { next[key] = clampVibeValue(key, baseline[key] * preset.space, baseline[key]); });
+  VIBE_PAD_KEYS.forEach((key) => { next[key] = clampVibeValue(key, baseline[key] * preset.pad, baseline[key]); });
+  next.letterSpacing = clampVibeValue("letterSpacing", baseline.letterSpacing + preset.track, baseline.letterSpacing);
+  next.contentWidth = clampVibeValue("contentWidth", baseline.contentWidth + preset.width, baseline.contentWidth);
+  next.vibe = VIBE_PRESETS[id] ? id : "comfortable";
+  next.readingDensity = next.vibe === "comfortable" ? "standard" : "custom";
+  return next;
+}
+
+function scaledVibeMetrics(id) {
+  return scaleVibeFromBaseline(themeTypographyBaseline(), id);
+}
+
 function vibeMetricsMatch(source) {
   return VIBE_KEYS.every((key) => sameMetric(state[key], source[key]));
 }
 
 function reconcileVibe() {
   if (state.vibe === "custom") return;
-  if (VIBE_PRESETS[state.vibe]) {
-    if (!vibeMetricsMatch(VIBE_PRESETS[state.vibe])) state.vibe = "custom";
-    return;
-  }
-  state.vibe = vibeMetricsMatch(themeTypographyBaseline()) ? "default" : "custom";
-}
-
-function restoreVibeAfterTheme(vibe) {
-  if (vibe === "custom") {
+  const id = state.vibe === "default" ? "comfortable" : state.vibe;
+  if (!VIBE_PRESETS[id] || !vibeMetricsMatch(scaledVibeMetrics(id))) {
     state.vibe = "custom";
     return;
   }
-  if (!VIBE_PRESETS[vibe]) {
-    state.vibe = "default";
+  state.vibe = id;
+}
+
+function restoreVibeAfterTheme(vibe) {
+  const id = vibe === "default" ? "comfortable" : vibe;
+  if (!VIBE_PRESETS[id]) {
+    state.vibe = "comfortable";
+    state.readingDensity = "standard";
     return;
   }
-  Object.assign(state, VIBE_PRESETS[vibe], { vibe, readingDensity: "custom" });
+  Object.assign(state, scaledVibeMetrics(id));
 }
 
 function applyVibe(id) {
-  if (id === "default") Object.assign(state, themeTypographyBaseline(), { vibe: "default", readingDensity: "custom" });
-  else if (VIBE_PRESETS[id]) Object.assign(state, VIBE_PRESETS[id], { vibe: id, readingDensity: "custom" });
-  else return;
-  styleTouched = true;
+  if (!VIBE_PRESETS[id]) return;
+  const next = scaledVibeMetrics(id);
+  const changed = state.vibe !== next.vibe || VIBE_KEYS.some((key) => !sameMetric(state[key], next[key]));
+  Object.assign(state, next);
+  if (changed) styleTouched = true;
   syncControls();
   syncVibeUI();
   render();
-  setFeedback(id === "default" ? "已回到这套主题自己的字号和留白" : "已换气质。没有重新优化，也没有扣积分。");
+  setFeedback(id === "comfortable"
+    ? "已沿用这套主题自己的字号和留白。没有重新优化。"
+    : "已换气质。没有重新优化，也没有扣积分。");
 }
+
+function pagePadForVibe(vibe) {
+  if (vibe === "compact") {
+    return { top: "28px", x: "clamp(16px, 2.4vw, 36px)", bottom: "20px", copyY: 28, copyX: 22 };
+  }
+  if (vibe === "airy") {
+    return { top: "64px", x: "clamp(40px, 6vw, 88px)", bottom: "52px", copyY: 56, copyX: 44 };
+  }
+  return { top: "40px", x: "clamp(24px, 4vw, 64px)", bottom: "40px", copyY: 40, copyX: 32 };
+}
+// vibe-preset:end
 
 function syncVibeUI() {
   document.querySelectorAll("[data-vibe]").forEach((button) => {
@@ -906,15 +942,16 @@ function syncVibeUI() {
 function renderVibeUI() {
   const mount = document.querySelector("#vibeChips");
   if (!mount) return;
-  const items = [{ id: "default", label: "默认" }, ...Object.entries(VIBE_PRESETS).map(([id, preset]) => ({ id, label: preset.label }))];
   mount.replaceChildren();
-  items.forEach((item) => {
+  VIBE_ORDER.forEach((id) => {
+    const preset = VIBE_PRESETS[id];
     const button = document.createElement("button");
     button.type = "button";
     button.className = "vibe-chip";
-    button.dataset.vibe = item.id;
-    button.textContent = item.label;
-    button.addEventListener("click", () => applyVibe(item.id));
+    button.dataset.vibe = id;
+    button.textContent = preset.label;
+    button.title = preset.hint;
+    button.addEventListener("click", () => applyVibe(id));
     mount.append(button);
   });
   syncVibeUI();
@@ -1898,6 +1935,10 @@ function applyStyleVars() {
   articlePage.style.setProperty("--card-padding", `${state.cardPadding}px`);
   articlePage.style.setProperty("--image-radius", `${state.imageRadius}px`);
   articlePage.style.setProperty("--content-width", `${state.contentWidth}px`);
+  const pagePad = pagePadForVibe(state.vibe);
+  articlePage.style.setProperty("--page-pad-top", pagePad.top);
+  articlePage.style.setProperty("--page-pad-x", pagePad.x);
+  articlePage.style.setProperty("--page-pad-bottom", pagePad.bottom);
   articlePage.dataset.headingStyle = state.headingStyle || "bar";
   articlePage.dataset.cardStyle = state.cardStyle || "border";
   articlePage.dataset.listStyle = state.listStyle || "dot";
@@ -2585,7 +2626,10 @@ function buildCopyHtml() {
   const titleHtml = model.title ? `<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>` : "";
   // 外层留白对齐工作室预览（.article-page 上下 40px，左右落在 24–40px）。浅色也用同一圈，避免只有深色突然变宽。
   // 深色再给最小高度，公众号后台白壳里炭黑块才不会贴边缩成一条。对齐仍写 left，不用 start/end。
-  const frameStyle = isDarkCopyPage() ? "padding:40px 32px;min-height:240px;" : "padding:40px 32px;";
+  const copyPad = pagePadForVibe(state.vibe);
+  const frameStyle = isDarkCopyPage()
+    ? `padding:${copyPad.copyY}px ${copyPad.copyX}px;min-height:240px;`
+    : `padding:${copyPad.copyY}px ${copyPad.copyX}px;`;
   let html = `<section style="width:100%;max-width:100%;margin:0;${frameStyle}background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
   if (lockBrandColor?.checked) html = applyDataNoDark(html);
   return stripLogicalTextAlign(html);

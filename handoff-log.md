@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+气质档（2026-11-02，未合并、未部署）：主题列表下面原来的「默认 / 瑞士大字 / 极简 / 杂志」改成「紧凑 / 舒适 / 疏朗」。三档按当前主题自己的字号、行高、段距和四周留白缩放。配色、字体、造型和正文记号不动，也不重新优化。舒适就是这套主题原本的疏密。选过的档写在本机，刷新还在。换主题时这一档还在，疏密按新主题重算。截图在 `docs/previews/vibe-density-*.png`。分支已推送。开 PR 的工具这次没有响应，PR 还没建。正式站要等合进 master。
+
 表情主题有序说明看不见图标（2026-11-02，未合并、未部署）：选「表情」再优化后，如果模型把「1. 2. 3.」收成有序列表、又不给小标题，预览只剩浅纸和大号序号，没有 💡📌✅。现在说明性的有序条目、很短的「主控：…」这种句子，也会在文字前加图标。真步骤（第一步、然后）不加。短句里有留言或评论，一定有 💬。分隔用整行符号，不再画普通横线。同一篇仍是 3 到 5 种。提示词要求小节标题用 heading，说明分点用无序列表。对比图在 `docs/previews/emoji-ordered-before-after.png`。PR #82 已开，没有合并。正式站要等合进 master。
 
 表情主题（2026-11-02，PR #81，已合进 master）：工作台主题列表末尾新增「表情」（emoji）。浅纸色，小标题、无序列表、分隔和很短的结尾按语义加小图标。同一篇只留 3 到 5 种，图标在文字前，中间一个空格；带【】的小标题，图标放在括号前面。大标题和代码不加。模型漏标时服务端会补，标多了会收。切到这个主题，预览会马上带上图标。有序说明补图标是上面这一条，还没合。
@@ -175,6 +177,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-02 气质档：紧凑、舒适、疏朗
+
+- 想做什么：主题旁边加 Banani 那种气质档。只改字号和留白，不重跑优化，不改正文。能和现有主题叠在一起。只开 PR。
+- 做成了什么：主题列表下面换成「紧凑 / 舒适 / 疏朗」。舒适沿用当前主题自己的疏密；紧凑收一点，疏朗松一点。换主题时配色照旧，疏密按新主题重算。刷新后档位还在。
+- 改了哪些文件：`public/app.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-vibe-preset.js`、`CONTEXT.md`、`docs/previews/vibe-density-compact.png`、`docs/previews/vibe-density-airy.png`、`docs/previews/vibe-density-bauhaus-airy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-vibe-preset.js` 通过。浏览器打开工作台，用示例文章，选柠边。舒适是 16px、段距 12px、四周留白仍是原来的 40px。紧凑变成 15px、段距 6px、留白 28px。疏朗变成 18px、段距 20px、留白 64px。纸色还是柠边的奶油色，重点还是 10 处，原文一个字没变。再切包豪，疏朗还亮着，底色变成包豪灰，段距变成 38px。刷新后仍是包豪加疏朗。点这三档时没有新的优化请求。打开页面时本来就会查一次剩余积分，那次不算。
+- 待办/风险：分支 `cursor/vibe-density-presets-3453` 已推送。开 PR 的工具这次没有响应，PR 还没建，也没有合并。合进 master 才会上正式站。以前存过「瑞士大字 / 极简 / 杂志」的浏览器，刷新后不会自动套这三档，要点一次才会变。公众号后台还没真贴。
+
 ### 2026-11-02 表情主题的有序说明也要看见图标
 
 - 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
@@ -206,11 +216,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/deepseek-normalizer.js`、`lib/tool-prompts.js`、`scripts/check-highlight-marks.js`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-highlight-marks.js` 和 `node scripts/check-normalize-timeout.js` 通过。没有 `DEEPSEEK_API_KEY`，用假返回模拟模型只给加粗。同一段《出师表》长段从 0 处重点变成「不宜妄自菲薄」「先帝创业未半而中道崩殂」。短句「宫中府中，俱为一体。」仍是 0。清氧绿前后对比图在 PR 里。没有打开工作台，没有真调模型，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/79 已合进 master。真模型仍可能标偏，但少标时服务端会补。
-
-### 2026-11-02 常见问题补客服周扫三条
-
-- 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。
-- 做成了什么：额度没显示、先对邮箱，挂在积分。「同一邮箱」用现成的加粗。能不能挂公开群，挂在邀请，仍是一码最多 5 人、同一账号只能核销一次。旧的六条没改字。
-- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本改用内存，最后是 invite checks ok）。`npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分两条和邀请公开群一条，正文与定稿一致。截图在运行产物里，没有放进仓库。没有部署，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/78 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这三条也会出现在首页。

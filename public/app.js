@@ -1164,6 +1164,10 @@ function parseArticle(source) {
     } else if (fenceKind === "stat") {
       const items = fenceLines.map(parseStatLine).filter(Boolean).slice(0, 12);
       if (items.length) blocks.push({ type: "stat", title: fenceTitle || "关键数据", items });
+    } else if (fenceKind === "highlight" && globalThis.YoocoSlashCards) {
+      blocks.push(globalThis.YoocoSlashCards.readHighlightFence(fenceTitle, fenceLines));
+    } else if (fenceKind === "header" && globalThis.YoocoSlashCards) {
+      blocks.push(globalThis.YoocoSlashCards.readHeaderFence(fenceTitle, fenceLines));
     }
     fenceKind = "";
     fenceTitle = "";
@@ -1192,14 +1196,20 @@ function parseArticle(source) {
       else fenceLines.push(line);
       continue;
     }
-    const fence = trimmed.match(/^:::(card|steps|stat|stats)(?:\s+(.+))?$/i);
+    const fence = trimmed.match(/^:::(card|steps|stat|stats|highlight|header)(?:\s+(.+))?$/i);
     if (fence) {
       flushParagraph();
       flushList();
       const kind = fence[1].toLowerCase();
       fenceKind = kind === "stats" ? "stat" : kind;
-      fenceTitle = (fence[2] || "").trim()
-        || (fenceKind === "card" ? "重点提示" : fenceKind === "steps" ? "操作步骤" : "关键数据");
+      const explicitTitle = (fence[2] || "").trim();
+      fenceTitle = explicitTitle || (
+        fenceKind === "card" ? "重点提示"
+          : fenceKind === "steps" ? "操作步骤"
+            : fenceKind === "stat" ? "关键数据"
+              : fenceKind === "highlight" ? "重点"
+                : ""
+      );
       continue;
     }
     if (!trimmed) {
@@ -1335,6 +1345,8 @@ function getBlockText(block) {
   }
   if (block.type === "image") return block.alt || "文章配图";
   if (block.type === "code") return block.text;
+  if (block.type === "highlightBox") return [block.title, block.text].filter(Boolean).join(" ");
+  if (block.type === "header") return [block.title, block.sub].filter(Boolean).join(" ");
   return block.text || "内容分隔线";
 }
 
@@ -1379,6 +1391,7 @@ function polishArticleBlock(block) {
   if (typeof next.text === "string") next.text = polishArticleText(next.text);
   if (typeof next.title === "string") next.title = polishArticleText(next.title);
   if (typeof next.alt === "string") next.alt = polishArticleText(next.alt);
+  if (typeof next.sub === "string") next.sub = polishArticleText(next.sub);
   if (Array.isArray(next.items)) {
     next.items = next.items.map((item) => {
       if (typeof item === "string") return polishArticleText(item);
@@ -1562,6 +1575,7 @@ function paintSampleTry() {
     else articleTitle.setAttribute("aria-hidden", "true");
   }
   if (articleBody) articleBody.innerHTML = sample.html;
+  mountSlashSlot();
 }
 
 function loadSampleTry() {
@@ -1591,6 +1605,19 @@ function loadSampleTry() {
     ? "已放入示例。这是站内预制排版，没有调用优化，也不计积分。"
     : "已放入示例，并按当前样式在本地重排。没有调用优化，也不计积分。");
   setFeedback("");
+}
+
+function mountSlashSlot() {
+  if (!articleBody || !articleSource.trim()) return;
+  if (articleBody.querySelector("[data-slash-slot]")) return;
+  const slot = document.createElement("p");
+  slot.className = "slash-slot is-blank";
+  slot.dataset.slashSlot = "1";
+  slot.contentEditable = "true";
+  slot.spellcheck = false;
+  slot.setAttribute("data-placeholder", "空行敲 / 插入");
+  slot.setAttribute("aria-label", "空行，敲斜杠插入排版块");
+  articleBody.append(slot);
 }
 
 function emojiDividerText(text) {
@@ -1631,6 +1658,12 @@ function renderBody() {
       return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     }
     if (item.type === "card") return `<aside class="content-card" data-type="card" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${inlineMarkdown(item.text)}</aside>`;
+    if (item.type === "highlightBox") return `<aside class="content-card highlight-box" data-type="highlightBox" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点")}</strong>${inlineMarkdown(item.text)}</aside>`;
+    if (item.type === "header") {
+      const title = escapeHtml(item.title || "标题");
+      const sub = escapeHtml(item.sub || "");
+      return `<header class="article-masthead" data-type="header" ${idx} contenteditable="false"><h3 class="article-masthead-title" data-header-title contenteditable="${editable}">${title}</h3><p class="article-masthead-sub" data-header-sub data-placeholder="副题，不需要可留空" contenteditable="${editable}">${sub}</p><div class="fake-image article-masthead-slot" contenteditable="false">头图</div></header>`;
+    }
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, stepIndex) =>
@@ -1680,6 +1713,7 @@ function renderBody() {
     }
   }
   articleBody.innerHTML = parts.join("");
+  mountSlashSlot();
   const titleText = String(model.title || "").trim();
   articleTitle.textContent = titleText;
   articleTitle.hidden = !titleText;
@@ -1751,10 +1785,15 @@ function serializeTableElement(el) {
   return [`| ${header.join(" | ")} |`, `| ${separator.join(" | ")} |`, ...body].join("\n");
 }
 
-function serializePreviewToMarkdown() {
+function serializePreviewToMarkdown(replaceEl, replacement) {
   const htmlToMd = (node) => inlineNodeToMarkdown(node).replace(/\u00a0/g, " ").trim();
   const parts = [];
   [...articleBody.children].forEach((el) => {
+    if (el.dataset.slashSlot) return;
+    if (replaceEl && el === replaceEl) {
+      if (replacement) parts.push(replacement);
+      return;
+    }
     const type = el.dataset.type || "";
     // 目录与签名是精选主题的派生装饰，不写回原文。
     if (type === "toc" || type === "signature") return;
@@ -1789,6 +1828,19 @@ function serializePreviewToMarkdown() {
       const clone = el.cloneNode(true);
       clone.querySelector("strong")?.remove();
       parts.push(`:::card ${title}\n${htmlToMd(clone)}\n:::`);
+      return;
+    }
+    if (type === "highlightBox") {
+      const title = el.querySelector("strong")?.textContent.trim() || "重点";
+      const clone = el.cloneNode(true);
+      clone.querySelector("strong")?.remove();
+      parts.push(`:::highlight ${title}\n${htmlToMd(clone)}\n:::`);
+      return;
+    }
+    if (type === "header") {
+      const title = (el.querySelector("[data-header-title]")?.innerText || "标题").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim() || "标题";
+      const sub = (el.querySelector("[data-header-sub]")?.innerText || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+      parts.push(sub ? `:::header\n${title}\n${sub}\n:::` : `:::header\n${title}\n:::`);
       return;
     }
     if (type === "steps") {
@@ -2500,6 +2552,17 @@ function buildCopyHtml() {
       return `<p style="${textStyle}font-style:italic;">${copyInlineMarkdown(item.text)}</p>`;
     }
     if (item.type === "card") return `<section style="${cardStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+    if (item.type === "highlightBox") {
+      const highlightBoxStyle = `margin:18px 0 22px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:${bodyAlign};`;
+      return `<section style="${highlightBoxStyle}"><p style="margin:0 0 7px;padding:0;color:${highlightTextColor};font-size:${state.cardTitleSize}px;font-weight:800;letter-spacing:.1em;text-align:${bodyAlign};">${escapeHtml(item.title || "重点")}</p><p style="margin:0;padding:0;color:${highlightTextColor};font-weight:700;text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
+    }
+    if (item.type === "header") {
+      const sub = item.sub
+        ? `<p style="margin:0 0 14px;padding:0;color:${mutedColor};font-size:${Math.max(13, state.fontSize - 1)}px;line-height:1.6;text-align:left;">${escapeHtml(item.sub)}</p>`
+        : "";
+      const slot = `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;text-align:center;">头图</p></section>`;
+      return `<section style="margin:0 0 8px;text-align:left;"><h3 style="${headingStyle(2)}">${escapeHtml(item.title || "标题")}</h3>${sub}${slot}</section>`;
+    }
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
@@ -2627,7 +2690,8 @@ function buildCopyPlain(html) {
     if (item.type === "stat") return [item.title, ...(item.items || []).map((entry) => `${entry.value || ""}${entry.label ? ` ${entry.label}` : ""}`)].filter(Boolean).join("\n");
     if (item.type === "divider") return item.text || "——";
     if (item.type === "image") return [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
-    if (["quote", "card"].includes(item.type)) return [item.title, item.text].filter(Boolean).join("：");
+    if (["quote", "card", "highlightBox"].includes(item.type)) return [item.title, item.text].filter(Boolean).join("：");
+    if (item.type === "header") return [item.title, item.sub, "头图"].filter(Boolean).join("\n");
     return item.text || "";
   }).filter(Boolean);
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -2993,11 +3057,18 @@ articleBody?.addEventListener("paste", handleRichTextPaste);
 articleInput?.addEventListener("input", () => {
   articleTitleOverride = "";
   applyArticleSource(false);
+  syncSlashMenuFromTextarea();
+});
+articleInput?.addEventListener("keyup", syncSlashMenuFromTextarea);
+articleInput?.addEventListener("click", syncSlashMenuFromTextarea);
+articleInput?.addEventListener("keydown", (event) => {
+  slashMenuKeydown(event);
 });
 
 const editorViewTabs = [document.querySelector("#resultViewTab"), document.querySelector("#sourceViewTab")];
 function selectEditorView(index) {
   flushPendingPreviewEdits();
+  hideSlashMenu();
   const showSource = index === 1;
   if (showSource && articleInput) articleInput.value = articleSource;
   document.querySelector("#sourcePanel").hidden = !showSource;
@@ -3026,9 +3097,33 @@ articleTitle.addEventListener("input", () => {
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
 });
-articleBody.addEventListener("input", () => {
+articleBody.addEventListener("input", (event) => {
+  if (handleSlashInput(event)) return;
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
+});
+articleBody.addEventListener("keydown", (event) => {
+  if (slashMenuKeydown(event)) return;
+  const slot = event.target.closest?.("[data-slash-slot]");
+  if (!slot || event.key !== "Enter") return;
+  event.preventDefault();
+  const text = slotPlainText(slot);
+  const api = globalThis.YoocoSlashCards;
+  if (!text || !api || api.lineSlashQuery(text) != null) return;
+  commitSlotParagraph(text);
+});
+articleBody.addEventListener("focusout", (event) => {
+  const slot = event.target.closest?.("[data-slash-slot]");
+  if (!slot) return;
+  window.setTimeout(() => {
+    if (!slot.isConnected) return;
+    if (slashMenu && !slashMenu.hidden) return;
+    if (document.activeElement && slot.contains(document.activeElement)) return;
+    const text = slotPlainText(slot);
+    const api = globalThis.YoocoSlashCards;
+    if (!text || !api || api.lineSlashQuery(text) != null) return;
+    commitSlotParagraph(text);
+  }, 0);
 });
 const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
 let blockTypeMenu = null;
@@ -3105,20 +3200,272 @@ articleBody.addEventListener("contextmenu", (event) => {
 });
 
 document.addEventListener("pointerdown", (event) => {
-  if (!blockTypeMenu || blockTypeMenu.hidden) return;
-  if (blockTypeMenu.contains(event.target)) return;
-  hideBlockTypeMenu();
+  if (blockTypeMenu && !blockTypeMenu.hidden && !blockTypeMenu.contains(event.target)) hideBlockTypeMenu();
+  if (slashMenu && !slashMenu.hidden && !slashMenu.contains(event.target)) hideSlashMenu();
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     hideBlockTypeMenu();
     hideBlockStylePanel(true);
+    hideSlashMenu();
   }
 });
 
 previewStage?.addEventListener("scroll", hideBlockTypeMenu, { passive: true });
 window.addEventListener("resize", hideBlockTypeMenu);
+previewStage?.addEventListener("scroll", hideSlashMenu, { passive: true });
+window.addEventListener("resize", hideSlashMenu);
+
+let slashMenu = null;
+let slashMenuState = null;
+
+function slotPlainText(slot) {
+  return (slot?.innerText || "").replace(/\u00a0/g, " ").replace(/\n/g, "").trim();
+}
+
+function refreshSlashSlot(slot) {
+  if (!slot) return;
+  slot.classList.toggle("is-blank", !slotPlainText(slot));
+}
+
+function hideSlashMenu() {
+  if (slashMenu) slashMenu.hidden = true;
+  slashMenuState = null;
+}
+
+function ensureSlashMenu() {
+  if (slashMenu) return slashMenu;
+  const menu = document.createElement("div");
+  menu.id = "slashCardMenu";
+  menu.className = "block-type-menu slash-card-menu";
+  menu.hidden = true;
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "插入排版块");
+  document.body.appendChild(menu);
+  menu.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-card]");
+    if (!button) return;
+    event.preventDefault();
+    insertSlashCard(button.dataset.card);
+  });
+  menu.addEventListener("mousemove", (event) => {
+    const button = event.target.closest("[data-card]");
+    if (!button || !slashMenuState) return;
+    const buttons = [...menu.querySelectorAll("[data-card]")];
+    const index = buttons.indexOf(button);
+    if (index < 0 || index === slashMenuState.active) return;
+    slashMenuState.active = index;
+    buttons.forEach((el, itemIndex) => {
+      el.classList.toggle("is-active", itemIndex === index);
+      if (itemIndex === index) el.setAttribute("aria-current", "true");
+      else el.removeAttribute("aria-current");
+    });
+  });
+  slashMenu = menu;
+  return menu;
+}
+
+function placeSlashMenu(anchor) {
+  const menu = slashMenu;
+  if (!menu || !anchor) return;
+  const rect = anchor.getBoundingClientRect();
+  const box = menu.getBoundingClientRect();
+  const pad = 8;
+  let left = rect.left;
+  let top = rect.bottom + 6;
+  if (top + box.height > window.innerHeight - pad) top = Math.max(pad, rect.top - box.height - 6);
+  if (left + box.width > window.innerWidth - pad) left = window.innerWidth - box.width - pad;
+  menu.style.left = `${Math.max(pad, left)}px`;
+  menu.style.top = `${Math.max(pad, top)}px`;
+}
+
+function showSlashMenu(next) {
+  const api = globalThis.YoocoSlashCards;
+  if (!api) return;
+  const cards = api.filterSlashCards(next.query);
+  const menu = ensureSlashMenu();
+  const active = cards.length ? Math.min(next.active || 0, cards.length - 1) : 0;
+  slashMenuState = { ...next, cards, active };
+  const items = cards.map((card, index) => {
+    const current = index === active ? ' aria-current="true"' : "";
+    return `<button type="button" class="block-type-menu-item${index === active ? " is-active" : ""}" role="menuitem" data-card="${card.id}"${current}>${card.label}<span class="slash-card-hint">${card.hint}</span></button>`;
+  }).join("");
+  menu.innerHTML = `<p class="block-type-menu-label">插入</p>${items || `<p class="slash-card-empty">没有这种块</p>`}`;
+  menu.hidden = false;
+  placeSlashMenu(next.anchor);
+}
+
+function slashMenuKeydown(event) {
+  if (!slashMenuState || slashMenu?.hidden) return false;
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    const count = slashMenuState.cards.length;
+    if (!count) return true;
+    const delta = event.key === "ArrowDown" ? 1 : -1;
+    const active = (slashMenuState.active + delta + count) % count;
+    showSlashMenu({ ...slashMenuState, active });
+    return true;
+  }
+  if (event.key === "Enter" || event.key === "Tab") {
+    event.preventDefault();
+    const card = slashMenuState.cards[slashMenuState.active];
+    if (card) insertSlashCard(card.id);
+    return true;
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    hideSlashMenu();
+    return true;
+  }
+  return false;
+}
+
+function textareaCaretRect(textarea) {
+  const start = textarea.selectionStart ?? 0;
+  const style = getComputedStyle(textarea);
+  const mirror = document.createElement("div");
+  mirror.setAttribute("aria-hidden", "true");
+  ["boxSizing", "width", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "fontStyle", "fontWeight", "fontSize", "fontFamily", "lineHeight", "letterSpacing", "textIndent", "textAlign"].forEach((prop) => {
+    mirror.style[prop] = style[prop];
+  });
+  mirror.style.position = "fixed";
+  mirror.style.left = "0";
+  mirror.style.top = "0";
+  mirror.style.visibility = "hidden";
+  mirror.style.whiteSpace = "pre-wrap";
+  mirror.style.wordWrap = "break-word";
+  mirror.style.overflow = "hidden";
+  const value = textarea.value;
+  mirror.append(document.createTextNode(value.slice(0, start)));
+  const mark = document.createElement("span");
+  mark.textContent = "\u200b";
+  mirror.append(mark);
+  document.body.append(mirror);
+  const markRect = mark.getBoundingClientRect();
+  const mirrorRect = mirror.getBoundingClientRect();
+  const host = textarea.getBoundingClientRect();
+  const dx = host.left - textarea.scrollLeft - mirrorRect.left;
+  const dy = host.top - textarea.scrollTop - mirrorRect.top;
+  mirror.remove();
+  const top = markRect.top + dy;
+  const left = markRect.left + dx;
+  const height = markRect.height || 20;
+  return { top, left, right: left + 2, bottom: top + height, width: 2, height };
+}
+
+function syncSlashMenuFromTextarea() {
+  const api = globalThis.YoocoSlashCards;
+  if (!api || !articleInput || document.activeElement !== articleInput) {
+    if (slashMenuState?.mode === "textarea") hideSlashMenu();
+    return;
+  }
+  const caret = articleInput.selectionStart ?? 0;
+  const found = api.slashQueryAt(articleInput.value, caret);
+  if (!found) {
+    if (slashMenuState?.mode === "textarea") hideSlashMenu();
+    return;
+  }
+  const keep = slashMenuState?.mode === "textarea" && slashMenuState.query === found.query ? slashMenuState.active : 0;
+  const rect = textareaCaretRect(articleInput);
+  showSlashMenu({
+    mode: "textarea",
+    query: found.query,
+    caret,
+    anchor: { getBoundingClientRect: () => rect },
+    active: keep,
+  });
+}
+
+function handleSlashInput(event) {
+  const api = globalThis.YoocoSlashCards;
+  if (!api || !articleBody) return false;
+  const slot = event.target.closest?.("[data-slash-slot]");
+  if (slot && articleBody.contains(slot)) {
+    refreshSlashSlot(slot);
+    const text = slotPlainText(slot);
+    const query = api.lineSlashQuery(text);
+    if (query == null) {
+      if (slashMenuState?.mode === "append") hideSlashMenu();
+      return true;
+    }
+    const keep = slashMenuState?.mode === "append" && slashMenuState.query === query ? slashMenuState.active : 0;
+    showSlashMenu({ mode: "append", query, anchor: slot, block: null, active: keep });
+    return true;
+  }
+  const block = event.target.closest?.("[data-type='paragraph']");
+  if (block && articleBody.contains(block)) {
+    const text = (block.innerText || "").replace(/\u00a0/g, " ").replace(/\n/g, "").trim();
+    const query = api.lineSlashQuery(text);
+    if (query != null) {
+      if (previewSyncTimer) {
+        window.clearTimeout(previewSyncTimer);
+        previewSyncTimer = 0;
+      }
+      const keep = slashMenuState?.mode === "replace" && slashMenuState.block === block && slashMenuState.query === query ? slashMenuState.active : 0;
+      showSlashMenu({ mode: "replace", query, anchor: block, block, active: keep });
+      return true;
+    }
+    if (slashMenuState?.mode === "replace" && slashMenuState.block === block) hideSlashMenu();
+  }
+  return false;
+}
+
+function commitSlotParagraph(text) {
+  const clean = String(text || "").trim();
+  if (!clean) return;
+  flushPendingPreviewEdits();
+  const base = articleSource.trim();
+  articleSource = base ? `${base}\n\n${clean}` : clean;
+  if (articleInput) articleInput.value = articleSource;
+  if (previewSyncTimer) {
+    window.clearTimeout(previewSyncTimer);
+    previewSyncTimer = 0;
+  }
+  sampleStaticActive = false;
+  persistArticleSource();
+  render();
+  setStatus("已在预览里加上一段。没有调用优化，也不计积分。");
+}
+
+function insertSlashCard(id) {
+  const api = globalThis.YoocoSlashCards;
+  const pending = slashMenuState;
+  if (!api || !pending) return;
+  const markdown = api.slashCardMarkdown(id);
+  if (!markdown) return;
+  const mode = pending.mode;
+  const block = pending.block;
+  const caret = pending.caret;
+  hideSlashMenu();
+  let next = "";
+  if (mode === "textarea" && articleInput) {
+    const replaced = api.replaceSlashLine(articleInput.value, caret ?? articleInput.selectionStart, id);
+    if (!replaced) return;
+    next = replaced.source;
+  } else if (mode === "replace" && block && articleBody?.contains(block)) {
+    next = serializePreviewToMarkdown(block, markdown);
+  } else {
+    flushPendingPreviewEdits();
+    const appended = api.appendSlashCard(articleSource, id);
+    if (!appended) return;
+    next = appended.source;
+  }
+  if (previewSyncTimer) {
+    window.clearTimeout(previewSyncTimer);
+    previewSyncTimer = 0;
+  }
+  sampleStaticActive = false;
+  articleSource = String(next || "").trim();
+  if (articleInput) articleInput.value = articleSource;
+  persistArticleSource();
+  selectEditorView(0);
+  render();
+  const label = api.SLASH_CARDS.find((card) => card.id === id)?.label || "排版块";
+  setStatus(`已插入「${label}」。没有调用优化，也不计积分。`);
+  const nodes = articleBody?.querySelectorAll(`[data-type="${api.cardDomType(id)}"]`);
+  nodes?.[nodes.length - 1]?.scrollIntoView({ block: "nearest" });
+}
 
 const BLOCK_STYLE_SWATCHES = ["#F4E7D4", "#E5F2C9", "#F8D5D8", "#D7E6F6", "#161616", "#CCFF00"];
 

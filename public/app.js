@@ -166,6 +166,10 @@ let articleSource = localStorage.getItem("yooco-article-source") || "";
 let articleTitleOverride = localStorage.getItem("yooco-article-title") || "";
 let inferFirstLineTitle = localStorage.getItem("yooco-infer-first-line-title") !== "false";
 let blockTypeOverrides = {};
+let blockStyleOverrides = {};
+let blockStyleSelection = null;
+let blockStylePanel = null;
+let blockStyleDown = null;
 let lastAiResult = null;
 // 点「用示例文章试一下」后，右侧先用站内静态 HTML，不走优化接口。
 let sampleStaticActive = false;
@@ -356,6 +360,14 @@ try {
   blockTypeOverrides = JSON.parse(localStorage.getItem("yooco-block-type-overrides") || "{}");
 } catch {
   blockTypeOverrides = {};
+}
+try {
+  const savedBlockStyles = JSON.parse(localStorage.getItem("yooco-block-styles") || "{}");
+  if (savedBlockStyles && typeof savedBlockStyles === "object" && !Array.isArray(savedBlockStyles)) {
+    blockStyleOverrides = savedBlockStyles;
+  }
+} catch {
+  blockStyleOverrides = {};
 }
 
 // 参数面板放在右栏，跟随右栏独立滚动。
@@ -1567,6 +1579,7 @@ function loadSampleTry() {
   }
   articleTitleOverride = "";
   blockTypeOverrides = {};
+  clearBlockStyles();
   lastAiResult = null;
   articleSource = sample.source.trim();
   if (articleInput) articleInput.value = articleSource;
@@ -1589,6 +1602,7 @@ function emojiDividerText(text) {
 function renderBody() {
   if (sampleStaticActive && isSampleTrySource()) {
     paintSampleTry();
+    finishBlockStyles();
     return;
   }
   sampleStaticActive = false;
@@ -1602,6 +1616,7 @@ function renderBody() {
       articleTitle.setAttribute("aria-hidden", "true");
     }
     syncPreviewEmpty(true);
+    hideBlockStylePanel(true);
     return;
   }
   syncPreviewEmpty(false);
@@ -1671,6 +1686,7 @@ function renderBody() {
   articleTitle.contentEditable = titleText ? "true" : "false";
   if (titleText) articleTitle.removeAttribute("aria-hidden");
   else articleTitle.setAttribute("aria-hidden", "true");
+  finishBlockStyles();
 }
 
 function inlineNodeToMarkdown(node) {
@@ -2108,6 +2124,7 @@ async function applyAiNormalization(data, assignment, source) {
   syncVibeUI();
   articleTitleOverride = "";
   blockTypeOverrides = {};
+  clearBlockStyles();
   lastAiResult = { ...data, document };
   if (articleInput) articleInput.value = markdown;
   else articleSource = markdown;
@@ -2453,7 +2470,7 @@ function buildCopyHtml() {
     if (t === "serene") return `<section style="margin:56px 0;border-top:1px solid ${state.dividerColor};text-align:left;"></section>`;
     return `<section style="margin:${state.dividerMargin}px 0;border-top:${state.dividerThickness}px solid ${state.dividerColor};text-align:left;"></section>`;
   };
-  let body = model.blocks.map((item) => {
+  let body = model.blocks.map((item) => paintCopyWithBlockStyle((() => {
     if (item.type === "lead") {
       return `<p data-yooco-lead="1" style="${themeLeadStyle(textStyle)}">${copyInlineMarkdown(item.text)}</p>`;
     }
@@ -2574,7 +2591,7 @@ function buildCopyHtml() {
       return `<section style="${codeStyle}"><p style="margin:0;padding:0;color:${codeColor};font-size:${state.codeFontSize}px;line-height:${state.codeLineHeight};text-align:left;">${formatCodeForWechat(item.text)}</p></section>`;
     }
     return "";
-  });
+  })(), String(item.sourceIndex ?? "")));
   if (tocHtmlBlock) {
     const leadIndex = body.findIndex((part) => part.includes('data-yooco-lead="1"'));
     body.splice(leadIndex >= 0 ? leadIndex + 1 : 0, 0, tocHtmlBlock);
@@ -2582,7 +2599,7 @@ function buildCopyHtml() {
   body = body.map((part) => part.replace(' data-yooco-lead="1"', ""));
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
-  const titleHtml = model.title ? `<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>` : "";
+  const titleHtml = model.title ? paintCopyWithBlockStyle(`<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>`, "title") : "";
   // 外层留白对齐工作室预览（.article-page 上下 40px，左右落在 24–40px）。浅色也用同一圈，避免只有深色突然变宽。
   // 深色再给最小高度，公众号后台白壳里炭黑块才不会贴边缩成一条。对齐仍写 left，不用 start/end。
   const frameStyle = isDarkCopyPage() ? "padding:40px 32px;min-height:240px;" : "padding:40px 32px;";
@@ -2743,6 +2760,7 @@ function importConfig(file) {
         articleSource = payload.article.source;
         articleTitleOverride = typeof payload.article.title === "string" ? payload.article.title : "";
         blockTypeOverrides = {};
+        clearBlockStyles();
         if (articleInput) articleInput.value = articleSource;
         persistArticleSource();
       }
@@ -2802,6 +2820,7 @@ function clearArticleSource() {
   articleSource = "";
   articleTitleOverride = "";
   blockTypeOverrides = {};
+  clearBlockStyles();
   lastAiResult = null;
   persistArticleSource();
   setStatus("");
@@ -2860,6 +2879,7 @@ function autoSegmentArticle() {
   if (articleInput) articleInput.value = structured;
   else articleSource = structured;
   blockTypeOverrides = {};
+  clearBlockStyles();
   lastAiResult = null;
   applyArticleSource(false);
   copyFeedback.textContent = "已分段";
@@ -2982,6 +3002,7 @@ function selectEditorView(index) {
   if (showSource && articleInput) articleInput.value = articleSource;
   document.querySelector("#sourcePanel").hidden = !showSource;
   previewStage.hidden = showSource;
+  if (showSource) hideBlockStylePanel(true);
   editorViewTabs.forEach((tab, tabIndex) => {
     tab.setAttribute("aria-selected", String(tabIndex === index));
     tab.tabIndex = tabIndex === index ? 0 : -1;
@@ -3090,11 +3111,272 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") hideBlockTypeMenu();
+  if (event.key === "Escape") {
+    hideBlockTypeMenu();
+    hideBlockStylePanel(true);
+  }
 });
 
 previewStage?.addEventListener("scroll", hideBlockTypeMenu, { passive: true });
 window.addEventListener("resize", hideBlockTypeMenu);
+
+const BLOCK_STYLE_SWATCHES = ["#F4E7D4", "#E5F2C9", "#F8D5D8", "#D7E6F6", "#161616", "#CCFF00"];
+
+function persistBlockStyles() {
+  try {
+    if (Object.keys(blockStyleOverrides).length) localStorage.setItem("yooco-block-styles", JSON.stringify(blockStyleOverrides));
+    else localStorage.removeItem("yooco-block-styles");
+  } catch { /* 存不下就只留在这一次打开里 */ }
+}
+
+function clearBlockStyles() {
+  blockStyleOverrides = {};
+  blockStyleSelection = null;
+  try { localStorage.removeItem("yooco-block-styles"); } catch { /* ignore */ }
+  hideBlockStylePanel(true);
+}
+
+function paintCopyWithBlockStyle(html, key) {
+  const api = globalThis.YoocoBlockStyle;
+  if (!api || !html) return html;
+  return api.paintBlockStyleHtml(html, api.blockStyleCss(blockStyleOverrides[key], state.borderColor));
+}
+
+function blockElementByKey(key) {
+  if (key === "title") return articleTitle && !articleTitle.hidden ? articleTitle : null;
+  if (!articleBody || key == null || key === "") return null;
+  return articleBody.querySelector(`[data-block-index="${CSS.escape(String(key))}"]`);
+}
+
+function blockStyleKind(el) {
+  const api = globalThis.YoocoBlockStyle;
+  if (!api || !el) return "";
+  if (el.id === "articleTitle") return api.BLOCK_STYLE_KINDS.title;
+  return api.BLOCK_STYLE_KINDS[el.dataset.type] || "";
+}
+
+function applyBlockStyleToElement(el, override) {
+  const api = globalThis.YoocoBlockStyle;
+  if (!el || !api) return;
+  const spec = api.blockStyleDeclarations(override, state.borderColor);
+  el.style.fontSize = spec.fontSize;
+  el.style.padding = spec.padding;
+  el.style.backgroundColor = spec.backgroundColor;
+  el.style.borderRadius = spec.borderRadius;
+  el.style.border = spec.border;
+  el.style.boxSizing = spec.padding || spec.border ? "border-box" : "";
+}
+
+function applyBlockStyleOverrides() {
+  const api = globalThis.YoocoBlockStyle;
+  if (!api || !articleBody) return;
+  articleBody.querySelectorAll("[data-block-index]").forEach((el) => {
+    if (!api.BLOCK_STYLE_KINDS[el.dataset.type]) return;
+    applyBlockStyleToElement(el, blockStyleOverrides[el.dataset.blockIndex]);
+  });
+  if (articleTitle) applyBlockStyleToElement(articleTitle, blockStyleOverrides.title);
+}
+
+function markBlockStyleTarget(el) {
+  articlePage?.querySelectorAll(".is-block-style-target").forEach((node) => node.classList.remove("is-block-style-target"));
+  el?.classList.add("is-block-style-target");
+}
+
+function hideBlockStylePanel(forget) {
+  if (blockStylePanel) blockStylePanel.hidden = true;
+  articlePage?.querySelectorAll(".is-block-style-target").forEach((node) => node.classList.remove("is-block-style-target"));
+  if (forget) blockStyleSelection = null;
+}
+
+function placeBlockStylePanel() {
+  if (!blockStylePanel || blockStylePanel.hidden || !blockStyleSelection) return;
+  const el = blockElementByKey(blockStyleSelection.key);
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const width = blockStylePanel.offsetWidth || 240;
+  const height = blockStylePanel.offsetHeight || 360;
+  const gap = 12;
+  let left = rect.right + gap;
+  if (left + width > window.innerWidth - 8) left = rect.left - width - gap;
+  if (left < 8) left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+  let top = rect.top;
+  if (top + height > window.innerHeight - 8) top = window.innerHeight - height - 8;
+  if (top < 8) top = 8;
+  blockStylePanel.style.left = `${Math.round(left)}px`;
+  blockStylePanel.style.top = `${Math.round(top)}px`;
+}
+
+function syncBlockStylePanel(el) {
+  if (!blockStylePanel || !el || !blockStyleSelection) return;
+  const saved = blockStyleOverrides[blockStyleSelection.key] || {};
+  const computed = getComputedStyle(el);
+  const values = {
+    fontSize: saved.fontSize ?? Math.round(parseFloat(computed.fontSize) || 16),
+    padding: saved.padding ?? Math.round(parseFloat(computed.paddingTop) || 0),
+    radius: saved.radius ?? Math.round(parseFloat(computed.borderTopLeftRadius) || 0),
+    borderWidth: saved.borderWidth ?? Math.round(parseFloat(computed.borderTopWidth) || 0),
+  };
+  blockStylePanel.querySelector("[data-block-style-kind]").textContent = blockStyleSelection.kind || "这块";
+  blockStylePanel.querySelectorAll("[data-block-style]").forEach((input) => {
+    const field = input.dataset.blockStyle;
+    if (field === "background") {
+      input.value = saved.background || "#f4e7d4";
+      return;
+    }
+    if (values[field] != null) input.value = String(values[field]);
+    const out = blockStylePanel.querySelector(`[data-block-style-out="${field}"]`);
+    if (out) out.textContent = `${input.value} px`;
+  });
+  const hex = blockStylePanel.querySelector("[data-block-style-hex]");
+  if (hex) hex.textContent = saved.background || "跟随主题";
+  blockStylePanel.querySelectorAll("[data-swatch]").forEach((button) => {
+    button.classList.toggle("is-active", (button.dataset.swatch || "") === (saved.background || ""));
+  });
+}
+
+function showBlockStylePanel(el, kind) {
+  if (!blockStylePanel || !el) return;
+  blockStyleSelection = { key: el.id === "articleTitle" ? "title" : el.dataset.blockIndex, kind };
+  markBlockStyleTarget(el);
+  blockStylePanel.hidden = false;
+  syncBlockStylePanel(el);
+  placeBlockStylePanel();
+}
+
+function updateBlockStyle(key, field, value) {
+  const current = { ...(blockStyleOverrides[key] || {}) };
+  if (value == null || value === "") delete current[field];
+  else current[field] = value;
+  if (Object.keys(current).length) blockStyleOverrides[key] = current;
+  else delete blockStyleOverrides[key];
+  applyBlockStyleToElement(blockElementByKey(key), blockStyleOverrides[key]);
+  persistBlockStyles();
+  const el = blockElementByKey(key);
+  if (el) syncBlockStylePanel(el);
+}
+
+function styleableBlockFromEvent(event) {
+  const title = event.target.closest?.("#articleTitle");
+  if (title && articlePage?.contains(title) && !title.hidden && blockStyleKind(title)) return title;
+  const block = event.target.closest?.("[data-block-index][data-type]");
+  if (!block || !articleBody?.contains(block) || !blockStyleKind(block)) return null;
+  return block;
+}
+
+function openBlockStyle(el) {
+  const kind = blockStyleKind(el);
+  if (!kind) return;
+  showBlockStylePanel(el, kind);
+}
+
+function finishBlockStyles() {
+  applyBlockStyleOverrides();
+  if (!blockStyleSelection) return;
+  const el = blockElementByKey(blockStyleSelection.key);
+  const kind = blockStyleKind(el);
+  if (!el || !kind) {
+    hideBlockStylePanel(true);
+    return;
+  }
+  blockStyleSelection.kind = kind;
+  showBlockStylePanel(el, kind);
+}
+
+function ensureBlockStylePanel() {
+  if (blockStylePanel || !globalThis.YoocoBlockStyle) return;
+  const panel = document.createElement("div");
+  panel.id = "blockStylePanel";
+  panel.className = "block-style-panel";
+  panel.hidden = true;
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "当前块样式");
+  const swatches = [`<button type="button" class="block-style-swatch is-none" data-swatch="" title="跟随主题" aria-label="底色跟随主题"></button>`]
+    .concat(BLOCK_STYLE_SWATCHES.map((color) => `<button type="button" class="block-style-swatch" data-swatch="${color}" title="${color}" aria-label="底色 ${color}" style="background:${color}"></button>`))
+    .join("");
+  panel.innerHTML = `
+    <div class="block-style-head">
+      <p class="block-style-kicker">当前块</p>
+      <strong data-block-style-kind>标题</strong>
+      <button type="button" class="block-style-close" data-block-style-close aria-label="关闭">×</button>
+    </div>
+    <label class="block-style-row">字号 <output data-block-style-out="fontSize"></output>
+      <input type="range" min="12" max="48" step="1" data-block-style="fontSize" />
+    </label>
+    <section class="block-style-section">
+      <p>Fill 底色</p>
+      <div class="block-style-swatches">${swatches}<input class="block-style-color" type="color" value="#f4e7d4" data-block-style="background" aria-label="自选底色" /></div>
+      <span class="block-style-hex" data-block-style-hex>跟随主题</span>
+    </section>
+    <section class="block-style-section">
+      <p>Spacing 间距</p>
+      <label class="block-style-row">内边距 <output data-block-style-out="padding"></output>
+        <input type="range" min="0" max="48" step="1" data-block-style="padding" />
+      </label>
+    </section>
+    <section class="block-style-section">
+      <p>Outline 描边</p>
+      <label class="block-style-row">圆角 <output data-block-style-out="radius"></output>
+        <input type="range" min="0" max="32" step="1" data-block-style="radius" />
+      </label>
+      <label class="block-style-row">边宽 <output data-block-style-out="borderWidth"></output>
+        <input type="range" min="0" max="6" step="1" data-block-style="borderWidth" />
+      </label>
+    </section>
+    <button type="button" class="block-style-reset" data-block-style-reset>恢复这块</button>`;
+  document.body.appendChild(panel);
+  panel.addEventListener("pointerdown", (event) => event.stopPropagation());
+  panel.addEventListener("click", (event) => event.stopPropagation());
+  panel.addEventListener("input", (event) => {
+    if (!blockStyleSelection) return;
+    const field = event.target.dataset.blockStyle;
+    if (!field) return;
+    const value = field === "background" ? event.target.value : Number(event.target.value);
+    updateBlockStyle(blockStyleSelection.key, field, value);
+  });
+  panel.addEventListener("click", (event) => {
+    const swatch = event.target.closest("[data-swatch]");
+    if (swatch && blockStyleSelection) {
+      updateBlockStyle(blockStyleSelection.key, "background", swatch.dataset.swatch || "");
+      return;
+    }
+    if (event.target.closest("[data-block-style-close]")) hideBlockStylePanel(true);
+    if (event.target.closest("[data-block-style-reset]") && blockStyleSelection) {
+      const key = blockStyleSelection.key;
+      delete blockStyleOverrides[key];
+      persistBlockStyles();
+      const el = blockElementByKey(key);
+      applyBlockStyleToElement(el, null);
+      if (el) syncBlockStylePanel(el);
+    }
+  });
+  blockStylePanel = panel;
+}
+
+function setupBlockStyleUi() {
+  if (!previewStage || !globalThis.YoocoBlockStyle) return;
+  ensureBlockStylePanel();
+  previewStage.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    blockStyleDown = { x: event.clientX, y: event.clientY };
+  });
+  previewStage.addEventListener("click", (event) => {
+    const down = blockStyleDown;
+    blockStyleDown = null;
+    if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6) return;
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed && previewStage.contains(selection.anchorNode)) return;
+    const el = styleableBlockFromEvent(event);
+    if (!el) {
+      hideBlockStylePanel(true);
+      return;
+    }
+    openBlockStyle(el);
+  });
+  previewStage.addEventListener("scroll", placeBlockStylePanel, { passive: true });
+  window.addEventListener("resize", placeBlockStylePanel);
+}
+
+setupBlockStyleUi();
 
 const saved = localStorage.getItem("wechat-style-lab-config");
 if (saved) {
@@ -3320,6 +3602,7 @@ function applyHistoryRecord(item) {
   articleSource = typeof item.source === "string" ? item.source : "";
   articleTitleOverride = "";
   blockTypeOverrides = {};
+  clearBlockStyles();
   if (articleInput) articleInput.value = articleSource;
   persistArticleSource();
   styleTouched = true;

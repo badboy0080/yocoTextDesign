@@ -623,3 +623,112 @@ html.studio-embedded .studio-navigation { display:none; }
   .optimize-hint { flex:1 1 160px; text-align:center; }
   .preview-empty-card { padding:28px 16px; }
 }
+
+/* 点预览里的一块，旁边只出这一块的样式。白底深字，不跟工作台的浅色字走。 */
+.article-page .is-block-style-target {
+  outline: 2px solid #9ad100;
+  outline-offset: 3px;
+}
+.block-style-panel {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 240px;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  color: #1a1a1a;
+  color-scheme: light;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  font-family: "Noto Sans SC", "Space Grotesk", sans-serif;
+}
+.block-style-panel[hidden] { display: none !important; }
+.block-style-head { display: flex; align-items: baseline; gap: 8px; }
+.block-style-kicker { margin: 0; color: #6b6b6b; font-size: 11px; font-weight: 650; }
+.block-style-head strong { font-size: 15px; font-weight: 750; }
+.block-style-close {
+  margin: 0 0 0 auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #333;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.block-style-section { margin: 0; }
+.block-style-section > p {
+  margin: 0 0 4px;
+  color: #6b6b6b;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+.block-style-row { display: block; color: #333; font-size: 12px; font-weight: 650; }
+.block-style-row output { float: right; color: #111; font-weight: 700; font-variant-numeric: tabular-nums; }
+.block-style-panel input[type="range"] {
+  width: 100%;
+  height: 4px;
+  margin: 6px 0 0;
+  appearance: none;
+  border-radius: 99px;
+  background: #e6e6e6;
+}
+.block-style-panel input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: #161616;
+  box-shadow: none;
+}
+.block-style-panel input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #161616;
+  box-shadow: none;
+}
+.block-style-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.block-style-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.block-style-swatch.is-none {
+  background:
+    linear-gradient(135deg, transparent 45%, #d33 46% 54%, transparent 55%),
+    #fff;
+}
+.block-style-swatch.is-active { outline: 2px solid #111; outline-offset: 1px; }
+.block-style-color {
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+.block-style-hex { color: #6b6b6b; font-size: 11px; font-variant-numeric: tabular-nums; }
+.block-style-reset {
+  margin-top: 2px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3f3f3;
+  color: #161616;
+  font: 650 12px/1 "Noto Sans SC", "Space Grotesk", sans-serif;
+  cursor: pointer;
+}
+.block-style-reset:hover, .block-style-close:hover { background: #ececec; }

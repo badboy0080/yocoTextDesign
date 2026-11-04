@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+预览里点块改样式（2026-11-04，未合并、未部署）：工作台右侧预览点标题、段落或重点块，旁边浮层只改这一块的字号、底色、间距和描边。正文还在，不重新优化，不扣积分。换主题后这块样式还在。截图在 `docs/previews/block-style-*.png`。仓库里没有单独的 yooco-preview 项目，这台也没有 EdgeOne 登录，所以没有部署。正式站要等合进 master。
+
 表情主题有序说明看不见图标（2026-11-02，未合并、未部署）：选「表情」再优化后，如果模型把「1. 2. 3.」收成有序列表、又不给小标题，预览只剩浅纸和大号序号，没有 💡📌✅。现在说明性的有序条目、很短的「主控：…」这种句子，也会在文字前加图标。真步骤（第一步、然后）不加。短句里有留言或评论，一定有 💬。分隔用整行符号，不再画普通横线。同一篇仍是 3 到 5 种。提示词要求小节标题用 heading，说明分点用无序列表。对比图在 `docs/previews/emoji-ordered-before-after.png`。PR #82 已开，没有合并。正式站要等合进 master。
 
 表情主题（2026-11-02，PR #81，已合进 master）：工作台主题列表末尾新增「表情」（emoji）。浅纸色，小标题、无序列表、分隔和很短的结尾按语义加小图标。同一篇只留 3 到 5 种，图标在文字前，中间一个空格；带【】的小标题，图标放在括号前面。大标题和代码不加。模型漏标时服务端会补，标多了会收。切到这个主题，预览会马上带上图标。有序说明补图标是上面这一条，还没合。
@@ -175,6 +177,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-04 预览里点一块就能改样式
+
+- 想做什么：按 2026-11-03 外网日扫第 2 条，做成 beehiiv 那种「预览里点块就改这一块的样式」。只做这一条。只开 PR，不合 master。
+- 做成了什么：工作台右侧预览点标题、段落或重点块，浮层只出这一块的字号、Fill 底色、Spacing 间距、Outline 圆角和边宽。改完预览马上变，字不丢。复制稿带上同一套样式。换主题、换气质都不重跑优化，不扣积分。
+- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。
+
 ### 2026-11-02 表情主题的有序说明也要看见图标
 
 - 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
@@ -206,11 +216,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/deepseek-normalizer.js`、`lib/tool-prompts.js`、`scripts/check-highlight-marks.js`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-highlight-marks.js` 和 `node scripts/check-normalize-timeout.js` 通过。没有 `DEEPSEEK_API_KEY`，用假返回模拟模型只给加粗。同一段《出师表》长段从 0 处重点变成「不宜妄自菲薄」「先帝创业未半而中道崩殂」。短句「宫中府中，俱为一体。」仍是 0。清氧绿前后对比图在 PR 里。没有打开工作台，没有真调模型，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/79 已合进 master。真模型仍可能标偏，但少标时服务端会补。
-
-### 2026-11-02 常见问题补客服周扫三条
-
-- 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。
-- 做成了什么：额度没显示、先对邮箱，挂在积分。「同一邮箱」用现成的加粗。能不能挂公开群，挂在邀请，仍是一码最多 5 人、同一账号只能核销一次。旧的六条没改字。
-- 改了哪些文件：`lib/site-faq.ts`、`scripts/check-invite.ts`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npx tsx scripts/check-invite.ts` 通过（本机没有线上存储，脚本改用内存，最后是 invite checks ok）。`npx tsx scripts/check-seo.ts` 通过。本地 5174 打开 `/faq`，点开积分两条和邀请公开群一条，正文与定稿一致。截图在运行产物里，没有放进仓库。没有部署，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/78 已开，没有自己合并。合进 master 才会上正式站。首页底部用同一份问答，这三条也会出现在首页。

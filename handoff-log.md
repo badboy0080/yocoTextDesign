@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-空行敲 `/` 插入排版块（2026-11-04，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
+空行敲 `/` 插入排版块（2026-11-04，PR #85，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
 
 预览里点块改样式（2026-11-04，未合并、未部署）：工作台右侧预览点标题、段落或重点块，旁边浮层只改这一块的字号、底色、间距和描边。正文还在，不重新优化，不扣积分。换主题后这块样式还在。截图在 `docs/previews/block-style-*.png`。仓库里没有单独的 yooco-preview 项目，这台也没有 EdgeOne 登录，所以没有部署。正式站要等合进 master。
 
@@ -185,7 +185,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：预览末尾多一行空位，原文空行也可以敲 `/`。菜单有引用框、重点框、分割线、图文头。插完预览马上能看见。重点框用当前重点底色。图文头是标题、副题和头图槽。复制稿是内联 HTML。不调用优化，不扣积分。
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/slash-menu.png`、`docs/previews/slash-quote.png`、`docs/previews/slash-highlight.png`、`docs/previews/slash-divider.png`、`docs/previews/slash-header.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 5174 用无头 Chrome 打开工作台。预览空行敲 `/`，菜单四项都在。点引用、重点、分割线、图文头，预览里马上出现，状态写着没有调用优化、也不计积分。在重点框里改字，原文仍是重点框记号。原文里敲 `/分割` 只剩分割线一项。复制稿里有引用、重点底色、分割线、标题、副题和头图。没有合并。
-- 待办/风险：PR 开了，没有自己合并。仓库没有独立预览项目，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。预览完全是空的时候，空行在「原文」里敲；有正文之后，预览末尾才有空行。重点框不跟着下划线、删除线那些重点样式变，始终是重点底色的框。头图是占位，这一步不能上传图片。暗黑科技那两套如果关掉了分隔线，分割线会插进原文但预览不画。公众号后台还没真贴。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/85 已开，没有自己合并。仓库没有独立预览项目，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。预览完全是空的时候，空行在「原文」里敲；有正文之后，预览末尾才有空行。重点框不跟着下划线、删除线那些重点样式变，始终是重点底色的框。头图是占位，这一步不能上传图片。暗黑科技那两套如果关掉了分隔线，分割线会插进原文但预览不画。公众号后台还没真贴。
 
 ### 2026-11-04 预览里点一块就能改样式
 

@@ -4,7 +4,7 @@
 
 空行敲 `/` 插入排版块（2026-11-04，PR #85，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
 
-预览里点块改样式（2026-11-04，未合并、未部署）：工作台右侧预览点标题、段落或重点块，旁边浮层只改这一块的字号、底色、间距和描边。正文还在，不重新优化，不扣积分。换主题后这块样式还在。截图在 `docs/previews/block-style-*.png`。仓库里没有单独的 yooco-preview 项目，这台也没有 EdgeOne 登录，所以没有部署。正式站要等合进 master。
+预览划词改样式（2026-11-04，未合并、未部署）：工作台右侧预览里划一段文字，才弹出样式。段落、引用、卡片可以改这一块的字号和字体颜色，重点样式里有「标重点 / 取消重点 / 复制」。标题只出字号和标题级别（二级到六级）。文章大标题只有字号。点整块不再打开底色、间距、描边。标重点仍写成 `==重点==`，不重新优化，不扣积分。截图在 `docs/previews/selection-style-paragraph.png`、`selection-style-heading.png`、`selection-style-applied.png`。正式站要等合进 master。
 
 表情主题有序说明看不见图标（2026-11-02，未合并、未部署）：选「表情」再优化后，如果模型把「1. 2. 3.」收成有序列表、又不给小标题，预览只剩浅纸和大号序号，没有 💡📌✅。现在说明性的有序条目、很短的「主控：…」这种句子，也会在文字前加图标。真步骤（第一步、然后）不加。短句里有留言或评论，一定有 💬。分隔用整行符号，不再画普通横线。同一篇仍是 3 到 5 种。提示词要求小节标题用 heading，说明分点用无序列表。对比图在 `docs/previews/emoji-ordered-before-after.png`。PR #82 已开，没有合并。正式站要等合进 master。
 
@@ -179,6 +179,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-04 划词才改字号、字体颜色和重点
+
+- 想做什么：预览里点块打开的参数面板改成划词才出现。段落是字号、字体颜色、重点样式。标题只出标题自己的项。原来的「标重点」并进这个面板。只开 PR，不合 master。
+- 做成了什么：划选段落、引用或卡片，浮层是字号、字体颜色、重点样式（标重点、取消重点、复制）。划选章节标题，只有字号和二级到六级。划选文章大标题，只有字号。点整块不再弹出旧的底色、间距、描边。标重点仍写回 `==重点==`。字号和字体颜色写在这一整块上，复制稿带上。不调用优化，不扣积分。
+- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-style-paragraph.png`、`docs/previews/selection-style-heading.png`、`docs/previews/selection-style-applied.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-block-style.js` 通过。本地静态页打开工作台，贴了一篇带大标题、小标题和两段正文的短文。点段落不出面板，也没有旧的黑胶囊。划「调字号」出字号、字体颜色、重点样式。划小标题只出字号和标题级别，没有重点。点三级后原文变成 `###`。字号改成 22、颜色改成蓝、再标重点，预览马上变，原文有 `==调字号==`。复制稿里有 22px、这颗蓝色，以及重点。取消重点后等号没了，蓝色还在。划大标题只有字号。截图在 `docs/previews/selection-style-*.png`。没有调用优化，没有合并。
+- 待办/风险：PR 已开，没有自己合并。合进 master 才会上正式站。字号和颜色作用在整块，不是只改划中的几个字。重点长什么样仍跟当前主题，没有另做一套重点皮肤。取消重点会拿掉包住选区的整处重点。不能跨块划。列表、代码和斜杠插出来的块不走这个面板。浏览器里如果还留着以前的底色、间距、描边，它们仍会画上，这次的恢复只清字号和字体颜色。公众号后台还没真贴。
+
 ### 2026-11-04 空行敲斜杠插入排版块
 
 - 想做什么：按 2026-11-04 外网日扫第 2 条，工作台空行敲 `/` 出卡片菜单，一键插入排版块。只开 PR，不合 master。
@@ -210,11 +218,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/emoji-theme.js`、`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`scripts/check-highlight-marks.js`、`CONTEXT.md`、`README.md`、`docs/previews/emoji-theme-desktop.png`、`handoff-log.md`、`handoff-archive.md`。
 - 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了带小标题、列表、分隔的样文，点「表情」。预览里是浅纸，知识点、秋天、总结各有图标，列表是菱形，分隔是整行，结尾有留言图标。列表没有再画一个圆点。柠边和包豪的按钮还在。截图在 `docs/previews/emoji-theme-desktop.png`。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/81 已开，没有自己合并。这次变基到最新 master，冲突留在交接日志、`public/app.js`、`public/studio.html`。日扫三条（划选标重点、气质、缩略墙）和 #79 重点规则都留着。合进 master 才会上正式站。优化成表情时，正文段开头如果已经是这套图标，会拿掉一个，避免一篇堆太多；字还在。在预览里改过带图标的字，再换别的主题，图标会留在原文里。
-
-### 2026-11-02 外网交互日扫三条
-
-- 想做什么：按 2026-11-02 日扫做三件事。预览里划选标重点，主题旁加气质，精品模板详情加缩略墙。不改订阅、文案、漏斗、常见问题，不碰空状态和风格筛选。只开 PR，不合并。
-- 做成了什么：预览划选后出黑胶囊，「标重点」写入 `==重点==`，有 marks 的块会补 highlight。气质四档只改字号和留白，换主题配色照旧、气质还在。详情是左大预览、右三列节奏缩略图，加上「用这篇排版」；「做同款」还在。
-- 改了哪些文件：`public/app.js`、`public/studio.html`、`public/studio-ui.css`、`components/work-modal.tsx`、`app/works.css`、`docs/previews/scan-1102-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：本地 5174。示例文章上，瑞士大字是 22px、行高 1.4、段距 28px，纸色没变；极简、杂志、默认也对得上。选中「写文章」出「标重点 / 复制」，点完原文里有 `==写文章==`。再切包豪，字号仍是 22px，底色换成包豪灰，已有重点变成蓝底白字。详情缩略图 5 张、3 列，两个按钮都在，筛选还在。手机宽 390 也能看到三列和「用这篇排版」。没有调用优化，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/80 已开，没有自己合并。分支已变基到含 #79 的 master，GitHub 显示可以合。冲突只在交接日志。合进 master 才会上正式站。划选不能跨段，也不能标已经包在重点里的字。公众号后台还没真贴。

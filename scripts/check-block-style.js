@@ -57,4 +57,20 @@ if (api.BLOCK_STYLE_KINDS.heading !== "标题" || api.BLOCK_STYLE_KINDS.card !==
   process.exit(1);
 }
 
+const colored = api.blockStyleCss({ fontSize: 18, color: "#1040C0" }, "#111111");
+if (colored !== "font-size:18px;color:#1040C0;") {
+  console.error("font color mismatch", colored);
+  process.exit(1);
+}
+
+if (api.blockStyleCss({ color: "red" }, "#111111") !== "") {
+  console.error("unsafe font color was kept");
+  process.exit(1);
+}
+
+if (api.blockStyleDeclarations({ color: "#abc" }, "#111111").color !== "#abc") {
+  console.error("short hex color dropped");
+  process.exit(1);
+}
+
 console.log("block style checks ok");

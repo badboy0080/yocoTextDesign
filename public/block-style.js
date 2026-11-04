@@ -1,4 +1,4 @@
-// 预览里点中一块后，只改这一块的字号、底色、间距和描边。颜色只接受十六进制，避免把别的字写进样式。
+// 预览里划中一块后，把字号、字体颜色写回这一块。底色、间距、描边仍能读旧数据，面板不再改它们。颜色只接受十六进制。
 (function (root) {
   function clampBlockStyle(value, min, max) {
     const n = Number(value);
@@ -12,12 +12,14 @@
   }
 
   function blockStyleDeclarations(override, borderColor) {
-    const spec = { fontSize: "", padding: "", backgroundColor: "", borderRadius: "", border: "" };
+    const spec = { fontSize: "", color: "", padding: "", backgroundColor: "", borderRadius: "", border: "" };
     if (!override || typeof override !== "object") return spec;
     if (override.fontSize != null) {
       const fontSize = clampBlockStyle(override.fontSize, 12, 48);
       if (fontSize != null) spec.fontSize = `${fontSize}px`;
     }
+    const color = safeBlockColor(override.color);
+    if (color) spec.color = color;
     if (override.padding != null) {
       const padding = clampBlockStyle(override.padding, 0, 64);
       if (padding != null) spec.padding = `${padding}px`;
@@ -32,8 +34,8 @@
       const borderWidth = clampBlockStyle(override.borderWidth, 0, 8);
       if (borderWidth === 0) spec.border = "0";
       else if (borderWidth) {
-        const color = safeBlockColor(borderColor) || "#161616";
-        spec.border = `${borderWidth}px solid ${color}`;
+        const borderInk = safeBlockColor(borderColor) || "#161616";
+        spec.border = `${borderWidth}px solid ${borderInk}`;
       }
     }
     return spec;
@@ -43,6 +45,7 @@
     const spec = blockStyleDeclarations(override, borderColor);
     let css = "";
     if (spec.fontSize) css += `font-size:${spec.fontSize};`;
+    if (spec.color) css += `color:${spec.color};`;
     if (spec.padding) css += `padding:${spec.padding};`;
     if (spec.backgroundColor) css += `background-color:${spec.backgroundColor};`;
     if (spec.borderRadius) css += `border-radius:${spec.borderRadius};`;

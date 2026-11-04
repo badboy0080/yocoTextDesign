@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+空行敲 `/` 插入排版块（2026-11-04，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
+
 预览里点块改样式（2026-11-04，未合并、未部署）：工作台右侧预览点标题、段落或重点块，旁边浮层只改这一块的字号、底色、间距和描边。正文还在，不重新优化，不扣积分。换主题后这块样式还在。截图在 `docs/previews/block-style-*.png`。仓库里没有单独的 yooco-preview 项目，这台也没有 EdgeOne 登录，所以没有部署。正式站要等合进 master。
 
 表情主题有序说明看不见图标（2026-11-02，未合并、未部署）：选「表情」再优化后，如果模型把「1. 2. 3.」收成有序列表、又不给小标题，预览只剩浅纸和大号序号，没有 💡📌✅。现在说明性的有序条目、很短的「主控：…」这种句子，也会在文字前加图标。真步骤（第一步、然后）不加。短句里有留言或评论，一定有 💬。分隔用整行符号，不再画普通横线。同一篇仍是 3 到 5 种。提示词要求小节标题用 heading，说明分点用无序列表。对比图在 `docs/previews/emoji-ordered-before-after.png`。PR #82 已开，没有合并。正式站要等合进 master。
@@ -177,6 +179,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-04 空行敲斜杠插入排版块
+
+- 想做什么：按 2026-11-04 外网日扫第 2 条，工作台空行敲 `/` 出卡片菜单，一键插入排版块。只开 PR，不合 master。
+- 做成了什么：预览末尾多一行空位，原文空行也可以敲 `/`。菜单有引用框、重点框、分割线、图文头。插完预览马上能看见。重点框用当前重点底色。图文头是标题、副题和头图槽。复制稿是内联 HTML。不调用优化，不扣积分。
+- 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/slash-menu.png`、`docs/previews/slash-quote.png`、`docs/previews/slash-highlight.png`、`docs/previews/slash-divider.png`、`docs/previews/slash-header.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-slash-cards.js` 通过。本地 5174 用无头 Chrome 打开工作台。预览空行敲 `/`，菜单四项都在。点引用、重点、分割线、图文头，预览里马上出现，状态写着没有调用优化、也不计积分。在重点框里改字，原文仍是重点框记号。原文里敲 `/分割` 只剩分割线一项。复制稿里有引用、重点底色、分割线、标题、副题和头图。没有合并。
+- 待办/风险：PR 开了，没有自己合并。仓库没有独立预览项目，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。预览完全是空的时候，空行在「原文」里敲；有正文之后，预览末尾才有空行。重点框不跟着下划线、删除线那些重点样式变，始终是重点底色的框。头图是占位，这一步不能上传图片。暗黑科技那两套如果关掉了分隔线，分割线会插进原文但预览不画。公众号后台还没真贴。
+
 ### 2026-11-04 预览里点一块就能改样式
 
 - 想做什么：按 2026-11-03 外网日扫第 2 条，做成 beehiiv 那种「预览里点块就改这一块的样式」。只做这一条。只开 PR，不合 master。
@@ -208,11 +218,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/app.js`、`public/studio.html`、`public/studio-ui.css`、`components/work-modal.tsx`、`app/works.css`、`docs/previews/scan-1102-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：本地 5174。示例文章上，瑞士大字是 22px、行高 1.4、段距 28px，纸色没变；极简、杂志、默认也对得上。选中「写文章」出「标重点 / 复制」，点完原文里有 `==写文章==`。再切包豪，字号仍是 22px，底色换成包豪灰，已有重点变成蓝底白字。详情缩略图 5 张、3 列，两个按钮都在，筛选还在。手机宽 390 也能看到三列和「用这篇排版」。没有调用优化，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/80 已开，没有自己合并。分支已变基到含 #79 的 master，GitHub 显示可以合。冲突只在交接日志。合进 master 才会上正式站。划选不能跨段，也不能标已经包在重点里的字。公众号后台还没真贴。
-
-### 2026-11-02 优化排版要能看见重点
-
-- 想做什么：优化排版后重点太少，预览里几乎看不到重点底色。所有主题都要有能执行的密度，原文不能编，不能整段刷黄。只开 PR，不合并。
-- 做成了什么：系统提示改成十三套都要标 highlight。不足 12 字可不标，普通段至少 1 处，长段 1 到 2 处，每处 4 到 16 字。结论和数字用重点，术语用加粗。`==重点==` 收成 highlight。模型少标或整段刷黄时，从本段原文补短片段。人味改写写明不要拿掉 `==重点==`。
-- 改了哪些文件：`lib/deepseek-normalizer.js`、`lib/tool-prompts.js`、`scripts/check-highlight-marks.js`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`node scripts/check-highlight-marks.js` 和 `node scripts/check-normalize-timeout.js` 通过。没有 `DEEPSEEK_API_KEY`，用假返回模拟模型只给加粗。同一段《出师表》长段从 0 处重点变成「不宜妄自菲薄」「先帝创业未半而中道崩殂」。短句「宫中府中，俱为一体。」仍是 0。清氧绿前后对比图在 PR 里。没有打开工作台，没有真调模型，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/79 已合进 master。真模型仍可能标偏，但少标时服务端会补。

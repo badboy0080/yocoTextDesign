@@ -1521,3 +1521,77 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   color: var(--muted-color, #9A9084); font-size: 15px; line-height: 1.6; letter-spacing: .08em;
 }
 .article-page[data-theme="emoji"] .section-title { border-bottom-color: var(--divider-color, #E6DCCA); }
+
+/* 空行 / 菜单插入的重点框、图文头。颜色仍用当前主题的重点色和标题色。 */
+.article-page .content-card.highlight-box {
+  margin: 18px 0 22px;
+  padding: var(--card-padding, 20px);
+  border: 0;
+  border-radius: var(--card-radius, 12px);
+  background: var(--highlight-color, #d7fa5c);
+  color: var(--highlight-text-color, #1a1a1a);
+  box-shadow: none;
+}
+.article-page .content-card.highlight-box strong {
+  display: block;
+  margin: 0 0 7px;
+  padding: 0;
+  background: transparent;
+  color: var(--highlight-text-color, #1a1a1a);
+  font-size: var(--card-title-size, 11px);
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+.article-masthead { margin: 4px 0 22px; }
+.article-masthead-title {
+  margin: 0 0 8px;
+  color: var(--title-color, #20231f);
+  font-family: var(--heading-font, inherit);
+  font-size: var(--title-size, 26px);
+  font-weight: var(--heading-weight, 800);
+  line-height: var(--heading-line-height, 1.33);
+  letter-spacing: var(--heading-letter-spacing, -.04em);
+}
+.article-masthead-sub {
+  min-height: 1.4em;
+  margin: 0 0 12px;
+  color: var(--muted-color, #8e9389);
+  font-size: calc(var(--font-size, 16px) - 1px);
+  line-height: 1.6;
+  text-indent: 0;
+}
+.article-masthead-sub:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-color, #8e9389);
+}
+.article-masthead .fake-image { margin: 0; }
+.article-content .slash-slot {
+  min-height: 1.75em;
+  margin: 8px 0 0;
+  padding: 2px 0;
+  color: var(--text-color, #3f3f3f);
+  font-size: var(--font-size, 16px);
+  line-height: 1.75;
+  text-indent: 0;
+  outline: none;
+}
+.article-content .slash-slot.is-blank::before {
+  content: attr(data-placeholder);
+  color: var(--muted-color, #8e9389);
+  font-size: 14px;
+}
+.slash-card-menu { min-width: 196px; z-index: 90; }
+.slash-card-hint {
+  display: block;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, .55);
+  font-size: 11px;
+  font-weight: 400;
+}
+.block-type-menu-item.is-active .slash-card-hint { color: rgba(20, 20, 20, .62); }
+.slash-card-empty {
+  margin: 0;
+  padding: 8px 10px 10px;
+  color: rgba(255, 255, 255, .62);
+  font-size: 12px;
+}

@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-02 优化排版要能看见重点
+
+- 想做什么：优化排版后重点太少，预览里几乎看不到重点底色。所有主题都要有能执行的密度，原文不能编，不能整段刷黄。只开 PR，不合并。
+- 做成了什么：系统提示改成十三套都要标 highlight。不足 12 字可不标，普通段至少 1 处，长段 1 到 2 处，每处 4 到 16 字。结论和数字用重点，术语用加粗。`==重点==` 收成 highlight。模型少标或整段刷黄时，从本段原文补短片段。人味改写写明不要拿掉 `==重点==`。
+- 改了哪些文件：`lib/deepseek-normalizer.js`、`lib/tool-prompts.js`、`scripts/check-highlight-marks.js`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-highlight-marks.js` 和 `node scripts/check-normalize-timeout.js` 通过。没有 `DEEPSEEK_API_KEY`，用假返回模拟模型只给加粗。同一段《出师表》长段从 0 处重点变成「不宜妄自菲薄」「先帝创业未半而中道崩殂」。短句「宫中府中，俱为一体。」仍是 0。清氧绿前后对比图在 PR 里。没有打开工作台，没有真调模型，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/79 已合进 master。真模型仍可能标偏，但少标时服务端会补。
+
 ### 2026-11-02 常见问题补客服周扫三条
 
 - 想做什么：按客服定稿给 `/faq` 加三条。积分两条，邀请一条。只改文案，不改核销，不合并。

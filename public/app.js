@@ -169,7 +169,9 @@ let blockTypeOverrides = {};
 let blockStyleOverrides = {};
 let blockStyleSelection = null;
 let blockStylePanel = null;
-let blockStyleDown = null;
+let markPick = null;
+let stylePanelHold = 0;
+let stylePointerInPanel = false;
 let lastAiResult = null;
 // 点「用示例文章试一下」后，右侧先用站内静态 HTML，不走优化接口。
 let sampleStaticActive = false;
@@ -3467,7 +3469,8 @@ function insertSlashCard(id) {
   nodes?.[nodes.length - 1]?.scrollIntoView({ block: "nearest" });
 }
 
-const BLOCK_STYLE_SWATCHES = ["#F4E7D4", "#E5F2C9", "#F8D5D8", "#D7E6F6", "#161616", "#CCFF00"];
+const TEXT_COLOR_SWATCHES = ["#1A1A1A", "#5C4033", "#1040C0", "#C23B3B", "#3E7A2C", "#7A4E9A"];
+const HEADING_LEVELS = [2, 3, 4, 5, 6];
 
 function persistBlockStyles() {
   try {
@@ -3495,18 +3498,12 @@ function blockElementByKey(key) {
   return articleBody.querySelector(`[data-block-index="${CSS.escape(String(key))}"]`);
 }
 
-function blockStyleKind(el) {
-  const api = globalThis.YoocoBlockStyle;
-  if (!api || !el) return "";
-  if (el.id === "articleTitle") return api.BLOCK_STYLE_KINDS.title;
-  return api.BLOCK_STYLE_KINDS[el.dataset.type] || "";
-}
-
 function applyBlockStyleToElement(el, override) {
   const api = globalThis.YoocoBlockStyle;
   if (!el || !api) return;
   const spec = api.blockStyleDeclarations(override, state.borderColor);
   el.style.fontSize = spec.fontSize;
+  el.style.color = spec.color;
   el.style.padding = spec.padding;
   el.style.backgroundColor = spec.backgroundColor;
   el.style.borderRadius = spec.borderRadius;
@@ -3532,61 +3529,100 @@ function markBlockStyleTarget(el) {
 function hideBlockStylePanel(forget) {
   if (blockStylePanel) blockStylePanel.hidden = true;
   articlePage?.querySelectorAll(".is-block-style-target").forEach((node) => node.classList.remove("is-block-style-target"));
-  if (forget) blockStyleSelection = null;
+  if (forget) {
+    blockStyleSelection = null;
+    markPick = null;
+  }
+}
+
+function blockStyleAnchorRect() {
+  const range = markPick?.range;
+  if (range?.startContainer?.isConnected) {
+    const rect = range.getBoundingClientRect();
+    if (rect.width || rect.height) return rect;
+  }
+  const el = blockStyleSelection ? blockElementByKey(blockStyleSelection.key) : null;
+  return el?.getBoundingClientRect?.() || null;
 }
 
 function placeBlockStylePanel() {
-  if (!blockStylePanel || blockStylePanel.hidden || !blockStyleSelection) return;
-  const el = blockElementByKey(blockStyleSelection.key);
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  const width = blockStylePanel.offsetWidth || 240;
-  const height = blockStylePanel.offsetHeight || 360;
-  const gap = 12;
-  let left = rect.right + gap;
-  if (left + width > window.innerWidth - 8) left = rect.left - width - gap;
-  if (left < 8) left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
-  let top = rect.top;
-  if (top + height > window.innerHeight - 8) top = window.innerHeight - height - 8;
-  if (top < 8) top = 8;
+  if (!blockStylePanel || blockStylePanel.hidden) return;
+  const rect = blockStyleAnchorRect();
+  if (!rect) return;
+  const width = blockStylePanel.offsetWidth || 248;
+  const height = blockStylePanel.offsetHeight || 280;
+  const gap = 10;
+  let left = rect.left + rect.width / 2 - width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+  let top = rect.top - height - gap;
+  if (top < 8) top = rect.bottom + gap;
+  if (top + height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - height - 8);
   blockStylePanel.style.left = `${Math.round(left)}px`;
   blockStylePanel.style.top = `${Math.round(top)}px`;
 }
 
-function syncBlockStylePanel(el) {
+function syncBlockStylePanel(el, pick) {
   if (!blockStylePanel || !el || !blockStyleSelection) return;
   const saved = blockStyleOverrides[blockStyleSelection.key] || {};
   const computed = getComputedStyle(el);
-  const values = {
-    fontSize: saved.fontSize ?? Math.round(parseFloat(computed.fontSize) || 16),
-    padding: saved.padding ?? Math.round(parseFloat(computed.paddingTop) || 0),
-    radius: saved.radius ?? Math.round(parseFloat(computed.borderTopLeftRadius) || 0),
-    borderWidth: saved.borderWidth ?? Math.round(parseFloat(computed.borderTopWidth) || 0),
-  };
-  blockStylePanel.querySelector("[data-block-style-kind]").textContent = blockStyleSelection.kind || "这块";
-  blockStylePanel.querySelectorAll("[data-block-style]").forEach((input) => {
-    const field = input.dataset.blockStyle;
-    if (field === "background") {
-      input.value = saved.background || "#f4e7d4";
-      return;
-    }
-    if (values[field] != null) input.value = String(values[field]);
-    const out = blockStylePanel.querySelector(`[data-block-style-out="${field}"]`);
-    if (out) out.textContent = `${input.value} px`;
+  const fontSize = saved.fontSize ?? Math.round(parseFloat(computed.fontSize) || 16);
+  const mode = blockStyleSelection.mode || "body";
+  const isTitle = Boolean(blockStyleSelection.isTitle);
+  blockStylePanel.dataset.mode = mode;
+  blockStylePanel.querySelector("[data-block-style-kind]").textContent = blockStyleSelection.kind || "这段";
+  blockStylePanel.querySelectorAll("[data-style-section]").forEach((node) => {
+    const section = node.dataset.styleSection;
+    const visible = section === "size"
+      || (section === "color" && mode === "body")
+      || (section === "mark" && mode === "body")
+      || (section === "level" && mode === "heading" && !isTitle);
+    node.hidden = !visible;
   });
+  const sizeInput = blockStylePanel.querySelector("[data-block-style='fontSize']");
+  if (sizeInput) sizeInput.value = String(fontSize);
+  const sizeOut = blockStylePanel.querySelector("[data-block-style-out='fontSize']");
+  if (sizeOut) sizeOut.textContent = `${fontSize} px`;
+  const savedColor = String(saved.color || "");
+  const colorInput = blockStylePanel.querySelector("[data-block-style='color']");
+  if (colorInput) colorInput.value = savedColor || "#1a1a1a";
   const hex = blockStylePanel.querySelector("[data-block-style-hex]");
-  if (hex) hex.textContent = saved.background || "跟随主题";
-  blockStylePanel.querySelectorAll("[data-swatch]").forEach((button) => {
-    button.classList.toggle("is-active", (button.dataset.swatch || "") === (saved.background || ""));
+  if (hex) hex.textContent = savedColor || "跟随主题";
+  blockStylePanel.querySelectorAll("[data-color-swatch]").forEach((button) => {
+    button.classList.toggle("is-active", (button.dataset.colorSwatch || "").toLowerCase() === savedColor.toLowerCase());
   });
+  const level = Number(pick?.level || el.dataset.level) || 0;
+  blockStylePanel.querySelectorAll("[data-heading-level]").forEach((button) => {
+    button.classList.toggle("is-active", Number(button.dataset.headingLevel) === level);
+  });
+  const current = pick || markPick;
+  const add = blockStylePanel.querySelector("[data-mark-action='add']");
+  const clear = blockStylePanel.querySelector("[data-mark-action='clear']");
+  if (add) {
+    add.disabled = !(current?.canMark) || Boolean(current?.highlighted);
+    add.title = current?.highlighted ? "这段已经是重点" : (current?.canMark ? "把选中的字标为重点" : "请选同一块里还没标过的连续文字");
+  }
+  if (clear) {
+    clear.disabled = !current?.highlighted;
+    clear.classList.toggle("is-active", Boolean(current?.highlighted));
+    clear.title = current?.highlighted ? "取消包住这段的重点" : "这段还不是重点";
+  }
+  const reset = blockStylePanel.querySelector("[data-block-style-reset]");
+  if (reset) reset.textContent = mode === "body" ? "恢复字号颜色" : "恢复字号";
 }
 
-function showBlockStylePanel(el, kind) {
+function showSelectionStylePanel(pick) {
+  const el = pick?.host;
   if (!blockStylePanel || !el) return;
-  blockStyleSelection = { key: el.id === "articleTitle" ? "title" : el.dataset.blockIndex, kind };
+  blockStyleSelection = {
+    key: el.id === "articleTitle" ? "title" : el.dataset.blockIndex,
+    kind: pick.kindLabel,
+    mode: pick.mode,
+    isTitle: el.id === "articleTitle",
+  };
+  markPick = pick;
   markBlockStyleTarget(el);
   blockStylePanel.hidden = false;
-  syncBlockStylePanel(el);
+  syncBlockStylePanel(el, pick);
   placeBlockStylePanel();
 }
 
@@ -3600,33 +3636,55 @@ function updateBlockStyle(key, field, value) {
   persistBlockStyles();
   const el = blockElementByKey(key);
   if (el) syncBlockStylePanel(el);
+  placeBlockStylePanel();
 }
 
-function styleableBlockFromEvent(event) {
-  const title = event.target.closest?.("#articleTitle");
-  if (title && articlePage?.contains(title) && !title.hidden && blockStyleKind(title)) return title;
-  const block = event.target.closest?.("[data-block-index][data-type]");
-  if (!block || !articleBody?.contains(block) || !blockStyleKind(block)) return null;
-  return block;
+function resetSelectionStyleFields() {
+  if (!blockStyleSelection) return;
+  const key = blockStyleSelection.key;
+  const current = { ...(blockStyleOverrides[key] || {}) };
+  delete current.fontSize;
+  delete current.color;
+  if (Object.keys(current).length) blockStyleOverrides[key] = current;
+  else delete blockStyleOverrides[key];
+  persistBlockStyles();
+  const el = blockElementByKey(key);
+  applyBlockStyleToElement(el, blockStyleOverrides[key]);
+  if (el) syncBlockStylePanel(el, markPick);
 }
 
-function openBlockStyle(el) {
-  const kind = blockStyleKind(el);
-  if (!kind) return;
-  showBlockStylePanel(el, kind);
+function selectHostText(el) {
+  const target = el?.querySelector?.(".heading-panel-main, .heading-oval-text, .heading-atlas-main") || el;
+  if (!target) return;
+  const range = document.createRange();
+  range.selectNodeContents(target);
+  const selection = window.getSelection();
+  if (!selection) return;
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function applyHeadingLevel(level) {
+  const el = blockElementByKey(blockStyleSelection?.key);
+  if (!el || el.dataset.type !== "heading") return;
+  const next = Math.min(6, Math.max(2, Number(level) || 2));
+  if (Number(el.dataset.level) === next) return;
+  el.dataset.level = String(next);
+  sampleStaticActive = false;
+  const key = blockStyleSelection.key;
+  syncPreviewEdits();
+  render();
+  const fresh = blockElementByKey(key);
+  if (!fresh) {
+    hideBlockStylePanel(true);
+    return;
+  }
+  selectHostText(fresh);
+  setStatus("已改标题级别。没有调用优化，也不计积分。");
 }
 
 function finishBlockStyles() {
   applyBlockStyleOverrides();
-  if (!blockStyleSelection) return;
-  const el = blockElementByKey(blockStyleSelection.key);
-  const kind = blockStyleKind(el);
-  if (!el || !kind) {
-    hideBlockStylePanel(true);
-    return;
-  }
-  blockStyleSelection.kind = kind;
-  showBlockStylePanel(el, kind);
 }
 
 function ensureBlockStylePanel() {
@@ -3636,65 +3694,79 @@ function ensureBlockStylePanel() {
   panel.className = "block-style-panel";
   panel.hidden = true;
   panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "当前块样式");
-  const swatches = [`<button type="button" class="block-style-swatch is-none" data-swatch="" title="跟随主题" aria-label="底色跟随主题"></button>`]
-    .concat(BLOCK_STYLE_SWATCHES.map((color) => `<button type="button" class="block-style-swatch" data-swatch="${color}" title="${color}" aria-label="底色 ${color}" style="background:${color}"></button>`))
+  panel.setAttribute("aria-label", "划选样式");
+  const swatches = [`<button type="button" class="block-style-swatch is-none" data-color-swatch="" title="跟随主题" aria-label="字体颜色跟随主题"></button>`]
+    .concat(TEXT_COLOR_SWATCHES.map((color) => `<button type="button" class="block-style-swatch" data-color-swatch="${color}" title="${color}" aria-label="字体颜色 ${color}" style="background:${color}"></button>`))
     .join("");
+  const levels = HEADING_LEVELS.map((level) => `<button type="button" data-heading-level="${level}" aria-label="${level}级标题">${["", "", "二", "三", "四", "五", "六"][level]}级</button>`).join("");
   panel.innerHTML = `
     <div class="block-style-head">
-      <p class="block-style-kicker">当前块</p>
-      <strong data-block-style-kind>标题</strong>
+      <p class="block-style-kicker">划选</p>
+      <strong data-block-style-kind>段落</strong>
       <button type="button" class="block-style-close" data-block-style-close aria-label="关闭">×</button>
     </div>
-    <label class="block-style-row">字号 <output data-block-style-out="fontSize"></output>
-      <input type="range" min="12" max="48" step="1" data-block-style="fontSize" />
+    <label class="block-style-row" data-style-section="size">字号 <output data-block-style-out="fontSize"></output>
+      <input type="range" min="12" max="48" step="1" data-block-style="fontSize" aria-label="字号" />
     </label>
-    <section class="block-style-section">
-      <p>Fill 底色</p>
-      <div class="block-style-swatches">${swatches}<input class="block-style-color" type="color" value="#f4e7d4" data-block-style="background" aria-label="自选底色" /></div>
+    <section class="block-style-section" data-style-section="color">
+      <p>字体颜色</p>
+      <div class="block-style-swatches">${swatches}<input class="block-style-color" type="color" value="#1a1a1a" data-block-style="color" aria-label="自选字体颜色" /></div>
       <span class="block-style-hex" data-block-style-hex>跟随主题</span>
     </section>
-    <section class="block-style-section">
-      <p>Spacing 间距</p>
-      <label class="block-style-row">内边距 <output data-block-style-out="padding"></output>
-        <input type="range" min="0" max="48" step="1" data-block-style="padding" />
-      </label>
+    <section class="block-style-section" data-style-section="mark">
+      <p>重点样式</p>
+      <div class="block-style-actions">
+        <button type="button" data-mark-action="add">标重点</button>
+        <button type="button" data-mark-action="clear">取消重点</button>
+        <button type="button" data-mark-action="copy">复制</button>
+      </div>
     </section>
-    <section class="block-style-section">
-      <p>Outline 描边</p>
-      <label class="block-style-row">圆角 <output data-block-style-out="radius"></output>
-        <input type="range" min="0" max="32" step="1" data-block-style="radius" />
-      </label>
-      <label class="block-style-row">边宽 <output data-block-style-out="borderWidth"></output>
-        <input type="range" min="0" max="6" step="1" data-block-style="borderWidth" />
-      </label>
+    <section class="block-style-section" data-style-section="level">
+      <p>标题级别</p>
+      <div class="block-style-levels" role="group" aria-label="标题级别">${levels}</div>
     </section>
-    <button type="button" class="block-style-reset" data-block-style-reset>恢复这块</button>`;
+    <button type="button" class="block-style-reset" data-block-style-reset>恢复字号颜色</button>`;
   document.body.appendChild(panel);
+  panel.addEventListener("mousedown", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("input[type='range'], input[type='color']")) return;
+    event.preventDefault();
+  });
   panel.addEventListener("pointerdown", (event) => event.stopPropagation());
   panel.addEventListener("click", (event) => event.stopPropagation());
   panel.addEventListener("input", (event) => {
     if (!blockStyleSelection) return;
     const field = event.target.dataset.blockStyle;
-    if (!field) return;
-    const value = field === "background" ? event.target.value : Number(event.target.value);
+    if (field !== "fontSize" && field !== "color") return;
+    const value = field === "color" ? event.target.value : Number(event.target.value);
     updateBlockStyle(blockStyleSelection.key, field, value);
   });
   panel.addEventListener("click", (event) => {
-    const swatch = event.target.closest("[data-swatch]");
+    const swatch = event.target.closest("[data-color-swatch]");
     if (swatch && blockStyleSelection) {
-      updateBlockStyle(blockStyleSelection.key, "background", swatch.dataset.swatch || "");
+      updateBlockStyle(blockStyleSelection.key, "color", swatch.dataset.colorSwatch || "");
       return;
     }
-    if (event.target.closest("[data-block-style-close]")) hideBlockStylePanel(true);
-    if (event.target.closest("[data-block-style-reset]") && blockStyleSelection) {
-      const key = blockStyleSelection.key;
-      delete blockStyleOverrides[key];
-      persistBlockStyles();
-      const el = blockElementByKey(key);
-      applyBlockStyleToElement(el, null);
-      if (el) syncBlockStylePanel(el);
+    const levelButton = event.target.closest("[data-heading-level]");
+    if (levelButton) {
+      applyHeadingLevel(levelButton.dataset.headingLevel);
+      return;
     }
+    const action = event.target.closest("[data-mark-action]");
+    if (action) {
+      const name = action.dataset.markAction;
+      if (name === "add") applyPreviewHighlight();
+      else if (name === "clear") clearPreviewHighlight();
+      else if (name === "copy") void copyPreviewHighlight();
+      return;
+    }
+    if (event.target.closest("[data-block-style-close]")) {
+      window.getSelection()?.removeAllRanges();
+      hideBlockStylePanel(true);
+      return;
+    }
+    if (event.target.closest("[data-block-style-reset]")) resetSelectionStyleFields();
   });
   blockStylePanel = panel;
 }
@@ -3702,22 +3774,20 @@ function ensureBlockStylePanel() {
 function setupBlockStyleUi() {
   if (!previewStage || !globalThis.YoocoBlockStyle) return;
   ensureBlockStylePanel();
-  previewStage.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) return;
-    blockStyleDown = { x: event.clientX, y: event.clientY };
-  });
-  previewStage.addEventListener("click", (event) => {
-    const down = blockStyleDown;
-    blockStyleDown = null;
-    if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6) return;
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed && previewStage.contains(selection.anchorNode)) return;
-    const el = styleableBlockFromEvent(event);
-    if (!el) {
-      hideBlockStylePanel(true);
-      return;
-    }
-    openBlockStyle(el);
+  document.addEventListener("pointerdown", (event) => {
+    const inside = Boolean(blockStylePanel && event.target instanceof Element && blockStylePanel.contains(event.target));
+    stylePointerInPanel = inside;
+    if (inside) stylePanelHold += 1;
+  }, true);
+  const releaseStylePanelHold = () => {
+    if (stylePanelHold) stylePanelHold -= 1;
+  };
+  document.addEventListener("pointerup", releaseStylePanelHold, true);
+  document.addEventListener("pointercancel", releaseStylePanelHold, true);
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !blockStylePanel || blockStylePanel.hidden) return;
+    window.getSelection()?.removeAllRanges();
+    hideBlockStylePanel(true);
   });
   previewStage.addEventListener("scroll", placeBlockStylePanel, { passive: true });
   window.addEventListener("resize", placeBlockStylePanel);
@@ -4737,8 +4807,6 @@ function setupHumanizeFloat() {
 }
 
 const MARK_HOST_TYPES = new Set(["paragraph", "lead", "quote", "card"]);
-let markLayer = null;
-let markPick = null;
 
 function markHostFromNode(node) {
   const el = node?.nodeType === 1 ? node : node?.parentElement;
@@ -4796,30 +4864,70 @@ function boundaryOffset(pieces, container, offset) {
   return next ? next.start : -1;
 }
 
-function inspectMarkSelection() {
+function styleHostFromNode(node) {
+  const el = node?.nodeType === 1 ? node : node?.parentElement;
+  if (!el) return null;
+  const title = el.closest?.("#articleTitle");
+  if (title && articlePage?.contains(title) && !title.hidden) return title;
+  const heading = el.closest?.("[data-type='heading']");
+  if (heading && articleBody?.contains(heading)) return heading;
+  return markHostFromNode(node);
+}
+
+function styleKindLabel(host) {
+  if (host?.id === "articleTitle") return "大标题";
+  if (host?.dataset.type === "heading") return "标题";
+  if (host?.dataset.type === "quote") return "引用";
+  if (host?.dataset.type === "card") return "卡片";
+  return "段落";
+}
+
+function inspectStyleSelection() {
   const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !articleBody) return null;
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null;
+  if (!normalizeSelectedText(selection.toString()).trim()) return null;
   const range = selection.getRangeAt(0);
-  if (!articleBody.contains(range.commonAncestorContainer)) return null;
-  const host = markHostFromNode(range.commonAncestorContainer);
+  const root = articlePage || articleBody;
+  if (!root?.contains(range.commonAncestorContainer)) return null;
+  const host = styleHostFromNode(range.commonAncestorContainer);
   if (!host) return null;
-  const startHost = markHostFromNode(range.startContainer);
-  const endHost = markHostFromNode(range.endContainer);
+  const startHost = styleHostFromNode(range.startContainer);
+  const endHost = styleHostFromNode(range.endContainer);
   if (startHost !== host || endHost !== host) return null;
+  const mode = host.id === "articleTitle" || host.dataset.type === "heading" ? "heading" : "body";
+  const base = {
+    range: range.cloneRange(),
+    host,
+    mode,
+    kindLabel: styleKindLabel(host),
+    level: host.dataset.type === "heading" ? Number(host.dataset.level) || 2 : 0,
+    fragment: normalizeSelectedText(selection.toString()),
+    hostPlain: "",
+    highlighted: false,
+    overlaps: false,
+    canMark: false,
+  };
+  if (mode === "heading") return base;
   const title = markTitleNode(host);
-  if (title && (title.contains(range.startContainer) || title.contains(range.endContainer))) return null;
+  const touchesTitle = Boolean(title && (title.contains(range.startContainer) || title.contains(range.endContainer)));
   const { pieces, plain } = plainPieces(host);
   const start = boundaryOffset(pieces, range.startContainer, range.startOffset);
   const end = boundaryOffset(pieces, range.endContainer, range.endOffset);
-  if (start < 0 || end <= start || end > plain.length) return null;
+  if (start < 0 || end <= start || end > plain.length) return base.fragment.trim() ? base : null;
   const fragment = plain.slice(start, end);
-  if (!fragment.trim() || fragment.includes("\n") || fragment.includes("=")) return null;
-  if (!plain.includes(fragment)) return null;
   const slice = pieces.filter((piece) => piece.start < end && piece.start + piece.text.length > start);
-  if (!slice.length || slice.some((piece) => piece.node?.parentElement?.closest("code"))) return null;
+  const inCode = slice.some((piece) => piece.node?.parentElement?.closest("code"));
   const highlighted = slice.length > 0 && slice.every((piece) => piece.node?.parentElement?.closest("mark.inline-highlight"));
   const overlaps = slice.some((piece) => piece.node?.parentElement?.closest("mark.inline-highlight"));
-  return { range: range.cloneRange(), fragment, hostPlain: plain, highlighted, overlaps };
+  const clean = Boolean(fragment.trim()) && !fragment.includes("\n") && !fragment.includes("=") && plain.includes(fragment);
+  return {
+    ...base,
+    fragment,
+    hostPlain: plain,
+    highlighted,
+    overlaps,
+    canMark: clean && !touchesTitle && !inCode && !overlaps,
+  };
 }
 
 function appendHighlightMark(doc, fragment, hostPlain) {
@@ -4846,6 +4954,24 @@ function appendHighlightToDocument(fragment, hostPlain) {
   return appendHighlightMark(lastAiResult.document, fragment, hostPlain);
 }
 
+function removeHighlightFromDocument(fragment) {
+  const blocks = lastAiResult?.document?.blocks;
+  if (!Array.isArray(blocks)) return;
+  const needle = String(fragment || "");
+  if (!needle) return;
+  blocks.forEach((block) => {
+    if (!Array.isArray(block.marks)) return;
+    block.marks = block.marks.filter((mark) => !(mark?.type === "highlight" && mark.text === needle));
+  });
+}
+
+function highlightMarksTouching(host, range) {
+  if (!host || !range) return [];
+  return [...host.querySelectorAll("mark.inline-highlight")].filter((mark) => {
+    try { return range.intersectsNode(mark); } catch { return false; }
+  });
+}
+
 function wrapRangeWithHighlight(range) {
   const mark = document.createElement("mark");
   mark.className = "inline-highlight";
@@ -4859,13 +4985,13 @@ function wrapRangeWithHighlight(range) {
 function applyPreviewHighlight() {
   const pick = markPick;
   if (!pick?.range || !pick.range.startContainer?.isConnected) {
-    hideMarkCapsule();
+    hideBlockStylePanel(true);
     return;
   }
   const live = normalizeSelectedText(pick.range.toString());
   if (live !== pick.fragment) {
     setFeedback("选区已经变了，请重新划一段。");
-    hideMarkCapsule();
+    hideBlockStylePanel(true);
     return;
   }
   if (pick.highlighted) {
@@ -4890,14 +5016,58 @@ function applyPreviewHighlight() {
     persistArticleSource();
     render();
     setFeedback("这段标不上重点。");
-    hideMarkCapsule();
+    hideBlockStylePanel(true);
     return;
   }
   appendHighlightToDocument(pick.fragment, pick.hostPlain);
   render();
   window.getSelection()?.removeAllRanges();
-  hideMarkCapsule();
+  hideBlockStylePanel(true);
   setFeedback("已标为重点。换主题也会留着。");
+}
+
+function clearPreviewHighlight() {
+  const pick = markPick;
+  const host = pick?.host;
+  const range = pick?.range;
+  if (!host?.isConnected || !range?.startContainer?.isConnected) {
+    setFeedback("选区已经变了，请重新划一段。");
+    hideBlockStylePanel(true);
+    return;
+  }
+  const marks = highlightMarksTouching(host, range);
+  if (!marks.length) {
+    setFeedback("这段还不是重点。");
+    return;
+  }
+  const texts = [];
+  marks.forEach((mark) => {
+    const text = normalizeSelectedText(mark.textContent || "").replace(/\n/g, "");
+    if (text) texts.push(text);
+    const parent = mark.parentNode;
+    if (!parent) return;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    mark.remove();
+    parent.normalize?.();
+  });
+  sampleStaticActive = false;
+  const before = articleSource;
+  syncPreviewEdits();
+  const kept = texts.every((text) => !articleSource.includes(`==${text}==`));
+  if (!kept) {
+    articleSource = before;
+    if (articleInput && document.activeElement !== articleInput) articleInput.value = before;
+    persistArticleSource();
+    render();
+    hideBlockStylePanel(true);
+    setFeedback("这段取消不了。");
+    return;
+  }
+  texts.forEach((text) => removeHighlightFromDocument(text));
+  render();
+  window.getSelection()?.removeAllRanges();
+  hideBlockStylePanel(true);
+  setFeedback("已取消重点。");
 }
 
 async function copyPreviewHighlight() {
@@ -4911,95 +5081,35 @@ async function copyPreviewHighlight() {
   }
 }
 
-function hideMarkCapsule() {
-  markPick = null;
-  if (markLayer) markLayer.hidden = true;
-}
-
-function ensureMarkLayer() {
-  if (markLayer) return;
-  markLayer = document.createElement("div");
-  markLayer.id = "previewMarkLayer";
-  markLayer.hidden = true;
-  const capsule = document.createElement("div");
-  capsule.className = "mark-capsule";
-  capsule.setAttribute("role", "toolbar");
-  capsule.setAttribute("aria-label", "划选文字");
-  const markButton = document.createElement("button");
-  markButton.type = "button";
-  markButton.className = "mark-capsule-main";
-  markButton.textContent = "标重点";
-  const copyButton = document.createElement("button");
-  copyButton.type = "button";
-  copyButton.className = "mark-capsule-copy";
-  copyButton.textContent = "复制";
-  [markButton, copyButton].forEach((button) => {
-    button.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-    });
-  });
-  markButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    applyPreviewHighlight();
-  });
-  copyButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void copyPreviewHighlight();
-  });
-  capsule.append(markButton, copyButton);
-  markLayer.append(capsule);
-  document.body.append(markLayer);
-}
-
-function placeMarkCapsule(rect) {
-  const capsule = markLayer.querySelector(".mark-capsule");
-  if (!capsule) return;
-  const width = capsule.offsetWidth || 132;
-  const height = capsule.offsetHeight || 36;
-  const gap = 8;
-  let left = rect.left + (rect.right - rect.left) / 2 - width / 2;
-  let top = rect.top - height - gap;
-  const maxLeft = window.innerWidth - width - 8;
-  if (top < 8) top = rect.bottom + gap;
-  capsule.style.left = `${Math.round(Math.max(8, Math.min(left, maxLeft)))}px`;
-  capsule.style.top = `${Math.round(Math.max(8, Math.min(top, window.innerHeight - height - 8)))}px`;
-}
-
-function paintMarkCapsule() {
-  ensureMarkLayer();
+function paintSelectionStyle() {
+  ensureBlockStylePanel();
   if (humanizeDialogOpen() || activeEditorKind() !== "preview") {
-    hideMarkCapsule();
+    hideBlockStylePanel(true);
     return;
   }
-  const pick = inspectMarkSelection();
+  if (stylePanelHold > 0) {
+    placeBlockStylePanel();
+    return;
+  }
+  const pick = inspectStyleSelection();
   if (!pick) {
-    hideMarkCapsule();
+    if (stylePointerInPanel && blockStylePanel && !blockStylePanel.hidden) return;
+    hideBlockStylePanel(true);
     return;
   }
-  markPick = pick;
-  markLayer.hidden = false;
-  const rect = pick.range.getBoundingClientRect();
-  placeMarkCapsule(rect);
+  showSelectionStylePanel(pick);
 }
 
-function scheduleMarkCapsule() {
-  window.requestAnimationFrame(() => paintMarkCapsule());
+function scheduleSelectionStyle() {
+  window.requestAnimationFrame(() => paintSelectionStyle());
 }
 
 function setupHighlightFloat() {
-  ensureMarkLayer();
-  document.addEventListener("selectionchange", scheduleMarkCapsule);
-  document.addEventListener("scroll", scheduleMarkCapsule, true);
-  window.addEventListener("resize", scheduleMarkCapsule);
-  previewStage?.addEventListener("scroll", scheduleMarkCapsule, { passive: true });
-  document.addEventListener("pointerdown", (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    if (target.closest(".mark-capsule")) return;
-  });
+  ensureBlockStylePanel();
+  document.addEventListener("selectionchange", scheduleSelectionStyle);
+  document.addEventListener("scroll", scheduleSelectionStyle, true);
+  window.addEventListener("resize", scheduleSelectionStyle);
+  previewStage?.addEventListener("scroll", scheduleSelectionStyle, { passive: true });
 }
 
 function setupStudioTools() {

@@ -624,7 +624,7 @@ html.studio-embedded .studio-navigation { display:none; }
   .preview-empty-card { padding:28px 16px; }
 }
 
-/* 点预览里的一块，旁边只出这一块的样式。白底深字，不跟工作台的浅色字走。 */
+/* 划选文字后，在选区旁边改这一块。白底深字，不跟工作台的浅色字走。 */
 .article-page .is-block-style-target {
   outline: 2px solid #9ad100;
   outline-offset: 3px;
@@ -635,7 +635,8 @@ html.studio-embedded .studio-navigation { display:none; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 240px;
+  width: 252px;
+  user-select: none;
   max-height: calc(100vh - 16px);
   overflow: auto;
   padding: 12px;
@@ -647,7 +648,8 @@ html.studio-embedded .studio-navigation { display:none; }
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
   font-family: "Noto Sans SC", "Space Grotesk", sans-serif;
 }
-.block-style-panel[hidden] { display: none !important; }
+.block-style-panel[hidden],
+.block-style-panel [hidden] { display: none !important; }
 .block-style-head { display: flex; align-items: baseline; gap: 8px; }
 .block-style-kicker { margin: 0; color: #6b6b6b; font-size: 11px; font-weight: 650; }
 .block-style-head strong { font-size: 15px; font-weight: 750; }
@@ -696,10 +698,10 @@ html.studio-embedded .studio-navigation { display:none; }
   background: #161616;
   box-shadow: none;
 }
-.block-style-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.block-style-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
 .block-style-swatch {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 6px;
@@ -712,8 +714,8 @@ html.studio-embedded .studio-navigation { display:none; }
 }
 .block-style-swatch.is-active { outline: 2px solid #111; outline-offset: 1px; }
 .block-style-color {
-  width: 28px;
-  height: 22px;
+  width: 22px;
+  height: 20px;
   padding: 0;
   border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 6px;
@@ -732,3 +734,37 @@ html.studio-embedded .studio-navigation { display:none; }
   cursor: pointer;
 }
 .block-style-reset:hover, .block-style-close:hover { background: #ececec; }
+.block-style-actions, .block-style-levels { display: flex; flex-wrap: wrap; gap: 6px; }
+.block-style-actions button, .block-style-levels button {
+  margin: 0;
+  padding: 7px 8px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  background: #f7f7f7;
+  color: #161616;
+  font: 650 12px/1 "Noto Sans SC", "Space Grotesk", sans-serif;
+  cursor: pointer;
+}
+.block-style-levels button { flex: 1 1 0; padding-left: 0; padding-right: 0; }
+.block-style-actions [data-mark-action="add"] {
+  background: #161616;
+  border-color: #161616;
+  color: #fff;
+}
+.block-style-actions button.is-active, .block-style-levels button.is-active {
+  background: #161616;
+  border-color: #161616;
+  color: #fff;
+}
+.block-style-actions button:disabled {
+  background: #f3f3f3;
+  border-color: #e2e2e2;
+  color: #9a9a9a;
+  cursor: default;
+}
+.block-style-actions button:not(:disabled):hover, .block-style-levels button:hover { background: #ececec; }
+.block-style-actions [data-mark-action="add"]:not(:disabled):hover,
+.block-style-actions button.is-active:hover, .block-style-levels button.is-active:hover {
+  background: #2a2a2a;
+  color: #fff;
+}

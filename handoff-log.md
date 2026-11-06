@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-划词字号和颜色只改选中的字（2026-11-06，未合并、未部署）：工作台划中一段或标题里的几个字，改字号、改字体颜色，只动这几个字。同段其余字不动。标重点仍只围住划中字。恢复字号颜色也只清划中字上的局部样式。复制稿带着这些局部字号和颜色。以前已经写在整块上的旧字号、旧颜色还在，这次不会去清。不调用优化，不扣积分。截图在 `docs/previews/selection-inline-before-color.png`、`selection-inline-after-color.png`、`selection-inline-after-size.png`、`selection-inline-after-mark.png`。正式站要等合进 master。
+划词字号和颜色只改选中的字（2026-11-06，PR #89，未合并、未部署）：工作台划中一段或标题里的几个字，改字号、改字体颜色，只动这几个字。同段其余字不动。标重点仍只围住划中字。恢复字号颜色也只清划中字上的局部样式。复制稿带着这些局部字号和颜色。以前已经写在整块上的旧字号、旧颜色还在，这次不会去清。不调用优化，不扣积分。截图在 `docs/previews/selection-inline-before-color.png`、`selection-inline-after-color.png`、`selection-inline-after-size.png`、`selection-inline-after-mark.png`。正式站要等合进 master。
 
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
@@ -191,7 +191,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：字号和颜色写在划中的字上，原文记成 `{{#颜色|字号}}这几个字{{/}}`。预览只给这几个字套样式。标重点仍写成 `==这段==`。先上色再标重点时，颜色留在重点里面，重点底色还在。只恢复划中字时，旁边的局部颜色和重点还在。章节标题和文章大标题也能只改划中的几个字。复制稿里是带颜色和字号的内联样式。整块的旧底色、间距、描边没动，也不再从这块面板写入整块字号或颜色。
 - 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/typeset-polish.js`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-inline-before-color.png`、`docs/previews/selection-inline-after-color.png`、`docs/previews/selection-inline-after-size.png`、`docs/previews/selection-inline-after-mark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-block-style.js`、`node scripts/check-slash-cards.js`、`node scripts/check-highlight-marks.js` 通过。本地 8765 打开工作台。修前只划「一套 AI 团队」点红，整段变红。修后只有这几个字变红，同段其余字不变。字号改成 28，只有这几个字变大。标重点仍只围住这几个字。另测：旁边已有「管理系统」重点还在；只恢复「AI」后，前后的红和整段重点还在；标题「这样一支」可单独 32px，大标题「团队」可单独变蓝。复制按钮造出的 HTML 里，选中字带 `color:#C23B3B` 和 `font-size:32px`，重点还包着它们。没有调用优化。没有合并。
-- 待办/风险：PR 已开，没有自己合并。合进 master 才会上正式站。没贴进真实公众号后台。再点一次优化，模型不认识这套记号，局部字号和颜色可能被丢掉。以前存在浏览器里的整块字号、整块颜色还会画在整段上，恢复不会清那种旧记录。引用和卡片的标题那一行不能单独上色。不能跨块划。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/89 已开，没有自己合并。合进 master 才会上正式站。没贴进真实公众号后台。再点一次优化，模型不认识这套记号，局部字号和颜色可能被丢掉。以前存在浏览器里的整块字号、整块颜色还会画在整段上，恢复不会清那种旧记录。引用和卡片的标题那一行不能单独上色。不能跨块划。
 
 ### 2026-11-06 工作台插入图文栅格
 

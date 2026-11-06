@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-图文栅格（2026-11-06，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
+图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
 复制到公众号左右大留白（2026-11-06，PR #87，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
 
@@ -189,7 +189,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：空行敲 `/`，菜单在原来四项后面多一组「图文栅格」，里面是双栏图文、三列要点。插进去是空的虚线格。双栏点图格可以放当前主题色的占位图、从本机选一张，或清空。文字点一下就能改。三列是小标题加一句说明，空着是虚线，写上字就用主题的卡片底和边。复制稿用表格保住两栏和三列。不调用优化，不扣积分。
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/smart-grid-menu.png`、`docs/previews/smart-grid-empty.png`、`docs/previews/smart-grid-article.png`、`docs/previews/smart-grid-media.png`、`docs/previews/smart-grid-points.png`、`docs/previews/smart-grid-theme.png`、`docs/previews/smart-grid-theme-dark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。预览空行敲 `/`，菜单里看见图文栅格、双栏图文、三列要点。插入双栏后是虚线空格，状态写着没有调用优化、也不计积分。点「用占位图」，标注改成「小市摊位」，说明改成小市那句。再插入三列，三格都是虚线，写上先列清单、货比三家、当天用完。复制稿里有这些字，并且有两张表。换到包豪，占位图变成黄块，卡片带硬投影。换到深空青，纸和格子一起变暗。从本机选了一张小图，原文里是 data 图片，状态仍写不计积分。没有合并。
-- 待办/风险：PR 已开，没有自己合并。合进 master 才会上正式站。不能把图片拖进格子，编辑器里本来也没有这条路。本机图片超过 2MB，或不是 png、jpg、gif、webp，会拒绝。公众号后台还没真贴，外链或 data 图可能要先上传素材库。没有做自由设行、列、间距。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/88 已开，没有自己合并。合进 master 才会上正式站。不能把图片拖进格子，编辑器里本来也没有这条路。本机图片超过 2MB，或不是 png、jpg、gif、webp，会拒绝。公众号后台还没真贴，外链或 data 图可能要先上传素材库。没有做自由设行、列、间距。
 
 ### 2026-11-04 划词才改字号、字体颜色和重点
 

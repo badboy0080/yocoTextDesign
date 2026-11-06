@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+复制到公众号左右大留白（2026-11-06，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
+
 空行敲 `/` 插入排版块（2026-11-04，PR #85，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
 
 预览划词改样式（2026-11-04，未合并、未部署）：工作台右侧预览里划一段文字，才弹出样式。段落、引用、卡片可以改这一块的字号和字体颜色，重点样式里有「标重点 / 取消重点 / 复制」。标题只出字号和标题级别（二级到六级）。文章大标题只有字号。点整块不再打开底色、间距、描边。标重点仍写成 `==重点==`，不重新优化，不扣积分。截图在 `docs/previews/selection-style-paragraph.png`、`selection-style-heading.png`、`selection-style-applied.png`。正式站要等合进 master。

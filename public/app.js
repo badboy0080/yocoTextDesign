@@ -2665,10 +2665,12 @@ function buildCopyHtml() {
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
   const titleHtml = model.title ? paintCopyWithBlockStyle(`<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>`, "title") : "";
-  // 外层留白对齐工作室预览（.article-page 上下 40px，左右落在 24–40px）。浅色也用同一圈，避免只有深色突然变宽。
-  // 深色再给最小高度，公众号后台白壳里炭黑块才不会贴边缩成一条。对齐仍写 left，不用 start/end。
-  const frameStyle = isDarkCopyPage() ? "padding:40px 32px;min-height:240px;" : "padding:40px 32px;";
-  let html = `<section style="width:100%;max-width:100%;margin:0;${frameStyle}background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
+  // 微信阅读页自己会留左右大约 16–20px。再写 32px 会叠成手机上左右各约 50px 的白边。
+  // 左右只留 4px，让硬边主题右侧 4px 投影还留在这一圈里；上下仍是 40px。
+  // 外层宽度 100%，并按边框盒计算，避免左右内边距把盒子撑出屏幕。不用固定宽，也不居中。
+  // 深色底色画在这一层上，收左右距不会把底色收成窄条。对齐仍写 left，不用 start/end。
+  const frameStyle = isDarkCopyPage() ? "padding:40px 4px;min-height:240px;" : "padding:40px 4px;";
+  let html = `<section style="box-sizing:border-box;width:100%;max-width:100%;margin:0;${frameStyle}background-color:${state.pageColor};color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${titleHtml}${bodyHtml}</section>`;
   if (lockBrandColor?.checked) html = applyDataNoDark(html);
   return stripLogicalTextAlign(html);
 }

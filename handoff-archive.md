@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-02 新增表情主题
+
+- 想做什么：给文章小标题、列表、分隔加上一套小图标。同一篇只留 3 到 5 种。只开 PR，不合 master。
+- 做成了什么：工作台末尾加了「表情」（emoji）。浅纸、蜂蜜色重点，不抢图标。小标题按语义加在文字前，【】前面也可以加。无序列表整列一种符号，分隔是整行符号，很短的结尾可以加留言、赞叹这类。种类多了会收掉。
+- 改了哪些文件：`public/emoji-theme.js`、`public/themes.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`scripts/check-highlight-marks.js`、`CONTEXT.md`、`README.md`、`docs/previews/emoji-theme-desktop.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了带小标题、列表、分隔的样文，点「表情」。预览里是浅纸，知识点、秋天、总结各有图标，列表是菱形，分隔是整行，结尾有留言图标。列表没有再画一个圆点。柠边和包豪的按钮还在。截图在 `docs/previews/emoji-theme-desktop.png`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/81 已开，没有自己合并。这次变基到最新 master，冲突留在交接日志、`public/app.js`、`public/studio.html`。日扫三条（划选标重点、气质、缩略墙）和 #79 重点规则都留着。合进 master 才会上正式站。优化成表情时，正文段开头如果已经是这套图标，会拿掉一个，避免一篇堆太多；字还在。在预览里改过带图标的字，再换别的主题，图标会留在原文里。
+
 ### 2026-11-02 外网交互日扫三条
 
 - 想做什么：按 2026-11-02 日扫做三件事。预览里划选标重点，主题旁加气质，精品模板详情加缩略墙。不改订阅、文案、漏斗、常见问题，不碰空状态和风格筛选。只开 PR，不合并。

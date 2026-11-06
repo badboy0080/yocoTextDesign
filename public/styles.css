@@ -1595,3 +1595,139 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   color: rgba(255, 255, 255, .62);
   font-size: 12px;
 }
+.slash-card-group {
+  margin-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  padding-top: 8px;
+}
+
+/* 图文栅格：双栏图文、三列要点。颜色、圆角、描边跟当前主题变量，不另写一套色。 */
+.smart-grid {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0 22px;
+  align-items: stretch;
+}
+.smart-grid-media { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.smart-grid-points { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.article-content .smart-grid p { margin: 0; text-indent: 0; }
+.smart-grid-figure { position: relative; min-height: 168px; height: 100%; }
+.smart-grid-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 168px;
+  height: 100%;
+  margin: 0;
+  padding: 16px;
+  border: 1.5px dashed var(--border-color, #dedfd8);
+  border-radius: var(--image-radius, 12px);
+  background: transparent;
+  color: var(--muted-color, #8e9389);
+  font: 600 13px/1.5 inherit;
+  cursor: pointer;
+}
+.smart-grid-empty:hover,
+.smart-grid-empty:focus-visible {
+  border-color: var(--accent-color, #718c25);
+  color: var(--title-color, #20231f);
+  outline: none;
+}
+.smart-grid-photo.fake-image {
+  height: 100%;
+  min-height: 168px;
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: .06em;
+}
+.smart-grid-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 168px;
+  object-fit: cover;
+  border-radius: var(--image-radius, 12px);
+}
+.smart-grid-swap {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--border-color, #dedfd8);
+  border-radius: 999px;
+  background: var(--page-color, #fff);
+  color: var(--title-color, #20231f);
+  font: 600 12px/1.4 inherit;
+  cursor: pointer;
+}
+.article-content .smart-grid-copy {
+  display: flex;
+  align-items: center;
+  min-height: 168px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-color, #dedfd8);
+  border-radius: var(--card-radius, 12px);
+  background: var(--card-color, #f3f5eb);
+  color: var(--text-color, #3f3f3f);
+  font-size: var(--font-size, 16px);
+  line-height: var(--line-height, 1.75);
+}
+.smart-grid-copy.is-empty {
+  border-style: dashed;
+  background: transparent;
+  color: var(--muted-color, #8e9389);
+}
+.smart-grid-copy.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-color, #8e9389);
+}
+.smart-grid-point {
+  min-height: 132px;
+  padding: 14px 12px;
+  border: 1px solid var(--border-color, #dedfd8);
+  border-radius: var(--card-radius, 12px);
+  background: var(--card-color, #f3f5eb);
+  color: var(--text-color, #3f3f3f);
+}
+.smart-grid-point.is-empty {
+  border-style: dashed;
+  background: transparent;
+}
+.article-content .smart-grid-point-title,
+.article-content .smart-grid-point-body { min-height: 1.45em; }
+.article-content .smart-grid-point-title {
+  margin: 0 0 6px;
+  color: var(--title-color, #20231f);
+  font-family: var(--heading-font, inherit);
+  font-size: calc(var(--font-size, 16px) + 1px);
+  font-weight: var(--heading-weight, 800);
+  line-height: 1.35;
+  letter-spacing: var(--heading-letter-spacing, -.04em);
+}
+.article-content .smart-grid-point-body {
+  color: var(--text-color, #3f3f3f);
+  font-size: calc(var(--font-size, 16px) - 1px);
+  line-height: var(--line-height, 1.75);
+}
+.smart-grid-point-title:empty::before,
+.smart-grid-point-body:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-color, #8e9389);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.article-page[data-hard-edge="1"] .smart-grid-copy:not(.is-empty),
+.article-page[data-hard-edge="1"] .smart-grid-point:not(.is-empty) {
+  border: 2px solid var(--border-color, #111);
+  box-shadow: 4px 4px 0 var(--border-color, #111);
+}
+.article-page[data-theme="flat"] .smart-grid-copy,
+.article-page[data-theme="flat"] .smart-grid-point,
+.article-page[data-theme="flat"] .smart-grid-photo.fake-image {
+  box-shadow: none;
+}
+@media (max-width: 720px) {
+  .smart-grid-media,
+  .smart-grid-points { grid-template-columns: 1fr; }
+}

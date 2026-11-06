@@ -539,6 +539,12 @@ function restoreInlineSlots(html, slots) {
 
 function renderInline(text, slots) {
   let out = String(text);
+  const runs = globalThis.YoocoBlockStyle;
+  if (runs?.expandRunMarkers) {
+    out = runs.expandRunMarkers(out, (spec, inner, css) => (
+      holdInlineSlot(slots, `<span class="inline-run" data-run="${spec}" style="${css}">${renderInline(inner, slots)}</span>`)
+    ));
+  }
   const protect = (pattern, build) => {
     out = out.replace(pattern, (...args) => holdInlineSlot(slots, build(args[1], args[2])));
   };
@@ -559,6 +565,18 @@ function renderInline(text, slots) {
 function inlineMarkdown(value) {
   const slots = [];
   const html = renderInline(escapeHtml(value), slots).replace(/\n/g, "<br />");
+  return restoreInlineSlots(html, slots);
+}
+
+function inlineRunsOnly(value) {
+  const slots = [];
+  const runs = globalThis.YoocoBlockStyle;
+  const escaped = escapeHtml(value);
+  const html = runs?.expandRunMarkers
+    ? runs.expandRunMarkers(escaped, (spec, inner, css) => (
+      holdInlineSlot(slots, `<span class="inline-run" data-run="${spec}" style="${css}">${inner}</span>`)
+    ))
+    : escaped;
   return restoreInlineSlots(html, slots);
 }
 
@@ -1136,7 +1154,8 @@ function parseArticle(source) {
   const flushParagraph = () => {
     if (paragraphLines.length) {
       const text = paragraphLines.join("\n");
-      const paragraphs = paragraphLines.length === 1 && text.length >= 96
+      const measured = globalThis.YoocoBlockStyle?.stripRunMarkers?.(text).length ?? text.length;
+      const paragraphs = paragraphLines.length === 1 && measured >= 96
         ? splitLongTextLine(text).split(/\n{2,}/).filter(Boolean)
         : [text];
       paragraphs.forEach((paragraph) => blocks.push({ type: "paragraph", text: paragraph }));
@@ -1755,12 +1774,7 @@ function renderBody() {
   }
   articleBody.innerHTML = parts.join("");
   mountSlashSlot();
-  const titleText = String(model.title || "").trim();
-  articleTitle.textContent = titleText;
-  articleTitle.hidden = !titleText;
-  articleTitle.contentEditable = titleText ? "true" : "false";
-  if (titleText) articleTitle.removeAttribute("aria-hidden");
-  else articleTitle.setAttribute("aria-hidden", "true");
+  paintArticleTitle(model.title);
   finishBlockStyles();
 }
 
@@ -1779,6 +1793,11 @@ function inlineNodeToMarkdown(node) {
   if (node.classList?.contains("inline-wavy")) return `~${inner}~`;
   if (tag === "CODE") return `\`${inner}\``;
   if (tag === "A") return `[${inner}](${node.getAttribute("href") || ""})`;
+  if (node.classList?.contains("inline-run")) {
+    if (!inner) return "";
+    const spec = globalThis.YoocoBlockStyle?.formatRunSpec?.(globalThis.YoocoBlockStyle.parseRunSpec(node.getAttribute("data-run") || "") || {});
+    return spec ? `{{${spec}}}${inner}{{/}}` : inner;
+  }
   return inner;
 }
 
@@ -1958,8 +1977,28 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
   return parts.join("\n\n").trim();
 }
 
+function paintArticleTitle(text) {
+  if (!articleTitle) return;
+  const titleText = String(text || "").trim();
+  articleTitle.hidden = !titleText;
+  articleTitle.contentEditable = titleText ? "true" : "false";
+  if (!titleText) {
+    articleTitle.textContent = "";
+    articleTitle.setAttribute("aria-hidden", "true");
+    return;
+  }
+  articleTitle.removeAttribute("aria-hidden");
+  articleTitle.innerHTML = inlineRunsOnly(titleText);
+}
+
+function readArticleTitleSource() {
+  if (!articleTitle || articleTitle.hidden) return "";
+  return inlineNodeToMarkdown(articleTitle).replace(/\u00a0/g, " ").trim();
+}
+
 function syncPreviewEdits() {
-  articleTitleOverride = (articleTitle?.innerText || "").trim();
+  pruneEmptyRuns(articlePage);
+  articleTitleOverride = readArticleTitleSource();
   const markdown = serializePreviewToMarkdown();
   articleSource = markdown;
   if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
@@ -2495,6 +2534,7 @@ function buildCopyHtml() {
       /<code class="inline-code">([\s\S]*?)<\/code>/g,
       `<code style="${inlineCodeCss}">$1</code>`,
     );
+    html = globalThis.YoocoBlockStyle?.copyRunSpans?.(html) || html;
     if (state.theme === "nocturne") {
       html = html.replace(/<strong>/g, `<strong style="color:${state.accentColor};font-weight:700;">`);
     }
@@ -2790,7 +2830,7 @@ function buildCopyHtml() {
   body = body.map((part) => part.replace(' data-yooco-lead="1"', ""));
   if (signatureHtmlBlock) body.push(signatureHtmlBlock);
   const bodyHtml = body.join("");
-  const titleHtml = model.title ? paintCopyWithBlockStyle(`<h2 style="${titleStyle}">${escapeHtml(model.title)}</h2>`, "title") : "";
+  const titleHtml = model.title ? paintCopyWithBlockStyle(`<h2 style="${titleStyle}">${globalThis.YoocoBlockStyle?.copyRunSpans?.(inlineRunsOnly(model.title)) || escapeHtml(model.title)}</h2>`, "title") : "";
   // 微信阅读页自己会留左右大约 16–20px。再写 32px 会叠成手机上左右各约 50px 的白边。
   // 左右只留 4px，让硬边主题右侧 4px 投影还留在这一圈里；上下仍是 40px。
   // 外层宽度 100%，并按边框盒计算，避免左右内边距把盒子撑出屏幕。不用固定宽，也不居中。
@@ -3024,16 +3064,26 @@ function clearArticleSource() {
   render();
 }
 
+function measuredRunLength(text) {
+  return globalThis.YoocoBlockStyle?.stripRunMarkers?.(text).length ?? String(text || "").length;
+}
+
 function splitLongTextLine(line) {
   const sentenceCandidates = line.match(/[^。！？!?；;]+[。！？!?；;]?/g) || [line];
   const sentences = sentenceCandidates.flatMap((sentence) => {
-    if (sentence.length <= 108) return [sentence];
+    if (measuredRunLength(sentence) <= 108) return [sentence];
     const pieces = [];
     let remaining = sentence;
-    while (remaining.length > 108) {
+    while (measuredRunLength(remaining) > 108) {
       const windowText = remaining.slice(0, 96);
       const separator = Math.max(windowText.lastIndexOf("，"), windowText.lastIndexOf(","), windowText.lastIndexOf("、"), windowText.lastIndexOf("："), windowText.lastIndexOf(":"));
-      const cutAt = separator >= 52 ? separator + 1 : 88;
+      const rawCut = separator >= 52 ? separator + 1 : 88;
+      const cutAt = globalThis.YoocoBlockStyle?.snapRunCut?.(remaining, rawCut) || rawCut;
+      if (!cutAt || cutAt >= remaining.length) {
+        pieces.push(remaining);
+        remaining = "";
+        break;
+      }
       pieces.push(remaining.slice(0, cutAt));
       remaining = remaining.slice(cutAt);
     }
@@ -3044,7 +3094,7 @@ function splitLongTextLine(line) {
   let current = "";
   sentences.forEach((sentence) => {
     const candidate = `${current}${sentence}`;
-    if (current && candidate.length > 96 && current.length >= 46) {
+    if (current && measuredRunLength(candidate) > 96 && measuredRunLength(current) >= 46) {
       segments.push(current.trim());
       current = sentence;
     } else {
@@ -3869,8 +3919,9 @@ function placeBlockStylePanel() {
 function syncBlockStylePanel(el, pick) {
   if (!blockStylePanel || !el || !blockStyleSelection) return;
   const saved = blockStyleOverrides[blockStyleSelection.key] || {};
+  const local = selectionRunUniform(pick?.range || markPick?.range, el);
   const computed = getComputedStyle(el);
-  const fontSize = saved.fontSize ?? Math.round(parseFloat(computed.fontSize) || 16);
+  const fontSize = local.fontSize || saved.fontSize || Math.round(parseFloat(computed.fontSize) || 16);
   const mode = blockStyleSelection.mode || "body";
   const isTitle = Boolean(blockStyleSelection.isTitle);
   blockStylePanel.dataset.mode = mode;
@@ -3878,7 +3929,7 @@ function syncBlockStylePanel(el, pick) {
   blockStylePanel.querySelectorAll("[data-style-section]").forEach((node) => {
     const section = node.dataset.styleSection;
     const visible = section === "size"
-      || (section === "color" && mode === "body")
+      || section === "color"
       || (section === "mark" && mode === "body")
       || (section === "level" && mode === "heading" && !isTitle);
     node.hidden = !visible;
@@ -3887,11 +3938,11 @@ function syncBlockStylePanel(el, pick) {
   if (sizeInput) sizeInput.value = String(fontSize);
   const sizeOut = blockStylePanel.querySelector("[data-block-style-out='fontSize']");
   if (sizeOut) sizeOut.textContent = `${fontSize} px`;
-  const savedColor = String(saved.color || "");
+  const savedColor = local.mixedColor ? "" : String(local.color || saved.color || "");
   const colorInput = blockStylePanel.querySelector("[data-block-style='color']");
   if (colorInput) colorInput.value = savedColor || "#1a1a1a";
   const hex = blockStylePanel.querySelector("[data-block-style-hex]");
-  if (hex) hex.textContent = savedColor || "跟随主题";
+  if (hex) hex.textContent = local.mixedColor ? "多种" : (savedColor || "跟随主题");
   blockStylePanel.querySelectorAll("[data-color-swatch]").forEach((button) => {
     button.classList.toggle("is-active", (button.dataset.colorSwatch || "").toLowerCase() === savedColor.toLowerCase());
   });
@@ -3912,7 +3963,7 @@ function syncBlockStylePanel(el, pick) {
     clear.title = current?.highlighted ? "取消包住这段的重点" : "这段还不是重点";
   }
   const reset = blockStylePanel.querySelector("[data-block-style-reset]");
-  if (reset) reset.textContent = mode === "body" ? "恢复字号颜色" : "恢复字号";
+  if (reset) reset.textContent = "恢复字号颜色";
 }
 
 function showSelectionStylePanel(pick) {
@@ -3931,31 +3982,261 @@ function showSelectionStylePanel(pick) {
   placeBlockStylePanel();
 }
 
-function updateBlockStyle(key, field, value) {
-  const current = { ...(blockStyleOverrides[key] || {}) };
-  if (value == null || value === "") delete current[field];
-  else current[field] = value;
-  if (Object.keys(current).length) blockStyleOverrides[key] = current;
-  else delete blockStyleOverrides[key];
-  applyBlockStyleToElement(blockElementByKey(key), blockStyleOverrides[key]);
-  persistBlockStyles();
-  const el = blockElementByKey(key);
-  if (el) syncBlockStylePanel(el);
+function runStyleApi() {
+  return globalThis.YoocoBlockStyle;
+}
+
+function emptyRun() {
+  return { color: "", fontSize: "" };
+}
+
+function readRunOnNode(node, host) {
+  const run = node?.parentElement?.closest?.(".inline-run");
+  if (!run || !host?.contains(run)) return emptyRun();
+  return runStyleApi()?.parseRunSpec(run.getAttribute("data-run") || "") || emptyRun();
+}
+
+function writeRunElement(el, run) {
+  const api = runStyleApi();
+  const spec = api?.formatRunSpec(run) || "";
+  const css = api?.runStyleCss(run) || "";
+  if (!spec || !css) {
+    unwrapElement(el);
+    return null;
+  }
+  el.classList.add("inline-run");
+  el.setAttribute("data-run", spec);
+  el.setAttribute("style", css);
+  return el;
+}
+
+function unwrapElement(el) {
+  const parent = el?.parentNode;
+  if (!parent) return;
+  while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  el.remove();
+}
+
+function splitElementAround(parent, child) {
+  if (!parent || !child || child.parentNode !== parent) return;
+  const before = parent.cloneNode(false);
+  const after = parent.cloneNode(false);
+  while (parent.firstChild && parent.firstChild !== child) before.appendChild(parent.firstChild);
+  while (child.nextSibling) after.appendChild(child.nextSibling);
+  const grand = parent.parentNode;
+  if (!grand) return;
+  if (before.textContent) grand.insertBefore(before, parent);
+  if (after.textContent) grand.insertBefore(after, parent.nextSibling);
+}
+
+function pruneEmptyRuns(root) {
+  root?.querySelectorAll?.(".inline-run").forEach((run) => {
+    if (!run.textContent) run.remove();
+  });
+}
+
+function skippedStyleText(node, host) {
+  if (!node?.nodeValue) return true;
+  const parent = node.parentElement;
+  if (!parent || !host?.contains(node)) return true;
+  if (parent.closest("code")) return true;
+  const title = markTitleNode(host);
+  if (title && title.contains(node)) return true;
+  const locked = parent.closest("[contenteditable='false']");
+  if (locked && locked !== host && host.contains(locked)) return true;
+  return false;
+}
+
+function textNodesInRange(range, host) {
+  if (!range || !host) return [];
+  const walker = host.ownerDocument.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (skippedStyleText(node, host)) continue;
+    try {
+      if (!range.intersectsNode(node)) continue;
+    } catch { continue; }
+    nodes.push(node);
+  }
+  return nodes;
+}
+
+function sliceOfText(node, range) {
+  const length = node.nodeValue.length;
+  let start = 0;
+  let end = length;
+  if (node === range.startContainer) start = range.startOffset;
+  if (node === range.endContainer) end = range.endOffset;
+  start = Math.max(0, Math.min(start, length));
+  end = Math.max(0, Math.min(end, length));
+  if (end < start) [start, end] = [end, start];
+  return { start, end };
+}
+
+function isolateTextSlice(node, start, end) {
+  let target = node;
+  if (end < target.nodeValue.length) target.splitText(end);
+  if (start > 0) target = target.splitText(start);
+  return target;
+}
+
+function mergeRunPatch(base, patch) {
+  const next = { color: base?.color || "", fontSize: base?.fontSize || "" };
+  if (Object.prototype.hasOwnProperty.call(patch, "color")) next.color = patch.color || "";
+  if (Object.prototype.hasOwnProperty.call(patch, "fontSize")) next.fontSize = patch.fontSize ? String(patch.fontSize) : "";
+  return next;
+}
+
+function applyPatchToText(textNode, host, patch) {
+  const inherited = readRunOnNode(textNode, host);
+  const run = textNode.parentElement?.closest?.(".inline-run");
+  if (run && host.contains(run)) {
+    let node = textNode;
+    while (node.parentNode && node.parentNode !== run) {
+      splitElementAround(node.parentNode, node);
+      node = node.parentNode;
+    }
+    splitElementAround(run, node);
+    unwrapElement(run);
+  }
+  if (!textNode.isConnected) return null;
+  const next = mergeRunPatch(inherited, patch);
+  const parent = textNode.parentElement;
+  const existing = parent?.classList?.contains("inline-run") && parent.textContent === textNode.nodeValue ? parent : null;
+  if (existing) return writeRunElement(existing, next);
+  if (!runStyleApi()?.formatRunSpec(next)) return null;
+  const span = textNode.ownerDocument.createElement("span");
+  textNode.parentNode.insertBefore(span, textNode);
+  span.appendChild(textNode);
+  return writeRunElement(span, next);
+}
+
+function mergeAdjacentRuns(host) {
+  [...host.querySelectorAll(".inline-run")].forEach((run) => {
+    if (!run.isConnected) return;
+    let next = run.nextSibling;
+    while (next && next.nodeType === 1 && next.classList?.contains("inline-run") && next.getAttribute("data-run") === run.getAttribute("data-run")) {
+      while (next.firstChild) run.appendChild(next.firstChild);
+      const drop = next;
+      next = next.nextSibling;
+      drop.remove();
+    }
+  });
+}
+
+function applySelectionRunPatch(range, host, patch) {
+  if (!range || !host || !range.startContainer?.isConnected) return [];
+  const slices = [];
+  textNodesInRange(range, host).forEach((node) => {
+    if (!node.isConnected) return;
+    const { start, end } = sliceOfText(node, range);
+    if (end <= start) return;
+    slices.push(isolateTextSlice(node, start, end));
+  });
+  const runs = [];
+  slices.forEach((node) => {
+    if (!node.isConnected || !node.nodeValue) return;
+    const run = applyPatchToText(node, host, patch);
+    if (run?.isConnected) runs.push(run);
+  });
+  mergeAdjacentRuns(host);
+  return runs.filter((run) => run.isConnected);
+}
+
+function selectionRunUniform(range, host) {
+  const found = { color: undefined, fontSize: undefined, mixedColor: false, mixedSize: false };
+  if (!range?.startContainer?.isConnected || !host) return { color: "", fontSize: "", mixedColor: false, mixedSize: false };
+  textNodesInRange(range, host).forEach((node) => {
+    const { start, end } = sliceOfText(node, range);
+    if (end <= start || !node.nodeValue.slice(start, end).trim()) return;
+    const run = readRunOnNode(node, host);
+    if (found.color === undefined) found.color = run.color;
+    else if (found.color !== run.color) found.mixedColor = true;
+    if (found.fontSize === undefined) found.fontSize = run.fontSize;
+    else if (found.fontSize !== run.fontSize) found.mixedSize = true;
+  });
+  return {
+    color: found.mixedColor ? "" : (found.color || ""),
+    fontSize: found.mixedSize ? "" : (found.fontSize || ""),
+    mixedColor: found.mixedColor,
+    mixedSize: found.mixedSize,
+  };
+}
+
+function rememberStyledRange(pick, runs) {
+  const live = (runs || []).filter((run) => run?.isConnected);
+  if (!live.length || !pick) return;
+  const range = document.createRange();
+  range.setStartBefore(live[0]);
+  range.setEndAfter(live[live.length - 1]);
+  pick.range = range;
+  pick.runs = live;
+  pick.fragment = normalizeSelectedText(range.toString());
+  const selection = window.getSelection();
+  if (!selection) return;
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function commitInlineRuns() {
+  if (previewSyncTimer) {
+    window.clearTimeout(previewSyncTimer);
+    previewSyncTimer = 0;
+  }
+  pruneEmptyRuns(articlePage);
+  sampleStaticActive = false;
+  articleTitleOverride = readArticleTitleSource();
+  const markdown = serializePreviewToMarkdown();
+  articleSource = markdown;
+  if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
+  persistArticleSource();
+}
+
+function applySelectionTypography(field, value) {
+  const pick = markPick;
+  const host = pick?.host;
+  const range = pick?.range;
+  const api = runStyleApi();
+  if (!host?.isConnected || !range?.startContainer?.isConnected || !api) {
+    setFeedback("选区已经变了，请重新划一段。");
+    return;
+  }
+  const patch = {};
+  if (field === "color") {
+    const color = value ? api.safeBlockColor(value) : "";
+    if (value && !color) return;
+    patch.color = color;
+  } else if (field === "fontSize") {
+    const size = api.clampBlockStyle(value, 12, 48);
+    if (size == null) return;
+    patch.fontSize = size;
+  } else return;
+  const runs = applySelectionRunPatch(range, host, patch);
+  if (!runs.length) {
+    setFeedback("这段改不了字号或颜色。");
+    return;
+  }
+  rememberStyledRange(pick, runs);
+  commitInlineRuns();
+  syncBlockStylePanel(host, pick);
   placeBlockStylePanel();
+  setFeedback("已改选中的字。换主题也会留着。");
 }
 
 function resetSelectionStyleFields() {
-  if (!blockStyleSelection) return;
-  const key = blockStyleSelection.key;
-  const current = { ...(blockStyleOverrides[key] || {}) };
-  delete current.fontSize;
-  delete current.color;
-  if (Object.keys(current).length) blockStyleOverrides[key] = current;
-  else delete blockStyleOverrides[key];
-  persistBlockStyles();
-  const el = blockElementByKey(key);
-  applyBlockStyleToElement(el, blockStyleOverrides[key]);
-  if (el) syncBlockStylePanel(el, markPick);
+  const pick = markPick;
+  const host = pick?.host;
+  const range = pick?.range;
+  if (!host?.isConnected || !range?.startContainer?.isConnected) {
+    setFeedback("选区已经变了，请重新划一段。");
+    return;
+  }
+  applySelectionRunPatch(range, host, { color: "", fontSize: "" });
+  commitInlineRuns();
+  syncBlockStylePanel(host, pick);
+  placeBlockStylePanel();
+  setFeedback("已清掉选中字的字号和颜色。");
 }
 
 function selectHostText(el) {
@@ -4045,12 +4326,12 @@ function ensureBlockStylePanel() {
     const field = event.target.dataset.blockStyle;
     if (field !== "fontSize" && field !== "color") return;
     const value = field === "color" ? event.target.value : Number(event.target.value);
-    updateBlockStyle(blockStyleSelection.key, field, value);
+    applySelectionTypography(field, value);
   });
   panel.addEventListener("click", (event) => {
     const swatch = event.target.closest("[data-color-swatch]");
     if (swatch && blockStyleSelection) {
-      updateBlockStyle(blockStyleSelection.key, "color", swatch.dataset.colorSwatch || "");
+      applySelectionTypography("color", swatch.dataset.colorSwatch || "");
       return;
     }
     const levelButton = event.target.closest("[data-heading-level]");
@@ -5277,6 +5558,33 @@ function highlightMarksTouching(host, range) {
   });
 }
 
+function moveRunInsideMark(mark) {
+  const run = mark.parentElement?.closest?.(".inline-run");
+  if (!run || !run.contains(mark)) return;
+  const spec = run.getAttribute("data-run") || "";
+  const style = run.getAttribute("style") || "";
+  if (!spec) return;
+  let node = mark;
+  while (node.parentNode && node.parentNode !== run) {
+    splitElementAround(node.parentNode, node);
+    node = node.parentNode;
+  }
+  splitElementAround(run, mark);
+  unwrapElement(run);
+  const texts = [];
+  const walker = mark.ownerDocument.createTreeWalker(mark, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) texts.push(walker.currentNode);
+  texts.forEach((text) => {
+    if (!text.nodeValue) return;
+    const span = mark.ownerDocument.createElement("span");
+    span.className = "inline-run";
+    span.setAttribute("data-run", spec);
+    span.setAttribute("style", style);
+    text.parentNode.insertBefore(span, text);
+    span.appendChild(text);
+  });
+}
+
 function wrapRangeWithHighlight(range) {
   const mark = document.createElement("mark");
   mark.className = "inline-highlight";
@@ -5284,6 +5592,7 @@ function wrapRangeWithHighlight(range) {
   if (!contents || !contents.textContent) return false;
   mark.append(contents);
   range.insertNode(mark);
+  moveRunInsideMark(mark);
   return true;
 }
 
@@ -5314,7 +5623,8 @@ function applyPreviewHighlight() {
   sampleStaticActive = false;
   const before = articleSource;
   syncPreviewEdits();
-  const saved = articleSource.includes(`==${pick.fragment}==`);
+  const savedSource = globalThis.YoocoBlockStyle?.stripRunMarkers?.(articleSource) || articleSource;
+  const saved = savedSource.includes(`==${pick.fragment}==`);
   if (!saved) {
     articleSource = before;
     if (articleInput && document.activeElement !== articleInput) articleInput.value = before;

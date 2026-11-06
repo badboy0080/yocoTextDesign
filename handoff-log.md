@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+划词字号和颜色只改选中的字（2026-11-06，未合并、未部署）：工作台划中一段或标题里的几个字，改字号、改字体颜色，只动这几个字。同段其余字不动。标重点仍只围住划中字。恢复字号颜色也只清划中字上的局部样式。复制稿带着这些局部字号和颜色。以前已经写在整块上的旧字号、旧颜色还在，这次不会去清。不调用优化，不扣积分。截图在 `docs/previews/selection-inline-before-color.png`、`selection-inline-after-color.png`、`selection-inline-after-size.png`、`selection-inline-after-mark.png`。正式站要等合进 master。
+
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
 复制到公众号左右大留白（2026-11-06，PR #87，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
@@ -183,6 +185,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-06 划词只改选中的字号和颜色
+
+- 想做什么：划中一段里的几个字，改字号或字体颜色时不要整段一起变。标题也一样。恢复只清划中字。复制到公众号要带着这些局部样式。已有的部分重点不要被打乱。不扣积分。只开 PR，不合 master。
+- 做成了什么：字号和颜色写在划中的字上，原文记成 `{{#颜色|字号}}这几个字{{/}}`。预览只给这几个字套样式。标重点仍写成 `==这段==`。先上色再标重点时，颜色留在重点里面，重点底色还在。只恢复划中字时，旁边的局部颜色和重点还在。章节标题和文章大标题也能只改划中的几个字。复制稿里是带颜色和字号的内联样式。整块的旧底色、间距、描边没动，也不再从这块面板写入整块字号或颜色。
+- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/typeset-polish.js`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-inline-before-color.png`、`docs/previews/selection-inline-after-color.png`、`docs/previews/selection-inline-after-size.png`、`docs/previews/selection-inline-after-mark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-block-style.js`、`node scripts/check-slash-cards.js`、`node scripts/check-highlight-marks.js` 通过。本地 8765 打开工作台。修前只划「一套 AI 团队」点红，整段变红。修后只有这几个字变红，同段其余字不变。字号改成 28，只有这几个字变大。标重点仍只围住这几个字。另测：旁边已有「管理系统」重点还在；只恢复「AI」后，前后的红和整段重点还在；标题「这样一支」可单独 32px，大标题「团队」可单独变蓝。复制按钮造出的 HTML 里，选中字带 `color:#C23B3B` 和 `font-size:32px`，重点还包着它们。没有调用优化。没有合并。
+- 待办/风险：PR 已开，没有自己合并。合进 master 才会上正式站。没贴进真实公众号后台。再点一次优化，模型不认识这套记号，局部字号和颜色可能被丢掉。以前存在浏览器里的整块字号、整块颜色还会画在整段上，恢复不会清那种旧记录。引用和卡片的标题那一行不能单独上色。不能跨块划。
+
 ### 2026-11-06 工作台插入图文栅格
 
 - 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。
@@ -214,11 +224,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。
-
-### 2026-11-02 表情主题的有序说明也要看见图标
-
-- 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
-- 做成了什么：提示词要求小节标题用 heading，说明分点用无序列表，有序只留给第一步、第二步。模型仍收成有序列表时，短的、像标题的、或命中关键词的条目会在文字前加图标。很短的「主控：…」也会加。真步骤不加。留言或评论的短句一定有 💬。分隔改成整行符号。预览和复制里的序号改小，不再把图标挤没。
-- 改了哪些文件：`public/emoji-theme.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`CONTEXT.md`、`docs/previews/emoji-ordered-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了只有编号说明、外加真步骤的样文。柠边没有灯泡。切到表情后，知识点、要点、总结、主控、要改映射、欢迎留言都有图标，真步骤没有。分隔是整行符号，不是横线。序号大约 15px，正文 16px，图标在数字旁边露着。复制稿里也有这些图标。对比图在 `docs/previews/emoji-ordered-before-after.png`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/82 已开，没有自己合并。合进 master 才会上正式站。很长的有序句子如果对不上关键词，仍不会加图标。公众号后台还没真贴。

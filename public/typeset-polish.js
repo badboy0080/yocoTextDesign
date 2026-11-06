@@ -14,10 +14,22 @@
     return text.replace(/[\uFF10-\uFF19]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
   }
 
+  function spaceAroundRuns(text) {
+    const opener = "\\{\\{(?:#[0-9a-fA-F]{3,6}(?:\\|\\d{1,2})?|\\|\\d{1,2})\\}\\}";
+    const closer = "\\{\\{\\/\\}\\}";
+    const fence = `${MARKS}*`;
+    let out = text;
+    // 记号本身不占字。只在汉字和英文数字被记号隔开时补空格，汉字挨着汉字不加。
+    out = out.replace(new RegExp(`(${HAN})(${opener})(${fence})([A-Za-z0-9])`, "g"), `$1${GAP}$2$3$4`);
+    out = out.replace(new RegExp(`([A-Za-z0-9])(${fence})(${closer})(${HAN})`, "g"), `$1$2$3${GAP}$4`);
+    return out;
+  }
+
   function polishPlain(text) {
     const cjk = "[\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF]";
     const latin = "[A-Za-z0-9]";
     let out = foldFullwidthDigits(text);
+    out = spaceAroundRuns(out);
     out = out.replace(new RegExp(`(${cjk})(${MARKS}*)(${latin})`, "g"), `$1${GAP}$2$3`);
     out = out.replace(new RegExp(`(${latin})(${MARKS}*)(${cjk})`, "g"), `$1$2${GAP}$3`);
     return out;

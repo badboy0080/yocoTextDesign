@@ -1170,6 +1170,10 @@ function parseArticle(source) {
       blocks.push(globalThis.YoocoSlashCards.readHighlightFence(fenceTitle, fenceLines));
     } else if (fenceKind === "header" && globalThis.YoocoSlashCards) {
       blocks.push(globalThis.YoocoSlashCards.readHeaderFence(fenceTitle, fenceLines));
+    } else if (fenceKind === "media" && globalThis.YoocoSlashCards) {
+      blocks.push(globalThis.YoocoSlashCards.readMediaFence(fenceTitle, fenceLines));
+    } else if (fenceKind === "points" && globalThis.YoocoSlashCards) {
+      blocks.push(globalThis.YoocoSlashCards.readPointsFence(fenceTitle, fenceLines));
     }
     fenceKind = "";
     fenceTitle = "";
@@ -1198,7 +1202,7 @@ function parseArticle(source) {
       else fenceLines.push(line);
       continue;
     }
-    const fence = trimmed.match(/^:::(card|steps|stat|stats|highlight|header)(?:\s+(.+))?$/i);
+    const fence = trimmed.match(/^:::(card|steps|stat|stats|highlight|header|media|points)(?:\s+(.+))?$/i);
     if (fence) {
       flushParagraph();
       flushList();
@@ -1349,6 +1353,11 @@ function getBlockText(block) {
   if (block.type === "code") return block.text;
   if (block.type === "highlightBox") return [block.title, block.text].filter(Boolean).join(" ");
   if (block.type === "header") return [block.title, block.sub].filter(Boolean).join(" ");
+  if (block.type === "mediaGrid") return [block.alt, block.text].filter(Boolean).join(" ") || "双栏图文";
+  if (block.type === "pointGrid") {
+    const text = (block.items || []).map((item) => [item.title, item.text].filter(Boolean).join(" ")).filter(Boolean).join(" ");
+    return text || "三列要点";
+  }
   return block.text || "内容分隔线";
 }
 
@@ -1400,6 +1409,7 @@ function polishArticleBlock(block) {
       if (!item || typeof item !== "object") return item;
       const copy = { ...item };
       if (typeof copy.text === "string") copy.text = polishArticleText(copy.text);
+      if (typeof copy.title === "string") copy.title = polishArticleText(copy.title);
       if (typeof copy.value === "string") copy.value = polishArticleText(copy.value);
       if (typeof copy.label === "string") copy.label = polishArticleText(copy.label);
       return copy;
@@ -1622,6 +1632,33 @@ function mountSlashSlot() {
   articleBody.append(slot);
 }
 
+function renderMediaGridBlock(item, idx) {
+  const url = safeImageUrl(item.url);
+  const alt = String(item.alt || "").trim();
+  const text = String(item.text || "");
+  const textClass = text.trim() ? "smart-grid-copy" : "smart-grid-copy is-empty";
+  let figure = `<button type="button" class="smart-grid-empty" data-media-action="pick">点这里放图</button>`;
+  if (url) {
+    figure = `<img class="smart-grid-img" src="${escapeHtml(url)}" alt="${escapeHtml(alt || "配图")}" />`;
+  } else if (alt) {
+    figure = `<div class="fake-image smart-grid-photo" data-media-alt contenteditable="true">${escapeHtml(alt)}</div>`;
+  }
+  const swap = url || alt ? `<button type="button" class="smart-grid-swap" data-media-action="pick">换图</button>` : "";
+  return `<section class="smart-grid smart-grid-media" data-type="mediaGrid" data-url="${escapeHtml(url)}" ${idx} contenteditable="false"><div class="smart-grid-figure">${figure}${swap}</div><p class="${textClass}" data-media-text data-placeholder="在这里写说明" contenteditable="true">${text.trim() ? inlineMarkdown(text) : ""}</p></section>`;
+}
+
+function renderPointGridBlock(item, idx) {
+  const cells = (item.items || []).slice(0, 3);
+  while (cells.length < 3) cells.push({ title: "", text: "" });
+  const html = cells.map((cell) => {
+    const title = String(cell.title || "").trim();
+    const text = String(cell.text || "").trim();
+    const empty = title || text ? "" : " is-empty";
+    return `<div class="smart-grid-point${empty}" data-point-cell><p class="smart-grid-point-title" data-point-title data-placeholder="小标题" contenteditable="true">${title ? inlineMarkdown(title) : ""}</p><p class="smart-grid-point-body" data-point-body data-placeholder="一两句说明" contenteditable="true">${text ? inlineMarkdown(text) : ""}</p></div>`;
+  }).join("");
+  return `<section class="smart-grid smart-grid-points" data-type="pointGrid" ${idx} contenteditable="false">${html}</section>`;
+}
+
 function emojiDividerText(text) {
   const raw = String(text || "").trim();
   if (typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(raw)) return raw;
@@ -1666,6 +1703,8 @@ function renderBody() {
       const sub = escapeHtml(item.sub || "");
       return `<header class="article-masthead" data-type="header" ${idx} contenteditable="false"><h3 class="article-masthead-title" data-header-title contenteditable="${editable}">${title}</h3><p class="article-masthead-sub" data-header-sub data-placeholder="副题，不需要可留空" contenteditable="${editable}">${sub}</p><div class="fake-image article-masthead-slot" contenteditable="false">头图</div></header>`;
     }
+    if (item.type === "mediaGrid") return renderMediaGridBlock(item, idx);
+    if (item.type === "pointGrid") return renderPointGridBlock(item, idx);
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, stepIndex) =>
@@ -1843,6 +1882,25 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
       const title = (el.querySelector("[data-header-title]")?.innerText || "标题").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim() || "标题";
       const sub = (el.querySelector("[data-header-sub]")?.innerText || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
       parts.push(sub ? `:::header\n${title}\n${sub}\n:::` : `:::header\n${title}\n:::`);
+      return;
+    }
+    if (type === "mediaGrid" && globalThis.YoocoSlashCards) {
+      const alt = (el.querySelector("[data-media-alt]")?.innerText || el.querySelector("img")?.getAttribute("alt") || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+      const url = el.dataset.url || "";
+      const textNode = el.querySelector("[data-media-text]");
+      const text = textNode ? inlineNodeToMarkdown(textNode).replace(/\u00a0/g, " ").trim() : "";
+      parts.push(globalThis.YoocoSlashCards.mediaMarkdown({ alt, url, text }));
+      return;
+    }
+    if (type === "pointGrid" && globalThis.YoocoSlashCards) {
+      const items = [...el.querySelectorAll("[data-point-cell]")].slice(0, 3).map((cell) => {
+        const titleNode = cell.querySelector("[data-point-title]");
+        const bodyNode = cell.querySelector("[data-point-body]");
+        const title = titleNode ? inlineNodeToMarkdown(titleNode).replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim() : "";
+        const text = bodyNode ? inlineNodeToMarkdown(bodyNode).replace(/\u00a0/g, " ").trim() : "";
+        return { title, text };
+      });
+      parts.push(globalThis.YoocoSlashCards.pointsMarkdown(items));
       return;
     }
     if (type === "steps") {
@@ -2318,6 +2376,73 @@ function sixThemeTitleInline(base) {
   return base;
 }
 
+function copyGridFrameStyle(filled) {
+  const border = state.borderColor || "#dedfd8";
+  const radius = state.cardRadius;
+  if (!filled) return `min-height:112px;padding:14px 12px;border:1px dashed ${border};border-radius:${radius}px;background-color:transparent;text-align:left;`;
+  if (isHardEdgeTheme(state.theme)) return `min-height:112px;padding:14px 12px;border:2px solid ${border};border-radius:${radius}px;background-color:${state.cardColor};box-shadow:4px 4px 0 ${border};text-align:left;`;
+  return `min-height:112px;padding:14px 12px;border:1px solid ${border};border-radius:${radius}px;background-color:${state.cardColor};text-align:left;`;
+}
+
+function copyGridImageHtml(item) {
+  const alt = escapeHtml(item.alt || "配图");
+  const url = safeImageUrl(item.url);
+  if (url) {
+    return `<img src="${escapeHtml(url)}" alt="${alt}" style="display:block;width:100%;max-width:100%;height:auto;border-radius:${state.imageRadius}px;" />`;
+  }
+  if (!item.alt) {
+    const border = state.borderColor || "#dedfd8";
+    const muted = state.mutedColor || "#8e9389";
+    return `<section style="min-height:148px;padding:36px 12px;text-align:center;border:1px dashed ${border};border-radius:${state.imageRadius}px;color:${muted};font-size:13px;"><p style="margin:0;color:inherit;text-align:center;">图片格</p></section>`;
+  }
+  const titleColor = state.titleColor || state.textColor;
+  const muted = state.mutedColor || "#8e9389";
+  const hard = isHardEdgeTheme(state.theme);
+  const deep = state.styleVariant === "deep-night" || state.theme === "nocturne";
+  const fill = hard ? (state.theme === "bauhaus" ? "#F0C020" : state.highlightColor) : deep ? state.pageColor : state.accentColor;
+  const ink = hard ? titleColor : deep ? muted : "#ffffff";
+  const edge = hard || deep ? `border:2px solid ${state.borderColor};${hard ? `box-shadow:4px 4px 0 ${state.borderColor};` : ""}` : "";
+  return `<section style="min-height:148px;padding:36px 12px;text-align:center;${edge}border-radius:${state.imageRadius}px;background-color:${fill};color:${ink};font-size:13px;font-weight:800;letter-spacing:.06em;"><p style="margin:0;color:inherit;text-align:center;">${alt}</p></section>`;
+}
+
+function copyGridTable(cells) {
+  const count = cells.length;
+  const width = count === 2 ? "50%" : "33.33%";
+  const tds = cells.map((html, index) => {
+    const padRight = index === count - 1 ? "0" : "7px";
+    const padLeft = index === 0 ? "0" : "7px";
+    return `<td style="width:${width};vertical-align:top;padding:0 ${padRight} 0 ${padLeft};">${html}</td>`;
+  }).join("");
+  return `<table style="width:100%;border-collapse:collapse;margin:18px 0 22px;"><tbody><tr>${tds}</tr></tbody></table>`;
+}
+
+function copyGridBlockHtml(item, copyInline) {
+  const titleColor = state.titleColor || state.textColor;
+  const muted = state.mutedColor || "#8e9389";
+  if (item.type === "mediaGrid") {
+    const text = String(item.text || "").trim();
+    const copy = text
+      ? `<section style="${copyGridFrameStyle(true)}"><p style="margin:0;padding:0;color:${state.textColor};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">${copyInline(text)}</p></section>`
+      : `<section style="${copyGridFrameStyle(false)}"><p style="margin:0;padding:0;color:${muted};font-size:${state.fontSize}px;line-height:${state.lineHeight};text-align:left;">说明</p></section>`;
+    return copyGridTable([copyGridImageHtml(item), copy]);
+  }
+  if (item.type === "pointGrid") {
+    const cells = (item.items || []).slice(0, 3);
+    while (cells.length < 3) cells.push({ title: "", text: "" });
+    return copyGridTable(cells.map((cell) => {
+      const title = String(cell.title || "").trim();
+      const text = String(cell.text || "").trim();
+      if (!title && !text) {
+        return `<section style="${copyGridFrameStyle(false)}"><p style="margin:0;padding:0;color:${muted};font-size:13px;line-height:1.6;text-align:left;">要点</p></section>`;
+      }
+      const titleHtml = title ? `<p style="margin:0 0 6px;padding:0;color:${titleColor};font-size:${Math.max(14, state.fontSize)}px;font-weight:${state.headingWeight};line-height:1.35;text-align:left;">${copyInline(title)}</p>` : "";
+      const bodyHtml = text ? `<p style="margin:0;padding:0;color:${state.textColor};font-size:${Math.max(13, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:left;">${copyInline(text)}</p>` : "";
+      return `<section style="${copyGridFrameStyle(true)}">${titleHtml}${bodyHtml}</section>`;
+    }));
+  }
+  return "";
+}
+
 function buildCopyHtml() {
   const isDeepNight = state.styleVariant === "deep-night";
   const mutedColor = state.mutedColor || "#8e9389";
@@ -2565,6 +2690,7 @@ function buildCopyHtml() {
       const slot = `<section style="${imageBoxStyle}"><p style="margin:0;color:inherit;text-align:center;">头图</p></section>`;
       return `<section style="margin:0 0 8px;text-align:left;"><h3 style="${headingStyle(2)}">${escapeHtml(item.title || "标题")}</h3>${sub}${slot}</section>`;
     }
+    if (item.type === "mediaGrid" || item.type === "pointGrid") return copyGridBlockHtml(item, copyInlineMarkdown);
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
@@ -2696,6 +2822,8 @@ function buildCopyPlain(html) {
     if (item.type === "image") return [item.alt || "文章配图", item.url].filter(Boolean).join(" ");
     if (["quote", "card", "highlightBox"].includes(item.type)) return [item.title, item.text].filter(Boolean).join("：");
     if (item.type === "header") return [item.title, item.sub, "头图"].filter(Boolean).join("\n");
+    if (item.type === "mediaGrid") return [item.alt || "图片格", item.text].filter(Boolean).join("\n");
+    if (item.type === "pointGrid") return (item.items || []).map((entry) => [entry.title, entry.text].filter(Boolean).join("：")).filter(Boolean).join("\n");
     return item.text || "";
   }).filter(Boolean);
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -3073,6 +3201,7 @@ const editorViewTabs = [document.querySelector("#resultViewTab"), document.query
 function selectEditorView(index) {
   flushPendingPreviewEdits();
   hideSlashMenu();
+  hideMediaMenu();
   const showSource = index === 1;
   if (showSource && articleInput) articleInput.value = articleSource;
   document.querySelector("#sourcePanel").hidden = !showSource;
@@ -3102,6 +3231,7 @@ articleTitle.addEventListener("input", () => {
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
 });
 articleBody.addEventListener("input", (event) => {
+  refreshSmartGridEmpty(event.target);
   if (handleSlashInput(event)) return;
   window.clearTimeout(previewSyncTimer);
   previewSyncTimer = window.setTimeout(() => { previewSyncTimer = 0; syncPreviewEdits(); }, 200);
@@ -3117,6 +3247,9 @@ articleBody.addEventListener("keydown", (event) => {
   commitSlotParagraph(text);
 });
 articleBody.addEventListener("focusout", (event) => {
+  const field = event.target.closest?.("[data-media-text], [data-point-title], [data-point-body], [data-media-alt]");
+  if (field && !editablePlain(field)) field.innerHTML = "";
+  refreshSmartGridEmpty(event.target);
   const slot = event.target.closest?.("[data-slash-slot]");
   if (!slot) return;
   window.setTimeout(() => {
@@ -3128,6 +3261,19 @@ articleBody.addEventListener("focusout", (event) => {
     if (!text || !api || api.lineSlashQuery(text) != null) return;
     commitSlotParagraph(text);
   }, 0);
+});
+articleBody.addEventListener("click", (event) => {
+  const pick = event.target.closest?.("[data-media-action='pick']");
+  if (pick && articleBody.contains(pick)) {
+    event.preventDefault();
+    const block = pick.closest("[data-type='mediaGrid']");
+    if (block) showMediaMenu(pick, block);
+    return;
+  }
+  const cell = event.target.closest?.("[data-point-cell]");
+  if (!cell || !articleBody.contains(cell)) return;
+  if (event.target.closest?.("[contenteditable='true']")) return;
+  cell.querySelector("[data-point-title]")?.focus();
 });
 const STRUCTURE_MENU_TYPES = new Set(["paragraph", "lead", "heading", "quote", "card", "divider"]);
 let blockTypeMenu = null;
@@ -3206,6 +3352,7 @@ articleBody.addEventListener("contextmenu", (event) => {
 document.addEventListener("pointerdown", (event) => {
   if (blockTypeMenu && !blockTypeMenu.hidden && !blockTypeMenu.contains(event.target)) hideBlockTypeMenu();
   if (slashMenu && !slashMenu.hidden && !slashMenu.contains(event.target)) hideSlashMenu();
+  if (mediaMenu && !mediaMenu.hidden && !mediaMenu.contains(event.target) && !event.target.closest?.("[data-media-action='pick']")) hideMediaMenu();
 });
 
 document.addEventListener("keydown", (event) => {
@@ -3213,6 +3360,7 @@ document.addEventListener("keydown", (event) => {
     hideBlockTypeMenu();
     hideBlockStylePanel(true);
     hideSlashMenu();
+    hideMediaMenu();
   }
 });
 
@@ -3220,6 +3368,8 @@ previewStage?.addEventListener("scroll", hideBlockTypeMenu, { passive: true });
 window.addEventListener("resize", hideBlockTypeMenu);
 previewStage?.addEventListener("scroll", hideSlashMenu, { passive: true });
 window.addEventListener("resize", hideSlashMenu);
+previewStage?.addEventListener("scroll", hideMediaMenu, { passive: true });
+window.addEventListener("resize", hideMediaMenu);
 
 let slashMenu = null;
 let slashMenuState = null;
@@ -3291,9 +3441,14 @@ function showSlashMenu(next) {
   const menu = ensureSlashMenu();
   const active = cards.length ? Math.min(next.active || 0, cards.length - 1) : 0;
   slashMenuState = { ...next, cards, active };
+  let lastGroup = "";
   const items = cards.map((card, index) => {
     const current = index === active ? ' aria-current="true"' : "";
-    return `<button type="button" class="block-type-menu-item${index === active ? " is-active" : ""}" role="menuitem" data-card="${card.id}"${current}>${card.label}<span class="slash-card-hint">${card.hint}</span></button>`;
+    const group = card.group && card.group !== lastGroup
+      ? `<p class="block-type-menu-label slash-card-group">${escapeHtml(card.group)}</p>`
+      : "";
+    lastGroup = card.group || "";
+    return `${group}<button type="button" class="block-type-menu-item${index === active ? " is-active" : ""}" role="menuitem" data-card="${card.id}"${current}>${escapeHtml(card.label)}<span class="slash-card-hint">${escapeHtml(card.hint)}</span></button>`;
   }).join("");
   menu.innerHTML = `<p class="block-type-menu-label">插入</p>${items || `<p class="slash-card-empty">没有这种块</p>`}`;
   menu.hidden = false;
@@ -3469,6 +3624,154 @@ function insertSlashCard(id) {
   setStatus(`已插入「${label}」。没有调用优化，也不计积分。`);
   const nodes = articleBody?.querySelectorAll(`[data-type="${api.cardDomType(id)}"]`);
   nodes?.[nodes.length - 1]?.scrollIntoView({ block: "nearest" });
+}
+
+function editablePlain(el) {
+  return (el?.innerText || "").replace(/\u00a0/g, " ").trim();
+}
+
+function refreshSmartGridEmpty(target) {
+  const el = target?.nodeType === 1 ? target : target?.parentElement;
+  if (!el) return;
+  const point = el.closest?.("[data-point-cell]");
+  if (point) {
+    const title = editablePlain(point.querySelector("[data-point-title]"));
+    const body = editablePlain(point.querySelector("[data-point-body]"));
+    point.classList.toggle("is-empty", !title && !body);
+    return;
+  }
+  const copy = el.closest?.("[data-media-text]");
+  if (copy) copy.classList.toggle("is-empty", !editablePlain(copy));
+}
+
+function currentMediaFields(blockEl) {
+  const alt = (blockEl.querySelector("[data-media-alt]")?.innerText || blockEl.querySelector("img")?.getAttribute("alt") || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  const url = blockEl.dataset.url || "";
+  const textNode = blockEl.querySelector("[data-media-text]");
+  const text = textNode ? inlineNodeToMarkdown(textNode).replace(/\u00a0/g, " ").trim() : "";
+  return { alt, url, text };
+}
+
+function commitBlockMarkdown(blockEl, markdown) {
+  if (previewSyncTimer) {
+    window.clearTimeout(previewSyncTimer);
+    previewSyncTimer = 0;
+  }
+  const next = serializePreviewToMarkdown(blockEl, markdown);
+  sampleStaticActive = false;
+  articleSource = String(next || "").trim();
+  if (articleInput) articleInput.value = articleSource;
+  persistArticleSource();
+  render();
+}
+
+let mediaMenu = null;
+let mediaPickBlock = null;
+let mediaFileInput = null;
+
+function hideMediaMenu() {
+  if (mediaMenu) mediaMenu.hidden = true;
+}
+
+function ensureMediaFileInput() {
+  if (mediaFileInput) return mediaFileInput;
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/png,image/jpeg,image/gif,image/webp";
+  input.hidden = true;
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+    const block = mediaPickBlock;
+    input.value = "";
+    if (!file || !block?.isConnected) return;
+    if (!/^image\/(png|jpeg|gif|webp)$/.test(file.type)) {
+      setStatus("只能放 png、jpg、gif 或 webp。");
+      return;
+    }
+    if (file.size > EMBEDDED_IMAGE_MAX_BYTES) {
+      setStatus("这张图超过 2MB，先换小一点的。没有调用优化，也不计积分。");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!block.isConnected) return;
+      const url = safeImageUrl(String(reader.result || ""));
+      if (!url) {
+        setStatus("这张图读不出来。");
+        return;
+      }
+      const fields = currentMediaFields(block);
+      const alt = fields.alt || file.name.replace(/\.[^.]+$/, "").slice(0, 18) || "配图";
+      const api = globalThis.YoocoSlashCards;
+      if (!api) return;
+      commitBlockMarkdown(block, api.mediaMarkdown({ ...fields, alt, url }));
+      setStatus("已换上这张图。没有调用优化，也不计积分。");
+    };
+    reader.readAsDataURL(file);
+  });
+  document.body.appendChild(input);
+  mediaFileInput = input;
+  return input;
+}
+
+function applyMediaChoice(choice) {
+  const block = mediaPickBlock;
+  hideMediaMenu();
+  if (!block?.isConnected) return;
+  const api = globalThis.YoocoSlashCards;
+  if (!api) return;
+  const fields = currentMediaFields(block);
+  if (choice === "file") {
+    ensureMediaFileInput().click();
+    return;
+  }
+  if (choice === "clear") {
+    commitBlockMarkdown(block, api.mediaMarkdown({ alt: "", url: "", text: fields.text }));
+    setStatus("已清空图片格。没有调用优化，也不计积分。");
+    return;
+  }
+  commitBlockMarkdown(block, api.mediaMarkdown({ alt: fields.alt || "配图", url: "", text: fields.text }));
+  setStatus("已放上占位图。没有调用优化，也不计积分。");
+}
+
+function ensureMediaMenu() {
+  if (mediaMenu) return mediaMenu;
+  const menu = document.createElement("div");
+  menu.id = "mediaGridMenu";
+  menu.className = "block-type-menu slash-card-menu";
+  menu.hidden = true;
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "图片格");
+  menu.innerHTML = [
+    `<p class="block-type-menu-label">图片格</p>`,
+    `<button type="button" class="block-type-menu-item" role="menuitem" data-media-choice="placeholder">用占位图</button>`,
+    `<button type="button" class="block-type-menu-item" role="menuitem" data-media-choice="file">从本机换图</button>`,
+    `<button type="button" class="block-type-menu-item" role="menuitem" data-media-choice="clear">清空格子</button>`,
+  ].join("");
+  menu.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-media-choice]");
+    if (!button) return;
+    event.preventDefault();
+    applyMediaChoice(button.dataset.mediaChoice);
+  });
+  document.body.appendChild(menu);
+  mediaMenu = menu;
+  return menu;
+}
+
+function showMediaMenu(anchor, block) {
+  const menu = ensureMediaMenu();
+  mediaPickBlock = block;
+  menu.hidden = false;
+  const rect = anchor.getBoundingClientRect();
+  const box = menu.getBoundingClientRect();
+  const pad = 8;
+  let left = rect.left;
+  let top = rect.bottom + 6;
+  if (top + box.height > window.innerHeight - pad) top = Math.max(pad, rect.top - box.height - 6);
+  if (left + box.width > window.innerWidth - pad) left = window.innerWidth - box.width - pad;
+  menu.style.left = `${Math.max(pad, left)}px`;
+  menu.style.top = `${Math.max(pad, top)}px`;
 }
 
 const TEXT_COLOR_SWATCHES = ["#1A1A1A", "#5C4033", "#1040C0", "#C23B3B", "#3E7A2C", "#7A4E9A"];

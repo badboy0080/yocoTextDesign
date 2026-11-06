@@ -12,7 +12,7 @@ if (!api) {
 }
 
 const ids = api.SLASH_CARDS.map((card) => card.id).join(",");
-if (ids !== "quote,highlight,divider,header") {
+if (ids !== "quote,highlight,divider,header,media,points") {
   console.error("card ids changed", ids);
   process.exit(1);
 }
@@ -33,6 +33,14 @@ if (!api.slashCardMarkdown("header").startsWith(":::header\n")) {
   console.error("header snippet mismatch");
   process.exit(1);
 }
+if (api.slashCardMarkdown("media") !== ":::media\n![]()\n:::") {
+  console.error("media snippet mismatch");
+  process.exit(1);
+}
+if (api.slashCardMarkdown("points") !== ":::points\n---\n---\n:::") {
+  console.error("points snippet mismatch");
+  process.exit(1);
+}
 if (api.slashCardMarkdown("nope") !== "") {
   console.error("unknown card returned markdown");
   process.exit(1);
@@ -48,8 +56,17 @@ if (api.lineSlashQuery("正文 / 不是空行") !== null || api.lineSlashQuery("
 }
 
 const all = api.filterSlashCards("");
-if (all.length !== 4) {
-  console.error("empty query should list four cards");
+if (all.length !== 6) {
+  console.error("empty query should list six cards");
+  process.exit(1);
+}
+const grids = api.filterSlashCards("栅格");
+if (grids.length !== 2 || grids.map((card) => card.id).join(",") !== "media,points") {
+  console.error("filter 栅格 failed", grids);
+  process.exit(1);
+}
+if (grids.some((card) => card.group !== "图文栅格")) {
+  console.error("grid group missing");
   process.exit(1);
 }
 const highlightOnly = api.filterSlashCards("重");
@@ -118,6 +135,59 @@ if (api.cardDomType("highlight") !== "highlightBox" || api.cardDomType("header")
   console.error("dom type mismatch");
   process.exit(1);
 }
+if (api.cardDomType("media") !== "mediaGrid" || api.cardDomType("points") !== "pointGrid") {
+  console.error("grid dom type mismatch");
+  process.exit(1);
+}
+
+const media = api.readMediaFence("", ["![小市摊位]()", "小市不是超市的缩小版。"]);
+if (media.type !== "mediaGrid" || media.alt !== "小市摊位" || media.url !== "" || !media.text.includes("超市")) {
+  console.error("media fence mismatch", media);
+  process.exit(1);
+}
+const emptyMedia = api.readMediaFence("", ["![]()"]);
+if (emptyMedia.alt || emptyMedia.url || emptyMedia.text) {
+  console.error("empty media fence mismatch", emptyMedia);
+  process.exit(1);
+}
+if (api.mediaMarkdown({ alt: "小市摊位", url: "", text: "说明" }) !== ":::media\n![小市摊位]()\n说明\n:::") {
+  console.error("media markdown mismatch");
+  process.exit(1);
+}
+const roundMedia = api.readMediaFence("", api.mediaMarkdown({ alt: "配图", url: "", text: "一句说明" }).split("\n").slice(1, -1));
+if (roundMedia.alt !== "配图" || roundMedia.text !== "一句说明") {
+  console.error("media roundtrip mismatch", roundMedia);
+  process.exit(1);
+}
+
+const points = api.readPointsFence("", [
+  "先列清单",
+  "出门前先写好要买的三类",
+  "---",
+  "货比三家",
+  "走两摊再决定",
+  "---",
+  "当天用完",
+  "按一到两顿买",
+]);
+if (points.type !== "pointGrid" || points.items.length !== 3 || points.items[0].title !== "先列清单" || points.items[1].text !== "走两摊再决定" || points.items[2].title !== "当天用完") {
+  console.error("points fence mismatch", points);
+  process.exit(1);
+}
+const emptyPoints = api.readPointsFence("", ["---", "---"]);
+if (emptyPoints.items.length !== 3 || emptyPoints.items.some((item) => item.title || item.text)) {
+  console.error("empty points fence mismatch", emptyPoints);
+  process.exit(1);
+}
+const pointsMarkdown = api.pointsMarkdown([
+  { title: "先列清单", text: "出门前先写好" },
+  { title: "货比三家", text: "走两摊" },
+  { title: "当天用完", text: "一到两顿" },
+]);
+if (!pointsMarkdown.startsWith(":::points\n") || pointsMarkdown.split("\n---\n").length !== 3) {
+  console.error("points markdown mismatch", pointsMarkdown);
+  process.exit(1);
+}
 
 const app = fs.readFileSync(new URL("./public/app.js", root), "utf8");
 const html = fs.readFileSync(new URL("./public/studio.html", root), "utf8");
@@ -125,10 +195,18 @@ const css = fs.readFileSync(new URL("./public/styles.css", root), "utf8");
 [
   "readHighlightFence",
   "readHeaderFence",
+  "readMediaFence",
+  "readPointsFence",
   "highlightBox",
+  "mediaGrid",
+  "pointGrid",
   "data-slash-slot",
+  "data-media-action",
   "slashCardMenu",
+  "card.group",
   'item.type === "header"',
+  'fenceKind === "media"',
+  'fenceKind === "points"',
   ":::highlight",
 ].forEach((needle) => {
   if (!app.includes(needle)) {
@@ -140,7 +218,7 @@ if (!html.includes("slash-cards.js")) {
   console.error("studio does not load slash-cards.js");
   process.exit(1);
 }
-["highlight-box", "article-masthead", "slash-slot"].forEach((needle) => {
+["highlight-box", "article-masthead", "slash-slot", "smart-grid", "smart-grid-empty", "smart-grid-point"].forEach((needle) => {
   if (!css.includes(needle)) {
     console.error("css missing", needle);
     process.exit(1);

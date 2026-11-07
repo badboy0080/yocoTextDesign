@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-原文超过一万字（2026-11-07，未合并、未部署）：工作台原文下面有一行不抢眼的实时计数，空着是 0/10000。满 10000 可以优化。从 10001 起显示「您上传的文本超过上限！」，优化按不下去，也不发排版请求、不扣积分。原文不截断，删回到 10000 以内提示消失，可以再优化。汉字、标点、空格、换行都算，一个表情算一个字。服务端同一条边界。空文、太频繁、积分不够还是原来的提示。这不是把线上 502 都修好。截图在 `docs/previews/source-limit-empty.png`、`source-limit-count.png`、`source-limit-over.png`。正式站要等合进 master。
+原文超过一万字（2026-11-07，PR #90，未合并、未部署）：工作台原文下面有一行不抢眼的实时计数，空着是 0/10000。满 10000 可以优化。从 10001 起显示「您上传的文本超过上限！」，优化按不下去，也不发排版请求、不扣积分。原文不截断，删回到 10000 以内提示消失，可以再优化。汉字、标点、空格、换行都算，一个表情算一个字。服务端同一条边界。空文、太频繁、积分不够还是原来的提示。这不是把线上 502 都修好。截图在 `docs/previews/source-limit-empty.png`、`source-limit-count.png`、`source-limit-over.png`。正式站要等合进 master。
 
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
@@ -191,7 +191,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：原文框和预览下面加了一行计数。输入、粘贴、清空、示例、历史、配置导入、首页 txt 上传进工作台，计数都会跟着变。10000 可以点优化。10001 起显示那句提示，按钮按不下去，请求发不出去。删回到 10000 以内就恢复。服务端用同一套字数，超限在扣积分和调用模型之前就拒绝。汉字、标点、空格、换行都算 1，一个表情算 1，不用字符串长度，避免一个表情算成 2。
 - 改了哪些文件：`lib/source-limit.js`、`lib/deepseek-normalizer.js`、`app/api/normalize/route.ts`、`public/app.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-source-limit.js`、`CONTEXT.md`、`docs/previews/source-limit-empty.png`、`docs/previews/source-limit-count.png`、`docs/previews/source-limit-over.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npx tsx scripts/check-source-limit.js` 通过。0、9999、10000 放行，10001、多一个空格、多一个表情都拒绝，原文没有被改短。直接打排版接口，10001 是 413，提示逐字一致，没有去调模型，也没有扣积分。空文仍是原来的空文错误。本地 5174 用无头 Chrome：空态 0/10000，输入是 12/10000，粘贴空格和表情是 14/10000，9999、10000、10001 都对。超限点击不发请求，原文还在。删回 10000 会发出完整原文。清空后是 0/10000，并提示先加文章。示例 1639/10000，不发请求。历史恢复和配置导入会计数。积分设成 0 时仍是原来的用尽横幅，不会改成超限提示。首页上传 10001 字的 txt，进工作台后提示超限，没有发排版请求。窄屏没有横向溢出。没有合并。
-- 待办/风险：PR 还没合。合进 master 才会上正式站。这挡的是超长原文，不处理模型慢、网关 502。首页上传仍会先去掉首尾空白，这是原来的导入。手机上预览区本来就高，计数跟着底栏，要往下滚才看见。和划词只改选中字的 PR #89 都会改 `public/app.js`、`public/studio.html`、`CONTEXT.md` 和交接日志，后合的要解冲突。没有登录后从服务器拉一条超长历史来点，历史恢复走的是同一条载入函数。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/90 已开，没有自己合并。合进 master 才会上正式站。这挡的是超长原文，不处理模型慢、网关 502。首页上传仍会先去掉首尾空白，这是原来的导入。手机上预览区本来就高，计数跟着底栏，要往下滚才看见。和划词只改选中字的 PR #89 都会改 `public/app.js`、`public/studio.html`、`CONTEXT.md` 和交接日志，后合的要解冲突。没有登录后从服务器拉一条超长历史来点，历史恢复走的是同一条载入函数。
 
 ### 2026-11-06 工作台插入图文栅格
 

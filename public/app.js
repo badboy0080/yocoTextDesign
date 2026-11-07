@@ -196,6 +196,55 @@ function showOptimizeHint(message) {
   optimizeHint.hidden = !text;
 }
 
+/* source-limit:start */
+const SOURCE_CHAR_LIMIT = 10000;
+const SOURCE_LIMIT_MESSAGE = "您上传的文本超过上限！";
+const sourceSegmenter = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+  : null;
+
+function countSourceChars(value) {
+  const text = typeof value === "string" ? value : "";
+  if (!text) return 0;
+  if (sourceSegmenter) {
+    let count = 0;
+    for (const _part of sourceSegmenter.segment(text)) count += 1;
+    return count;
+  }
+  return Array.from(text).length;
+}
+
+function sourceOverLimit(value) {
+  return countSourceChars(value) > SOURCE_CHAR_LIMIT;
+}
+/* source-limit:end */
+
+function editorSourceText() {
+  if (articleInput) return articleInput.value;
+  return typeof articleSource === "string" ? articleSource : "";
+}
+
+function syncOptimizeAvailability() {
+  if (!aiNormalizeButton || aiNormalizeButton.dataset.busy) return;
+  const noCredits = !serverTrialUnlimited && remainingTrialCount() <= 0;
+  aiNormalizeButton.disabled = noCredits || sourceOverLimit(editorSourceText());
+}
+
+function syncSourceLimit() {
+  const countEl = document.querySelector("#sourceLimitCount");
+  const messageEl = document.querySelector("#sourceLimitMessage");
+  const bar = document.querySelector("#sourceLimit");
+  const count = countSourceChars(editorSourceText());
+  const over = count > SOURCE_CHAR_LIMIT;
+  if (countEl) countEl.textContent = `${count}/${SOURCE_CHAR_LIMIT}`;
+  if (bar) bar.classList.toggle("is-over", over);
+  if (messageEl) {
+    messageEl.textContent = over ? SOURCE_LIMIT_MESSAGE : "";
+    messageEl.hidden = !over;
+  }
+  syncOptimizeAvailability();
+}
+
 function beijingDateKey(now = Date.now()) {
   return new Date(now + 8 * 3600 * 1000).toISOString().slice(0, 10);
 }
@@ -238,9 +287,7 @@ function renderTrialMeter() {
       trialMeter.classList.remove("is-empty");
     }
     if (trialBanner) trialBanner.hidden = true;
-    if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
-      aiNormalizeButton.disabled = false;
-    }
+    syncOptimizeAvailability();
     return;
   }
   const remaining = remainingTrialCount();
@@ -252,9 +299,7 @@ function renderTrialMeter() {
     trialMeter.classList.toggle("is-empty", remaining <= 0);
   }
   if (trialBanner) trialBanner.hidden = remaining > 0;
-  if (aiNormalizeButton && !aiNormalizeButton.dataset.busy) {
-    aiNormalizeButton.disabled = remaining <= 0;
-  }
+  syncOptimizeAvailability();
 }
 
 function applyTrialFromServer(trial) {
@@ -1965,6 +2010,7 @@ function syncPreviewEdits() {
   if (articleInput && document.activeElement !== articleInput) articleInput.value = markdown;
   persistArticleSource();
   setStatus("已在预览中修改文字");
+  syncSourceLimit();
 }
 
 function flushPendingPreviewEdits() {
@@ -2053,6 +2099,7 @@ function render(options = {}) {
     renderBody();
     renderStructureEditor();
   }
+  syncSourceLimit();
 }
 
 function applyMarksToMarkdown(text, marks) {
@@ -2248,7 +2295,13 @@ async function applyAiNormalization(data, assignment, source) {
 }
 
 async function normalizeWithDeepSeek() {
-  const source = (articleInput ? articleInput.value : articleSource).trim();
+  const raw = editorSourceText();
+  if (sourceOverLimit(raw)) {
+    syncSourceLimit();
+    showOptimizeHint("");
+    return;
+  }
+  const source = raw.trim();
   if (!source) {
     showOptimizeHint("请先添加文章内容");
     return;
@@ -3211,6 +3264,7 @@ function selectEditorView(index) {
     tab.setAttribute("aria-selected", String(tabIndex === index));
     tab.tabIndex = tabIndex === index ? 0 : -1;
   });
+  syncSourceLimit();
   scheduleHumanizeFloat();
 }
 editorViewTabs.forEach((tab, index) => {

@@ -137,6 +137,11 @@ html.studio-embedded .studio-navigation { display:none; }
 .web-preview { width:100%; min-height:100%; margin:0; }
 .article-page { min-height:100%; padding:40px clamp(24px,4vw,64px); background:var(--page-color,#fff); color:var(--text-color,#20231f); box-shadow:none; color-scheme:light; }
 .article-page[data-style="deep-night"] { color-scheme: dark; }
+.source-limit-bar { display:flex; align-items:baseline; justify-content:flex-start; flex-wrap:wrap; gap:8px 12px; flex:none; min-height:28px; margin:0; padding:8px 24px 0; background:#0c0c0c; color:rgba(255,255,255,.62); font-size:12px; line-height:1.4; }
+.source-limit-count { font-family:"JetBrains Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums; letter-spacing:.01em; }
+.source-limit-bar.is-over { color:#e7b2a4; }
+.source-limit-message { margin:0; font-family:"Noto Sans SC","Space Grotesk",sans-serif; font-size:13px; font-weight:500; }
+.source-limit-message[hidden] { display:none !important; }
 .preview-footer { min-height:48px; flex:none; gap:12px; padding:12px 24px; border-top:1px solid var(--line); background:var(--panel); }
 #articleStatus { color:var(--muted); font-size:12px; line-height:1.5; }
 .preview-tool-toggle { color:var(--muted); font-size:12px; }
@@ -202,6 +207,7 @@ html.studio-embedded .studio-navigation { display:none; }
   .copy-feedback:empty { display:none; }
   .copy-feedback { flex-basis:100%; white-space:normal; overflow-wrap:anywhere; }
   .preview-footer { padding:12px 16px; flex-wrap:wrap; }
+  .source-limit-bar { padding:8px 16px 0; }
   .source-panel { min-height:480px; padding:16px; }
   .insight-panel { overflow:visible; border-left:0; border-top:1px solid var(--line); }
   .properties-title { position:static; }

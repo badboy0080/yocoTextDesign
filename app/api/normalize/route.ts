@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     const contentLength = Number(request.headers.get("content-length") || 0);
     if (contentLength > MAX_BODY_BYTES) {
-      throw new AppError("REQUEST_TOO_LARGE", "提交内容过大，请控制在 160,000 个字符以内。", 413);
+      throw new AppError("REQUEST_TOO_LARGE", "提交内容过大，请缩短后再试。", 413);
     }
     const body = await request.json();
     const { source, assignment } = validateRequest(body);

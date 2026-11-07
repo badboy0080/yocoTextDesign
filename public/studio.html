@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=smart-grid-v1" />
-    <link rel="stylesheet" href="./studio-ui.css?v=selection-style-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=source-limit-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -111,7 +111,7 @@
           <div class="source-panel" id="sourcePanel" role="tabpanel" aria-labelledby="sourceViewTab" hidden>
             <label for="articleInput">文章原文</label>
             <p id="sourceHelp">支持纯文字和 Markdown，修改后会同步更新排版。</p>
-            <textarea id="articleInput" rows="16" spellcheck="false" aria-describedby="sourceHelp" placeholder="在这里粘贴或编辑文章…"></textarea>
+            <textarea id="articleInput" rows="16" spellcheck="false" aria-describedby="sourceHelp sourceLimitCount" placeholder="在这里粘贴或编辑文章…"></textarea>
           </div>
           <div class="preview-stage is-source-empty" id="previewStage" role="tabpanel" aria-labelledby="resultViewTab">
             <div class="preview-empty" id="previewEmpty">
@@ -130,6 +130,10 @@
                 <div id="articleBody" class="article-content"></div>
               </div>
             </article>
+          </div>
+          <div class="source-limit-bar" id="sourceLimit">
+            <span class="source-limit-count" id="sourceLimitCount">0/10000</span>
+            <p class="source-limit-message" id="sourceLimitMessage" role="alert" hidden></p>
           </div>
           <div class="preview-footer">
             <div class="preview-footer-files">
@@ -427,6 +431,6 @@
     <script src="./samples/sample-try.js?v=sample-yooco-article-v1"></script>
     <script src="./block-style.js?v=selection-style-v1"></script>
     <script src="./slash-cards.js?v=smart-grid-v1"></script>
-    <script src="./app.js?v=smart-grid-v1"></script>
+    <script src="./app.js?v=source-limit-v1"></script>
   </body>
 </html>

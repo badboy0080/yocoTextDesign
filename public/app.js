@@ -682,6 +682,22 @@ function getComplianceReport() {
       rule: "图片域名",
     });
   }
+  if (model.blocks.some((block) => block.type === "interact" && [block.aUrl, block.bUrl].some((url) => url && !isWechatHostedImage(url)))) {
+    items.push({
+      severity: "risk",
+      title: "互动展示里有外链图",
+      tip: "先上传公众号素材库，再替换链接",
+      rule: "图片域名",
+    });
+  }
+  if (model.blocks.some((block) => block.type === "interact")) {
+    items.push({
+      severity: "warn",
+      title: "含互动展示",
+      tip: "微信真机还没验收。旁边的说明会留下来。",
+      rule: "互动",
+    });
+  }
   if (model.blocks.some((block) => block.type === "image" && !block.url)) {
     items.push({
       severity: "warn",
@@ -942,8 +958,39 @@ function cleanMarkdown(value) {
     .trim();
 }
 
+function interactFenceFromPaste(node) {
+  const api = globalThis.YoocoSlashCards;
+  if (!api || !node?.getAttribute) return "";
+  const kind = node.getAttribute("data-yooco-interact");
+  if (!api.knownInteractKind(kind)) return "";
+  const stillNode = node.querySelector("[data-yooco-still]");
+  const still = String(stillNode?.textContent || "").replace(/\u00a0/g, " ").trim();
+  return api.interactMarkdown(api.interactFromAttrs({
+    kind,
+    cue: node.getAttribute("data-cue"),
+    cover: node.getAttribute("data-cover"),
+    answer: node.getAttribute("data-answer"),
+    a: node.getAttribute("data-a"),
+    b: node.getAttribute("data-b"),
+    aUrl: node.getAttribute("data-a-url"),
+    bUrl: node.getAttribute("data-b-url"),
+    summary: node.getAttribute("data-summary"),
+    body: node.getAttribute("data-body"),
+    still: still || node.getAttribute("data-still") || "",
+  }));
+}
+
 function htmlToMarkdown(html) {
   const documentFromPaste = new DOMParser().parseFromString(String(html), "text/html");
+  // 互动块先收成原文记号，再让后面的清洗剥掉其余 SVG。不放开任意用户 SVG。
+  documentFromPaste.querySelectorAll("[data-yooco-interact]").forEach((node) => {
+    const fence = interactFenceFromPaste(node);
+    if (!fence) return;
+    const holder = documentFromPaste.createElement("pre");
+    holder.setAttribute("data-yooco-fence", "1");
+    holder.textContent = fence;
+    node.replaceWith(holder);
+  });
   documentFromPaste.querySelectorAll("script,style,link,meta,iframe,object,embed,form,input,button,textarea,select,svg,canvas,video,audio").forEach((node) => node.remove());
 
   const childrenToMarkdown = (node) => Array.from(node.childNodes).map((child) => nodeToMarkdown(child)).join("");
@@ -979,6 +1026,7 @@ function htmlToMarkdown(html) {
       const alt = cleanMarkdown(node.getAttribute("alt") || "文章配图");
       return url ? `\n\n![${alt}](${url})\n\n` : "";
     }
+    if (tag === "pre" && node.getAttribute("data-yooco-fence") === "1") return `\n\n${node.textContent || ""}\n\n`;
     if (tag === "pre") return `\n\n\`\`\`\n${node.textContent || ""}\n\`\`\`\n\n`;
     if (["section", "article", "main", "figure", "figcaption", "div", "header", "footer"].includes(tag)) return content ? `\n\n${content}\n\n` : "";
     return content;
@@ -1174,6 +1222,8 @@ function parseArticle(source) {
       blocks.push(globalThis.YoocoSlashCards.readMediaFence(fenceTitle, fenceLines));
     } else if (fenceKind === "points" && globalThis.YoocoSlashCards) {
       blocks.push(globalThis.YoocoSlashCards.readPointsFence(fenceTitle, fenceLines));
+    } else if (fenceKind === "interact" && globalThis.YoocoSlashCards) {
+      blocks.push(globalThis.YoocoSlashCards.readInteractFence(fenceTitle, fenceLines));
     }
     fenceKind = "";
     fenceTitle = "";
@@ -1202,7 +1252,7 @@ function parseArticle(source) {
       else fenceLines.push(line);
       continue;
     }
-    const fence = trimmed.match(/^:::(card|steps|stat|stats|highlight|header|media|points)(?:\s+(.+))?$/i);
+    const fence = trimmed.match(/^:::(card|steps|stat|stats|highlight|header|media|points|interact)(?:\s+(.+))?$/i);
     if (fence) {
       flushParagraph();
       flushList();
@@ -1358,6 +1408,10 @@ function getBlockText(block) {
     const text = (block.items || []).map((item) => [item.title, item.text].filter(Boolean).join(" ")).filter(Boolean).join(" ");
     return text || "三列要点";
   }
+  if (block.type === "interact") {
+    const still = globalThis.YoocoSlashCards ? globalThis.YoocoSlashCards.interactStill(block) : block.still;
+    return [block.cue, still].filter(Boolean).join(" ") || "互动展示";
+  }
   return block.text || "内容分隔线";
 }
 
@@ -1398,6 +1452,13 @@ function polishArticleText(value) {
 
 function polishArticleBlock(block) {
   if (!block || block.type === "code") return block;
+  if (block.type === "interact") {
+    const next = { ...block };
+    ["cue", "cover", "answer", "a", "b", "summary", "body", "still"].forEach((key) => {
+      if (typeof next[key] === "string") next[key] = polishArticleText(next[key]);
+    });
+    return next;
+  }
   const next = { ...block };
   if (typeof next.text === "string") next.text = polishArticleText(next.text);
   if (typeof next.title === "string") next.title = polishArticleText(next.title);
@@ -1647,6 +1708,32 @@ function renderMediaGridBlock(item, idx) {
   return `<section class="smart-grid smart-grid-media" data-type="mediaGrid" data-url="${escapeHtml(url)}" ${idx} contenteditable="false"><div class="smart-grid-figure">${figure}${swap}</div><p class="${textClass}" data-media-text data-placeholder="在这里写说明" contenteditable="true">${text.trim() ? inlineMarkdown(text) : ""}</p></section>`;
 }
 
+function interactPalette() {
+  const accent = safeColor(state.accentColor, "#1f6b4a");
+  const page = safeColor(state.pageColor, "#fffef9");
+  const ink = safeColor(state.textColor, "#272b28");
+  const onAccent = contrastRatio(page, accent) >= contrastRatio(ink, accent) ? page : ink;
+  return {
+    paper: page,
+    ink,
+    accent,
+    onAccent,
+    muted: safeColor(state.mutedColor, "#69736b"),
+    border: safeColor(state.borderColor, "#d5ddd6"),
+    card: safeColor(state.cardColor, "#f3f6f1"),
+    fontSize: state.fontSize,
+  };
+}
+
+function renderInteractBlock(item, idx) {
+  const api = globalThis.YoocoSlashCards;
+  if (!api) return "";
+  const fields = api.normalizeInteract(item);
+  const prefix = api.interactPrefix(String(item.sourceIndex ?? fields.kind));
+  const svg = api.buildInteractSvg(fields, interactPalette(), prefix);
+  return `<section class="interact-block" data-type="interact" ${api.interactDataAttrs(fields)} ${idx} contenteditable="false">${svg}<p class="interact-still" data-interact-still data-yooco-still="1" contenteditable="true">${escapeHtml(fields.still)}</p></section>`;
+}
+
 function renderPointGridBlock(item, idx) {
   const cells = (item.items || []).slice(0, 3);
   while (cells.length < 3) cells.push({ title: "", text: "" });
@@ -1705,6 +1792,7 @@ function renderBody() {
     }
     if (item.type === "mediaGrid") return renderMediaGridBlock(item, idx);
     if (item.type === "pointGrid") return renderPointGridBlock(item, idx);
+    if (item.type === "interact") return renderInteractBlock(item, idx);
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, stepIndex) =>
@@ -1890,6 +1978,24 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
       const textNode = el.querySelector("[data-media-text]");
       const text = textNode ? inlineNodeToMarkdown(textNode).replace(/\u00a0/g, " ").trim() : "";
       parts.push(globalThis.YoocoSlashCards.mediaMarkdown({ alt, url, text }));
+      return;
+    }
+    if (type === "interact" && globalThis.YoocoSlashCards) {
+      const stillNode = el.querySelector("[data-interact-still]");
+      const still = stillNode ? (stillNode.innerText || "").replace(/\u00a0/g, " ").trim() : "";
+      parts.push(globalThis.YoocoSlashCards.interactMarkdown(globalThis.YoocoSlashCards.interactFromAttrs({
+        kind: el.dataset.kind,
+        cue: el.dataset.cue,
+        cover: el.dataset.cover,
+        answer: el.dataset.answer,
+        a: el.dataset.a,
+        b: el.dataset.b,
+        aUrl: el.dataset.aUrl,
+        bUrl: el.dataset.bUrl,
+        summary: el.dataset.summary,
+        body: el.dataset.body,
+        still,
+      })));
       return;
     }
     if (type === "pointGrid" && globalThis.YoocoSlashCards) {
@@ -2226,9 +2332,12 @@ async function groundReturnedDocument(document, source) {
   }
 }
 
-async function applyAiNormalization(data, assignment, source) {
+async function applyAiNormalization(data, assignment, source, packed) {
   const document = await groundReturnedDocument(data?.document, source);
-  const markdown = structuredDocumentToMarkdown(document);
+  let markdown = structuredDocumentToMarkdown(document);
+  if (packed && globalThis.YoocoSlashCards?.restoreInteractFences) {
+    markdown = globalThis.YoocoSlashCards.restoreInteractFences(markdown, packed.fences, packed.length);
+  }
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
   const aiParams = normalizeTemplateParams(data?.template?.params || data?.params || {});
   applyAiLook(aiParams, assignment);
@@ -2248,9 +2357,16 @@ async function applyAiNormalization(data, assignment, source) {
 }
 
 async function normalizeWithDeepSeek() {
-  const source = (articleInput ? articleInput.value : articleSource).trim();
-  if (!source) {
+  const rawSource = (articleInput ? articleInput.value : articleSource).trim();
+  if (!rawSource) {
     showOptimizeHint("请先添加文章内容");
+    return;
+  }
+  const packed = globalThis.YoocoSlashCards?.extractInteractFences(rawSource) || { source: rawSource, fences: [], length: rawSource.length };
+  const source = String(packed.source || "").trim();
+  if (!source) {
+    setStatus("这篇只有互动展示，优化不会改这些块。");
+    setFeedback("没有调用优化，也没有扣积分。");
     return;
   }
   showOptimizeHint("");
@@ -2309,14 +2425,14 @@ async function normalizeWithDeepSeek() {
       writeLocalTrialUsed(readLocalTrialUsed() + 1);
       renderTrialMeter();
     }
-    await applyAiNormalization(payload.data, assignment, source);
+    await applyAiNormalization(payload.data, assignment, source, packed);
     awaitingContentPick = false;
     try {
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
     } catch {
       /* analytics must never break typesetting */
     }
-    void rememberLayoutHistory(source);
+    void rememberLayoutHistory(rawSource);
   } catch (error) {
     setStatus("已套用本地排版");
     setFeedback(error instanceof Error && error.message ? error.message : NORMALIZE_ERROR_FALLBACK);
@@ -2691,6 +2807,10 @@ function buildCopyHtml() {
       return `<section style="margin:0 0 8px;text-align:left;"><h3 style="${headingStyle(2)}">${escapeHtml(item.title || "标题")}</h3>${sub}${slot}</section>`;
     }
     if (item.type === "mediaGrid" || item.type === "pointGrid") return copyGridBlockHtml(item, copyInlineMarkdown);
+    if (item.type === "interact" && globalThis.YoocoSlashCards) {
+      // 复制始终用模型里的初始态，不读预览里已经点开的画面。每次重新生成 id。
+      return globalThis.YoocoSlashCards.interactCopyHtml(item, interactPalette(), globalThis.YoocoSlashCards.interactPrefix(String(item.sourceIndex ?? item.kind)));
+    }
     if (item.type === "steps") {
       const title = escapeHtml(item.title || "操作步骤");
       const rows = (item.items || []).map((entry, index) => {
@@ -2824,6 +2944,10 @@ function buildCopyPlain(html) {
     if (item.type === "header") return [item.title, item.sub, "头图"].filter(Boolean).join("\n");
     if (item.type === "mediaGrid") return [item.alt || "图片格", item.text].filter(Boolean).join("\n");
     if (item.type === "pointGrid") return (item.items || []).map((entry) => [entry.title, entry.text].filter(Boolean).join("：")).filter(Boolean).join("\n");
+    if (item.type === "interact") {
+      const still = globalThis.YoocoSlashCards ? globalThis.YoocoSlashCards.interactStill(item) : item.still;
+      return [item.cue, still].filter(Boolean).join("\n");
+    }
     return item.text || "";
   }).filter(Boolean);
   return [model.title, ...blocks].filter(Boolean).join("\n\n") || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -3062,14 +3186,19 @@ function autoSegmentArticle() {
     return;
   }
   let inCode = false;
+  let inFence = false;
   const structured = raw.replace(/\r\n?/g, "\n").split("\n").map((line) => {
     const trimmed = line.trim();
-    if (trimmed.startsWith("```")) {
+    if (!inFence && trimmed.startsWith("```")) {
       inCode = !inCode;
       return line;
     }
+    if (!inCode && trimmed.startsWith(":::")) {
+      inFence = !inFence;
+      return line;
+    }
     const isMarkdownBlock = /^(#{1,6}\s|>\s?|[-*+]\s+|!\[|---+$|\*\*\*+$)/.test(trimmed);
-    if (inCode || isMarkdownBlock || line.length < 96) return line;
+    if (inCode || inFence || isMarkdownBlock || line.length < 96) return line;
     return splitLongTextLine(line);
   }).join("\n");
   if (articleInput) articleInput.value = structured;

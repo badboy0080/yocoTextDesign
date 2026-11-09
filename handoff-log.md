@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+互动展示（2026-11-09，未合并、未部署）：工作台空行敲 `/`，菜单多了「互动展示」，里面是点击揭晓、两图切换、点击展开。揭晓是点一下掀开遮罩；两图是在甲乙两版之间换；展开会把这块真正变高，再点可以收起。旁边都有一句静态说明，微信不播动画时字还在。复制稿是受控 SVG，带 set、animate 和单独的 id，每次复制换一套 id，用的是没点过的初始态。不调用优化时不扣积分。优化会先把这块抽走，回来再按原文插回。截图在 `docs/previews/interact-menu.png`、`interact-initial.png`、`interact-clicked.png`。正式站要等合进 master。微信真机还没贴过。
+
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
 复制到公众号左右大留白（2026-11-06，PR #87，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
@@ -183,6 +185,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-09 工作台加互动展示
+
+- 想做什么：在工作台加「互动展示」，先只做点击揭晓、两图切换、点击展开。开 PR，不合 master，不部署正式站。
+- 做成了什么：空行敲 `/`，菜单多一组「互动展示」。插进去是受控 SVG，预览里点得动。揭晓掀开遮罩，两图在甲乙之间换，展开会变高、再点收起。每块下面有一句静态说明。复制稿带完整 SVG 和这句说明，每次复制换 id，用初始态。粘贴清洗会先把互动块收成原文记号，再剥掉别的 SVG。优化默认不改写这块。
+- 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/interact-menu.png`、`docs/previews/interact-initial.png`、`docs/previews/interact-clicked.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。菜单里有互动展示三项。预览里三种都能点：揭晓露出「先把标题空出来。」，两图从甲换成乙，展开变高后再点回到矮的。连点两次复制，HTML 里都有 set、animate 和 id，两次 id 不重，而且是没点过的初始态。把复制稿贴回原文，三条 `:::interact` 还在，没有把 SVG 源码贴进原文。没有合并。
+- 待办/风险：PR 开在 `cursor/interact-display-d128`，没有自己合并。合进 master 才会上正式站。微信真机还没贴。保存草稿再打开，要阿超自己试。外链图要先上传素材库。没有做拖动、长按、滚动吸附和转盘。
+
 ### 2026-11-06 工作台插入图文栅格
 
 - 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。
@@ -214,11 +224,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。
-
-### 2026-11-02 表情主题的有序说明也要看见图标
-
-- 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
-- 做成了什么：提示词要求小节标题用 heading，说明分点用无序列表，有序只留给第一步、第二步。模型仍收成有序列表时，短的、像标题的、或命中关键词的条目会在文字前加图标。很短的「主控：…」也会加。真步骤不加。留言或评论的短句一定有 💬。分隔改成整行符号。预览和复制里的序号改小，不再把图标挤没。
-- 改了哪些文件：`public/emoji-theme.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`CONTEXT.md`、`docs/previews/emoji-ordered-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了只有编号说明、外加真步骤的样文。柠边没有灯泡。切到表情后，知识点、要点、总结、主控、要改映射、欢迎留言都有图标，真步骤没有。分隔是整行符号，不是横线。序号大约 15px，正文 16px，图标在数字旁边露着。复制稿里也有这些图标。对比图在 `docs/previews/emoji-ordered-before-after.png`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/82 已开，没有自己合并。合进 master 才会上正式站。很长的有序句子如果对不上关键词，仍不会加图标。公众号后台还没真贴。

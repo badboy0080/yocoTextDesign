@@ -12,7 +12,7 @@ if (!api) {
 }
 
 const ids = api.SLASH_CARDS.map((card) => card.id).join(",");
-if (ids !== "quote,highlight,divider,header,media,points") {
+if (ids !== "quote,highlight,divider,header,media,points,reveal,swap,expand") {
   console.error("card ids changed", ids);
   process.exit(1);
 }
@@ -41,6 +41,13 @@ if (api.slashCardMarkdown("points") !== ":::points\n---\n---\n:::") {
   console.error("points snippet mismatch");
   process.exit(1);
 }
+["reveal", "swap", "expand"].forEach((id) => {
+  const snippet = api.slashCardMarkdown(id);
+  if (!snippet.startsWith(`:::interact ${id}\n`) || !snippet.includes("still:") || !snippet.endsWith("\n:::")) {
+    console.error("interact snippet mismatch", id, snippet);
+    process.exit(1);
+  }
+});
 if (api.slashCardMarkdown("nope") !== "") {
   console.error("unknown card returned markdown");
   process.exit(1);
@@ -56,8 +63,8 @@ if (api.lineSlashQuery("正文 / 不是空行") !== null || api.lineSlashQuery("
 }
 
 const all = api.filterSlashCards("");
-if (all.length !== 6) {
-  console.error("empty query should list six cards");
+if (all.length !== 9) {
+  console.error("empty query should list nine cards");
   process.exit(1);
 }
 const grids = api.filterSlashCards("栅格");
@@ -67,6 +74,19 @@ if (grids.length !== 2 || grids.map((card) => card.id).join(",") !== "media,poin
 }
 if (grids.some((card) => card.group !== "图文栅格")) {
   console.error("grid group missing");
+  process.exit(1);
+}
+const interacts = api.filterSlashCards("互动");
+if (interacts.length !== 3 || interacts.map((card) => card.id).join(",") !== "reveal,swap,expand") {
+  console.error("filter 互动 failed", interacts);
+  process.exit(1);
+}
+if (interacts.some((card) => card.group !== "互动展示")) {
+  console.error("interact group missing");
+  process.exit(1);
+}
+if (api.filterSlashCards("揭晓").map((card) => card.id).join(",") !== "reveal") {
+  console.error("filter 揭晓 failed");
   process.exit(1);
 }
 const highlightOnly = api.filterSlashCards("重");
@@ -139,6 +159,10 @@ if (api.cardDomType("media") !== "mediaGrid" || api.cardDomType("points") !== "p
   console.error("grid dom type mismatch");
   process.exit(1);
 }
+if (["reveal", "swap", "expand"].some((id) => api.cardDomType(id) !== "interact")) {
+  console.error("interact dom type mismatch");
+  process.exit(1);
+}
 
 const media = api.readMediaFence("", ["![小市摊位]()", "小市不是超市的缩小版。"]);
 if (media.type !== "mediaGrid" || media.alt !== "小市摊位" || media.url !== "" || !media.text.includes("超市")) {
@@ -189,6 +213,113 @@ if (!pointsMarkdown.startsWith(":::points\n") || pointsMarkdown.split("\n---\n")
   process.exit(1);
 }
 
+function fenceBody(markdown) {
+  return markdown.split("\n").slice(1, -1);
+}
+
+["reveal", "swap", "expand"].forEach((kind) => {
+  const markdown = api.slashCardMarkdown(kind);
+  const item = api.readInteractFence(kind, fenceBody(markdown));
+  const again = api.interactMarkdown(item);
+  const round = api.readInteractFence(kind, fenceBody(again));
+  if (item.type !== "interact" || item.kind !== kind || !item.still || !item.cue) {
+    console.error("interact fence mismatch", item);
+    process.exit(1);
+  }
+  if (round.kind !== item.kind || round.still !== item.still || round.cue !== item.cue) {
+    console.error("interact roundtrip mismatch", kind, round);
+    process.exit(1);
+  }
+});
+
+const reveal = api.readInteractFence("reveal", fenceBody(api.slashCardMarkdown("reveal")));
+if (!reveal.answer.includes("标题") || !reveal.still.includes("标题")) {
+  console.error("reveal still missing", reveal);
+  process.exit(1);
+}
+const swapped = api.readInteractFence("swap", ["a: ![线稿](https://example.com/a.png)", "b: 乙版说明", "still: 甲和乙都写在这里。"]);
+if (swapped.a !== "线稿" || swapped.aUrl !== "https://example.com/a.png" || !swapped.still.includes("甲和乙")) {
+  console.error("swap image fence mismatch", swapped);
+  process.exit(1);
+}
+const blockedUrl = api.readInteractFence("swap", ["aUrl: javascript:alert(1)", "a: 甲", "b: 乙", "still: 甲和乙"]);
+if (blockedUrl.aUrl) {
+  console.error("unsafe interact url kept", blockedUrl);
+  process.exit(1);
+}
+const unknown = api.readInteractFence("lottery", ["still: 还在。"]);
+if (unknown.kind !== "reveal" || unknown.still !== "还在。") {
+  console.error("unknown interact kind leaked", unknown);
+  process.exit(1);
+}
+const emptyStill = api.readInteractFence("expand", ["body: 展开后的三句话。"]);
+if (!emptyStill.still.includes("展开后")) {
+  console.error("missing still was not filled", emptyStill);
+  process.exit(1);
+}
+
+const palette = { paper: "#fffef9", ink: "#272b28", accent: "#1f6b4a", onAccent: "#fffef9", muted: "#69736b", border: "#d5ddd6" };
+const evil = api.buildInteractSvg(reveal, { ...palette, accent: "#ff0000\"><script>alert(1)</script>" }, "ya1");
+if (/<script/i.test(evil) || evil.includes("onclick") || !evil.includes("#1f6b4a")) {
+  console.error("interact svg accepted unsafe color", evil);
+  process.exit(1);
+}
+const revealSvg = api.buildInteractSvg(reveal, palette, "ya1");
+const swapSvg = api.buildInteractSvg(swapped, palette, "yb2");
+const expandSvg = api.buildInteractSvg(emptyStill, palette, "yc3");
+[revealSvg, swapSvg, expandSvg].forEach((svg) => {
+  if (!svg.includes("<set ") || !/id="y[abc]/.test(svg) || /<script/i.test(svg) || svg.includes("梦飞") || svg.includes("蜡笔")) {
+    console.error("interact svg missing set or id", svg.slice(0, 180));
+    process.exit(1);
+  }
+});
+if (!revealSvg.includes("<animate ") || !expandSvg.includes("<animate ") || !expandSvg.includes('height="72"') || !expandSvg.includes('from="72"')) {
+  console.error("reveal or expand animation mismatch");
+  process.exit(1);
+}
+if (!swapSvg.includes('visibility="hidden"') || !swapSvg.includes("https://example.com/a.png") || !swapSvg.includes("<image ")) {
+  console.error("swap svg mismatch");
+  process.exit(1);
+}
+if (revealSvg.includes("<image ") || expandSvg.includes("<image ")) {
+  console.error("text interact should not embed an image");
+  process.exit(1);
+}
+const copyOne = api.interactCopyHtml(reveal, palette, api.interactPrefix("1"));
+const copyTwo = api.interactCopyHtml(reveal, palette, api.interactPrefix("2"));
+const idsOf = (html) => [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+const overlap = idsOf(copyOne).filter((id) => idsOf(copyTwo).includes(id));
+if (!idsOf(copyOne).length || overlap.length || !copyOne.includes("<set ") || !copyOne.includes("<animate ") || !copyOne.includes(reveal.still)) {
+  console.error("copy html id collision or missing still", overlap);
+  process.exit(1);
+}
+if (!copyOne.includes('data-yooco-interact="reveal"') || /<script/i.test(copyOne)) {
+  console.error("copy html shape mismatch");
+  process.exit(1);
+}
+
+const packed = api.extractInteractFences(`甲\n\n${api.slashCardMarkdown("reveal")}\n\n乙`);
+if (packed.source.includes(":::interact") || !packed.source.includes("甲") || !packed.source.includes("乙") || packed.fences.length !== 1) {
+  console.error("extract interact failed", packed);
+  process.exit(1);
+}
+const restored = api.restoreInteractFences("甲优化\n\n乙优化", packed.fences, packed.length);
+if (!restored.includes(":::interact reveal") || !restored.includes("揭开以后") || !restored.includes("甲优化") || !restored.includes("乙优化")) {
+  console.error("restore interact failed", restored);
+  process.exit(1);
+}
+const coded = "```\n:::interact reveal\ncue: 不该抽走\nstill: 留在代码里\n:::\n```\n\n正文";
+const codedPack = api.extractInteractFences(coded);
+if (codedPack.fences.length !== 0 || !codedPack.source.includes(":::interact")) {
+  console.error("code fence interact was extracted", codedPack);
+  process.exit(1);
+}
+const only = api.extractInteractFences(api.slashCardMarkdown("swap"));
+if (only.source || only.fences.length !== 1) {
+  console.error("only-interact extract failed", only);
+  process.exit(1);
+}
+
 const app = fs.readFileSync(new URL("./public/app.js", root), "utf8");
 const html = fs.readFileSync(new URL("./public/studio.html", root), "utf8");
 const css = fs.readFileSync(new URL("./public/styles.css", root), "utf8");
@@ -208,6 +339,12 @@ const css = fs.readFileSync(new URL("./public/styles.css", root), "utf8");
   'fenceKind === "media"',
   'fenceKind === "points"',
   ":::highlight",
+  "readInteractFence",
+  'fenceKind === "interact"',
+  "data-yooco-interact",
+  "interactCopyHtml",
+  "extractInteractFences",
+  'item.type === "interact"',
 ].forEach((needle) => {
   if (!app.includes(needle)) {
     console.error("app missing", needle);
@@ -218,7 +355,13 @@ if (!html.includes("slash-cards.js")) {
   console.error("studio does not load slash-cards.js");
   process.exit(1);
 }
-["highlight-box", "article-masthead", "slash-slot", "smart-grid", "smart-grid-empty", "smart-grid-point"].forEach((needle) => {
+const liftAt = app.indexOf('querySelectorAll("[data-yooco-interact]")');
+const stripAt = app.indexOf('querySelectorAll("script,style,link,meta,iframe,object,embed,form,input,button,textarea,select,svg,canvas,video,audio")');
+if (liftAt < 0 || stripAt < 0 || liftAt > stripAt) {
+  console.error("interact paste must be lifted before svg is stripped");
+  process.exit(1);
+}
+["highlight-box", "article-masthead", "slash-slot", "smart-grid", "smart-grid-empty", "smart-grid-point", "interact-block", "interact-still"].forEach((needle) => {
   if (!css.includes(needle)) {
     console.error("css missing", needle);
     process.exit(1);

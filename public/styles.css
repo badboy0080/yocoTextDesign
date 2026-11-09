@@ -1731,3 +1731,15 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .smart-grid-media,
   .smart-grid-points { grid-template-columns: 1fr; }
 }
+
+/* 互动展示：画面是受控 SVG，旁边留一句静态说明。颜色跟当前主题。 */
+.interact-block { margin: 18px 0 22px; }
+.interact-block svg { display: block; width: 100%; max-width: 100%; user-select: none; -webkit-user-select: none; }
+.interact-block svg.interact-stage { height: auto; }
+.article-content .interact-still {
+  margin: 10px 0 0;
+  color: var(--muted-color, #69736b);
+  font-size: 14px;
+  line-height: 1.7;
+  text-indent: 0;
+}

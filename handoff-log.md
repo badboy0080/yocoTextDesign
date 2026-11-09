@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-互动展示（2026-11-09，未合并、未部署）：工作台空行敲 `/`，菜单多了「互动展示」，里面是点击揭晓、两图切换、点击展开。揭晓是点一下掀开遮罩；两图是在甲乙两版之间换；展开会把这块真正变高，再点可以收起。旁边都有一句静态说明，微信不播动画时字还在。复制稿是受控 SVG，带 set、animate 和单独的 id，每次复制换一套 id，用的是没点过的初始态。不调用优化时不扣积分。优化会先把这块抽走，回来再按原文插回。截图在 `docs/previews/interact-menu.png`、`interact-initial.png`、`interact-clicked.png`。正式站要等合进 master。微信真机还没贴过。
+互动展示（2026-11-09，PR #91，未合并、未部署）：工作台空行敲 `/`，菜单多了「互动展示」，里面是点击揭晓、两图切换、点击展开。揭晓是点一下掀开遮罩；两图是在甲乙两版之间换；展开会把这块真正变高，再点可以收起。旁边都有一句静态说明，微信不播动画时字还在。复制稿是受控 SVG，带 set、animate 和单独的 id，每次复制换一套 id，用的是没点过的初始态。不调用优化时不扣积分。优化会先把这块抽走，回来再按原文插回。截图在 `docs/previews/interact-menu.png`、`interact-initial.png`、`interact-clicked.png`。正式站要等合进 master。微信真机还没贴过。
 
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
@@ -191,7 +191,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：空行敲 `/`，菜单多一组「互动展示」。插进去是受控 SVG，预览里点得动。揭晓掀开遮罩，两图在甲乙之间换，展开会变高、再点收起。每块下面有一句静态说明。复制稿带完整 SVG 和这句说明，每次复制换 id，用初始态。粘贴清洗会先把互动块收成原文记号，再剥掉别的 SVG。优化默认不改写这块。
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/interact-menu.png`、`docs/previews/interact-initial.png`、`docs/previews/interact-clicked.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。菜单里有互动展示三项。预览里三种都能点：揭晓露出「先把标题空出来。」，两图从甲换成乙，展开变高后再点回到矮的。连点两次复制，HTML 里都有 set、animate 和 id，两次 id 不重，而且是没点过的初始态。把复制稿贴回原文，三条 `:::interact` 还在，没有把 SVG 源码贴进原文。没有合并。
-- 待办/风险：PR 开在 `cursor/interact-display-d128`，没有自己合并。合进 master 才会上正式站。微信真机还没贴。保存草稿再打开，要阿超自己试。外链图要先上传素材库。没有做拖动、长按、滚动吸附和转盘。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/91 已开，没有自己合并。合进 master 才会上正式站。微信真机还没贴。保存草稿再打开，要阿超自己试。外链图要先上传素材库。没有做拖动、长按、滚动吸附和转盘。
 
 ### 2026-11-06 工作台插入图文栅格
 

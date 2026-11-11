@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-02 表情主题的有序说明也要看见图标
+
+- 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
+- 做成了什么：提示词要求小节标题用 heading，说明分点用无序列表，有序只留给第一步、第二步。模型仍收成有序列表时，短的、像标题的、或命中关键词的条目会在文字前加图标。很短的「主控：…」也会加。真步骤不加。留言或评论的短句一定有 💬。分隔改成整行符号。预览和复制里的序号改小，不再把图标挤没。
+- 改了哪些文件：`public/emoji-theme.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`CONTEXT.md`、`docs/previews/emoji-ordered-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了只有编号说明、外加真步骤的样文。柠边没有灯泡。切到表情后，知识点、要点、总结、主控、要改映射、欢迎留言都有图标，真步骤没有。分隔是整行符号，不是横线。序号大约 15px，正文 16px，图标在数字旁边露着。复制稿里也有这些图标。对比图在 `docs/previews/emoji-ordered-before-after.png`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/82 已开，没有自己合并。合进 master 才会上正式站。很长的有序句子如果对不上关键词，仍不会加图标。公众号后台还没真贴。
+
 ### 2026-11-02 新增表情主题
 
 - 想做什么：给文章小标题、列表、分隔加上一套小图标。同一篇只留 3 到 5 种。只开 PR，不合 master。

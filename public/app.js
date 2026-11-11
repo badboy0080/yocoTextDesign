@@ -537,15 +537,22 @@ function restoreInlineSlots(html, slots) {
   return String(html).replace(/\u0000(\d+)\u0000/g, (_, index) => restoreInlineSlots(slots[Number(index)] || "", slots));
 }
 
-function renderInline(text, slots) {
+function renderInline(text, slots, skipBareUrl) {
   let out = String(text);
   const protect = (pattern, build) => {
     out = out.replace(pattern, (...args) => holdInlineSlot(slots, build(args[1], args[2])));
   };
   protect(/`([^`\n]+)`/g, (code) => `<code class="inline-code">${code}</code>`);
-  protect(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (label, href) => (
-    `<a class="inline-link" href="${String(href).replace(/"/g, "%22")}" target="_blank" rel="noreferrer">${renderInline(label, slots)}</a>`
-  ));
+  protect(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (alt, href) => {
+    const url = markdownImageUrl(href);
+    if (!url) return `![${alt}](${href})`;
+    return inlineImageTag(url, decodeBasicEntities(alt));
+  });
+  protect(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (label, href) => {
+    const url = absoluteHttpUrl(decodeBasicEntities(href));
+    if (!url) return `[${label}](${href})`;
+    return inlineLinkTag(url, renderInline(label, slots, true));
+  });
   protect(/~~([^~\n]+?)~~/g, (inner) => `<del class="inline-strike">${renderInline(inner, slots)}</del>`);
   protect(/\+\+([^+\n]+?)\+\+/g, (inner) => `<u class="inline-underline">${renderInline(inner, slots)}</u>`);
   protect(/==([^=\n]+)==/g, (inner) => `<mark class="inline-highlight">${renderInline(inner, slots)}</mark>`);
@@ -553,6 +560,16 @@ function renderInline(text, slots) {
   protect(/__([^_\n]+)__/g, (inner) => `<strong>${renderInline(inner, slots)}</strong>`);
   protect(/\*([^*\n]+)\*/g, (inner) => `<em>${renderInline(inner, slots)}</em>`);
   protect(/~([^~\n]+?)~/g, (inner) => `<span class="inline-wavy">${renderInline(inner, slots)}</span>`);
+  if (!skipBareUrl) {
+    protect(/(https?:\/\/[^\s<]+)/gi, (raw) => {
+      const peeled = peelUrlTail(decodeBasicEntities(raw));
+      const url = absoluteHttpUrl(peeled.url);
+      if (!url) return raw;
+      const tail = escapeHtml(peeled.tail);
+      if (isDisplayImageUrl(url)) return `${inlineImageTag(url, "文章配图")}${tail}`;
+      return `${inlineLinkTag(url, escapeHtml(peeled.url))}${tail}`;
+    });
+  }
   return out;
 }
 
@@ -584,6 +601,134 @@ function safeImageUrl(value) {
   } catch {
     return "";
   }
+}
+
+// 地址规则与 public/source-media.js 保持一致。blob 和外站相对地址不收。
+function cleanPastedUrl(value) {
+  return String(value || "").trim().replace(/^[<（(]+/, "").replace(/[>）)\]】》」』。．.，,；;：:！!？?、]+$/u, "");
+}
+
+function absoluteHttpUrl(value) {
+  let raw = cleanPastedUrl(value);
+  if (raw.startsWith("//")) raw = `https:${raw}`;
+  if (!/^https?:\/\//i.test(raw)) return "";
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
+function isDisplayImageUrl(value) {
+  const url = absoluteHttpUrl(value);
+  if (!url) return false;
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (/(^|\.)(?:mmbiz\.qpic\.cn|mmbiz\.qlogo\.cn|qpic\.cn|qlogo\.cn)$/i.test(parsed.hostname)) return true;
+  if (/\.(?:jpe?g|png|gif|webp)(?:!|$)/i.test(parsed.pathname)) return true;
+  if (/[?&](?:wx_fmt|format|fmt)=(jpe?g|png|gif|webp)\b/i.test(parsed.search)) return true;
+  return false;
+}
+
+function pastedImageUrl(value) {
+  const raw = String(value || "").trim();
+  return embeddedImageUrl(raw) || absoluteHttpUrl(raw) || "";
+}
+
+function decodeBasicEntities(value) {
+  return String(value || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'");
+}
+
+function peelUrlTail(value) {
+  let url = String(value || "");
+  let tail = "";
+  while (url && /[。．.，,；;：:！!？?、）)\]】》」』]/.test(url[url.length - 1])) {
+    tail = url[url.length - 1] + tail;
+    url = url.slice(0, -1);
+  }
+  const cjk = url.match(/^(https?:\/\/.*[A-Za-z0-9/?#&=_%+.~-])([\u3400-\u9fff].*)$/i);
+  if (cjk) {
+    url = cjk[1];
+    tail = cjk[2] + tail;
+  }
+  return { url, tail };
+}
+
+function loneImageUrl(line) {
+  const trimmed = String(line || "").trim();
+  const data = embeddedImageUrl(trimmed);
+  if (data) return data;
+  if (!/^https?:\/\//i.test(trimmed)) return "";
+  const core = cleanPastedUrl(trimmed);
+  if (!core || !trimmed.startsWith(core)) return "";
+  const extra = trimmed.slice(core.length);
+  if (extra && !/^[。．.，,；;：:！!？?、]+$/u.test(extra)) return "";
+  const url = absoluteHttpUrl(core);
+  if (!url || !isDisplayImageUrl(url)) return "";
+  return url;
+}
+
+function inlineLinkTag(href, innerHtml) {
+  const safeHref = escapeHtml(href).replace(/&quot;/g, "%22");
+  return `<a class="inline-link" href="${safeHref}" target="_blank" rel="noreferrer" contenteditable="false">${innerHtml}</a>`;
+}
+
+function inlineImageTag(url, alt) {
+  const radius = Number.isFinite(Number(state.imageRadius)) ? Number(state.imageRadius) : 12;
+  const safeAlt = escapeHtml(String(alt || "").trim() || "文章配图");
+  return `<img class="inline-image" src="${escapeHtml(url)}" alt="${safeAlt}" style="display:block;max-width:100%;height:auto;margin:12px auto;border-radius:${radius}px;" />`;
+}
+
+function markdownImageUrl(value) {
+  const decoded = decodeBasicEntities(value);
+  return embeddedImageUrl(decoded) || absoluteHttpUrl(decoded) || "";
+}
+
+function keepPlainUrls(markdown, plain) {
+  const base = String(markdown || "");
+  const missing = [];
+  const seen = new Set();
+  for (const match of String(plain || "").matchAll(/https?:\/\/[^\s<>]+/g)) {
+    const url = absoluteHttpUrl(cleanPastedUrl(match[0]));
+    if (!url || base.includes(url) || seen.has(url)) continue;
+    seen.add(url);
+    missing.push(url);
+  }
+  if (!missing.length) return base;
+  return [base, ...missing].filter(Boolean).join("\n\n");
+}
+
+function textHasExternalImage(text) {
+  const blob = String(text || "");
+  if (!blob) return false;
+  for (const match of blob.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
+    const url = pastedImageUrl(match[1]);
+    if (url && !isWechatHostedImage(url)) return true;
+  }
+  for (const match of blob.matchAll(/https?:\/\/[^\s<>\])）]+/gi)) {
+    const url = absoluteHttpUrl(cleanPastedUrl(match[0]));
+    if (url && isDisplayImageUrl(url) && !isWechatHostedImage(url)) return true;
+  }
+  return false;
+}
+
+function modelHasExternalImage(model) {
+  return (model?.blocks || []).some((block) => {
+    if (block?.type === "image" && block.url && !isWechatHostedImage(block.url)) return true;
+    if (textHasExternalImage(block?.text) || textHasExternalImage(block?.title)) return true;
+    return Array.isArray(block?.items) && block.items.some((item) => textHasExternalImage(typeof item === "string" ? item : item?.text));
+  });
 }
 
 function safeColor(value, fallback) {
@@ -674,7 +819,7 @@ function getComplianceReport() {
       rule: "P1 代码",
     });
   }
-  if (model.blocks.some((block) => block.type === "image" && block.url && !isWechatHostedImage(block.url))) {
+  if (modelHasExternalImage(model)) {
     items.push({
       severity: "risk",
       title: "含非素材库外链图",
@@ -944,42 +1089,71 @@ function cleanMarkdown(value) {
 
 function htmlToMarkdown(html) {
   const documentFromPaste = new DOMParser().parseFromString(String(html), "text/html");
+  // 行内 svg 没有能贴进公众号的位图，整段拿掉。img 和 a 单独留下。
   documentFromPaste.querySelectorAll("script,style,link,meta,iframe,object,embed,form,input,button,textarea,select,svg,canvas,video,audio").forEach((node) => node.remove());
 
   const childrenToMarkdown = (node) => Array.from(node.childNodes).map((child) => nodeToMarkdown(child)).join("");
-  const nodeText = (node) => cleanMarkdown(node.textContent || "").replace(/\n+/g, " ").trim();
   const listToMarkdown = (node, ordered) => Array.from(node.children)
     .filter((child) => child.tagName?.toLowerCase() === "li")
     .map((item, index) => {
       const copy = item.cloneNode(true);
       Array.from(copy.children).filter((child) => ["ul", "ol"].includes(child.tagName?.toLowerCase())).forEach((child) => child.remove());
       const prefix = ordered ? `${index + 1}. ` : "- ";
-      return `${prefix}${nodeText(copy)}`;
+      const itemText = childrenToMarkdown(copy).replace(/\n+/g, " ").trim();
+      return itemText ? `${prefix}${itemText}` : "";
     })
     .filter(Boolean)
     .join("\n");
+
+  function imageMarkdown(node) {
+    const candidates = [
+      node.getAttribute("data-src"),
+      node.getAttribute("data-original"),
+      node.getAttribute("src"),
+    ];
+    const srcset = node.getAttribute("srcset") || "";
+    if (srcset) candidates.push(srcset.split(",")[0]?.trim().split(/\s+/)[0] || "");
+    let url = "";
+    for (const candidate of candidates) {
+      url = pastedImageUrl(candidate || "");
+      if (url) break;
+    }
+    if (!url) return "";
+    const alt = cleanMarkdown(node.getAttribute("alt") || "文章配图").replace(/[\[\]]/g, "") || "文章配图";
+    return `\n\n![${alt}](${url})\n\n`;
+  }
 
   function nodeToMarkdown(node) {
     if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || "";
     if (node.nodeType !== Node.ELEMENT_NODE) return "";
     const tag = node.tagName.toLowerCase();
+    if (tag === "img") return imageMarkdown(node);
     const content = childrenToMarkdown(node).trim();
-    if (/^h[1-6]$/.test(tag)) return `\n\n${"#".repeat(Number(tag.slice(1)))} ${nodeText(node)}\n\n`;
+    if (/^h[1-6]$/.test(tag)) {
+      const text = content.replace(/\s+/g, " ").trim();
+      return text ? `\n\n${"#".repeat(Number(tag.slice(1)))} ${text}\n\n` : "";
+    }
     if (tag === "p") return content ? `\n\n${content}\n\n` : "";
     if (tag === "br") return "\n";
     if (tag === "blockquote") {
-      const quote = nodeText(node).split(/\n+/).filter(Boolean).map((line) => `> ${line}`).join("\n");
+      const quote = content.split(/\n+/).filter(Boolean).map((line) => `> ${line.trim()}`).join("\n");
       return quote ? `\n\n${quote}\n\n` : "";
     }
     if (tag === "ul") return `\n\n${listToMarkdown(node, false)}\n\n`;
     if (tag === "ol") return `\n\n${listToMarkdown(node, true)}\n\n`;
     if (tag === "hr") return "\n\n---\n\n";
-    if (tag === "img") {
-      const url = safeImageUrl(node.getAttribute("data-src") || node.getAttribute("data-original") || node.getAttribute("src") || "");
-      const alt = cleanMarkdown(node.getAttribute("alt") || "文章配图");
-      return url ? `\n\n![${alt}](${url})\n\n` : "";
-    }
     if (tag === "pre") return `\n\n\`\`\`\n${node.textContent || ""}\n\`\`\`\n\n`;
+    if (tag === "a") {
+      const href = absoluteHttpUrl(node.getAttribute("href") || "");
+      if (/!\[[^\]]*\]\(/.test(content)) {
+        const extra = href && !isDisplayImageUrl(href) ? `\n\n[${href}](${href})` : "";
+        return `\n\n${content}${extra}\n\n`;
+      }
+      if (!href) return content;
+      const label = content.replace(/\s+/g, " ").replace(/[\[\]]/g, "").trim();
+      if (!label) return "";
+      return `[${label}](${href})`;
+    }
     if (["section", "article", "main", "figure", "figcaption", "div", "header", "footer"].includes(tag)) return content ? `\n\n${content}\n\n` : "";
     return content;
   }
@@ -1238,6 +1412,13 @@ function parseArticle(source) {
       flushParagraph();
       flushList();
       blocks.push({ type: "image", alt: image[1] || "文章配图", url: safeImageUrl(image[2]) });
+      continue;
+    }
+    const bareImage = loneImageUrl(trimmed);
+    if (bareImage) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: "image", alt: "文章配图", url: bareImage });
       continue;
     }
     if (/^(---+|\*\*\*+)$/.test(trimmed)) {
@@ -2227,7 +2408,13 @@ async function groundReturnedDocument(document, source) {
 }
 
 async function applyAiNormalization(data, assignment, source) {
-  const document = await groundReturnedDocument(data?.document, source);
+  let document = await groundReturnedDocument(data?.document, source);
+  try {
+    const mod = await import("/source-media.js?v=paste-media-v1");
+    document = mod.restoreSourceMedia(document, source);
+  } catch {
+    /* 服务端已经补过的图和链接，这里失败也不影响预览 */
+  }
   const markdown = structuredDocumentToMarkdown(document);
   if (!markdown) throw new Error("DeepSeek 没有返回可编辑的文章内容，请重试。");
   const aiParams = normalizeTemplateParams(data?.template?.params || data?.params || {});
@@ -2489,7 +2676,7 @@ function buildCopyHtml() {
       /<mark class="inline-highlight">([\s\S]*?)<\/mark>/g,
       `<span style="${highlightCss}">$1</span>`,
     ).replace(
-      /<a class="inline-link" href="([^"]+)" target="_blank" rel="noreferrer">([\s\S]*?)<\/a>/g,
+      /<a class="inline-link" href="([^"]+)" target="_blank" rel="noreferrer"(?: contenteditable="false")?>([\s\S]*?)<\/a>/g,
       `<a href="$1" style="${linkCss}" target="_blank">$2</a>`,
     ).replace(
       /<code class="inline-code">([\s\S]*?)<\/code>/g,
@@ -3025,6 +3212,12 @@ function clearArticleSource() {
 }
 
 function splitLongTextLine(line) {
+  const held = [];
+  line = String(line).replace(/!\[[^\]]*\]\([^)\s]+(?:\s+"[^"]*")?\)|\[[^\]]+\]\(https?:\/\/[^)\s]+\)|https?:\/\/[^\s<>\])）]+/gi, (token) => {
+    const mark = String.fromCharCode(0xE000 + held.length);
+    held.push(token);
+    return mark;
+  });
   const sentenceCandidates = line.match(/[^。！？!?；;]+[。！？!?；;]?/g) || [line];
   const sentences = sentenceCandidates.flatMap((sentence) => {
     if (sentence.length <= 108) return [sentence];
@@ -3052,7 +3245,7 @@ function splitLongTextLine(line) {
     }
   });
   if (current.trim()) segments.push(current.trim());
-  return segments.join("\n\n");
+  return segments.join("\n\n").replace(/[\uE000-\uF8FF]/g, (ch) => held[ch.charCodeAt(0) - 0xE000] ?? ch);
 }
 
 function autoSegmentArticle() {
@@ -3112,13 +3305,15 @@ async function handleRichTextPaste(event) {
   const pieces = [];
   let markdown = "";
   if (hasHtml) {
-    markdown = htmlToMarkdown(html);
+    const plain = (data?.getData("text/plain") || "").trim();
+    markdown = keepPlainUrls(htmlToMarkdown(html), plain);
     if (markdown) pieces.push(markdown);
+    else if (plain) pieces.push(plain);
   } else {
     const plain = (data?.getData("text/plain") || "").trim();
     if (plain) pieces.push(plain);
   }
-  const htmlAlreadyHasImage = /!\[[^\]]*\]\(https?:\/\//.test(markdown);
+  const htmlAlreadyHasImage = /!\[[^\]]*\]\((https?:\/\/|data:image\/)/.test(markdown);
   let pastedImage = false;
   if (!htmlAlreadyHasImage) {
     for (const file of files) {
@@ -3186,6 +3381,16 @@ aiNormalizeButton?.addEventListener("click", normalizeWithDeepSeek);
 document.querySelector("#sampleTryButton")?.addEventListener("click", loadSampleTry);
 articleInput?.addEventListener("paste", handleRichTextPaste);
 articleBody?.addEventListener("paste", handleRichTextPaste);
+articleBody?.addEventListener("click", (event) => {
+  const link = event.target?.closest?.("a.inline-link");
+  if (!link || !articleBody.contains(link)) return;
+  const href = absoluteHttpUrl(link.getAttribute("href") || "");
+  if (!href) return;
+  const selected = window.getSelection();
+  if (selected && !selected.isCollapsed && selected.rangeCount && link.contains(selected.anchorNode)) return;
+  event.preventDefault();
+  window.open(href, "_blank", "noopener,noreferrer");
+});
 articleInput?.addEventListener("input", () => {
   articleTitleOverride = "";
   applyArticleSource(false);

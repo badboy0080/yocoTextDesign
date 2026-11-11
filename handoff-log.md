@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-粘贴的图和链接进预览和复制稿（2026-11-11，只开 PR，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
+粘贴的图和链接进预览和复制稿（2026-11-11，PR #92，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
 
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
@@ -191,7 +191,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：粘贴时留下 http(s) 图片和链接。预览里，图片地址显示成图，普通网址和 Markdown 链接显示成可点链接。复制稿仍带 img 和 a。优化结果如果丢掉这些，按原文补回。行内 svg、blob、超过 2MB 的 data 图不收。
 - 改了哪些文件：`public/app.js`、`public/source-media.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-source-media.js`、`CONTEXT.md`、`docs/previews/paste-media-preview.png`、`docs/previews/paste-media-link.png`、`docs/previews/paste-media-copy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-source-media.js`、`check-highlight-marks.js`、`check-emoji-theme.js`、`check-normalize-timeout.js`、`check-slash-cards.js`、`check-block-style.js` 通过。本地 8765 打开工作台，贴了一篇带两张 picsum 图、一个「小市笔记」链接和裸网址 https://yoooco.com 的中文短文。预览里两张图都画出来了，两个链接都能点，点「小市笔记」会打开对应地址。复制稿里有两张 img，以及这两条 a。截图在 `docs/previews/paste-media-*.png`。没有公众号后台登录，微信真机未验。没有合并。
-- 待办/风险：PR 待补。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/92 已开，没有自己合并。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。
 
 ### 2026-11-06 工作台插入图文栅格
 

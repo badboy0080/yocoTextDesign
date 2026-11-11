@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+粘贴的图和链接进预览和复制稿（2026-11-11，只开 PR，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
+
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
 复制到公众号左右大留白（2026-11-06，PR #87，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
@@ -183,6 +185,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-11 粘贴的图片和链接留在预览和复制稿
+
+- 想做什么：用户把图片或链接粘进工作台后，排版预览要能看见图、点开链接。复制排版贴到公众号时，图和链接不要丢。只开 PR，不合 master。
+- 做成了什么：粘贴时留下 http(s) 图片和链接。预览里，图片地址显示成图，普通网址和 Markdown 链接显示成可点链接。复制稿仍带 img 和 a。优化结果如果丢掉这些，按原文补回。行内 svg、blob、超过 2MB 的 data 图不收。
+- 改了哪些文件：`public/app.js`、`public/source-media.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-source-media.js`、`CONTEXT.md`、`docs/previews/paste-media-preview.png`、`docs/previews/paste-media-link.png`、`docs/previews/paste-media-copy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-source-media.js`、`check-highlight-marks.js`、`check-emoji-theme.js`、`check-normalize-timeout.js`、`check-slash-cards.js`、`check-block-style.js` 通过。本地 8765 打开工作台，贴了一篇带两张 picsum 图、一个「小市笔记」链接和裸网址 https://yoooco.com 的中文短文。预览里两张图都画出来了，两个链接都能点，点「小市笔记」会打开对应地址。复制稿里有两张 img，以及这两条 a。截图在 `docs/previews/paste-media-*.png`。没有公众号后台登录，微信真机未验。没有合并。
+- 待办/风险：PR 待补。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。
+
 ### 2026-11-06 工作台插入图文栅格
 
 - 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。
@@ -214,11 +224,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。
-
-### 2026-11-02 表情主题的有序说明也要看见图标
-
-- 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。
-- 做成了什么：提示词要求小节标题用 heading，说明分点用无序列表，有序只留给第一步、第二步。模型仍收成有序列表时，短的、像标题的、或命中关键词的条目会在文字前加图标。很短的「主控：…」也会加。真步骤不加。留言或评论的短句一定有 💬。分隔改成整行符号。预览和复制里的序号改小，不再把图标挤没。
-- 改了哪些文件：`public/emoji-theme.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-emoji-theme.js`、`CONTEXT.md`、`docs/previews/emoji-ordered-before-after.png`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`node scripts/check-emoji-theme.js` 和 `node scripts/check-highlight-marks.js` 通过。没有密钥，用假返回。浏览器打开工作台，贴了只有编号说明、外加真步骤的样文。柠边没有灯泡。切到表情后，知识点、要点、总结、主控、要改映射、欢迎留言都有图标，真步骤没有。分隔是整行符号，不是横线。序号大约 15px，正文 16px，图标在数字旁边露着。复制稿里也有这些图标。对比图在 `docs/previews/emoji-ordered-before-after.png`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/82 已开，没有自己合并。合进 master 才会上正式站。很长的有序句子如果对不上关键词，仍不会加图标。公众号后台还没真贴。

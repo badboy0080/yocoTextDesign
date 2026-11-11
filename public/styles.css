@@ -656,6 +656,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   text-decoration-color: var(--highlight-color, #d7fa5c);
 }
 .article-content .inline-link { color: var(--link-color, #3f6f9f); text-decoration: underline; text-underline-offset: .14em; }
+.article-content .inline-image { display: block; max-width: 100%; height: auto; margin: 12px auto; border-radius: var(--image-radius, 12px); }
 .article-content .inline-strike { text-decoration: line-through; }
 .article-content .inline-underline { text-decoration: underline; text-underline-offset: .14em; }
 .article-page[data-highlight-style="underline"] .inline-underline {

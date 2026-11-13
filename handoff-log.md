@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-排版预览左侧大纲（2026-11-13，未合并、未部署）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
+排版预览左侧大纲（2026-11-13，PR #93，未合并、未部署）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
 
 粘贴的图和链接进预览和复制稿（2026-11-11，PR #92，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
 
@@ -193,7 +193,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：大纲在预览左侧，不写进正文。文章标题和章节标题按层级缩进。重复标题各占一行。预览更新后整份重做。空稿和没有标题各有一句状态。窄屏默认收成小按钮，展开是浮层。复制稿不带这份大纲。
 - 改了哪些文件：`public/preview-outline.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-preview-outline.js`、`CONTEXT.md`、`docs/previews/outline-desktop-open.png`、`docs/previews/outline-jump.png`、`docs/previews/outline-collapsed.png`、`docs/previews/outline-mobile.png`、`docs/previews/outline-mobile-open.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-preview-outline.js` 通过，连带跑了划词、粘贴图、斜杠、重点、表情、超时、人味空结果这些检查。无头 Chrome 打开工作台，贴了一篇带多层标题、两个同名小标题、一张图、一个链接和长正文的稿。大纲 7 条，缩进按层级。点两个同名标题，滚到的位置不一样。点「后段收束」，预览滚到后段，这一条高亮。改成「先看灯火」、删掉一个重复标题后，旧字消失，没有多出来的行。换到清氧绿，大纲条数不变，文内原来的「本文脉络」不进大纲。划词仍出字号，点整块不出面板。复制 HTML 有图和链接，没有大纲这几个字，也没有大纲的类名。空稿和无标题的两句状态都出现。切到原文时大纲藏起来。截图在 `docs/previews/outline-*.png`。没有合并。
-- 待办/风险：PR 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/93 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。
 
 ### 2026-11-11 粘贴的图片和链接留在预览和复制稿
 

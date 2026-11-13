@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+排版预览左侧大纲（2026-11-13，PR #93，未合并、未部署）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
+
 粘贴的图和链接进预览和复制稿（2026-11-11，PR #92，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
 
 图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
@@ -185,6 +187,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-13 排版预览左侧可收起的大纲
+
+- 想做什么：工作台排版结果左边加一份大纲。按预览里的实际标题生成，点一下定位，滚动时标出当前章节，能收起。只开 PR，不合 master。
+- 做成了什么：大纲在预览左侧，不写进正文。文章标题和章节标题按层级缩进。重复标题各占一行。预览更新后整份重做。空稿和没有标题各有一句状态。窄屏默认收成小按钮，展开是浮层。复制稿不带这份大纲。
+- 改了哪些文件：`public/preview-outline.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-preview-outline.js`、`CONTEXT.md`、`docs/previews/outline-desktop-open.png`、`docs/previews/outline-jump.png`、`docs/previews/outline-collapsed.png`、`docs/previews/outline-mobile.png`、`docs/previews/outline-mobile-open.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-preview-outline.js` 通过，连带跑了划词、粘贴图、斜杠、重点、表情、超时、人味空结果这些检查。无头 Chrome 打开工作台，贴了一篇带多层标题、两个同名小标题、一张图、一个链接和长正文的稿。大纲 7 条，缩进按层级。点两个同名标题，滚到的位置不一样。点「后段收束」，预览滚到后段，这一条高亮。改成「先看灯火」、删掉一个重复标题后，旧字消失，没有多出来的行。换到清氧绿，大纲条数不变，文内原来的「本文脉络」不进大纲。划词仍出字号，点整块不出面板。复制 HTML 有图和链接，没有大纲这几个字，也没有大纲的类名。空稿和无标题的两句状态都出现。切到原文时大纲藏起来。截图在 `docs/previews/outline-*.png`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/93 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。
+
 ### 2026-11-11 粘贴的图片和链接留在预览和复制稿
 
 - 想做什么：用户把图片或链接粘进工作台后，排版预览要能看见图、点开链接。复制排版贴到公众号时，图和链接不要丢。只开 PR，不合 master。
@@ -216,11 +226,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/slash-menu.png`、`docs/previews/slash-quote.png`、`docs/previews/slash-highlight.png`、`docs/previews/slash-divider.png`、`docs/previews/slash-header.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 5174 用无头 Chrome 打开工作台。预览空行敲 `/`，菜单四项都在。点引用、重点、分割线、图文头，预览里马上出现，状态写着没有调用优化、也不计积分。在重点框里改字，原文仍是重点框记号。原文里敲 `/分割` 只剩分割线一项。复制稿里有引用、重点底色、分割线、标题、副题和头图。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/85 已开，没有自己合并。仓库没有独立预览项目，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。预览完全是空的时候，空行在「原文」里敲；有正文之后，预览末尾才有空行。重点框不跟着下划线、删除线那些重点样式变，始终是重点底色的框。头图是占位，这一步不能上传图片。暗黑科技那两套如果关掉了分隔线，分割线会插进原文但预览不画。公众号后台还没真贴。
-
-### 2026-11-04 预览里点一块就能改样式
-
-- 想做什么：按 2026-11-03 外网日扫第 2 条，做成 beehiiv 那种「预览里点块就改这一块的样式」。只做这一条。只开 PR，不合 master。
-- 做成了什么：工作台右侧预览点标题、段落或重点块，浮层只出这一块的字号、Fill 底色、Spacing 间距、Outline 圆角和边宽。改完预览马上变，字不丢。复制稿带上同一套样式。换主题、换气质都不重跑优化，不扣积分。
-- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。

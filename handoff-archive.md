@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-04 预览里点一块就能改样式
+
+- 想做什么：按 2026-11-03 外网日扫第 2 条，做成 beehiiv 那种「预览里点块就改这一块的样式」。只做这一条。只开 PR，不合 master。
+- 做成了什么：工作台右侧预览点标题、段落或重点块，浮层只出这一块的字号、Fill 底色、Spacing 间距、Outline 圆角和边宽。改完预览马上变，字不丢。复制稿带上同一套样式。换主题、换气质都不重跑优化，不扣积分。
+- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`docs/previews/block-style-heading.png`、`docs/previews/block-style-paragraph.png`、`docs/previews/block-style-card.png`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`node scripts/check-block-style.js` 通过。本地 5174，无头 Chrome 打开工作台，贴了一篇带小标题、段落和重点块的短文。点这三块都出白底浮层。字号、底色、间距改完，原文句子还在。再切到清氧绿，三块的字号还在。点「恢复这块」后段落回到主题字号，句子还在。复制用的 HTML 里有改过的字号和那两句正文。截图在 `docs/previews/`。没有调用优化，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/84 已开，没有自己合并。仓库没有 yooco-preview，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。块样式按块序号记，改原文结构后可能跟到另一块；换一篇、优化成功、载入历史会清掉。深色底不会自动把字改成浅色。公众号后台还没真贴。
+
 ### 2026-11-02 表情主题的有序说明也要看见图标
 
 - 想做什么：选「表情」并优化后，带「1. 2. 3.」的说明文几乎看不到小图标。分隔像普通虚线，结尾「欢迎留言」也不稳定出对话图标。只开 PR，不合 master。

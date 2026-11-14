@@ -1921,17 +1921,6 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   color: #FFFFFF;
   font-weight: 700;
 }
-.article-page[data-theme="texture"] .article-content p[data-type="paragraph"] > mark.inline-highlight:only-child {
-  display: block;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background-color: #184731;
-  color: #FFFFFF;
-  font-weight: 800;
-  line-height: 1.7;
-}
 @media (max-width: 420px) {
   .article-page[data-theme="texture"] .texture-num { font-size: 72px; }
   .article-page[data-theme="texture"] .texture-numline { height: 56px; }

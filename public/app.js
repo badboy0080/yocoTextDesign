@@ -1684,9 +1684,45 @@ function renderAtlasHeading(item, idx, editable, kind, parts) {
   return `<h3 class="section-title level-2 heading-atlas ${kind}" data-type="heading" data-level="2" ${idx} contenteditable="false">${before}${sub}${main}${after}</h3>`;
 }
 
-function renderHeadingBlock(item, index, editable) {
+function isTextureTheme() {
+  return state.theme === "texture";
+}
+
+function textureQuoteSource(title) {
+  const value = String(title || "").trim();
+  if (!value || value === "引用" || value === "金句") return "";
+  return value;
+}
+
+function renderTextureHeading(item, idx, editable, sectionNumber) {
+  const parts = splitHeadingCaption(item.text);
+  const kicker = parts.sub
+    ? `<span class="texture-kicker" contenteditable="${editable}">${escapeHtml(parts.sub)}</span>`
+    : "";
+  return `<h3 class="section-title level-2 texture-heading" data-type="heading" data-level="2" ${idx} contenteditable="false"><span class="texture-numline" contenteditable="false"><span class="texture-num" aria-hidden="true" contenteditable="false">${sectionNumber}</span>${kicker}</span><span class="texture-title" contenteditable="${editable}">${inlineMarkdown(parts.title)}</span><span class="texture-rule" aria-hidden="true" contenteditable="false"><span class="texture-rule-line"></span><span class="texture-rule-dot"></span></span></h3>`;
+}
+
+function renderTextureSubheading(item, idx, editable) {
+  return `<h3 class="section-title level-3 texture-h3" data-type="heading" data-level="3" ${idx} contenteditable="false"><span class="texture-h3-bar" aria-hidden="true" contenteditable="false"></span><span class="texture-title" contenteditable="${editable}">${inlineMarkdown(item.text)}</span></h3>`;
+}
+
+function renderTextureQuote(item, idx, editable) {
+  const source = textureQuoteSource(item.title);
+  const sourceHtml = source
+    ? `<p class="texture-quote-source" contenteditable="${editable}">${escapeHtml(source)}</p>`
+    : "";
+  return `<aside class="quote-card texture-quote" data-type="quote" ${idx} contenteditable="false"><span class="texture-quote-mark" aria-hidden="true" contenteditable="false">“</span><p class="texture-quote-text" contenteditable="${editable}">${inlineMarkdown(item.text)}</p><span class="texture-rule" aria-hidden="true" contenteditable="false"><span class="texture-rule-line"></span><span class="texture-rule-dot"></span></span>${sourceHtml}</aside>`;
+}
+
+function renderTextureDivider(idx) {
+  return `<div class="article-divider texture-divider" data-type="divider" role="separator" ${idx} contenteditable="false"><span class="texture-div-line texture-div-line-left"></span><span class="texture-div-sq texture-div-sq-line"></span><span class="texture-div-sq texture-div-sq-ink"></span><span class="texture-div-sq texture-div-sq-line"></span><span class="texture-div-line texture-div-line-right"></span></div>`;
+}
+
+function renderHeadingBlock(item, index, editable, textureSection = 0) {
   const level = Math.min(6, Math.max(2, Number(item.level) || 2));
   const idx = blockIndexAttr(item, index);
+  if (isTextureTheme() && level === 2) return renderTextureHeading(item, idx, editable, String(textureSection).padStart(2, "0"));
+  if (isTextureTheme() && level === 3) return renderTextureSubheading(item, idx, editable);
   const kind = state.headingStyle || "bar";
   const parts = splitHeadingCaption(item.text);
   const sub = parts.sub || "SECTION";
@@ -1868,12 +1904,18 @@ function renderBody() {
   }
   syncPreviewEmpty(false);
   const editable = "true";
+  let textureSection = 0;
   let parts = model.blocks.map((item, index) => {
     const idx = blockIndexAttr(item, index);
     if (item.type === "lead") return `<p class="lead" data-type="lead" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     if (item.type === "highlight" && state.styleVariant === "deep-night") return `<p class="highlight-line" data-type="highlight" ${idx} contenteditable="${editable}"><mark>${item.text}</mark></p>`;
-    if (item.type === "heading") return renderHeadingBlock(item, index, editable);
+    if (item.type === "heading") {
+      const level = Math.min(6, Math.max(2, Number(item.level) || 2));
+      if (isTextureTheme() && level === 2) textureSection += 1;
+      return renderHeadingBlock(item, index, editable, textureSection);
+    }
     if (item.type === "quote") {
+      if (state.showQuote && isTextureTheme()) return renderTextureQuote(item, idx, editable);
       if (state.showQuote) return `<aside class="quote-card" data-type="quote" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${inlineMarkdown(item.text)}</aside>`;
       return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${inlineMarkdown(item.text)}</p>`;
     }
@@ -1903,6 +1945,7 @@ function renderBody() {
         const rule = escapeHtml(emojiDividerText(item.text));
         return `<p class="emoji-rule" data-type="divider" ${idx} contenteditable="false">${rule}</p>`;
       }
+      if (isTextureTheme()) return renderTextureDivider(idx);
       return `<hr class="article-divider" data-type="divider" ${idx} />`;
     }
     if (item.type === "image") {
@@ -1919,7 +1962,8 @@ function renderBody() {
     return "";
   });
   // 精选主题：自动目录（取前 3 个二级标题，纯导航，不写回原文）。
-  if (isTheme()) {
+  // 质感的二级标题已经有大编号，再叠这份目录会出现两套 01。
+  if (isTheme() && !isTextureTheme()) {
     const tocItems = model.blocks
       .filter((block) => block.type === "heading" && Number(block.level || 2) === 2)
       .slice(0, 3);
@@ -2021,6 +2065,14 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
     if (type === "toc" || type === "signature") return;
     if (type === "heading") {
       const level = Math.min(6, Math.max(2, Number(el.dataset.level) || 2));
+      const textureTitle = el.querySelector(".texture-title");
+      if (textureTitle) {
+        let text = htmlToMd(textureTitle);
+        const kicker = (el.querySelector(".texture-kicker") ? htmlToMd(el.querySelector(".texture-kicker")) : "").trim();
+        if (kicker) text = `${text} | ${kicker}`;
+        parts.push(`${"#".repeat(level)} ${text}`);
+        return;
+      }
       const main = el.querySelector(".heading-panel-main, .heading-oval-text, .heading-atlas-main");
       const sub = el.querySelector(".heading-panel-sub, .heading-atlas-sub");
       let text;
@@ -2039,6 +2091,12 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
       return;
     }
     if (type === "quote") {
+      if (el.classList.contains("texture-quote")) {
+        const text = htmlToMd(el.querySelector(".texture-quote-text") || el);
+        const source = (el.querySelector(".texture-quote-source")?.textContent || "").replace(/\u00a0/g, " ").trim();
+        parts.push(source ? `> **${source}**：${text}` : `> ${text}`);
+        return;
+      }
       const title = el.querySelector("strong")?.textContent.trim() || "引用";
       const clone = el.cloneNode(true);
       clone.querySelector("strong")?.remove();
@@ -2311,8 +2369,10 @@ function structuredDocumentToMarkdown(document) {
       const level = Math.min(6, Math.max(2, Number(block.level) || 2));
       lines.push(`${"#".repeat(level)} ${text}`);
     } else if (type === "quote") {
-      const quoteTitle = String(block.title || "引用").trim();
-      lines.push(`> **${quoteTitle}**：${text}`);
+      const quoteTitle = String(block.title || "").trim();
+      const generic = !quoteTitle || quoteTitle === "引用" || quoteTitle === "金句";
+      if (state.theme === "texture" && generic) lines.push(`> ${text}`);
+      else lines.push(`> **${quoteTitle || "引用"}**：${text}`);
     } else if (type === "card") {
       lines.push(`:::card ${String(block.title || "重点提示").trim()}\n${text}\n:::`);
     } else if (type === "code") {
@@ -2333,7 +2393,7 @@ function nextNormalizeAssignment() {
   if (awaitingContentPick) return { mode: "choose" };
   const pool = typeof THEME_IDS !== "undefined"
     ? THEME_IDS
-    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "classic"];
+    : ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "texture", "classic"];
   const theme = pool[Math.floor(Math.random() * pool.length)];
   return { mode: "fixed", theme };
 }
@@ -2643,7 +2703,10 @@ function buildCopyHtml() {
   const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
   const highlightPlain = `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;`;
   const themedHighlight = sixThemeHighlightInline(highlightColor, highlightTextColor);
-  const highlightCss = themedHighlight || (highlightStyle === "underline"
+  const textureHighlightCss = "padding:2px 6px;border-radius:3px;background-color:#184731;color:#FFFFFF;font-weight:700;";
+  const highlightCss = state.theme === "texture"
+    ? textureHighlightCss
+    : themedHighlight || (highlightStyle === "underline"
     ? `${highlightPlain}border-bottom:3px solid ${highlightColor};`
     : highlightStyle === "bold"
       ? `padding:0;background-color:transparent;color:${state.theme === "bauhaus" ? state.linkColor : highlightTextColor};font-weight:800;`
@@ -2687,6 +2750,9 @@ function buildCopyHtml() {
     }
     if (state.theme === "bauhaus") {
       html = html.replace(/<strong>/g, `<strong style="color:${state.linkColor};font-weight:700;">`);
+    }
+    if (state.theme === "texture") {
+      html = html.replace(/<strong>/g, '<strong style="font-weight:800;color:#111827;background-color:#F3E0B0;background-image:linear-gradient(100deg,#F3E0B0,#E0EAE2);padding:2px 6px;border-radius:4px;">');
     }
     return html;
   };
@@ -2805,7 +2871,7 @@ function buildCopyHtml() {
   const tocFrame = isHardEdgeTheme(state.theme)
     ? `border:2px solid ${state.borderColor};border-radius:${state.cardRadius}px;box-shadow:4px 4px 0 ${state.borderColor};`
     : "border:1px solid " + state.borderColor + ";border-radius:10px;";
-  const tocHtmlBlock = isTheme() && tocHeadings.length >= 2
+  const tocHtmlBlock = isTheme() && state.theme !== "texture" && tocHeadings.length >= 2
     ? `<section style="margin:0 0 30px;padding:16px 18px;${tocFrame}background-color:${state.cardColor};text-align:left;"><p style="margin:0 0 10px;color:${mutedColor};font-size:10px;font-weight:800;letter-spacing:.25em;text-align:left;">本文脉络</p>${tocHeadings.map((block, index) =>
       `<p style="margin:0 0 8px;text-align:left;"><span style="display:inline-block;min-width:24px;color:${state.accentColor};font-size:12px;font-weight:800;">${String(index + 1).padStart(2, "0")}</span><span style="color:${titleColor};font-size:13px;font-weight:600;">${escapeHtml(block.text)}</span></p>`).join("")}</section>`
     : "";
@@ -2843,6 +2909,19 @@ function buildCopyHtml() {
     if (item.type === "highlight" && isDeepNight) return `<p style="${textStyle}"><span style="${highlightCss}">${copyInlineMarkdown(item.text)}</span></p>`;
     if (item.type === "heading") {
       const level = Number(item.level) || 2;
+      if (state.theme === "texture" && level === 2) {
+        sectionCounter += 1;
+        const parts = splitHeadingCaption(item.text);
+        const num = String(sectionCounter).padStart(2, "0");
+        const kicker = parts.sub
+          ? `<span style="display:inline-block;margin-left:14px;color:#184731;font-size:11px;font-weight:800;letter-spacing:3px;line-height:1.4;vertical-align:30px;">${escapeHtml(parts.sub)}</span>`
+          : "";
+        const rule = `<span style="display:inline-block;width:72px;height:6px;border-radius:3px;background-color:#184731;background-image:linear-gradient(90deg,#184731,#CAAD71);vertical-align:middle;"></span><span style="display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:3px;background-color:#111827;vertical-align:middle;"></span>`;
+        return `<section style="margin:56px 0 30px;text-align:left;"><section style="margin:0 0 0 -3px;height:70px;overflow:hidden;line-height:0.82;white-space:nowrap;"><span style="display:inline-block;color:#E0EAE2;font-size:92px;font-style:italic;font-weight:900;letter-spacing:-3px;line-height:0.82;vertical-align:top;">${num}</span>${kicker}</section><section style="margin:-20px 0 0 10px;"><p style="margin:0;padding:0;color:#111827;font-size:23px;font-weight:900;line-height:1.4;text-align:left;">${copyInlineMarkdown(parts.title)}</p><p style="margin:12px 0 0;padding:0;line-height:0;">${rule}</p></section></section>`;
+      }
+      if (state.theme === "texture" && level === 3) {
+        return `<p style="margin:34px 0 14px;padding:0;text-align:left;"><span style="display:inline-block;width:18px;height:3px;margin-right:10px;border-radius:2px;background-color:#184731;vertical-align:middle;"></span><span style="color:#111827;font-size:18px;font-weight:900;line-height:1.5;vertical-align:middle;">${copyInlineMarkdown(item.text)}</span></p>`;
+      }
       const parts = splitHeadingCaption(item.text);
       const sub = parts.sub || "SECTION";
       if (level === 2 && ATLAS_HEADING_STYLES.includes(headingKind)) return atlasCopyHeading(item);
@@ -2860,8 +2939,24 @@ function buildCopyHtml() {
       }
       return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}${copyInlineMarkdown(item.text)}</h3>`;
     }
-    if (item.type === "paragraph") return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
+    if (item.type === "paragraph") {
+      if (state.theme === "texture") {
+        const solo = String(item.text || "").trim().match(/^==([^=\n]+)==$/);
+        if (solo) {
+          return `<section style="margin:${state.paragraphSpacing}px 0;padding:12px 16px;border-radius:12px;background-color:#184731;color:#FFFFFF;font-size:${state.fontSize}px;line-height:1.7;font-weight:800;text-align:left;">${escapeHtml(solo[1])}</section>`;
+        }
+      }
+      return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
+    }
     if (item.type === "quote") {
+      if (state.showQuote && state.theme === "texture") {
+        const source = textureQuoteSource(item.title);
+        const sourceHtml = source
+          ? `<p style="margin:10px 0 0;padding:0;color:#94A3B8;font-size:12px;font-weight:600;letter-spacing:0.5px;line-height:1.6;text-align:left;">${escapeHtml(source)}</p>`
+          : "";
+        const rule = `<span style="display:inline-block;width:56px;height:5px;border-radius:3px;background-color:#184731;background-image:linear-gradient(90deg,#184731,#CAAD71);vertical-align:middle;"></span><span style="display:inline-block;width:5px;height:5px;margin-left:5px;border-radius:3px;background-color:#111827;vertical-align:middle;"></span>`;
+        return `<section style="margin:40px 0;padding:8px 28px 30px;border-radius:22px;background-color:#F5F8F6;overflow:hidden;text-align:left;"><p style="margin:18px 0 4px -2px;padding:0;color:#E2D6BA;font-size:96px;font-weight:700;line-height:0.72;text-align:left;">“</p><p style="margin:0;padding:0;color:#111827;font-size:22px;font-weight:900;line-height:1.7;letter-spacing:0.5px;text-align:left;">${copyInlineMarkdown(item.text)}</p><p style="margin:18px 0 0;padding:0;line-height:0;">${rule}</p>${sourceHtml}</section>`;
+      }
       if (state.showQuote) return `<section style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${copyInlineMarkdown(item.text)}</p></section>`;
       return `<p style="${textStyle}font-style:italic;">${copyInlineMarkdown(item.text)}</p>`;
     }
@@ -2901,6 +2996,11 @@ function buildCopyHtml() {
       if (state.theme === "emoji") {
         const rule = escapeHtml(emojiDividerText(item.text));
         return `<p style="margin:28px 0;padding:0;text-align:center;color:${mutedColor};font-size:15px;line-height:1.6;letter-spacing:.08em;">${rule}</p>`;
+      }
+      if (state.theme === "texture") {
+        const line = (direction) => `<span style="display:inline-block;width:70px;height:3px;border-radius:2px;background-color:#184731;background-image:linear-gradient(90deg,${direction});vertical-align:middle;"></span>`;
+        const square = (color) => `<span style="display:inline-block;width:8px;height:8px;margin:0 4px;border-radius:2px;background-color:${color};vertical-align:middle;"></span>`;
+        return `<section style="margin:40px 0;text-align:center;line-height:1;">${line("#FFFFFF,#184731")}${square("#CAAD71")}${square("#111827")}${square("#CAAD71")}${line("#184731,#FFFFFF")}</section>`;
       }
       return themeDividerHtml();
     }

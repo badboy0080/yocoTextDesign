@@ -4158,15 +4158,20 @@ function blockStyleAnchorRect() {
 function placeBlockStylePanel() {
   if (!blockStylePanel || blockStylePanel.hidden) return;
   const rect = blockStyleAnchorRect();
-  if (!rect) return;
-  const width = blockStylePanel.offsetWidth || 248;
-  const height = blockStylePanel.offsetHeight || 280;
-  const gap = 10;
-  let left = rect.left + rect.width / 2 - width / 2;
-  left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
-  let top = rect.top - height - gap;
-  if (top < 8) top = rect.bottom + gap;
-  if (top + height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - height - 8);
+  const margin = 8;
+  const width = Math.min(blockStylePanel.offsetWidth || 248, window.innerWidth - margin * 2);
+  const maxHeight = Math.max(160, window.innerHeight - margin * 2);
+  blockStylePanel.style.maxHeight = `${Math.round(maxHeight)}px`;
+  const height = Math.min(blockStylePanel.offsetHeight || 280, maxHeight);
+  let left = rect ? rect.left + rect.width / 2 - width / 2 : margin;
+  left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+  let top = margin;
+  if (rect) {
+    top = rect.top - height - 10;
+    if (top < margin) top = rect.bottom + 10;
+  }
+  if (top + height > window.innerHeight - margin) top = window.innerHeight - height - margin;
+  if (top < margin) top = margin;
   blockStylePanel.style.left = `${Math.round(left)}px`;
   blockStylePanel.style.top = `${Math.round(top)}px`;
 }
@@ -5759,4 +5764,38 @@ function setupStudioTools() {
   });
 }
 
+function fitMobileStudio() {
+  const narrow = window.matchMedia("(max-width: 823px)").matches;
+  const visibleHeight = window.visualViewport?.height || window.innerHeight;
+  const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+  const writeMax = (el, value) => {
+    if (el.style.maxHeight !== value) el.style.maxHeight = value;
+  };
+  if (previewStage) {
+    if (!narrow || previewStage.hidden) writeMax(previewStage, "");
+    else {
+      const room = Math.round(visibleHeight - docTop(previewStage) - 12);
+      writeMax(previewStage, `${Math.max(220, room)}px`);
+    }
+  }
+  if (articleInput) {
+    const source = document.querySelector("#sourcePanel");
+    if (!narrow || !source || source.hidden) writeMax(articleInput, "");
+    else {
+      const room = Math.round(visibleHeight - docTop(articleInput) - 16);
+      writeMax(articleInput, `${Math.max(180, room)}px`);
+    }
+  }
+}
+
 setupStudioTools();
+fitMobileStudio();
+window.addEventListener("resize", fitMobileStudio);
+window.addEventListener("load", fitMobileStudio);
+window.visualViewport?.addEventListener("resize", fitMobileStudio);
+document.querySelector("#sourceViewTab")?.addEventListener("click", () => window.requestAnimationFrame(fitMobileStudio));
+document.querySelector("#resultViewTab")?.addEventListener("click", () => window.requestAnimationFrame(fitMobileStudio));
+if (window.ResizeObserver) {
+  const fitHost = document.querySelector(".studio-main");
+  if (fitHost) new ResizeObserver(() => fitMobileStudio()).observe(fitHost);
+}

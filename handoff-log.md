@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-质感主题（2026-11-14，未合并、未部署）：工作台主题列表末尾新增「质感」（texture）。不是换色。二级标题左上是浅色斜体大编号，只有原文写成「中文 | ENGLISH」才出英文小字。标题下是绿到金短线加深色圆点。金句是浅暖灰圆角卡，左上大引号；没写出处就不显示。分隔是两边渐变短线、中间三个小方块。加粗是淡金到浅绿，`==重点==` 是深绿底白字；整段只有一条重点时画成深绿条。图片和链接留着。编号不写回原文，大纲不读编号，复制稿不带大纲。质感不再叠「本文脉络」，免得和编号两套 01；别的精选主题脉络还在。DeepSeek 只在指定质感时加一段独立配方。这台没有密钥，用的是假返回。截图在 `docs/previews/texture-*.png`。不合 master，合了才会上正式站。
+手机工作台（2026-11-14，未合并、未部署）：窄屏上整页被锁在一屏里，滚不到主题、文末和「优化排版」。现在手机上页面可以往下滚，原文框和预览跟着剩下的屏幕高度，长文能看到最后一句。划词浮层会留在屏幕里。底部那条合规说明不再把页面撑出屏幕。桌面三栏没改。复制稿左右仍是 4px，质感编号在复制稿里仍是 92px。没调用扣费接口，没合 master，没部署。截图在 `docs/previews/mobile-before-*.png` 和 `mobile-after-*.png`。
+
+质感主题（2026-11-14，PR #94，已合进 master `a58fe69`）：工作台主题列表末尾新增「质感」（texture）。不是换色。二级标题左上是浅色斜体大编号，只有原文写成「中文 | ENGLISH」才出英文小字。标题下是绿到金短线加深色圆点。金句是浅暖灰圆角卡，左上大引号；没写出处就不显示。分隔是两边渐变短线、中间三个小方块。加粗是淡金到浅绿，`==重点==` 是深绿底白字；整段只有一条重点时画成深绿条。图片和链接留着。编号不写回原文，大纲不读编号，复制稿不带大纲。质感不再叠「本文脉络」，免得和编号两套 01；别的精选主题脉络还在。DeepSeek 只在指定质感时加一段独立配方。这台没有密钥，用的是假返回。截图在 `docs/previews/texture-*.png`。已合进 master。正式站要等部署。
 
 排版预览左侧大纲（2026-11-13，PR #93，已合进 master）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
 
@@ -187,6 +189,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-14 工作台手机上能滚到主题和文末
+
+- 想做什么：按已合质感主题的 master，给工作台做手机适配。先用浏览器看真实问题，再小改。不合 master，不部署。
+- 做成了什么：823px 以下，工作台外壳不再锁死一屏。原文框和预览区按剩下的高度收，长文在预览里能看到最后一句。划词浮层贴回屏幕内。页面底部的合规说明不再横向撑出屏幕。桌面布局、主题和复制稿尺寸没改。
+- 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`scripts/check-mobile-layout.js`、`docs/previews/mobile-before-*.png`、`docs/previews/mobile-after-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：本地 5174。无头 Chrome 看了 320、375、390、430、1280、1440。窄屏页面可以滚到「质感」「表情」和「优化排版」，预览最后一句在屏幕里，原文长链接会换行，划词浮层、大纲和工具菜单都在屏内。文档宽度不再大于视口。`node scripts/check-mobile-layout.js` 以及大纲、质感、表情、划词、斜杠、粘贴图、重点、人味空结果、超时这些检查通过。没有调用优化接口。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/95 已开，没有自己合并。没上真机，没贴微信。软键盘只把视口高度收短做过代理。刘海安全区写了内边距，没有带刘海的机器可看。首页、登录、注册窄屏没有撑出屏幕，这次没改它们。质感大编号在 420px 以下的预览里本来就会缩小，复制稿仍是 92px，这次没动。
+
 ### 2026-11-13 排版预览左侧可收起的大纲
 
 - 想做什么：工作台排版结果左边加一份大纲。按预览里的实际标题生成，点一下定位，滚动时标出当前章节，能收起。只开 PR，不合 master。
@@ -218,11 +228,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-style-paragraph.png`、`docs/previews/selection-style-heading.png`、`docs/previews/selection-style-applied.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-block-style.js` 通过。本地静态页打开工作台，贴了一篇带大标题、小标题和两段正文的短文。点段落不出面板，也没有旧的黑胶囊。划「调字号」出字号、字体颜色、重点样式。划小标题只出字号和标题级别，没有重点。点三级后原文变成 `###`。字号改成 22、颜色改成蓝、再标重点，预览马上变，原文有 `==调字号==`。复制稿里有 22px、这颗蓝色，以及重点。取消重点后等号没了，蓝色还在。划大标题只有字号。截图在 `docs/previews/selection-style-*.png`。没有调用优化，没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/86 已开，没有自己合并。合进 master 才会上正式站。字号和颜色作用在整块，不是只改划中的几个字。重点长什么样仍跟当前主题，没有另做一套重点皮肤。取消重点会拿掉包住选区的整处重点。不能跨块划。列表、代码和斜杠插出来的块不走这个面板。浏览器里如果还留着以前的底色、间距、描边，它们仍会画上，这次的恢复只清字号和字体颜色。公众号后台还没真贴。
-
-### 2026-11-04 空行敲斜杠插入排版块
-
-- 想做什么：按 2026-11-04 外网日扫第 2 条，工作台空行敲 `/` 出卡片菜单，一键插入排版块。只开 PR，不合 master。
-- 做成了什么：预览末尾多一行空位，原文空行也可以敲 `/`。菜单有引用框、重点框、分割线、图文头。插完预览马上能看见。重点框用当前重点底色。图文头是标题、副题和头图槽。复制稿是内联 HTML。不调用优化，不扣积分。
-- 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/slash-menu.png`、`docs/previews/slash-quote.png`、`docs/previews/slash-highlight.png`、`docs/previews/slash-divider.png`、`docs/previews/slash-header.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-slash-cards.js` 通过。本地 5174 用无头 Chrome 打开工作台。预览空行敲 `/`，菜单四项都在。点引用、重点、分割线、图文头，预览里马上出现，状态写着没有调用优化、也不计积分。在重点框里改字，原文仍是重点框记号。原文里敲 `/分割` 只剩分割线一项。复制稿里有引用、重点底色、分割线、标题、副题和头图。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/85 已开，没有自己合并。仓库没有独立预览项目，这台没有 EdgeOne 登录，所以没有预览部署。合进 master 才会上正式站 www.yoooco.com。预览完全是空的时候，空行在「原文」里敲；有正文之后，预览末尾才有空行。重点框不跟着下划线、删除线那些重点样式变，始终是重点底色的框。头图是占位，这一步不能上传图片。暗黑科技那两套如果关掉了分隔线，分割线会插进原文但预览不画。公众号后台还没真贴。

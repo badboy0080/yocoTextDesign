@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-质感大横条（2026-11-14，未合并、未部署）：质感不再把整段重点画成铺满宽度的深绿圆角条。预览里删掉了 `mark.inline-highlight:only-child` 那条（display:block、padding 12px 16px、圆角 12px、底色 #184731）。复制稿里整段 `==重点==` 不再单独输出深绿 section，改走行内小芯片（padding 2px 6px、圆角 3px、同一底色白字）。文字还在，逗号和句号留在芯片后面。编号、短线、金句卡、分隔、加粗、正文、其它主题、手机布局都没动。质感配方只写「深绿底白字」，没有叫模型去铺大横条，所以总规则和配方都没改，重点密度和表情也没动。已有 `==重点==` 的稿下次打开就生效，不用重新优化。截图在 `docs/previews/texture-bar-before-article.png`、`texture-bar-after-article.png`、`texture-bar-after-desktop.png`、`texture-bar-after-copy.png`。没真机，没贴微信。
+质感重点变稀（2026-11-14，未合并、未部署）：质感自动深绿底框大约收成原来的三成。同一篇假返回长稿，总规则会补 18 处自动底框，质感留下 5 处，少了 72%。留下的是「必须先改标题」「3 积分」「关键指标」「因此记住」「12%」。过渡句、普通段、和标题一模一样的短语不标。原文 ==松柏金== 还在，淡金加粗「松柏纸」没当绿底清掉。总规则没改，只改了质感配方，并在质感成稿上做筛选。只刷新、或拿已经写回 ==重点== 的旧稿再优化，都不会变少。截图在 `docs/previews/texture-density-before-mobile.png`、`texture-density-after-mobile.png`、`texture-density-after-desktop.png`、`texture-density-after-copy.png`。没有密钥，不是真实模型实测。没真机，没贴微信。
+
+质感大横条（2026-11-14，PR #96，已合进 master `6c1296a`）：质感不再把整段重点画成铺满宽度的深绿圆角条。预览里删掉了 `mark.inline-highlight:only-child` 那条（display:block、padding 12px 16px、圆角 12px、底色 #184731）。复制稿里整段 `==重点==` 不再单独输出深绿 section，改走行内小芯片（padding 2px 6px、圆角 3px、同一底色白字）。文字还在，逗号和句号留在芯片后面。编号、短线、金句卡、分隔、加粗、正文、其它主题、手机布局都没动。质感配方只写「深绿底白字」，没有叫模型去铺大横条，所以总规则和配方都没改，重点密度和表情也没动。已有 `==重点==` 的稿下次打开就生效，不用重新优化。截图在 `docs/previews/texture-bar-before-article.png`、`texture-bar-after-article.png`、`texture-bar-after-desktop.png`、`texture-bar-after-copy.png`。没真机，没贴微信。
 
 手机工作台（2026-11-14，未合并、未部署）：窄屏上整页被锁在一屏里，滚不到主题、文末和「优化排版」。现在手机上页面可以往下滚，原文框和预览跟着剩下的屏幕高度，长文能看到最后一句。划词浮层会留在屏幕里。底部那条合规说明不再把页面撑出屏幕。桌面三栏没改。复制稿左右仍是 4px，质感编号在复制稿里仍是 92px。没调用扣费接口，没合 master，没部署。截图在 `docs/previews/mobile-before-*.png` 和 `mobile-after-*.png`。
 

@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 十三套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 十四套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -461,9 +461,52 @@ const THEMES = {
       caseStudy: { core: ["list", "paragraph"], accent: ["quote", "highlight"] },
     },
   },
+
+  /*
+   * 质感：对照 lqshow/wechat-article-skills（MIT，Copyright (c) 2026 林月半子）
+   * skills/wechat-article-layout/scripts/layout.py 的风格 neo、配色 forest（松柏金）。
+   * 提交 b00a018c439e4cff1b9668de1078169eb8186a7b。
+   * 这里不搬脚本，只按公开数值在 Yooco 自己的渲染里重画。
+   * 不画动画横幅，不画互动 SVG。英文副标没有原文就不显示。
+   * main #184731 / soft #F5F8F6 / tint #E0EAE2 / line #CAAD71 / mark #F3E0B0
+   * 正文 #3F3F46，标题字 #111827。
+   */
+  texture: {
+    label: "质感",
+    en: "TEXTURE",
+    primary: "#184731",
+    fit: "设计感笔记 · 工具方法 · 金句评论",
+    params: {
+      styleVariant: "standard",
+      textColor: "#3F3F46", accentColor: "#184731",
+      highlightColor: "#184731", highlightTextColor: "#FFFFFF",
+      cardColor: "#F5F8F6", quoteColor: "#F5F8F6", cardTitleColor: "#184731",
+      pageColor: "#FFFFFF", linkColor: "#184731",
+      codeBackground: "#F5F8F6", codeColor: "#184731", dividerColor: "#184731",
+      mutedColor: "#94A3B8", titleColor: "#111827", borderColor: "#E0EAE2",
+      bodyFont: "system", headingFont: "system", textAlign: "justify",
+      fontSize: 16, lineHeight: 1.9, letterSpacing: 0.5, paragraphSpacing: 22,
+      titleSize: 26, headingSize: 23, subheadingSize: 18, minorHeadingSize: 16,
+      headingWeight: 900, headingLineHeight: 1.4, headingLetterSpacing: 0,
+      headingSpacingBefore: 56, headingSpacingAfter: 30,
+      headingStyle: "line", cardStyle: "soft", listStyle: "dot",
+      highlightStyle: "background", highlightRadius: 3, highlightPadding: 6,
+      cardRadius: 22, imageRadius: 14, cardPadding: 28,
+      showDivider: true,
+    },
+    recipe: {
+      opinion: { core: ["paragraph", "quote"], accent: ["divider", "highlight"] },
+      tutorial: { core: ["heading", "paragraph", "list"], accent: ["quote", "divider"] },
+      checklist: { core: ["list", "paragraph"], accent: ["quote", "highlight"] },
+      interview: { core: ["paragraph", "quote"], accent: ["divider"] },
+      dataReport: { core: ["paragraph", "list"], accent: ["quote", "highlight"] },
+      lifestyle: { core: ["paragraph", "quote"], accent: ["divider"] },
+      caseStudy: { core: ["paragraph", "quote", "list"], accent: ["divider"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "texture"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

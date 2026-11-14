@@ -55,10 +55,10 @@
   }
 
   function headingText(el) {
-    const main = el.querySelector?.(".heading-panel-main, .heading-oval-text, .heading-atlas-main");
+    const main = el.querySelector?.(".heading-panel-main, .heading-oval-text, .heading-atlas-main, .texture-title");
     if (!main) return normalizeOutlineText(el.innerText || el.textContent);
     const mainText = normalizeOutlineText(main.innerText || main.textContent);
-    const sub = el.querySelector(".heading-panel-sub, .heading-atlas-sub");
+    const sub = el.querySelector(".heading-panel-sub, .heading-atlas-sub, .texture-kicker");
     const subText = sub ? normalizeOutlineText(sub.innerText || sub.textContent) : "";
     if (!subText || subText === "SECTION") return mainText;
     return `${mainText} ${subText}`.trim();

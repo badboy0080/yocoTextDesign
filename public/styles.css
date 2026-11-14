@@ -1732,3 +1732,211 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .smart-grid-media,
   .smart-grid-points { grid-template-columns: 1fr; }
 }
+
+/* 质感：大编号、渐变短线、金句卡、分隔和两类重点。数值对照 layout.py 的 neo + forest。 */
+.article-page[data-theme="texture"] .section-title {
+  padding: 0;
+  border: 0;
+}
+.article-page[data-theme="texture"] .section-title::before,
+.article-page[data-theme="texture"] .section-title::after {
+  content: none !important;
+  display: none !important;
+}
+.article-page[data-theme="texture"] .texture-heading {
+  display: block;
+  margin: 56px 0 30px;
+  color: #111827;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.article-page[data-theme="texture"] .texture-numline {
+  display: block;
+  margin: 0 0 0 -3px;
+  height: 70px;
+  overflow: hidden;
+  line-height: 0.82;
+  white-space: nowrap;
+}
+.article-page[data-theme="texture"] .texture-num {
+  display: inline-block;
+  color: #E0EAE2;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 92px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 0.82;
+  vertical-align: top;
+}
+.article-page[data-theme="texture"] .texture-kicker {
+  display: inline-block;
+  margin-left: 14px;
+  color: #184731;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  line-height: 1.4;
+  vertical-align: 30px;
+}
+.article-page[data-theme="texture"] .texture-heading .texture-title {
+  display: block;
+  margin: -20px 0 0 10px;
+  color: #111827;
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.article-page[data-theme="texture"] .texture-h3 {
+  display: flex;
+  align-items: center;
+  margin: 34px 0 14px;
+}
+.article-page[data-theme="texture"] .texture-h3-bar {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 3px;
+  margin-right: 10px;
+  border-radius: 2px;
+  background: #184731;
+}
+.article-page[data-theme="texture"] .texture-h3 .texture-title {
+  display: block;
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.article-page[data-theme="texture"] .texture-rule {
+  display: block;
+  margin: 12px 0 0 10px;
+  line-height: 0;
+}
+.article-page[data-theme="texture"] .texture-rule-line {
+  display: inline-block;
+  width: 72px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: #184731;
+  background-image: linear-gradient(90deg, #184731, #CAAD71);
+  vertical-align: middle;
+}
+.article-page[data-theme="texture"] .texture-rule-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 5px;
+  border-radius: 3px;
+  background: #111827;
+  vertical-align: middle;
+}
+.article-page[data-theme="texture"] .texture-quote {
+  margin: 40px 0;
+  padding: 8px 28px 30px;
+  border: 0;
+  border-radius: 22px;
+  background: #F5F8F6;
+  overflow: hidden;
+  box-shadow: none;
+}
+.article-page[data-theme="texture"] .texture-quote-mark {
+  display: block;
+  margin: 18px 0 4px -2px;
+  color: #E2D6BA;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 0.72;
+}
+.article-page[data-theme="texture"] .article-content .texture-quote-text {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+  text-align: left;
+  text-indent: 0;
+}
+.article-page[data-theme="texture"] .texture-quote .texture-rule { margin: 18px 0 0; }
+.article-page[data-theme="texture"] .texture-quote .texture-rule-line { width: 56px; height: 5px; }
+.article-page[data-theme="texture"] .texture-quote .texture-rule-dot { width: 5px; height: 5px; }
+.article-page[data-theme="texture"] .article-content .texture-quote-source {
+  margin: 10px 0 0;
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+  text-align: left;
+  text-indent: 0;
+}
+.article-page[data-theme="texture"] .texture-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  margin: 40px 0;
+  border: 0;
+  background: transparent;
+  line-height: 1;
+}
+.article-page[data-theme="texture"] .texture-div-line {
+  display: inline-block;
+  width: 70px;
+  height: 3px;
+  border-radius: 2px;
+  background-color: #184731;
+}
+.article-page[data-theme="texture"] .texture-div-line-left { background-image: linear-gradient(90deg, #FFFFFF, #184731); }
+.article-page[data-theme="texture"] .texture-div-line-right { background-image: linear-gradient(90deg, #184731, #FFFFFF); }
+.article-page[data-theme="texture"] .texture-div-sq {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  border-radius: 2px;
+}
+.article-page[data-theme="texture"] .texture-div-sq-line { background: #CAAD71; }
+.article-page[data-theme="texture"] .texture-div-sq-ink { background: #111827; }
+.article-page[data-theme="texture"] .article-content p strong,
+.article-page[data-theme="texture"] .article-content li strong,
+.article-page[data-theme="texture"] .texture-quote-text strong {
+  color: #111827;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #F3E0B0;
+  background-image: linear-gradient(100deg, #F3E0B0, #E0EAE2);
+}
+.article-page[data-theme="texture"] .inline-highlight {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background-color: #184731;
+  background-image: none;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+.article-page[data-theme="texture"] .article-content p[data-type="paragraph"] > mark.inline-highlight:only-child {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: #184731;
+  color: #FFFFFF;
+  font-weight: 800;
+  line-height: 1.7;
+}
+@media (max-width: 420px) {
+  .article-page[data-theme="texture"] .texture-num { font-size: 72px; }
+  .article-page[data-theme="texture"] .texture-numline { height: 56px; }
+  .article-page[data-theme="texture"] .texture-heading .texture-title { margin-top: -12px; font-size: 20px; }
+  .article-page[data-theme="texture"] .article-content .texture-quote-text { font-size: 18px; }
+  .article-page[data-theme="texture"] .texture-quote { padding-left: 16px; padding-right: 16px; }
+  .article-page[data-theme="texture"] .texture-div-line { width: 42px; }
+}

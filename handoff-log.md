@@ -2,15 +2,15 @@
 
 ## 当前接手摘要
 
-排版预览左侧大纲（2026-11-13，PR #93，未合并、未部署）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
+质感主题（2026-11-14，未合并、未部署）：工作台主题列表末尾新增「质感」（texture）。不是换色。二级标题左上是浅色斜体大编号，只有原文写成「中文 | ENGLISH」才出英文小字。标题下是绿到金短线加深色圆点。金句是浅暖灰圆角卡，左上大引号；没写出处就不显示。分隔是两边渐变短线、中间三个小方块。加粗是淡金到浅绿，`==重点==` 是深绿底白字；整段只有一条重点时画成深绿条。图片和链接留着。编号不写回原文，大纲不读编号，复制稿不带大纲。质感不再叠「本文脉络」，免得和编号两套 01；别的精选主题脉络还在。DeepSeek 只在指定质感时加一段独立配方。这台没有密钥，用的是假返回。截图在 `docs/previews/texture-*.png`。不合 master，合了才会上正式站。
 
-粘贴的图和链接进预览和复制稿（2026-11-11，PR #92，未合并、未部署）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
+排版预览左侧大纲（2026-11-13，PR #93，已合进 master）：工作台「排版结果」左边按当前预览里的标题生成列表，按层级缩进。点一条滚到对应块，滚动时标出当前章节。可以收起再展开。改标题、删标题、换主题后列表重做，重复标题各留一条，过期的会去掉。空稿写「这篇还是空的」，没有标题写「这篇没有标题」。窄屏收成一枚小按钮，展开是浮层，不把正文挤窄。大纲不进正文、复制稿和导出。截图在 `docs/previews/outline-desktop-open.png`、`outline-jump.png`、`outline-collapsed.png`、`outline-mobile.png`、`outline-mobile-open.png`。正式站要等合进 master。
 
-图文栅格（2026-11-06，PR #88，未合并、未部署）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
+粘贴的图和链接进预览和复制稿（2026-11-11，PR #92，已合进 master）：从网页或公众号粘来的图片、单独成行或以 jpg、png、webp 结尾的图片地址，预览里显示成图。普通网址和 Markdown 链接显示成可点链接。点「复制排版」后，复制稿里仍有 img 和 a。优化如果把图和链接丢掉，会按原文补回去。行内 svg、blob 地址、超过 2MB 的 data 图不收。截图在 `docs/previews/paste-media-preview.png`、`paste-media-link.png`、`paste-media-copy.png`。微信真机未验。正式站要等合进 master。
 
-复制到公众号左右大留白（2026-11-06，PR #87，未合并、未部署）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
+图文栅格（2026-11-06，PR #88，已合进 master）：工作台空行敲 `/`，菜单里多了「图文栅格」，下面是「双栏图文」和「三列要点」。双栏是一侧图、一侧文，三列是小标题加一句说明。空槽是虚线。点图格可以放占位图、从本机换图或清空。点字可以改。颜色跟当前主题。复制稿用表格把栏留住。不调用优化，不扣积分。不能把图拖进格子。截图在 `docs/previews/smart-grid-menu.png`、`smart-grid-empty.png`、`smart-grid-article.png`、`smart-grid-media.png`、`smart-grid-points.png`、`smart-grid-theme.png`、`smart-grid-theme-dark.png`。正式站要等合进 master。
 
-空行敲 `/` 插入排版块（2026-11-04，PR #85，未合并、未部署）：工作台预览末尾空行，或原文里的空行，敲 `/` 出菜单。可以插入引用框、重点框、分割线、图文头。插完预览马上变，不重新优化，不扣积分。复制稿用内联样式带上这些块。重点框用当前主题的重点底色。图文头是标题、副题和头图槽。截图在 `docs/previews/slash-menu.png`、`slash-quote.png`、`slash-highlight.png`、`slash-divider.png`。正式站要等合进 master。
+复制到公众号左右大留白（2026-11-06，PR #87，已合进 master）：复制稿外层原来是 `padding:40px 32px`，再叠微信阅读页自己的左右大约 20px，手机上正文离边大约 50px。现在左右改成 4px，外层仍是宽 100%，并按边框盒计算，避免再把盒子撑出屏幕。上下仍是 40px。深色底色还画在这一层，不会收成窄条。预览画布的内边距没改。主题色、字号、划词、斜杠块没动。截图在 `docs/previews/wechat-copy-width-before.png`、`wechat-copy-width-after.png`、`wechat-copy-width-dark-after.png`。没贴进真实公众号后台。正式站要等合进 master。
 
 预览划词改样式（2026-11-04，未合并、未部署）：工作台右侧预览里划一段文字，才弹出样式。段落、引用、卡片可以改这一块的字号和字体颜色，重点样式里有「标重点 / 取消重点 / 复制」。标题只出字号和标题级别（二级到六级）。文章大标题只有字号。点整块不再打开底色、间距、描边。标重点仍写成 `==重点==`，不重新优化，不扣积分。截图在 `docs/previews/selection-style-paragraph.png`、`selection-style-heading.png`、`selection-style-applied.png`。正式站要等合进 master。
 

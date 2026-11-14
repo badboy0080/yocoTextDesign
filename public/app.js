@@ -2940,12 +2940,6 @@ function buildCopyHtml() {
       return `<h3 style="${headingStyle(level)}">${headingPrefix(level)}${copyInlineMarkdown(item.text)}</h3>`;
     }
     if (item.type === "paragraph") {
-      if (state.theme === "texture") {
-        const solo = String(item.text || "").trim().match(/^==([^=\n]+)==$/);
-        if (solo) {
-          return `<section style="margin:${state.paragraphSpacing}px 0;padding:12px 16px;border-radius:12px;background-color:#184731;color:#FFFFFF;font-size:${state.fontSize}px;line-height:1.7;font-weight:800;text-align:left;">${escapeHtml(solo[1])}</section>`;
-        }
-      }
       return `<p style="${textStyle}">${copyInlineMarkdown(item.text)}</p>`;
     }
     if (item.type === "quote") {

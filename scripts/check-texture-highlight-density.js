@@ -180,6 +180,8 @@ const freshPrompt = seen.find((request) => request.messages[1].content.includes(
 const emojiPrompt = seen.find((request) => request.messages[1].content.includes("本次主题已指定为 emoji"));
 assert(texturePrompt.messages[0].content.includes("普通段至少 1 处 highlight"), "总规则的最少重点句不能改");
 assert(texturePrompt.messages[0].content.includes("质感成稿大约只留三成自动重点"), "质感配方要写明大约三成");
+assert(texturePrompt.messages[0].content.includes("highlight 只加粗，不画底色"), "质感配方要改成纯文字加粗");
+assert(!texturePrompt.messages[0].content.includes("深绿底白字"), "质感配方不能再写深绿底白字");
 assert(!freshPrompt.messages[0].content.includes("质感成稿大约只留三成自动重点"), "清氧绿不要带质感密度例外");
 assert(!emojiPrompt.messages[0].content.includes("质感成稿大约只留三成自动重点"), "表情主题不要带质感密度例外");
 assert(!texturePrompt.messages[0].content.includes("padding:12px 16px"), "质感配方不能再引导大横条");

@@ -2703,7 +2703,7 @@ function buildCopyHtml() {
   const codeColor = useRegisteredCode ? state.codeColor : "#d7e0f2";
   const highlightPlain = `padding:0;background-color:transparent;color:${highlightTextColor};font-weight:700;`;
   const themedHighlight = sixThemeHighlightInline(highlightColor, highlightTextColor);
-  const textureHighlightCss = "padding:2px 6px;border-radius:3px;background-color:#184731;color:#FFFFFF;font-weight:700;";
+  const textureHighlightCss = `padding:0;border:0;border-radius:0;background-color:transparent;color:${state.textColor};font-weight:800;`;
   const highlightCss = state.theme === "texture"
     ? textureHighlightCss
     : themedHighlight || (highlightStyle === "underline"

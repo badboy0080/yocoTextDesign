@@ -16,10 +16,10 @@
       try { localStorage.setItem(key, next); } catch (error) { /* 隐私模式只记在这一页 */ }
     }
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", next === "night" ? "#120F0D" : "#F3EEE3");
+    if (meta) meta.setAttribute("content", next === "night" ? "#0F0C0A" : "#F5EFE3");
   };
   var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", theme === "night" ? "#120F0D" : "#F3EEE3");
+  if (meta) meta.setAttribute("content", theme === "night" ? "#0F0C0A" : "#F5EFE3");
   var observer = new MutationObserver(function () {
     if (document.documentElement.getAttribute("data-site") !== window.__yoocoSiteTheme) {
       document.documentElement.setAttribute("data-site", window.__yoocoSiteTheme);

@@ -1,41 +1,41 @@
 /* 首页外壳。文章样稿用自己的纸色，不跟这里的日夜变量走。 */
 
 html[data-site="day"] {
-  --site-canvas: #F3EEE3;
-  --site-surface: #FAF7EF;
-  --site-ink: #201A13;
-  --site-muted: #5E5346;
-  --site-line: #E0D4C4;
-  --site-accent: #9A4132;
-  --site-accent-ink: #F2ECDE;
-  --site-accent-text: #9A4132;
+  --site-canvas: #F5EFE3;
+  --site-surface: #FBF7EE;
+  --site-ink: #211A12;
+  --site-muted: #6E6353;
+  --site-line: rgba(33, 26, 18, 0.16);
+  --site-accent: #A63A2B;
+  --site-accent-ink: #F3ECDD;
+  --site-accent-text: #A63A2B;
 }
 html[data-site="night"] {
-  --site-canvas: #120F0D;
-  --site-surface: #1D1814;
-  --site-ink: #F2ECDE;
-  --site-muted: #D2C6B6;
-  --site-line: #3A322C;
-  --site-accent: #9A4132;
-  --site-accent-ink: #F2ECDE;
-  --site-accent-text: #C47A6B;
+  --site-canvas: #0F0C0A;
+  --site-surface: #1E1813;
+  --site-ink: #F3ECDD;
+  --site-muted: #A89877;
+  --site-line: rgba(243, 236, 221, 0.14);
+  --site-accent: #A63A2B;
+  --site-accent-ink: #F3ECDD;
+  --site-accent-text: #CC6B57;
 }
 @media (prefers-color-scheme: dark) {
   html:not([data-site]) {
-    --site-canvas: #120F0D;
-    --site-surface: #1D1814;
-    --site-ink: #F2ECDE;
-    --site-muted: #D2C6B6;
-    --site-line: #3A322C;
-    --site-accent: #9A4132;
-    --site-accent-ink: #F2ECDE;
-    --site-accent-text: #C47A6B;
+    --site-canvas: #0F0C0A;
+    --site-surface: #1E1813;
+    --site-ink: #F3ECDD;
+    --site-muted: #A89877;
+    --site-line: rgba(243, 236, 221, 0.14);
+    --site-accent: #A63A2B;
+    --site-accent-ink: #F3ECDD;
+    --site-accent-text: #CC6B57;
   }
 }
 
 body:has(.ol-home) {
-  background: var(--site-canvas, #F3EEE3);
-  color: var(--site-ink, #201A13);
+  background: var(--site-canvas, #F5EFE3);
+  color: var(--site-ink, #211A12);
 }
 .ol-home {
   --background: var(--site-canvas);
@@ -210,7 +210,7 @@ html[data-site="night"] .ol-home { color-scheme: dark; }
 }
 .ol-upload:hover { border-color: var(--site-accent-text); color: var(--site-accent-text); }
 .ol-hint { flex: 1 1 140px; margin: 0; color: var(--site-muted); font-size: 13px; line-height: 1.45; }
-.ol-hint.is-error { color: #9A4132; }
+.ol-hint.is-error { color: var(--site-accent-text); }
 .ol-primary {
   display: inline-flex;
   align-items: center;
@@ -220,14 +220,14 @@ html[data-site="night"] .ol-home { color-scheme: dark; }
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
-  background: #9A4132;
-  color: #F2ECDE;
+  background: #A63A2B;
+  color: #F3ECDD;
   font: 700 15px/1 "PingFang SC", "Microsoft YaHei", sans-serif;
   cursor: pointer;
 }
-.ol-primary:hover:not(:disabled) { background: #7E3428; transform: none; }
+.ol-primary:hover:not(:disabled) { background: #B94434; transform: none; }
 .ol-upload:disabled, .ol-primary:disabled { opacity: 0.55; cursor: not-allowed; }
-.ol-home :focus-visible { outline: 2px solid #9A4132; outline-offset: 3px; }
+.ol-home :focus-visible { outline: 2px solid rgba(166, 58, 43, 0.35); outline-offset: 3px; }
 
 .ol-story { position: relative; min-width: 0; padding-top: 8px; }
 .story-intro h2, .story-beat h3 {

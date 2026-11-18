@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+首页和工作台日夜皮肤（2026-11-18，未合并、未部署）：网站外壳是暖米纸白天、暖黑夜间，可手动切换，刷新和跨页记住，第一次跟系统。首页试用输入一直在，不锁滚动。同一篇工作台示例走三拍：密排原稿、清氧绿成稿、深空青只换皮。文章预览和复制稿不跟网站皮肤变。工作台登录按钮改回「登录」。截图在 `docs/previews/site-shell/`。没真机，没贴微信，没调 DeepSeek。
+
 质感重点去底（2026-11-16，未合并、未部署）：质感的重点不再画深绿底白字芯片，只加粗，字色跟所在正文。预览和复制稿一起改。旧稿里的 `==重点==` 打开就按新样式显示，不用重新优化。淡金加粗、编号、金句卡、分隔、稀疏筛选和其它主题都没动。截图在 `docs/previews/texture-plain-before-mobile.png`、`texture-plain-after-mobile.png`、`texture-plain-before-desktop.png`、`texture-plain-after-desktop.png`、`texture-plain-before-copy.png`、`texture-plain-after-copy.png`。没有密钥，不是真实模型实测。没真机，没贴微信。
 
 质感重点变稀（2026-11-14，PR #97，已合进 master `47527d6`）：质感自动深绿底框大约收成原来的三成。同一篇假返回长稿，总规则会补 18 处自动底框，质感留下 5 处，少了 72%。留下的是「必须先改标题」「3 积分」「关键指标」「因此记住」「12%」。过渡句、普通段、和标题一模一样的短语不标。原文 ==松柏金== 还在，淡金加粗「松柏纸」没当绿底清掉。总规则没改，只改了质感配方，并在质感成稿上做筛选。只刷新、或拿已经写回 ==重点== 的旧稿再优化，都不会变少。截图在 `docs/previews/texture-density-before-mobile.png`、`texture-density-after-mobile.png`、`texture-density-after-desktop.png`、`texture-density-after-copy.png`。没有密钥，不是真实模型实测。没真机，没贴微信。

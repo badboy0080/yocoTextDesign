@@ -1,0 +1,231 @@
+/* 工作台外壳。只改网站皮肤。文章纸色仍由主题变量决定，复制稿不在这里。 */
+
+html[data-site="day"] {
+  --site-canvas: #F3EEE3;
+  --site-surface: #FAF7EF;
+  --site-ink: #201A13;
+  --site-muted: #5E5346;
+  --site-line: #E0D4C4;
+  --site-line-strong: #CDBFA8;
+  --site-soft: #EFE6D6;
+  --site-accent: #9A4132;
+  --site-accent-ink: #F2ECDE;
+  --site-accent-text: #9A4132;
+}
+html[data-site="night"] {
+  --site-canvas: #120F0D;
+  --site-surface: #1D1814;
+  --site-ink: #F2ECDE;
+  --site-muted: #D2C6B6;
+  --site-line: #3A322C;
+  --site-line-strong: #5A4E44;
+  --site-soft: #2A231C;
+  --site-accent: #9A4132;
+  --site-accent-ink: #F2ECDE;
+  --site-accent-text: #C47A6B;
+}
+
+html[data-site="day"] body {
+  color-scheme: light;
+  background: var(--site-canvas);
+  color: var(--site-ink);
+}
+html[data-site="night"] body {
+  color-scheme: dark;
+  background: var(--site-canvas);
+  color: var(--site-ink);
+}
+html[data-site] body {
+  --ink: var(--site-ink);
+  --muted: var(--site-muted);
+  --line: var(--site-line);
+  --paper: var(--site-canvas);
+  --panel: var(--site-surface);
+  --yooco-color-paper: var(--site-canvas);
+  --yooco-color-ink: var(--site-ink);
+  --yooco-color-surface: var(--site-surface);
+  --yooco-color-soft: var(--site-soft);
+  --yooco-color-border: var(--site-line);
+  --yooco-color-border-strong: var(--site-line-strong);
+  --yooco-color-muted: var(--site-muted);
+  --yooco-color-primary: var(--site-accent);
+  --yooco-color-primary-hover: #7E3428;
+  --yooco-color-link: var(--site-accent-text);
+  --yooco-color-focus: var(--site-accent);
+  --di-primary: var(--site-accent);
+  --di-ink: var(--site-ink);
+  --di-text: var(--site-muted);
+  --di-border: var(--site-line);
+  --di-bg: var(--site-surface);
+  --di-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --yooco-font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background-image: none;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+html[data-site] .studio-layout {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+  box-shadow: none;
+}
+html[data-site] .studio-navigation {
+  background: var(--site-canvas);
+  border-right-color: var(--site-line);
+}
+html[data-site] .studio-logo,
+html[data-site] .studio-navigation a,
+html[data-site] .studio-title { color: var(--site-ink); }
+html[data-site] .studio-history h2,
+html[data-site] .history-empty,
+html[data-site] .history-status { color: var(--site-muted); }
+html[data-site] .studio-main .topbar,
+html[data-site] .lab-grid,
+html[data-site] .preview-panel { background: var(--site-surface); }
+html[data-site] .studio-login {
+  border: 1px solid var(--site-line);
+  background: transparent;
+  color: var(--site-ink);
+}
+html[data-site] .studio-login:hover { background: var(--site-soft); color: var(--site-ink); }
+html[data-site] .site-theme-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--site-line);
+  border-radius: 999px;
+  background: var(--site-canvas);
+}
+html[data-site] .site-theme-switch button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--site-muted);
+  font: 600 13px/1 "PingFang SC", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+}
+html[data-site] .site-theme-switch button[aria-pressed="true"] {
+  background: var(--site-accent);
+  color: var(--site-accent-ink);
+}
+
+html[data-site] .ghost-button,
+html[data-site] .accent-button,
+html[data-site] .tool-menu-button,
+html[data-site] .history-open {
+  border-color: var(--site-line);
+  background: var(--site-canvas);
+  color: var(--site-ink);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+html[data-site] .copy-button,
+html[data-site] .preview-footer-tools .ai-button,
+html[data-site] .editor-view-tabs button[aria-selected="true"] {
+  border-color: transparent;
+  background: #9A4132;
+  color: #F2ECDE;
+  box-shadow: none;
+}
+html[data-site] .copy-button:hover,
+html[data-site] .preview-footer-tools .ai-button:hover { background: #7E3428; color: #F2ECDE; transform: none; }
+html[data-site] .editor-view-tabs button { color: var(--site-muted); }
+html[data-site] .trial-meter { color: var(--site-muted); }
+html[data-site] .trial-meter.is-empty { color: var(--site-accent-text); }
+
+html[data-site] .preview-outline {
+  background: var(--site-canvas);
+  color: var(--site-ink);
+  border-color: var(--site-line);
+}
+html[data-site] .preview-outline-title,
+html[data-site] .preview-outline-status { color: var(--site-muted); }
+html[data-site] .preview-outline-toggle { border-color: var(--site-line-strong); color: var(--site-ink); }
+html[data-site] .preview-outline-toggle:hover { border-color: var(--site-accent-text); color: var(--site-accent-text); }
+html[data-site] .preview-outline-item { color: var(--site-ink); }
+html[data-site] .preview-outline-item.is-current {
+  background: color-mix(in srgb, var(--site-accent-text) 14%, transparent);
+  color: var(--site-accent-text);
+  box-shadow: inset 2px 0 var(--site-accent-text);
+}
+
+html[data-site] .preview-stage.is-source-empty { background: var(--site-canvas); }
+html[data-site] .preview-empty-card {
+  border: 1px dashed var(--site-line-strong);
+  background: var(--site-surface);
+  box-shadow: none;
+}
+html[data-site] .preview-empty-icon { background: color-mix(in srgb, var(--site-accent-text) 12%, transparent); color: var(--site-accent-text); }
+html[data-site] .preview-empty-title { color: var(--site-ink); }
+html[data-site] .preview-empty-note { color: var(--site-muted); }
+
+html[data-site] #stylePane > .control-group,
+html[data-site] #stylePane > .more-settings { border-color: var(--site-line); background: var(--site-canvas); box-shadow: none; }
+html[data-site] #stylePane > .control-group.is-open,
+html[data-site] #stylePane > .more-settings.is-open { background: var(--site-surface); }
+html[data-site] .group-label,
+html[data-site] .group-toggle,
+html[data-site] .vibe-label,
+html[data-site] .more-settings .group-label,
+html[data-site] .more-settings .group-toggle { color: var(--site-ink); letter-spacing: 0; text-transform: none; }
+html[data-site] .group-hint,
+html[data-site] .color-control,
+html[data-site] .range-control,
+html[data-site] .toggle-control,
+html[data-site] .select-control { color: var(--site-muted); }
+html[data-site] .theme-chip,
+html[data-site] .mood-card,
+html[data-site] .vibe-chip {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+  color: var(--site-ink);
+}
+html[data-site] .theme-chip b,
+html[data-site] .mood-card b,
+html[data-site] .theme-chip.is-active b,
+html[data-site] .mood-card.is-active b { color: var(--site-ink); }
+html[data-site] .theme-chip.is-active,
+html[data-site] .mood-card.is-active,
+html[data-site] .vibe-chip[aria-pressed="true"] {
+  border-color: var(--site-accent);
+  background: color-mix(in srgb, var(--site-accent) 12%, var(--site-surface));
+  color: var(--site-ink);
+  box-shadow: inset 3px 0 var(--site-accent);
+}
+html[data-site] .select-control select,
+html[data-site] .source-panel textarea {
+  border-color: var(--site-line-strong);
+  background: var(--site-canvas);
+  color: var(--site-ink);
+}
+html[data-site] .tool-menu,
+html[data-site] .history-popover,
+html[data-site] .studio-account-popover {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+  color: var(--site-ink);
+}
+html[data-site] .tool-menu-item,
+html[data-site] .studio-account-popover button { color: var(--site-ink); }
+html[data-site] .tool-menu-copy small,
+html[data-site] .history-list span { color: var(--site-muted); }
+html[data-site] .tool-menu-cost,
+html[data-site] .ghost-button:hover,
+html[data-site] .studio-help-trigger { color: var(--site-accent-text); }
+html[data-site] .trial-banner {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+  color: var(--site-ink);
+  box-shadow: none;
+}
+html[data-site] .block-style-panel {
+  background: #FAF7EF;
+  color: #201A13;
+  color-scheme: light;
+}
+html[data-site] .block-style-panel,
+html[data-site] .block-style-panel button,
+html[data-site] .block-style-panel strong { color: #201A13; }
+
+@media (max-width: 823px) {
+  html[data-site] .site-theme-switch { order: -1; }
+}

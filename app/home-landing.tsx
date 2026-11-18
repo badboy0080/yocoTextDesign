@@ -16,12 +16,14 @@ import {
 
 import { BrandLogo } from "@/components/brand-logo";
 import { HomeFaq } from "@/components/home-faq";
+import { HomeStory } from "@/components/home-story";
+import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import Link from "next/link";
 
-import { EyeTracker } from "@/components/eye-tracker";
-import { WorksRail } from "@/components/works-rail";
+import type { SampleTry } from "@/lib/load-sample-try";
 import { TRIAL_LIMIT } from "@/lib/trial-quota";
 import "./home.css";
+import "./home-shell.css";
 
 const STUDIO_URL = "/studio.html";
 
@@ -94,7 +96,7 @@ const PLANS = [
   { name: "专业版年付", price: "¥59.9", note: "每年", featured: false },
 ] as const;
 
-export function HomeLanding() {
+export function HomeLanding({ sample }: { sample: SampleTry }) {
   const [source, setSource] = useState("");
   const [hint, setHint] = useState("");
   const [pending, startTransition] = useTransition();
@@ -192,8 +194,6 @@ export function HomeLanding() {
   return (
     <div className="ol-home">
       <Script src="/analytics.js" strategy="afterInteractive" />
-      <div className="ol-glow ol-glow-a" aria-hidden="true" />
-      <div className="ol-glow ol-glow-b" aria-hidden="true" />
       <div className="ol-shell">
       <div className="ol-screen">
       <header className="ol-header">
@@ -206,38 +206,25 @@ export function HomeLanding() {
           <a href={STUDIO_URL}>工作室</a>
         </nav>
         <div className="ol-header-end">
-          <p className="ol-status"><span className="ol-pulse" aria-hidden="true" />STUDIO</p>
+          <SiteThemeSwitch />
           <HomeAccountLink />
         </div>
       </header>
 
       <main>
+        <div className="ol-stage">
+        <div className="ol-sticky">
         <section className="ol-hero" aria-labelledby="home-hero-title">
           <div className="ol-hero-copy">
             <p className="ol-kicker">YOOCO / LAYOUT</p>
             <h1 id="home-hero-title">
-              <span className="ol-hero-line">
-                <span className="ol-hero-words">好文章</span>
-                <span className="ol-eye ol-float" aria-hidden="true">
-                  <EyeTracker
-                    shape="Bubble"
-                    eyes="Slant"
-                    eyeScale={1.7}
-                    eyeWidth={0.85}
-                    follow={72}
-                    bounce={26}
-                    size={72}
-                    restAfter={2000}
-                    near={420}
-                  />
-                </span>
-                <span className="ol-hero-accent">值得好排版</span>
-              </span>
+              <span className="ol-hero-line">好文章</span>
+              <span className="ol-hero-accent">值得好排版</span>
             </h1>
             <p className="ol-hero-lead">Yooco：粘贴文章，一键做好公众号排版。</p>
           </div>
           <div className="ol-hero-panel">
-            <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+            <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
                 id="home-article-input"
@@ -281,8 +268,9 @@ export function HomeLanding() {
             </form>
           </div>
         </section>
-
-        <WorksRail />
+        </div>
+        <HomeStory sample={sample} />
+        </div>
 
         {SHOW_PRICING ? (
         <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">
@@ -322,6 +310,23 @@ export function HomeLanding() {
       </div>
       <HomeFaq />
       </div>
+      <form className="ol-dock" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+        <label className="sr-only" htmlFor="home-article-dock">文章原文</label>
+        <textarea
+          id="home-article-dock"
+          rows={1}
+          spellCheck={false}
+          placeholder="粘贴原文，免费试用"
+          value={source}
+          onChange={(event) => {
+            setSource(event.target.value);
+            if (hint) setHint("");
+          }}
+        />
+        <button type="submit" className="ol-primary" disabled={pending || importing}>
+          {pending ? "正在打开…" : "免费试用"}
+        </button>
+      </form>
     </div>
   );
 }

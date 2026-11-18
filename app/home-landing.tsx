@@ -16,7 +16,7 @@ import {
 
 import { BrandLogo } from "@/components/brand-logo";
 import { HomeFaq } from "@/components/home-faq";
-import { HomeStory } from "@/components/home-story";
+import { HomeHeroBook, HomeStory } from "@/components/home-story";
 import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import Link from "next/link";
 
@@ -212,19 +212,17 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
       </header>
 
       <main>
-        <div className="ol-stage">
-        <div className="ol-sticky">
         <section className="ol-hero" aria-labelledby="home-hero-title">
           <div className="ol-hero-copy">
-            <p className="ol-kicker">YOOCO / LAYOUT</p>
             <h1 id="home-hero-title">
-              <span className="ol-hero-line">好文章</span>
-              <span className="ol-hero-accent">值得好排版</span>
+              <span className="ol-hero-brand">Yooco ·</span>
+              <span className="ol-hero-line"><span>好文章</span></span>
+              <span className="ol-hero-line"><span className="ol-hero-accent">值得好排版</span></span>
             </h1>
-            <p className="ol-hero-lead">Yooco：粘贴文章，一键做好公众号排版。</p>
+            <p className="ol-hero-lead">粘贴文章，一键做好公众号排版。</p>
           </div>
-          <div className="ol-hero-panel">
-            <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+          <HomeHeroBook sample={sample} />
+          <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
                 id="home-article-input"
@@ -264,13 +262,18 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
                   {pending ? "正在打开…" : "免费试用"}
                   {!pending ? <ArrowRight size={18} aria-hidden="true" /> : null}
                 </button>
+                <a className="ol-secondary" href="#works-heading">看这篇排版</a>
               </div>
             </form>
-          </div>
         </section>
-        </div>
+        <button
+          type="button"
+          className="ol-skip"
+          onClick={() => document.documentElement.classList.remove("yooco-enter")}
+        >
+          跳过
+        </button>
         <HomeStory sample={sample} />
-        </div>
 
         {SHOW_PRICING ? (
         <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">

@@ -1,0 +1,28 @@
+{
+  "failures": [],
+  "hero": {
+    "title": "Yooco ·\n好文章\n值得好排版",
+    "login": "登录",
+    "hit": true,
+    "bookBg": "rgb(255, 255, 255)",
+    "shell": "rgb(245, 239, 227)",
+    "overflow": 0
+  },
+  "pinned": {
+    "pin": true,
+    "sticky": "sticky",
+    "freshBg": "rgb(255, 255, 255)",
+    "nocturneBg": "rgb(26, 26, 26)",
+    "same": true
+  },
+  "night": {
+    "shell": "rgb(15, 12, 10)",
+    "book": "rgb(255, 255, 255)"
+  },
+  "reduced": {
+    "enter": false,
+    "pin": false,
+    "sticky": "static",
+    "beats": 3
+  }
+}

@@ -79,6 +79,8 @@ function MetricsView() {
   }, []);
 
   useEffect(() => {
+    // 地址栏里的口令要填进输入框，再去读统计。
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the input aligned with the URL token
     setTokenInput(urlToken);
     setToken(urlToken);
     if (urlToken) void load(urlToken);

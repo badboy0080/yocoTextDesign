@@ -15,6 +15,8 @@ export function FaqTabsCard() {
     const id = window.location.hash.replace(/^#/, "");
     const item = SITE_FAQ.find((entry) => entry.id === id);
     if (!item) return;
+    // 服务端首屏读不到地址栏锚点，挂载后再打开对应分类。
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hash is only available after mount
     setTab(item.category);
     setOpenId(item.id);
   }, []);

@@ -14,6 +14,13 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
+    files: ["scripts/**/*.{js,ts}"],
+    rules: {
+      // useAccountReaderForTests 是检查脚本的替身，不是 React Hook。
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
+  {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
     rules: {
       // These files are vendored verbatim from shadcn@4.17.0. Keep the

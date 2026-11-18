@@ -204,6 +204,8 @@ export function EyeTracker({
   const box = useRef<HTMLDivElement>(null);
   const eyes = useRef<(SVGGElement | null)[]>([]);
   const knobs = useRef({ follow, bounce, eyeScale, restAfter, near });
+  // 眼睛跟着鼠标走，这一帧就要读到最新参数。
+  // eslint-disable-next-line react-hooks/refs -- the pointer loop reads the latest props from requestAnimationFrame
   knobs.current = { follow, bounce, eyeScale, restAfter, near };
   const base = STYLES[look] ?? STYLES.Slant;
   const eye = {
@@ -212,6 +214,7 @@ export function EyeTracker({
     r: base.r * eyeScale * eyeWidth * eyeRound,
   };
   const eyeNow = useRef(eye);
+  // eslint-disable-next-line react-hooks/refs -- the pointer loop reads the latest eye size from requestAnimationFrame
   eyeNow.current = eye;
 
   useEffect(() => {
@@ -446,9 +449,11 @@ export function EyeTracker({
       <svg className="eyt-ball" viewBox="0 0 100 100">
         <defs>
           <clipPath id={clip}>
+            {/* eslint-disable-next-line react-hooks/refs -- the morph writes this path from requestAnimationFrame */}
             <path ref={clipEl} d={shown.current ? outline(shown.current) : body} />
           </clipPath>
         </defs>
+        {/* eslint-disable-next-line react-hooks/refs -- the morph writes this path from requestAnimationFrame */}
         <path ref={bodyEl} className="eyt-body" d={shown.current ? outline(shown.current) : body} />
         <g clipPath={`url(#${clip})`}>
         {[0, 1].map((i) => (

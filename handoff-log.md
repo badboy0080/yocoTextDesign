@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+收拢本地检查（2026-11-18，未合并、未部署）：新增 `npm run check`。它跑现有 lint、TypeScript 类型检查，以及 `scripts/` 里 19 条能在本地跑完的检查。不连真实账号、数据库或正式站。开 PR 前要跑这条命令，并把命令和结果写在 PR 里。说明在 `docs/agents/checks.md`。没有加 GitHub Actions。没有截图。
+
 质感重点去底（2026-11-16，未合并、未部署）：质感的重点不再画深绿底白字芯片，只加粗，字色跟所在正文。预览和复制稿一起改。旧稿里的 `==重点==` 打开就按新样式显示，不用重新优化。淡金加粗、编号、金句卡、分隔、稀疏筛选和其它主题都没动。截图在 `docs/previews/texture-plain-before-mobile.png`、`texture-plain-after-mobile.png`、`texture-plain-before-desktop.png`、`texture-plain-after-desktop.png`、`texture-plain-before-copy.png`、`texture-plain-after-copy.png`。没有密钥，不是真实模型实测。没真机，没贴微信。
 
 质感重点变稀（2026-11-14，PR #97，已合进 master `47527d6`）：质感自动深绿底框大约收成原来的三成。同一篇假返回长稿，总规则会补 18 处自动底框，质感留下 5 处，少了 72%。留下的是「必须先改标题」「3 积分」「关键指标」「因此记住」「12%」。过渡句、普通段、和标题一模一样的短语不标。原文 ==松柏金== 还在，淡金加粗「松柏纸」没当绿底清掉。总规则没改，只改了质感配方，并在质感成稿上做筛选。只刷新、或拿已经写回 ==重点== 的旧稿再优化，都不会变少。截图在 `docs/previews/texture-density-before-mobile.png`、`texture-density-after-mobile.png`、`texture-density-after-desktop.png`、`texture-density-after-copy.png`。没有密钥，不是真实模型实测。没真机，没贴微信。
@@ -195,6 +197,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-18 收拢本地检查
+
+- 想做什么：把现有 lint 和散装检查收成一条 `npm run check`。只做这一步。不合 master，不部署。
+- 做成了什么：`npm run check` 跑 lint、`tsc --noEmit`，以及 19 条不依赖真实账号、数据库或正式站的检查。手机布局检查不再写死旧的脚本缓存号。AGENTS.md 写明开 PR 前要跑这条命令，并把结果写进 PR。
+- 改了哪些文件：`package.json`、`scripts/run-checks.mjs`、`scripts/check-mobile-layout.js`、`AGENTS.md`、`docs/agents/checks.md`、`eslint.config.mjs`、`components/ui/dot-pattern.tsx`，以及几处原有 lint 报错的忽略说明。`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：在本分支跑 `npm run check`，退出码 0。lint 仍有 9 条未使用变量警告，不导致失败。没有开开发服务器，没有截图。没有合并，没有部署。
+- 待办/风险：没有 GitHub Actions。邀请、账号和额度检查在没有 Pages Blob 凭证时用内存；总命令会先拿掉这两项凭证。单独跑脚本会沿用当前终端环境。眼睛动画、常见问题锚点、侧栏折叠、统计口令和作品页 logo 的原有写法只加了 lint 忽略，页面行为没改。
+
 ### 2026-11-14 工作台手机上能滚到主题和文末
 
 - 想做什么：按已合质感主题的 master，给工作台做手机适配。先用浏览器看真实问题，再小改。不合 master，不部署。
@@ -226,11 +236,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/smart-grid-menu.png`、`docs/previews/smart-grid-empty.png`、`docs/previews/smart-grid-article.png`、`docs/previews/smart-grid-media.png`、`docs/previews/smart-grid-points.png`、`docs/previews/smart-grid-theme.png`、`docs/previews/smart-grid-theme-dark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。预览空行敲 `/`，菜单里看见图文栅格、双栏图文、三列要点。插入双栏后是虚线空格，状态写着没有调用优化、也不计积分。点「用占位图」，标注改成「小市摊位」，说明改成小市那句。再插入三列，三格都是虚线，写上先列清单、货比三家、当天用完。复制稿里有这些字，并且有两张表。换到包豪，占位图变成黄块，卡片带硬投影。换到深空青，纸和格子一起变暗。从本机选了一张小图，原文里是 data 图片，状态仍写不计积分。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/88 已开，没有自己合并。合进 master 才会上正式站。不能把图片拖进格子，编辑器里本来也没有这条路。本机图片超过 2MB，或不是 png、jpg、gif、webp，会拒绝。公众号后台还没真贴，外链或 data 图可能要先上传素材库。没有做自由设行、列、间距。
-
-### 2026-11-04 划词才改字号、字体颜色和重点
-
-- 想做什么：预览里点块打开的参数面板改成划词才出现。段落是字号、字体颜色、重点样式。标题只出标题自己的项。原来的「标重点」并进这个面板。只开 PR，不合 master。
-- 做成了什么：划选段落、引用或卡片，浮层是字号、字体颜色、重点样式（标重点、取消重点、复制）。划选章节标题，只有字号和二级到六级。划选文章大标题，只有字号。点整块不再弹出旧的底色、间距、描边。标重点仍写回 `==重点==`。字号和字体颜色写在这一整块上，复制稿带上。不调用优化，不扣积分。
-- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-style-paragraph.png`、`docs/previews/selection-style-heading.png`、`docs/previews/selection-style-applied.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-block-style.js` 通过。本地静态页打开工作台，贴了一篇带大标题、小标题和两段正文的短文。点段落不出面板，也没有旧的黑胶囊。划「调字号」出字号、字体颜色、重点样式。划小标题只出字号和标题级别，没有重点。点三级后原文变成 `###`。字号改成 22、颜色改成蓝、再标重点，预览马上变，原文有 `==调字号==`。复制稿里有 22px、这颗蓝色，以及重点。取消重点后等号没了，蓝色还在。划大标题只有字号。截图在 `docs/previews/selection-style-*.png`。没有调用优化，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/86 已开，没有自己合并。合进 master 才会上正式站。字号和颜色作用在整块，不是只改划中的几个字。重点长什么样仍跟当前主题，没有另做一套重点皮肤。取消重点会拿掉包住选区的整处重点。不能跨块划。列表、代码和斜杠插出来的块不走这个面板。浏览器里如果还留着以前的底色、间距、描边，它们仍会画上，这次的恢复只清字号和字体颜色。公众号后台还没真贴。

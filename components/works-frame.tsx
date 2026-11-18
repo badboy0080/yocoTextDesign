@@ -72,6 +72,8 @@ export function WorksFrame() {
   }, [legacyStudio]);
 
   useEffect(() => {
+    // 服务端没有本地记录，挂载后再收起侧栏。
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only available after mount
     setCollapsed(localStorage.getItem("yooco-works-side") === "collapsed");
   }, []);
 
@@ -124,6 +126,8 @@ export function WorksFrame() {
     <div className={`works-app${collapsed ? " is-side-collapsed" : ""}`}>
       <aside className="works-side">
         <div className="works-brand-row">
+          {/* 整页回到首页，不用客户端跳转。 */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- full page load back to the home document */}
           <a className="works-logo" href="/" aria-label="Yooco 首页">
             <BrandLogo onDark />
             {/* eslint-disable-next-line @next/next/no-img-element */}

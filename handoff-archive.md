@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-04 划词才改字号、字体颜色和重点
+
+- 想做什么：预览里点块打开的参数面板改成划词才出现。段落是字号、字体颜色、重点样式。标题只出标题自己的项。原来的「标重点」并进这个面板。只开 PR，不合 master。
+- 做成了什么：划选段落、引用或卡片，浮层是字号、字体颜色、重点样式（标重点、取消重点、复制）。划选章节标题，只有字号和二级到六级。划选文章大标题，只有字号。点整块不再弹出旧的底色、间距、描边。标重点仍写回 `==重点==`。字号和字体颜色写在这一整块上，复制稿带上。不调用优化，不扣积分。
+- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-style-paragraph.png`、`docs/previews/selection-style-heading.png`、`docs/previews/selection-style-applied.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-block-style.js` 通过。本地静态页打开工作台，贴了一篇带大标题、小标题和两段正文的短文。点段落不出面板，也没有旧的黑胶囊。划「调字号」出字号、字体颜色、重点样式。划小标题只出字号和标题级别，没有重点。点三级后原文变成 `###`。字号改成 22、颜色改成蓝、再标重点，预览马上变，原文有 `==调字号==`。复制稿里有 22px、这颗蓝色，以及重点。取消重点后等号没了，蓝色还在。划大标题只有字号。截图在 `docs/previews/selection-style-*.png`。没有调用优化，没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/86 已开，没有自己合并。合进 master 才会上正式站。字号和颜色作用在整块，不是只改划中的几个字。重点长什么样仍跟当前主题，没有另做一套重点皮肤。取消重点会拿掉包住选区的整处重点。不能跨块划。列表、代码和斜杠插出来的块不走这个面板。浏览器里如果还留着以前的底色、间距、描边，它们仍会画上，这次的恢复只清字号和字体颜色。公众号后台还没真贴。
+
 ### 2026-11-04 空行敲斜杠插入排版块
 
 - 想做什么：按 2026-11-04 外网日扫第 2 条，工作台空行敲 `/` 出卡片菜单，一键插入排版块。只开 PR，不合 master。

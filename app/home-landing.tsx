@@ -16,14 +16,14 @@ import {
 
 import { BrandLogo } from "@/components/brand-logo";
 import { HomeFaq } from "@/components/home-faq";
-import { HomeHeroBook, HomeStory } from "@/components/home-story";
+import { HeroBook, HomeShowcase } from "@/components/home-showcase";
 import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import Link from "next/link";
 
-import type { SampleTry } from "@/lib/load-sample-try";
 import { TRIAL_LIMIT } from "@/lib/trial-quota";
 import "./home.css";
 import "./home-shell.css";
+import "./home-book.css";
 
 const STUDIO_URL = "/studio.html";
 
@@ -96,7 +96,7 @@ const PLANS = [
   { name: "专业版年付", price: "¥59.9", note: "每年", featured: false },
 ] as const;
 
-export function HomeLanding({ sample }: { sample: SampleTry }) {
+export function HomeLanding() {
   const [source, setSource] = useState("");
   const [hint, setHint] = useState("");
   const [pending, startTransition] = useTransition();
@@ -201,7 +201,7 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
           <BrandLogo onDark />
         </Link>
         <nav className="ol-nav" aria-label="页面">
-          <a href="#works-heading">精品模板</a>
+          <a href="#theme-shelf">精品模板</a>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
           <a href={STUDIO_URL}>工作室</a>
         </nav>
@@ -212,16 +212,17 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
       </header>
 
       <main>
-        <section className="ol-hero" aria-labelledby="home-hero-title">
-          <div className="ol-hero-copy">
+        <section className="bk-hero" aria-labelledby="home-hero-title">
+          <div className="bk-hero-copy">
+            <p className="bk-brand">Yooco · 好文章值得好排版</p>
+            <p className="bk-kicker">给公众号作者的排版工具</p>
             <h1 id="home-hero-title">
-              <span className="ol-hero-brand">Yooco ·</span>
-              <span className="ol-hero-line"><span>好文章</span></span>
-              <span className="ol-hero-line"><span className="ol-hero-accent">值得好排版</span></span>
+              <span className="bk-line"><span>把文章</span></span>
+              <span className="bk-line"><span className="bk-accent">做成一份好看的稿。</span></span>
             </h1>
-            <p className="ol-hero-lead">粘贴文章，一键做好公众号排版。</p>
+            <p className="bk-lead">贴上原文，选一个主题。预览里看到的，就是复制到公众号的样子。</p>
           </div>
-          <HomeHeroBook sample={sample} />
+          <HeroBook />
           <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
@@ -262,7 +263,7 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
                   {pending ? "正在打开…" : "免费试用"}
                   {!pending ? <ArrowRight size={18} aria-hidden="true" /> : null}
                 </button>
-                <a className="ol-secondary" href="#works-heading">看这篇排版</a>
+                <a className="ol-secondary" href="#piece-01">看样稿</a>
               </div>
             </form>
         </section>
@@ -273,7 +274,7 @@ export function HomeLanding({ sample }: { sample: SampleTry }) {
         >
           跳过
         </button>
-        <HomeStory sample={sample} />
+        <HomeShowcase />
 
         {SHOW_PRICING ? (
         <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">

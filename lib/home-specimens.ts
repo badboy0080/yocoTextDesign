@@ -8,7 +8,14 @@
 const SANS = "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif";
 const SERIF = "'Songti SC','STSong','SimSun',serif";
 
-export type MondrianKind = "photo" | "a" | "b" | "c" | "d";
+export type Plate = {
+  src: string;
+  alt: string;
+  credit: string;
+  position: string;
+  /* 大于 1 时从底部放大，把空绢裁掉，留下村落和山。 */
+  zoom?: number;
+};
 
 export type SpecimenTheme = {
   id: string;
@@ -27,7 +34,7 @@ export type Specimen = {
   credit: string;
   source: string;
   html: string;
-  mondrian: MondrianKind;
+  plate?: Plate;
   note: string;
 };
 
@@ -212,7 +219,12 @@ export const HERO_SPECIMEN: Specimen = {
   author: "曹雪芹",
   credit: "红楼梦 · 曹雪芹",
   source: "https://zh.wikisource.org/wiki/紅樓夢/第001回",
-  mondrian: "photo",
+  plate: {
+    src: "/art/zhou-fang-court-ladies.jpg",
+    alt: "周昉《簪花仕女图》",
+    credit: "周昉 《簪花仕女图》，公版",
+    position: "36% 48%",
+  },
   note: "第一回开篇。清氧绿只改版式，句子来自维基文库。",
   html: page([
     { heading: "甄士隐梦幻识通灵" },
@@ -230,7 +242,6 @@ export const SECTION_SPECIMENS: Specimen[] = [
     author: "陶渊明",
     credit: "桃花源记 · 陶渊明",
     source: "https://zh.wikisource.org/wiki/桃花源記",
-    mondrian: "a",
     note: "晋太元中的那一段。素墨。",
     html: page([
       { heading: "桃花源" },
@@ -246,7 +257,6 @@ export const SECTION_SPECIMENS: Specimen[] = [
     author: "Jane Austen",
     credit: "Pride and Prejudice · Jane Austen",
     source: "https://en.wikisource.org/wiki/Page:Austen_-_Pride_and_Prejudice,_third_edition,_1817.djvu/11",
-    mondrian: "b",
     note: "1817 年英文第三版第一章。深空青。正文不翻译。",
     html: page([
       { heading: "Chapter I" },
@@ -263,7 +273,6 @@ export const SECTION_SPECIMENS: Specimen[] = [
     author: "鲁迅",
     credit: "故乡 · 鲁迅",
     source: "https://zh.wikisource.org/wiki/故鄉",
-    mondrian: "c",
     note: "开篇回乡。质感。",
     html: page([
       { heading: "故乡" },
@@ -280,8 +289,13 @@ export const SECTION_SPECIMENS: Specimen[] = [
     author: "苏轼",
     credit: "前赤壁赋 · 苏轼",
     source: "https://zh.wikisource.org/wiki/前赤壁賦",
-    mondrian: "photo",
-    note: "壬戌之秋。手札橙。左页是蒙德里安原作。",
+    plate: {
+      src: "/art/guo-xi-early-spring.jpg",
+      alt: "郭熙《早春图》",
+      credit: "郭熙 《早春图》，公版",
+      position: "center center",
+    },
+    note: "壬戌之秋。手札橙。左页是郭熙《早春图》。",
     html: page([
       { heading: "前赤壁赋" },
       { text: "壬戌之秋，七月既望，蘇子与客泛舟游于赤壁之下。清風徐來，水波不興。舉酒属客，誦《明月》之詩，歌《窈窕》之章。少焉，月出於東山之上，徘徊於斗、牛之間。白露橫江，水光接天。縱一葦之所如，凌万頃之茫然。浩浩乎如馮虛御風，而不知其所止；飄飄乎如遺世獨立，羽化而登僊。", phrase: "羽化而登僊" },
@@ -298,7 +312,12 @@ export const SHELF_SPECIMENS: Specimen[] = [
     author: "吴承恩",
     credit: "西游记 · 吴承恩",
     source: "https://zh.wikisource.org/wiki/西遊記/第001回",
-    mondrian: "a",
+    plate: {
+      src: "/art/hokusai-great-wave.jpg",
+      alt: "葛饰北斋《神奈川冲浪里》",
+      credit: "葛饰北斋 《神奈川冲浪里》，公版",
+      position: "center 42%",
+    },
     note: "花果山。报章。",
     html: page([
       { heading: "花果山" },
@@ -314,7 +333,13 @@ export const SHELF_SPECIMENS: Specimen[] = [
     author: "施耐庵",
     credit: "水浒传 · 施耐庵",
     source: "https://zh.wikisource.org/wiki/水滸傳_(100回本)/第001回",
-    mondrian: "b",
+    plate: {
+      src: "/art/wang-ximeng-thousand-li.jpg",
+      alt: "王希孟《千里江山图》",
+      credit: "王希孟 《千里江山图》，公版",
+      position: "center bottom",
+      zoom: 1.85,
+    },
     note: "百回本第一回朝会。包豪。",
     html: page([
       { heading: "张天师祈禳瘟疫" },
@@ -330,7 +355,12 @@ export const SHELF_SPECIMENS: Specimen[] = [
     author: "William Shakespeare",
     credit: "Sonnet 18 · William Shakespeare",
     source: "https://en.wikisource.org/wiki/Page:Shakespeare%27s_Sonnets.djvu/62",
-    mondrian: "c",
+    plate: {
+      src: "/art/van-gogh-almond-blossom.jpg",
+      alt: "梵高《盛开的杏花》",
+      credit: "梵高 《盛开的杏花》，公版",
+      position: "center 38%",
+    },
     note: "1883 年罗尔夫编本第 18 首。静山。",
     html: page([
       { heading: "Sonnet 18" },
@@ -346,7 +376,12 @@ export const SHELF_SPECIMENS: Specimen[] = [
     author: "安徒生",
     credit: "The Little Match-seller · Andersen / Paull",
     source: "https://en.wikisource.org/wiki/Page:Hans_Andersen%27s_Fairy_Tales_(1888).djvu/260",
-    mondrian: "d",
+    plate: {
+      src: "/art/bruegel-hunters-in-the-snow.jpg",
+      alt: "勃鲁盖尔《雪中猎人》",
+      credit: "勃鲁盖尔 《雪中猎人》，公版",
+      position: "36% 58%",
+    },
     note: "1888 年 Paull 英译开篇。表情。",
     html: page([
       { heading: "The Little Match-seller" },

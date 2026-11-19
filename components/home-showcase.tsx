@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   HERO_SPECIMEN,
   SECTION_SPECIMENS,
   SHELF_SPECIMENS,
-  type MondrianKind,
+  type Plate,
   type Specimen,
 } from "@/lib/home-specimens";
-
-const MONDRIAN_SRC = "/art/mondrian-composition-ii-1930.jpg";
 
 function SpecimenSheet({ specimen, compact }: { specimen: Specimen; compact?: boolean }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -65,36 +63,60 @@ function SpecimenSheet({ specimen, compact }: { specimen: Specimen; compact?: bo
   );
 }
 
-function Mondrian({ kind, label }: { kind: MondrianKind; label?: string }) {
-  if (kind === "photo") {
-    return (
-      <figure className="bk-art">
-        <img src={MONDRIAN_SRC} alt="彼埃·蒙德里安，《红、蓝、黄的构图》，1930" />
-        <figcaption>蒙德里安，1930，公版</figcaption>
-      </figure>
-    );
-  }
+function PlatePage({ plate }: { plate: Plate }) {
   return (
-    <div className={`bk-mondrian is-${kind}`} role="img" aria-label={label || "蒙德里安式色块"}>
-      <i /><i /><i /><i />
-    </div>
+    <figure className="bk-art">
+      <img src={plate.src} alt={plate.alt} style={{ objectPosition: plate.position, transform: plate.zoom ? `scale(${plate.zoom})` : undefined, transformOrigin: "center bottom" }} />
+      <figcaption>{plate.credit}</figcaption>
+    </figure>
   );
 }
 
-function Spread({ specimen, tilt }: { specimen: Specimen; tilt?: boolean }) {
+function Spread({ specimen, tilt, roomy }: { specimen: Specimen; tilt?: boolean; roomy?: boolean }) {
   const tiltRef = useRef<HTMLDivElement>(null);
   useBookTilt(tiltRef, Boolean(tilt));
+  const plate = specimen.plate;
   return (
-    <div className="bk-book" key={specimen.id}>
+    <div className={roomy ? "bk-book is-roomy" : "bk-book"} key={specimen.id}>
       <div className="bk-book-tilt" ref={tiltRef}>
-        <div className="bk-spread">
-          <Mondrian kind={specimen.mondrian} label={`${specimen.theme.label}的色块`} />
-          <div className="bk-leaf">
-            <SpecimenSheet specimen={specimen} />
+        <div className="bk-volume">
+          <div className="bk-spread">
+            {plate ? <PlatePage plate={plate} /> : null}
+            <div className="bk-leaf">
+              <SpecimenSheet specimen={specimen} />
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function placeOf(bookIndex: number, current: number, count: number) {
+  let delta = bookIndex - current;
+  if (delta > count / 2) delta -= count;
+  if (delta < -count / 2) delta += count;
+  if (delta === 0) return "center";
+  if (delta === -1) return "left";
+  if (delta === 1) return "right";
+  return delta < 0 ? "far-left" : "far-right";
+}
+
+function StandingBook({ book, place, onOpen }: { book: Specimen; place: string; onOpen: () => void }) {
+  const plate = book.plate;
+  if (!plate) return null;
+  return (
+    <button type="button" className="bk-stand" data-place={place} onClick={onOpen}>
+      <span className="bk-stand-face">
+        <img src={plate.src} alt="" style={{ objectPosition: plate.position, transform: plate.zoom ? `scale(${plate.zoom})` : undefined, transformOrigin: "center bottom" }} />
+        <span className="bk-stand-open">打开</span>
+        <span className="bk-stand-copy">
+          <span>{book.theme.label}</span>
+          <strong>{book.work}</strong>
+          <em>{book.author}</em>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -169,7 +191,7 @@ function OpenReading({ specimen, onClose }: { specimen: Specimen; onClose: () =>
   const [large, setLarge] = useState(false);
   return (
     <article className={large ? "bk-open is-large" : "bk-open"} id="opened-book">
-      <Spread specimen={specimen} />
+      <Spread specimen={specimen} roomy />
       <div className="bk-open-copy">
         <p className="bk-num">{specimen.theme.label}</p>
         <h3>{specimen.work}</h3>
@@ -191,7 +213,6 @@ export function HomeShowcase() {
   const [opened, setOpened] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const count = books.length;
-  const current = books[index] ?? books[0];
   const openedBook = books.find((book) => book.id === opened) ?? null;
 
   useEffect(() => {
@@ -199,7 +220,9 @@ export function HomeShowcase() {
   }, []);
 
   function turn(step: number) {
-    setIndex((value) => (value + step + count) % count);
+    const next = (index + step + count) % count;
+    setIndex(next);
+    setOpened((current) => (current ? books[next].id : null));
   }
 
   function openBook(book: Specimen) {
@@ -210,8 +233,6 @@ export function HomeShowcase() {
       document.getElementById("opened-book")?.scrollIntoView({ block: "start", behavior: "auto" });
     });
   }
-
-  const slots = [-1, 0, 1].map((offset) => books[(index + offset + count) % count]);
 
   return (
     <>
@@ -293,7 +314,7 @@ export function HomeShowcase() {
         </div>
       </section>
 
-      <section className="bk-shelf" id="theme-shelf" aria-labelledby="home-shelf-title">
+      <section className={openedBook ? "bk-shelf is-reading" : "bk-shelf"} id="theme-shelf" aria-labelledby="home-shelf-title">
         <div className="bk-shelf-head">
           <div>
             <h2 id="home-shelf-title">主题书架</h2>
@@ -304,30 +325,18 @@ export function HomeShowcase() {
             <button type="button" aria-label="下一本" onClick={() => turn(1)}>→</button>
           </div>
         </div>
-        <div className="bk-shelf-stage">
-          {slots.map((book, slot) => (
-            <button
-              key={`${book.id}-${slot}`}
-              type="button"
-              className={slot === 1 ? "bk-cover is-center" : "bk-cover"}
-              style={{ "--cover": book.theme.pageColor, "--cover-ink": book.theme.textColor } as CSSProperties}
-              onClick={() => openBook(book)}
-            >
-              <Mondrian kind={book.mondrian} label="" />
-              <span className="bk-cover-theme">{book.theme.label}</span>
-              <strong>{book.work}</strong>
-              <em>{book.author}</em>
-            </button>
-          ))}
-        </div>
-        <div className="bk-shelf-list">
-          {books.map((book) => (
-            <button key={book.id} type="button" className={book.id === current.id ? "is-current" : ""} onClick={() => openBook(book)}>
-              <span>{book.theme.label}</span>
-              {book.work}
-            </button>
-          ))}
-        </div>
+        {openedBook ? null : (
+          <div className="bk-shelf-stage">
+            {books.map((book, bookIndex) => (
+              <StandingBook
+                key={book.id}
+                book={book}
+                place={placeOf(bookIndex, index, count)}
+                onOpen={() => openBook(book)}
+              />
+            ))}
+          </div>
+        )}
         {openedBook ? <OpenReading specimen={openedBook} onClose={() => { setOpened(null); document.getElementById("theme-shelf")?.scrollIntoView({ block: "start" }); }} /> : null}
         {!ready ? (
           <div className="bk-reads">

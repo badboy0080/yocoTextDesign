@@ -1,5 +1,46 @@
-Piet Mondrian, Composition with Red, Blue, and Yellow (Composition II), 1930.
-Source: Wikimedia Commons
-https://commons.wikimedia.org/wiki/File:Piet_Mondriaan,_1930_-_Mondrian_Composition_II_in_Red,_Blue,_and_Yellow.jpg
-License: Public domain (artist died 1944; PD-old-auto-expired / PD-Art).
-Do not claim Yooco created this painting. Keep a short credit in repo (this file) and, if it fits the UI, a discreet caption.
+Yooco 首页书页用图说明（均为公版，来自维基共享资源 Wikimedia Commons，PD / PD-Art）
+
+1. 周昉《簪花仕女图》（唐）
+   文件：zhou-fang-page-crop.jpg（从原卷截取完整仕女与玉兰一段，避免切头切脚、避免左侧裱边）
+   原文件：File:Zhou Fang. Court Ladies Wearing Flowered Headdresses. (46x180) Liaoning Provincial Museum, Shenyang..jpg
+   来源：https://commons.wikimedia.org/wiki/File:Zhou_Fang._Court_Ladies_Wearing_Flowered_Headdresses._(46x180)_Liaoning_Provincial_Museum,_Shenyang..jpg
+   许可：Public domain
+   馆藏：辽宁省博物馆
+
+2. 郭熙《早春图》（北宋，约 1072 年）
+   文件：guo-xi-early-spring-web.jpg
+   原文件：File:Guo Xi - Early Spring (large).jpg
+   来源：https://commons.wikimedia.org/wiki/File:Guo_Xi_-_Early_Spring_(large).jpg
+   许可：Public domain
+   馆藏：台北故宫博物院
+
+3. 王希孟《千里江山图》（北宋，1113 年）选段
+   文件：wang-ximeng-page-crop-a.jpg / wang-ximeng-page-crop-b.jpg（从卷上截取可铺满书页的一段）
+   原文件：File:1c Wang Ximeng. A Thousand Li of Rivers and Mountains. (51,3x1191,5cm)1113. (section) Palace museum, Beijing.jpg
+   来源：https://commons.wikimedia.org/wiki/File:1c_Wang_Ximeng._A_Thousand_Li_of_Rivers_and_Mountains._(51,3x1191,5cm)1113._(section)_Palace_museum,_Beijing.jpg
+   许可：Public domain
+   馆藏：故宫博物院
+
+4. 葛饰北斋《神奈川冲浪里》（约 1831 年）
+   文件：hokusai-great-wave-web.jpg
+   原文件：File:Tsunami by hokusai 19th century.jpg
+   来源：https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg
+   许可：Public domain
+
+5. 文森特·梵高《盛开的杏花》（1890 年）
+   文件：van-gogh-almond-blossom-web.jpg
+   原文件：File:Vincent van Gogh - Almond blossom - Google Art Project.jpg
+   来源：https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg
+   许可：Public domain
+   馆藏：梵高博物馆
+
+6. 彼得·勃鲁盖尔（老）《雪中猎人》（1565 年）
+   文件：bruegel-hunters-in-the-snow-web.jpg
+   原文件：File:Pieter Bruegel the Elder - Hunters in the Snow (Winter) - Google Art Project.jpg
+   来源：https://commons.wikimedia.org/wiki/File:Pieter_Bruegel_the_Elder_-_Hunters_in_the_Snow_(Winter)_-_Google_Art_Project.jpg
+   许可：Public domain
+   馆藏：维也纳艺术史博物馆
+
+页面上的署名格式示例：「周昉 《簪花仕女图》，公版」
+
+不要使用蒙德里安，也不要使用竞品 Alhora 的插画或橄榄树静物图。

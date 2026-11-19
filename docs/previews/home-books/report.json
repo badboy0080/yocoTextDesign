@@ -1,0 +1,27 @@
+{
+  "failures": [],
+  "hero": {
+    "src": "/art/zhou-fang-court-ladies.jpg",
+    "alt": "周昉《簪花仕女图》",
+    "hit": true,
+    "mondrian": false,
+    "overflow": 0
+  },
+  "shelf": {
+    "center": "/art/hokusai-great-wave.jpg",
+    "faces": [
+      "/art/hokusai-great-wave.jpg",
+      "/art/wang-ximeng-thousand-li.jpg",
+      "/art/van-gogh-almond-blossom.jpg",
+      "/art/bruegel-hunters-in-the-snow.jpg"
+    ],
+    "open": true
+  },
+  "turned": "水浒传",
+  "open": {
+    "src": "/art/wang-ximeng-thousand-li.jpg",
+    "text": "王希孟 《千里江山图》，公版\n\n包豪\n\n水浒传\n\n施耐庵\n\n百回本第一回朝会。包豪。\n\n水浒传 · 施耐庵\n\n看这一页\n回到书架",
+    "tall": true,
+    "faqBelow": true
+  }
+}

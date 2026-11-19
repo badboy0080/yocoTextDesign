@@ -3,18 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#F5EFE3" />
     <title>Yooco · 工作台</title>
     <meta name="description" content="在 Yooco 工作台里改文章版式，调完复制到微信。未登录也可以先试用。" />
     <link rel="canonical" href="https://www.yoooco.com/studio.html" />
     <link rel="icon" href="/favicon.svg?v=bubble-c-v1" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap" />
-    <link rel="stylesheet" href="./obsidian-lime.css?v=obsidian-lime-v1" />
+    <script src="./site-theme-boot.js?v=site-paper-v2"></script>
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=texture-plain-v1" />
     <link rel="stylesheet" href="./studio-ui.css?v=mobile-fit-v1" />
+    <link rel="stylesheet" href="./site-chrome.css?v=site-paper-v2" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
   <body>
@@ -67,6 +65,10 @@
     <header class="topbar topbar-buttons">
       <h1 class="studio-title">工作台</h1>
       <div class="topbar-actions">
+        <div class="site-theme-switch" role="group" aria-label="网站皮肤">
+          <button type="button" data-site-value="day" aria-pressed="false">白天</button>
+          <button type="button" data-site-value="night" aria-pressed="false">黑夜</button>
+        </div>
         <div class="tool-menu-wrap">
           <button class="tool-menu-button" id="toolMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="toolMenu">工具</button>
           <div class="tool-menu" id="toolMenu" role="menu" hidden></div>
@@ -77,7 +79,7 @@
           <button class="history-open" id="historyOpen" type="button" aria-expanded="false" aria-controls="historyPopover">历史</button>
           <div class="history-popover" id="historyPopover" hidden></div>
         </div>
-        <a class="studio-login" id="studioLogin" href="/login">Log in</a>
+        <a class="studio-login" id="studioLogin" href="/login">登录</a>
       </div>
     </header>
     <div class="trial-banner" id="trialBanner" hidden role="status">
@@ -97,11 +99,28 @@
     <main id="top" class="app-shell">
       <div class="lab-shell">
       <section class="lab-grid" aria-label="工作台">
+        <aside class="preview-outline" id="previewOutline" aria-label="大纲">
+          <div class="preview-outline-head">
+            <span class="preview-outline-title">大纲</span>
+            <button type="button" class="preview-outline-toggle" id="previewOutlineToggle" aria-expanded="true" aria-controls="previewOutlineBody">收起</button>
+          </div>
+          <div class="preview-outline-body" id="previewOutlineBody">
+            <label class="preview-outline-search">
+              <span>搜索标题</span>
+              <input id="previewOutlineSearch" type="search" placeholder="搜索标题" autocomplete="off" enterkeyhint="search" />
+            </label>
+            <p class="preview-outline-status" id="previewOutlineStatus">这篇还是空的</p>
+            <nav class="preview-outline-nav" id="previewOutlineNav" aria-label="预览标题" hidden></nav>
+          </div>
+        </aside>
         <section class="preview-panel">
           <div class="preview-header">
-            <div class="editor-view-tabs" role="tablist" aria-label="编辑视图">
-              <button type="button" id="resultViewTab" role="tab" aria-selected="true" aria-controls="previewStage">排版结果</button>
-              <button type="button" id="sourceViewTab" role="tab" aria-selected="false" aria-controls="sourcePanel" tabindex="-1">原文</button>
+            <div class="preview-header-main">
+              <div class="editor-view-tabs" role="tablist" aria-label="编辑视图">
+                <button type="button" id="resultViewTab" role="tab" aria-selected="true" aria-controls="previewStage">排版结果</button>
+                <button type="button" id="sourceViewTab" role="tab" aria-selected="false" aria-controls="sourcePanel" tabindex="-1">原文</button>
+              </div>
+              <button type="button" class="phone-preview-toggle" id="phonePreviewToggle" aria-pressed="false">手机预览</button>
             </div>
             <div class="preview-header-actions">
               <p class="copy-feedback" id="copyFeedback" role="status"></p>
@@ -109,16 +128,6 @@
             </div>
           </div>
           <div class="preview-frame" id="previewFrame">
-          <aside class="preview-outline" id="previewOutline" aria-label="大纲">
-            <div class="preview-outline-head">
-              <span class="preview-outline-title">大纲</span>
-              <button type="button" class="preview-outline-toggle" id="previewOutlineToggle" aria-expanded="true" aria-controls="previewOutlineBody">收起</button>
-            </div>
-            <div class="preview-outline-body" id="previewOutlineBody">
-              <p class="preview-outline-status" id="previewOutlineStatus">这篇还是空的</p>
-              <nav class="preview-outline-nav" id="previewOutlineNav" aria-label="预览标题" hidden></nav>
-            </div>
-          </aside>
           <div class="source-panel" id="sourcePanel" role="tabpanel" aria-labelledby="sourceViewTab" hidden>
             <label for="articleInput">文章原文</label>
             <p id="sourceHelp">支持纯文字和 Markdown，修改后会同步更新排版。</p>
@@ -135,12 +144,20 @@
                 <button class="ghost-button preview-empty-try" id="sampleTryButton" type="button">用示例文章试一下</button>
               </div>
             </div>
-            <article class="web-preview" aria-label="公众号文章预览">
-              <div class="article-page" id="articlePage">
-                <h2 id="articleTitle" contenteditable="true" spellcheck="false" hidden></h2>
-                <div id="articleBody" class="article-content"></div>
+            <div class="wechat-phone" id="wechatPhone">
+              <div class="wechat-phone-top" aria-hidden="true">
+                <span class="wechat-phone-time">9:41</span>
+                <strong>微信</strong>
+                <span class="wechat-phone-sub">公众号</span>
               </div>
-            </article>
+              <article class="web-preview" aria-label="公众号文章预览">
+                <div class="article-page" id="articlePage">
+                  <h2 id="articleTitle" contenteditable="true" spellcheck="false" hidden></h2>
+                  <div id="articleBody" class="article-content"></div>
+                </div>
+              </article>
+              <div class="wechat-phone-home" aria-hidden="true"></div>
+            </div>
           </div>
           </div>
           <div class="preview-footer">
@@ -433,6 +450,7 @@
       </div>
     </div>
 
+    <script src="./site-theme.js?v=site-paper-v2"></script>
     <script src="./analytics.js?v=credits-tools-v1"></script>
     <script src="./themes.js?v=texture-v1"></script>
     <script src="./typeset-polish.js?v=engine-trio-v1"></script>
@@ -440,6 +458,6 @@
     <script src="./block-style.js?v=selection-style-v1"></script>
     <script src="./slash-cards.js?v=smart-grid-v1"></script>
     <script src="./app.js?v=texture-plain-v1"></script>
-    <script src="./preview-outline.js?v=texture-v1"></script>
+    <script src="./preview-outline.js?v=outline-search-v1"></script>
   </body>
 </html>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site-seo";
+import siteThemeBoot from "../public/site-theme-boot.js?raw";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.siteUrl),
@@ -19,7 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: siteThemeBoot }} />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -92,6 +92,8 @@
     const nav = doc.querySelector("#previewOutlineNav");
     if (!outline || !stage || !page || !toggle || !body || !status || !nav) return;
 
+    const search = doc.querySelector("#previewOutlineSearch");
+    const phoneButton = doc.querySelector("#phonePreviewToggle");
     const view = doc.defaultView;
     const narrowQuery = view.matchMedia("(max-width: 823px)");
     let saved = "";
@@ -99,8 +101,15 @@
     let open = saved === "open" || (saved !== "shut" && !narrowQuery.matches);
     let items = [];
     let active = -1;
+    let query = "";
     let timer = 0;
     let frame = 0;
+
+    function scrollRoot() {
+      const screen = stage.querySelector(".web-preview");
+      if (stage.classList.contains("is-phone-preview") && screen) return screen;
+      return stage;
+    }
 
     function setOpen(next, persist) {
       open = Boolean(next);
@@ -116,6 +125,26 @@
       return next.every((item, index) => item.key === items[index].key && item.text === items[index].text && item.level === items[index].level && item.indent === items[index].indent);
     }
 
+    function applyFilter() {
+      const needle = query.trim().toLowerCase();
+      const buttons = [...nav.querySelectorAll(".preview-outline-item")];
+      if (!buttons.length) return;
+      let shown = 0;
+      buttons.forEach((button) => {
+        const match = !needle || String(button.textContent || "").toLowerCase().includes(needle);
+        button.hidden = !match;
+        if (match) shown += 1;
+      });
+      if (needle && shown === 0) {
+        status.hidden = false;
+        status.textContent = "没有匹配的标题";
+        nav.hidden = true;
+        return;
+      }
+      status.hidden = true;
+      nav.hidden = false;
+    }
+
     function paintActive() {
       const buttons = nav.querySelectorAll(".preview-outline-item");
       buttons.forEach((button, index) => {
@@ -125,7 +154,7 @@
         else button.removeAttribute("aria-current");
       });
       const current = buttons[active];
-      if (!current) return;
+      if (!current || current.hidden) return;
       const box = body.getBoundingClientRect();
       const btn = current.getBoundingClientRect();
       if (btn.top < box.top) body.scrollTop -= box.top - btn.top;
@@ -138,11 +167,20 @@
         refresh();
         return;
       }
-      const stageRect = stage.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const top = stage.scrollTop + (elRect.top - stageRect.top) - 16;
-      const reduce = view.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      stage.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+      const run = () => {
+        const root = scrollRoot();
+        const rootRect = root.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const top = root.scrollTop + (elRect.top - rootRect.top) - 16;
+        const reduce = view.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        root.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+      };
+      if (stage.hidden) {
+        doc.querySelector("#resultViewTab")?.click();
+        view.requestAnimationFrame(run);
+        return;
+      }
+      run();
     }
 
     function renderList(next, mode) {
@@ -156,39 +194,42 @@
         active = -1;
         return;
       }
-      if (sameItems(next)) return;
-      const previousKey = items[active]?.key;
-      items = next;
-      nav.replaceChildren();
-      next.forEach((item, index) => {
-        const button = doc.createElement("button");
-        button.type = "button";
-        button.className = "preview-outline-item";
-        button.style.setProperty("--outline-indent", `${item.indent}px`);
-        button.dataset.level = String(item.level);
-        button.textContent = item.text;
-        button.title = item.text;
-        button.addEventListener("click", () => {
-          active = index;
-          paintActive();
-          scrollToItem(items[index]);
+      if (!sameItems(next)) {
+        const previousKey = items[active]?.key;
+        items = next;
+        nav.replaceChildren();
+        next.forEach((item, index) => {
+          const button = doc.createElement("button");
+          button.type = "button";
+          button.className = "preview-outline-item";
+          button.style.setProperty("--outline-indent", `${item.indent}px`);
+          button.dataset.level = String(item.level);
+          button.textContent = item.text;
+          button.title = item.text;
+          button.addEventListener("click", () => {
+            active = index;
+            paintActive();
+            scrollToItem(items[index]);
+          });
+          nav.append(button);
         });
-        nav.append(button);
-      });
-      const kept = next.findIndex((item) => item.key === previousKey);
-      active = kept >= 0 ? kept : -1;
+        const kept = next.findIndex((item) => item.key === previousKey);
+        active = kept >= 0 ? kept : -1;
+      }
+      applyFilter();
     }
 
     function measureActive() {
       if (!items.length || stage.hidden) return;
-      const stageRect = stage.getBoundingClientRect();
-      const line = stageRect.top + Math.min(120, Math.max(64, stage.clientHeight * 0.2));
+      const root = scrollRoot();
+      const rootRect = root.getBoundingClientRect();
+      const line = rootRect.top + Math.min(120, Math.max(64, root.clientHeight * 0.2));
       const tops = items.map((item) => (item.key?.isConnected ? item.key.getBoundingClientRect().top : Number.POSITIVE_INFINITY));
       if (tops.every((top) => !Number.isFinite(top))) {
         refresh();
         return;
       }
-      const atBottom = stage.scrollTop + stage.clientHeight >= stage.scrollHeight - 8;
+      const atBottom = root.scrollTop + root.clientHeight >= root.scrollHeight - 8;
       const next = activeOutlineIndex(tops, line, atBottom);
       if (next === active) return;
       active = next;
@@ -196,7 +237,6 @@
     }
 
     function refresh() {
-      outline.hidden = Boolean(stage.hidden);
       const empty = stage.classList.contains("is-source-empty");
       const records = empty ? [] : readHeadingRecords(page);
       const next = outlineItemsFromRecords(records);
@@ -228,7 +268,20 @@
     }
 
     toggle.addEventListener("click", () => setOpen(!open, true));
+    search?.addEventListener("input", () => {
+      query = search.value || "";
+      applyFilter();
+      paintActive();
+    });
+    phoneButton?.addEventListener("click", () => {
+      const next = phoneButton.getAttribute("aria-pressed") !== "true";
+      phoneButton.setAttribute("aria-pressed", next ? "true" : "false");
+      stage.classList.toggle("is-phone-preview", next);
+      if (next && stage.hidden) doc.querySelector("#resultViewTab")?.click();
+      view.requestAnimationFrame(() => measureActive());
+    });
     stage.addEventListener("scroll", onScroll, { passive: true });
+    stage.querySelector(".web-preview")?.addEventListener("scroll", onScroll, { passive: true });
     setOpen(open, false);
     refresh();
 

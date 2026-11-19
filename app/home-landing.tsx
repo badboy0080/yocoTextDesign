@@ -16,12 +16,14 @@ import {
 
 import { BrandLogo } from "@/components/brand-logo";
 import { HomeFaq } from "@/components/home-faq";
+import { HeroBook, HomeShowcase } from "@/components/home-showcase";
+import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import Link from "next/link";
 
-import { EyeTracker } from "@/components/eye-tracker";
-import { WorksRail } from "@/components/works-rail";
 import { TRIAL_LIMIT } from "@/lib/trial-quota";
 import "./home.css";
+import "./home-shell.css";
+import "./home-book.css";
 
 const STUDIO_URL = "/studio.html";
 
@@ -192,8 +194,6 @@ export function HomeLanding() {
   return (
     <div className="ol-home">
       <Script src="/analytics.js" strategy="afterInteractive" />
-      <div className="ol-glow ol-glow-a" aria-hidden="true" />
-      <div className="ol-glow ol-glow-b" aria-hidden="true" />
       <div className="ol-shell">
       <div className="ol-screen">
       <header className="ol-header">
@@ -201,43 +201,29 @@ export function HomeLanding() {
           <BrandLogo onDark />
         </Link>
         <nav className="ol-nav" aria-label="页面">
-          <a href="#works-heading">精品模板</a>
+          <a href="#theme-shelf">精品模板</a>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
           <a href={STUDIO_URL}>工作室</a>
         </nav>
         <div className="ol-header-end">
-          <p className="ol-status"><span className="ol-pulse" aria-hidden="true" />STUDIO</p>
+          <SiteThemeSwitch />
           <HomeAccountLink />
         </div>
       </header>
 
       <main>
-        <section className="ol-hero" aria-labelledby="home-hero-title">
-          <div className="ol-hero-copy">
-            <p className="ol-kicker">YOOCO / LAYOUT</p>
+        <section className="bk-hero" aria-labelledby="home-hero-title">
+          <div className="bk-hero-copy">
+            <p className="bk-brand">Yooco · 好文章值得好排版</p>
+            <p className="bk-kicker">给公众号作者的排版工具</p>
             <h1 id="home-hero-title">
-              <span className="ol-hero-line">
-                <span className="ol-hero-words">好文章</span>
-                <span className="ol-eye ol-float" aria-hidden="true">
-                  <EyeTracker
-                    shape="Bubble"
-                    eyes="Slant"
-                    eyeScale={1.7}
-                    eyeWidth={0.85}
-                    follow={72}
-                    bounce={26}
-                    size={72}
-                    restAfter={2000}
-                    near={420}
-                  />
-                </span>
-                <span className="ol-hero-accent">值得好排版</span>
-              </span>
+              <span className="bk-line"><span>把文章</span></span>
+              <span className="bk-line"><span className="bk-accent">做成一份好看的稿。</span></span>
             </h1>
-            <p className="ol-hero-lead">Yooco：粘贴文章，一键做好公众号排版。</p>
+            <p className="bk-lead">贴上原文，选一个主题。预览里看到的，就是复制到公众号的样子。</p>
           </div>
-          <div className="ol-hero-panel">
-            <form className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+          <HeroBook />
+          <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
                 id="home-article-input"
@@ -277,12 +263,18 @@ export function HomeLanding() {
                   {pending ? "正在打开…" : "免费试用"}
                   {!pending ? <ArrowRight size={18} aria-hidden="true" /> : null}
                 </button>
+                <a className="ol-secondary" href="#piece-01">看样稿</a>
               </div>
             </form>
-          </div>
         </section>
-
-        <WorksRail />
+        <button
+          type="button"
+          className="ol-skip"
+          onClick={() => document.documentElement.classList.remove("yooco-enter")}
+        >
+          跳过
+        </button>
+        <HomeShowcase />
 
         {SHOW_PRICING ? (
         <section className="ol-pricing" aria-labelledby="yooco-pricing-heading" id="yooco-pricing">
@@ -322,6 +314,23 @@ export function HomeLanding() {
       </div>
       <HomeFaq />
       </div>
+      <form className="ol-dock" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+        <label className="sr-only" htmlFor="home-article-dock">文章原文</label>
+        <textarea
+          id="home-article-dock"
+          rows={1}
+          spellCheck={false}
+          placeholder="粘贴原文，免费试用"
+          value={source}
+          onChange={(event) => {
+            setSource(event.target.value);
+            if (hint) setHint("");
+          }}
+        />
+        <button type="submit" className="ol-primary" disabled={pending || importing}>
+          {pending ? "正在打开…" : "免费试用"}
+        </button>
+      </form>
     </div>
   );
 }

@@ -49,6 +49,8 @@ body:has(.ol-home) {
 html[data-site="night"] .ol-home { color-scheme: dark; }
 .ol-home::before, .ol-glow, .ol-watermark { display: none; }
 .ol-shell {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: none;
   margin: 0;

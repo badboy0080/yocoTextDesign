@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site-seo";
-import siteThemeBoot from "../public/site-theme-boot.js?raw";
+import { siteThemeBoot } from "@/lib/site-theme-boot-source";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.siteUrl),

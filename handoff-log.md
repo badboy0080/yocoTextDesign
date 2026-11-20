@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+EdgeOne 构建（2026-11-20，未合并、未部署）：PR #99 合进 master 后，正式站自动构建失败。首页用 Vite 的 `?raw` 读日夜启动脚本，Next.js 的 Turbopack 读不到。现在把同一份脚本正文写进页面头部，绘制前就标上日夜。Node 版本没改。`node scripts/check-site-chrome.js` 和 `npm run build:edgeone` 已通过。截图在 `docs/previews/theme-boot-day.png`、`theme-boot-night.png`、`theme-boot-night-mobile.png`、`theme-boot-studio-night.png`。没登录，没调 DeepSeek，正式站没动。
+
 首页书的外观（2026-11-19，PR #99 未合并、未部署）：书架改成有厚度的精装书，封面和打开后的左页换成公版大师画，蒙德里安和色块封面已撤。画在 `public/art/`，署名在 `ATTRIBUTION.txt`。没真机，正式站没动。
 
 首页书页（2026-11-18，PR #99 未合并、未部署）：首页改成首屏打开的书、超大「篇」、左介绍右已排版纸面、工作台卡片、主题书架。样稿换成不同公版选段和不同主题，不再用同一篇示例铺满。左页是蒙德里安原作或自绘色块。书架可左右翻、点开、回到书架。窄屏不钉住。截图在 `docs/previews/home-books/`。没真机，没调 DeepSeek，正式站没动。
@@ -205,6 +207,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-20 修好 EdgeOne 正式构建
+
+- 想做什么：PR #99 合进 master 后，EdgeOne 自动构建失败，正式站还停在上一次成功部署。修好让 `npm run build:edgeone` 能过。只开 PR，不合并不部署。
+- 做成了什么：Turbopack 不认 `?raw`。日夜启动脚本改成把正文直接写进首页头部，绘制前设置日夜，避免闪色。工作台仍用原来的 `site-theme-boot.js`。类型检查还有两处会让构建停住，改成等价写法：用 `appendChild` 放入样稿节点，并把页面元素先收进常量再给内部函数用。
+- 改了哪些文件：`app/layout.tsx`、`lib/site-theme-boot-source.ts`、`scripts/check-site-chrome.js`、`components/home-showcase.tsx`、`components/home-story.tsx`、`docs/previews/theme-boot-day.png`、`docs/previews/theme-boot-night.png`、`docs/previews/theme-boot-night-mobile.png`、`docs/previews/theme-boot-studio-night.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：仓库没有一条总检查命令。`node scripts/check-site-chrome.js` 通过。`npm run build:edgeone` 通过，18 个页面都生成了。构建出的首页源码里，日夜脚本在 head 里，没有外链。本地看了首页白天、黑夜、390 宽黑夜，以及工作台黑夜。白天是暖米，黑夜是暖黑，刷新还记得。工作台登录按钮仍是「登录」。没登录，没调 DeepSeek。
+- 待办/风险：没有合并，没有部署。合进 master 才会触发 EdgeOne 自动部署。`lib/load-sample-try.ts` 还留着 `?raw`，目前只有类型引用，这次构建没编译到它。Node 仍是 22.11.0，安装警告不是这次失败原因。
+
 ### 2026-11-14 工作台手机上能滚到主题和文末
 
 - 想做什么：按已合质感主题的 master，给工作台做手机适配。先用浏览器看真实问题，再小改。不合 master，不部署。
@@ -236,11 +246,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/smart-grid-menu.png`、`docs/previews/smart-grid-empty.png`、`docs/previews/smart-grid-article.png`、`docs/previews/smart-grid-media.png`、`docs/previews/smart-grid-points.png`、`docs/previews/smart-grid-theme.png`、`docs/previews/smart-grid-theme-dark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。预览空行敲 `/`，菜单里看见图文栅格、双栏图文、三列要点。插入双栏后是虚线空格，状态写着没有调用优化、也不计积分。点「用占位图」，标注改成「小市摊位」，说明改成小市那句。再插入三列，三格都是虚线，写上先列清单、货比三家、当天用完。复制稿里有这些字，并且有两张表。换到包豪，占位图变成黄块，卡片带硬投影。换到深空青，纸和格子一起变暗。从本机选了一张小图，原文里是 data 图片，状态仍写不计积分。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/88 已开，没有自己合并。合进 master 才会上正式站。不能把图片拖进格子，编辑器里本来也没有这条路。本机图片超过 2MB，或不是 png、jpg、gif、webp，会拒绝。公众号后台还没真贴，外链或 data 图可能要先上传素材库。没有做自由设行、列、间距。
-
-### 2026-11-04 划词才改字号、字体颜色和重点
-
-- 想做什么：预览里点块打开的参数面板改成划词才出现。段落是字号、字体颜色、重点样式。标题只出标题自己的项。原来的「标重点」并进这个面板。只开 PR，不合 master。
-- 做成了什么：划选段落、引用或卡片，浮层是字号、字体颜色、重点样式（标重点、取消重点、复制）。划选章节标题，只有字号和二级到六级。划选文章大标题，只有字号。点整块不再弹出旧的底色、间距、描边。标重点仍写回 `==重点==`。字号和字体颜色写在这一整块上，复制稿带上。不调用优化，不扣积分。
-- 改了哪些文件：`public/block-style.js`、`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`scripts/check-block-style.js`、`CONTEXT.md`、`docs/previews/selection-style-paragraph.png`、`docs/previews/selection-style-heading.png`、`docs/previews/selection-style-applied.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-block-style.js` 通过。本地静态页打开工作台，贴了一篇带大标题、小标题和两段正文的短文。点段落不出面板，也没有旧的黑胶囊。划「调字号」出字号、字体颜色、重点样式。划小标题只出字号和标题级别，没有重点。点三级后原文变成 `###`。字号改成 22、颜色改成蓝、再标重点，预览马上变，原文有 `==调字号==`。复制稿里有 22px、这颗蓝色，以及重点。取消重点后等号没了，蓝色还在。划大标题只有字号。截图在 `docs/previews/selection-style-*.png`。没有调用优化，没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/86 已开，没有自己合并。合进 master 才会上正式站。字号和颜色作用在整块，不是只改划中的几个字。重点长什么样仍跟当前主题，没有另做一套重点皮肤。取消重点会拿掉包住选区的整处重点。不能跨块划。列表、代码和斜杠插出来的块不走这个面板。浏览器里如果还留着以前的底色、间距、描边，它们仍会画上，这次的恢复只清字号和字体颜色。公众号后台还没真贴。

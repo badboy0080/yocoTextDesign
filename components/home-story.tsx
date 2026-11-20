@@ -45,7 +45,8 @@ function ThemeSheet({
     const body = document.createElement("div");
     body.className = "article-content";
     body.innerHTML = html;
-    article.append(heading, body);
+    article.appendChild(heading);
+    article.appendChild(body);
     root.append(style, link, article);
     const show = () => {
       if (!cancelled) setLive(true);
@@ -75,6 +76,7 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const book = ref.current;
     if (!book) return;
+    const node = book;
     const view = window;
     const reduce = view.matchMedia("(prefers-reduced-motion: reduce)");
     const fine = view.matchMedia("(hover: hover) and (pointer: fine)");
@@ -91,14 +93,14 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>) {
       frame = 0;
       cx += (tx - cx) * 0.14;
       cy += (ty - cy) * 0.14;
-      book.style.transform = `rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
+      node.style.transform = `rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
       if (Math.abs(tx - cx) > 0.04 || Math.abs(ty - cy) > 0.04) frame = view.requestAnimationFrame(paint);
     }
     function kick() {
       if (!frame) frame = view.requestAnimationFrame(paint);
     }
     function move(event: PointerEvent) {
-      const box = book.getBoundingClientRect();
+      const box = node.getBoundingClientRect();
       const px = (event.clientX - box.left) / box.width - 0.5;
       const py = (event.clientY - box.top) / box.height - 0.5;
       tx = restX + px * max * 2;
@@ -110,13 +112,13 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>) {
       ty = restY;
       kick();
     }
-    book.addEventListener("pointermove", move);
-    book.addEventListener("pointerleave", leave);
+    node.addEventListener("pointermove", move);
+    node.addEventListener("pointerleave", leave);
     return () => {
-      book.removeEventListener("pointermove", move);
-      book.removeEventListener("pointerleave", leave);
+      node.removeEventListener("pointermove", move);
+      node.removeEventListener("pointerleave", leave);
       if (frame) view.cancelAnimationFrame(frame);
-      book.style.transform = "";
+      node.style.transform = "";
     };
   }, [ref]);
 }
@@ -166,6 +168,7 @@ export function HomeStory({ sample }: { sample: SampleTry }) {
   useEffect(() => {
     const pin = pinRef.current;
     if (!pin) return;
+    const node = pin;
     const view = window;
     const root = document.documentElement;
     const wide = view.matchMedia("(min-width: 961px)");
@@ -173,7 +176,7 @@ export function HomeStory({ sample }: { sample: SampleTry }) {
     let frame = 0;
 
     function apply(progress: number) {
-      const beats = [...pin.querySelectorAll<HTMLElement>(".story-beat")];
+      const beats = [...node.querySelectorAll<HTMLElement>(".story-beat")];
       const shows = beatShows(progress);
       beats.forEach((beat, index) => {
         const show = shows[index] ?? 0;
@@ -194,7 +197,7 @@ export function HomeStory({ sample }: { sample: SampleTry }) {
       const on = wide.matches && !reduce.matches;
       root.classList.toggle("yooco-pin", on);
       if (!on) {
-        pin.querySelectorAll<HTMLElement>(".story-beat").forEach((beat) => {
+        node.querySelectorAll<HTMLElement>(".story-beat").forEach((beat) => {
           beat.style.removeProperty("--show");
           beat.style.removeProperty("--fade");
           beat.style.removeProperty("--drift");
@@ -203,8 +206,8 @@ export function HomeStory({ sample }: { sample: SampleTry }) {
         });
         return;
       }
-      const rect = pin.getBoundingClientRect();
-      const travel = Math.max(1, pin.offsetHeight - view.innerHeight);
+      const rect = node.getBoundingClientRect();
+      const travel = Math.max(1, node.offsetHeight - view.innerHeight);
       const progress = Math.min(1, Math.max(0, (76 - rect.top) / travel));
       apply(progress);
     }

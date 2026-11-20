@@ -37,7 +37,8 @@ function SpecimenSheet({ specimen, compact }: { specimen: Specimen; compact?: bo
     const body = document.createElement("div");
     body.className = "article-content";
     body.innerHTML = specimen.html;
-    article.append(heading, body);
+    article.appendChild(heading);
+    article.appendChild(body);
     root.append(style, link, article);
     const show = () => {
       if (!cancelled) setLive(true);
@@ -124,6 +125,7 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>, enabled: boolean) {
   useEffect(() => {
     const book = ref.current;
     if (!book || !enabled) return;
+    const node = book;
     const view = window;
     const reduce = view.matchMedia("(prefers-reduced-motion: reduce)");
     const fine = view.matchMedia("(hover: hover) and (pointer: fine)");
@@ -141,14 +143,14 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>, enabled: boolean) {
       frame = 0;
       cx += (tx - cx) * 0.14;
       cy += (ty - cy) * 0.14;
-      book.style.transform = `rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
+      node.style.transform = `rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
       if (Math.abs(tx - cx) > 0.04 || Math.abs(ty - cy) > 0.04) frame = view.requestAnimationFrame(paint);
     }
     function kick() {
       if (!frame) frame = view.requestAnimationFrame(paint);
     }
     function move(event: PointerEvent) {
-      const box = book.getBoundingClientRect();
+      const box = node.getBoundingClientRect();
       const px = (event.clientX - box.left) / box.width - 0.5;
       const py = (event.clientY - box.top) / box.height - 0.5;
       tx = restX + px * max * 2;
@@ -160,13 +162,13 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>, enabled: boolean) {
       ty = restY;
       kick();
     }
-    book.addEventListener("pointermove", move);
-    book.addEventListener("pointerleave", leave);
+    node.addEventListener("pointermove", move);
+    node.addEventListener("pointerleave", leave);
     return () => {
-      book.removeEventListener("pointermove", move);
-      book.removeEventListener("pointerleave", leave);
+      node.removeEventListener("pointermove", move);
+      node.removeEventListener("pointerleave", leave);
       if (frame) view.cancelAnimationFrame(frame);
-      book.style.transform = "";
+      node.style.transform = "";
     };
   }, [enabled, ref]);
 }

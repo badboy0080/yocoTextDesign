@@ -5,73 +5,11 @@ import {
   HERO_SPECIMEN,
   SECTION_SPECIMENS,
   SHELF_SPECIMENS,
-  type Plate,
   type Specimen,
 } from "@/lib/home-specimens";
-
-function SpecimenSheet({ specimen, compact }: { specimen: Specimen; compact?: boolean }) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [live, setLive] = useState(false);
-  const theme = specimen.theme;
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-    const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
-    root.innerHTML = "";
-    let cancelled = false;
-    const style = document.createElement("style");
-    style.textContent = ":host{display:block}.article-page{max-width:100%;box-sizing:border-box;background:var(--page-color,#fff)}.article-content,.article-page h2{overflow-wrap:anywhere}.specimen-byline{margin:8px 0 0;color:var(--muted-color,#9ca3af);font-size:12px;letter-spacing:.04em}";
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/styles.css?v=texture-plain-v1";
-    const article = document.createElement("article");
-    article.className = "article-page";
-    article.setAttribute("style", theme.style);
-    Object.entries(theme.dataset).forEach(([key, value]) => {
-      article.dataset[key] = value;
-    });
-    article.style.backgroundColor = theme.pageColor;
-    const heading = document.createElement("h2");
-    heading.textContent = specimen.work;
-    const body = document.createElement("div");
-    body.className = "article-content";
-    body.innerHTML = specimen.html;
-    article.appendChild(heading);
-    article.appendChild(body);
-    root.append(style, link, article);
-    const show = () => {
-      if (!cancelled) setLive(true);
-    };
-    if (link.sheet) show();
-    link.addEventListener("load", show);
-    link.addEventListener("error", () => {
-      if (!cancelled) setLive(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [specimen, theme]);
-
-  return (
-    <div className={compact ? "bk-sheet is-compact" : "bk-sheet"} data-live={live ? "1" : "0"}>
-      <article className="bk-fallback" style={{ background: theme.pageColor, color: theme.textColor }}>
-        <h3 style={{ color: theme.pageColor === "#1a1a1a" ? "#f3f4f6" : "#211A12" }}>{specimen.work}</h3>
-        <div dangerouslySetInnerHTML={{ __html: specimen.html }} />
-      </article>
-      <div ref={hostRef} className="bk-host" />
-    </div>
-  );
-}
-
-function PlatePage({ plate }: { plate: Plate }) {
-  return (
-    <figure className="bk-art">
-      <img src={plate.src} alt={plate.alt} style={{ objectPosition: plate.position, transform: plate.zoom ? `scale(${plate.zoom})` : undefined, transformOrigin: "center bottom" }} />
-      <figcaption>{plate.credit}</figcaption>
-    </figure>
-  );
-}
+import { HomeFlipBook } from "@/components/home-flip-book";
+import { shiftStyle } from "@/components/home-parallax";
+import { PlatePage, SpecimenSheet } from "@/components/home-sheet";
 
 function Spread({ specimen, tilt, roomy }: { specimen: Specimen; tilt?: boolean; roomy?: boolean }) {
   const tiltRef = useRef<HTMLDivElement>(null);
@@ -90,34 +28,6 @@ function Spread({ specimen, tilt, roomy }: { specimen: Specimen; tilt?: boolean;
         </div>
       </div>
     </div>
-  );
-}
-
-function placeOf(bookIndex: number, current: number, count: number) {
-  let delta = bookIndex - current;
-  if (delta > count / 2) delta -= count;
-  if (delta < -count / 2) delta += count;
-  if (delta === 0) return "center";
-  if (delta === -1) return "left";
-  if (delta === 1) return "right";
-  return delta < 0 ? "far-left" : "far-right";
-}
-
-function StandingBook({ book, place, onOpen }: { book: Specimen; place: string; onOpen: () => void }) {
-  const plate = book.plate;
-  if (!plate) return null;
-  return (
-    <button type="button" className="bk-stand" data-place={place} onClick={onOpen}>
-      <span className="bk-stand-face">
-        <img src={plate.src} alt="" style={{ objectPosition: plate.position, transform: plate.zoom ? `scale(${plate.zoom})` : undefined, transformOrigin: "center bottom" }} />
-        <span className="bk-stand-open">打开</span>
-        <span className="bk-stand-copy">
-          <span>{book.theme.label}</span>
-          <strong>{book.work}</strong>
-          <em>{book.author}</em>
-        </span>
-      </span>
-    </button>
   );
 }
 
@@ -175,10 +85,10 @@ function useBookTilt(ref: RefObject<HTMLDivElement | null>, enabled: boolean) {
 
 export function HeroBook() {
   return (
-    <div className="bk-hero-book">
+    <>
       <Spread specimen={HERO_SPECIMEN} tilt />
       <p className="bk-caption">真实主题排版，不是示意图。清氧绿 · 《红楼梦》开篇</p>
-    </div>
+    </>
   );
 }
 
@@ -214,6 +124,7 @@ export function HomeShowcase() {
   const [index, setIndex] = useState(0);
   const [opened, setOpened] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [flip, setFlip] = useState<0 | 1 | -1>(0);
   const count = books.length;
   const openedBook = books.find((book) => book.id === opened) ?? null;
 
@@ -221,10 +132,27 @@ export function HomeShowcase() {
     setReady(true);
   }, []);
 
-  function turn(step: number) {
+  function commit(step: number) {
     const next = (index + step + count) % count;
     setIndex(next);
     setOpened((current) => (current ? books[next].id : null));
+  }
+
+  function turn(step: 1 | -1) {
+    if (flip !== 0) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (opened || reduce) {
+      commit(step);
+      return;
+    }
+    setFlip(step);
+  }
+
+  function finishFlip() {
+    const step = flip;
+    if (!step) return;
+    setIndex((current) => (current + step + count) % count);
+    setFlip(0);
   }
 
   function openBook(book: Specimen) {
@@ -238,9 +166,9 @@ export function HomeShowcase() {
 
   return (
     <>
-      <section className="bk-opening" aria-labelledby="home-opening-title">
-        <div className="bk-giant" aria-hidden="true">篇</div>
-        <div className="bk-opening-copy">
+      <section className="bk-opening" data-parallax aria-labelledby="home-opening-title">
+        <div className="bk-giant bk-shift" style={shiftStyle(240)} aria-hidden="true">篇</div>
+        <div className="bk-opening-copy bk-shift" style={shiftStyle(-130)}>
           <h2 id="home-opening-title">
             <span>每一篇，都该有一次体面的开场。</span>
             <em>标题、首句、空白，都算数。</em>
@@ -253,13 +181,13 @@ export function HomeShowcase() {
         const copy = SPLITS[order];
         const book = order === 3;
         return (
-          <section className="bk-split" id={`piece-${copy.num}`} key={specimen.id} aria-labelledby={`piece-${copy.num}-title`}>
-            <div className="bk-split-copy">
+          <section className="bk-split" data-parallax id={`piece-${copy.num}`} key={specimen.id} aria-labelledby={`piece-${copy.num}-title`}>
+            <div className="bk-split-copy bk-shift" style={shiftStyle(-110)}>
               <p className="bk-num">{copy.num}</p>
               <h2 id={`piece-${copy.num}-title`}>{copy.title}</h2>
               <p>{copy.text}</p>
             </div>
-            <div className="bk-split-stage" id={`sheet-${specimen.id}`}>
+            <div className="bk-split-stage bk-shift" id={`sheet-${specimen.id}`} style={shiftStyle(140)}>
               {book ? <Spread specimen={specimen} /> : (
                 <div className="bk-paper">
                   <SpecimenSheet specimen={specimen} />
@@ -274,15 +202,15 @@ export function HomeShowcase() {
         );
       })}
 
-      <section className="bk-studio" aria-labelledby="home-studio-title">
-        <div className="bk-studio-head">
+      <section className="bk-studio" data-parallax aria-labelledby="home-studio-title">
+        <div className="bk-studio-head bk-shift" style={shiftStyle(-90)}>
           <h2 id="home-studio-title">
             <span>把工作台</span>
             <em>围着文章铺开。</em>
           </h2>
           <p>左边看结构，中间改文章，右边调主题。预览里的样子，就是复制出去的样子。</p>
         </div>
-        <div className="bk-cards">
+        <div className="bk-cards bk-shift" style={shiftStyle(120)}>
           <article className="bk-feature">
             <p className="bk-num">大纲</p>
             <h3>文章大纲</h3>
@@ -316,28 +244,26 @@ export function HomeShowcase() {
         </div>
       </section>
 
-      <section className={openedBook ? "bk-shelf is-reading" : "bk-shelf"} id="theme-shelf" aria-labelledby="home-shelf-title">
-        <div className="bk-shelf-head">
+      <section className={openedBook ? "bk-shelf is-reading" : "bk-shelf"} data-parallax id="theme-shelf" aria-labelledby="home-shelf-title">
+        <div className="bk-shelf-head bk-shift" style={shiftStyle(-80)}>
           <div>
             <h2 id="home-shelf-title">主题书架</h2>
-            <p>打开任意一本。封面是主题，里面是用这个主题排好的名著选段。</p>
+            <p>左右翻一页。左页是画，右页是用这个主题排好的名著选段。</p>
           </div>
           <div className="bk-shelf-nav">
-            <button type="button" aria-label="上一本" onClick={() => turn(-1)}>←</button>
-            <button type="button" aria-label="下一本" onClick={() => turn(1)}>→</button>
+            <button type="button" aria-label="往前翻一页" onClick={() => turn(-1)} disabled={flip !== 0}>←</button>
+            <span className="bk-flip-count">{index + 1} / {count}</span>
+            <button type="button" aria-label="往后翻一页" onClick={() => turn(1)} disabled={flip !== 0}>→</button>
           </div>
         </div>
         {openedBook ? null : (
-          <div className="bk-shelf-stage">
-            {books.map((book, bookIndex) => (
-              <StandingBook
-                key={book.id}
-                book={book}
-                place={placeOf(bookIndex, index, count)}
-                onOpen={() => openBook(book)}
-              />
-            ))}
-          </div>
+          <HomeFlipBook
+            books={books}
+            index={index}
+            direction={flip}
+            onOpen={() => openBook(books[index])}
+            onDone={finishFlip}
+          />
         )}
         {openedBook ? <OpenReading specimen={openedBook} onClose={() => { setOpened(null); document.getElementById("theme-shelf")?.scrollIntoView({ block: "start" }); }} /> : null}
         {!ready ? (

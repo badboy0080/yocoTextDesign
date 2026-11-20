@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+首页视差和单页翻页（2026-11-20，未合并、未部署）：桌面滚动时，背景、大字和书的速度分开了。书架左右按钮翻的是单独一页，能看到纸立起来，底下是下一页。没有加翻页库。手机上内容不再互相挤。减少动效时直接换页。画和样稿没换。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图和短视频在 `docs/previews/home-parallax/`。没登录，没调 DeepSeek，正式站没动。
+
 EdgeOne 构建（2026-11-20，PR #101 未合并、未部署）：PR #99 合进 master 后，正式站自动构建失败。首页用 Vite 的 `?raw` 读日夜启动脚本，Next.js 的 Turbopack 读不到。现在把同一份脚本正文写进页面头部，绘制前就标上日夜。Node 版本没改。`node scripts/check-site-chrome.js` 和 `npm run build:edgeone` 已通过。截图在 `docs/previews/theme-boot-day.png`、`theme-boot-night.png`、`theme-boot-night-mobile.png`、`theme-boot-studio-night.png`。没登录，没调 DeepSeek，正式站没动。
 
 首页书的外观（2026-11-19，PR #99 未合并、未部署）：书架改成有厚度的精装书，封面和打开后的左页换成公版大师画，蒙德里安和色块封面已撤。画在 `public/art/`，署名在 `ATTRIBUTION.txt`。没真机，正式站没动。

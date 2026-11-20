@@ -21,6 +21,7 @@ import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import Link from "next/link";
 
 import { TRIAL_LIMIT } from "@/lib/trial-quota";
+import { shiftStyle, useHomeParallax } from "@/components/home-parallax";
 import "./home.css";
 import "./home-shell.css";
 import "./home-book.css";
@@ -97,6 +98,7 @@ const PLANS = [
 ] as const;
 
 export function HomeLanding() {
+  useHomeParallax();
   const [source, setSource] = useState("");
   const [hint, setHint] = useState("");
   const [pending, startTransition] = useTransition();
@@ -193,6 +195,10 @@ export function HomeLanding() {
 
   return (
     <div className="ol-home">
+      <div className="ol-depth" aria-hidden="true">
+        <div className="ol-depth-far" />
+        <div className="ol-depth-mid">册</div>
+      </div>
       <Script src="/analytics.js" strategy="afterInteractive" />
       <div className="ol-shell">
       <div className="ol-screen">
@@ -212,8 +218,8 @@ export function HomeLanding() {
       </header>
 
       <main>
-        <section className="bk-hero" aria-labelledby="home-hero-title">
-          <div className="bk-hero-copy">
+        <section className="bk-hero" data-parallax aria-labelledby="home-hero-title">
+          <div className="bk-hero-copy bk-shift" style={shiftStyle(-150)}>
             <p className="bk-brand">Yooco · 好文章值得好排版</p>
             <p className="bk-kicker">给公众号作者的排版工具</p>
             <h1 id="home-hero-title">
@@ -222,8 +228,12 @@ export function HomeLanding() {
             </h1>
             <p className="bk-lead">贴上原文，选一个主题。预览里看到的，就是复制到公众号的样子。</p>
           </div>
-          <HeroBook />
-          <form id="home-trial-form" className="ol-composer" onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
+          <div className="bk-hero-book">
+            <div className="bk-shift" style={shiftStyle(230)}>
+              <HeroBook />
+            </div>
+          </div>
+          <form id="home-trial-form" className="ol-composer bk-shift" style={shiftStyle(-70)} onSubmit={(event) => { event.preventDefault(); goTrial(); }}>
               <label className="sr-only" htmlFor="home-article-input">文章原文</label>
               <textarea
                 id="home-article-input"

@@ -99,6 +99,7 @@ http://localhost:5173/studio.html
 
 | 命令 | 作用 |
 | --- | --- |
+| `npm run check` | 跑一遍 `scripts/check-*.js` |
 | `npm run dev` | 本地开发（默认端口 5173） |
 | `npm run build` | 构建可部署产物 |
 | `npm start` | 本地预览构建结果 |

@@ -463,7 +463,8 @@ function syncMoodUI() {
 
 function renderMoodUI() {
   if (!themeGrid) return;
-  const moodButtons = Object.entries(MOODS).map(([id, mood]) => {
+  // 风格列表不再放「杂志编辑部」。旧稿如果存过这套，数据还在，只是选风格时看不到。
+  const moodButtons = Object.entries(MOODS).filter(([id]) => id !== "editorial").map(([id, mood]) => {
     const primary = SKINS[mood.skins[0]]?.accentColor || "#71717a";
     return `<button type="button" class="theme-chip" data-mood="${id}" style="--theme-primary:${primary}" title="${mood.hint}"><b>${mood.label}</b></button>`;
   }).join("");

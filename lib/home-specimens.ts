@@ -176,24 +176,6 @@ const editorial = theme({
   listStyle: "circle", highlightStyle: "underline", align: "left",
 });
 
-const newsprint = theme({
-  id: "newsprint", label: "报章", page: "#F9F9F7", text: "#404040", accent: "#CC0000",
-  highlight: "#CC0000", highlightText: "#111111", card: "#FFFFFF", quote: "#F5F5F5",
-  title: "#111111", border: "#111111", divider: "#E5E5E0", muted: "#737373",
-  variant: "standard", heading: "serif", fontSize: 14, lineHeight: 1.9, gap: 14,
-  headingSize: 24, weight: 700, radius: 0, headingStyle: "line", cardStyle: "outline",
-  listStyle: "dot", highlightStyle: "underline", align: "justify",
-});
-
-const bauhaus = theme({
-  id: "bauhaus", label: "包豪", page: "#F0F0F0", text: "#121212", accent: "#D02020",
-  highlight: "#1040C0", highlightText: "#FFFFFF", card: "#FFFFFF", quote: "#FFFFFF",
-  title: "#121212", border: "#121212", divider: "#121212", muted: "#5C5C5C",
-  variant: "standard", heading: "sans", fontSize: 14, lineHeight: 1.55, gap: 12,
-  headingSize: 22, weight: 900, radius: 0, headingStyle: "block", cardStyle: "outline",
-  listStyle: "circle", highlightStyle: "marker", align: "left",
-});
-
 const serene = theme({
   id: "serene", label: "静山", page: "#ffffff", text: "#4f5550", accent: "#476055",
   highlight: "#edf2ef", highlightText: "#385045", card: "#ffffff", quote: "#ffffff",
@@ -307,18 +289,18 @@ export const SECTION_SPECIMENS: Specimen[] = [
 export const SHELF_SPECIMENS: Specimen[] = [
   {
     id: "xiyou",
-    theme: newsprint,
+    theme: mono,
     work: "西游记",
     author: "吴承恩",
     credit: "西游记 · 吴承恩",
     source: "https://zh.wikisource.org/wiki/西遊記/第001回",
     plate: {
-      src: "/art/hokusai-great-wave.jpg",
-      alt: "葛饰北斋《神奈川冲浪里》",
-      credit: "葛饰北斋 《神奈川冲浪里》，公版",
-      position: "center 42%",
+      src: "/art/fan-kuan-travelers.jpg",
+      alt: "范宽《溪山行旅图》",
+      credit: "范宽 《溪山行旅图》，公版",
+      position: "center top",
     },
-    note: "花果山。报章。",
+    note: "花果山。素墨。",
     html: page([
       { heading: "花果山" },
       { text: "海外有一國土，名曰傲來國。國近大海，海中有一座名山，喚為花果山。此山乃十洲之祖脈，三島之來龍，自開清濁而立，鴻濛判後而成。真個好山！", phrase: "花果山" },
@@ -328,19 +310,18 @@ export const SHELF_SPECIMENS: Specimen[] = [
   },
   {
     id: "shuihu",
-    theme: bauhaus,
+    theme: serene,
     work: "水浒传",
     author: "施耐庵",
     credit: "水浒传 · 施耐庵",
     source: "https://zh.wikisource.org/wiki/水滸傳_(100回本)/第001回",
     plate: {
-      src: "/art/wang-ximeng-thousand-li.jpg",
-      alt: "王希孟《千里江山图》",
-      credit: "王希孟 《千里江山图》，公版",
-      position: "center bottom",
-      zoom: 1.85,
+      src: "/art/song-renzong-portrait.jpg",
+      alt: "宋人《宋仁宗御容》",
+      credit: "宋人 《宋仁宗御容》，公版",
+      position: "center center",
     },
-    note: "百回本第一回朝会。包豪。",
+    note: "百回本第一回朝会。静山。",
     html: page([
       { heading: "张天师祈禳瘟疫" },
       { text: "話說大宋仁宗天子在位，嘉祐三年三月三日五更三點，天子駕坐紫宸殿，受百官朝賀。", phrase: "紫宸殿" },

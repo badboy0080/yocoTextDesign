@@ -25,7 +25,7 @@
 }
 .seo-landing p,
 .seo-landing li {
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--site-ink-2, #4A4136);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.8;
@@ -34,26 +34,26 @@
 .seo-landing ul,
 .seo-landing ol { margin: 12px 0 0; padding-left: 1.25em; }
 .seo-landing li + li { margin-top: 6px; }
-.seo-landing a { color: #ccff00; font-weight: 650; text-decoration: none; }
+.seo-landing a { color: var(--site-accent-text, #A63A2B); font-weight: 650; text-decoration: none; }
 .seo-landing a:hover { text-decoration: underline; }
-.seo-landing strong { color: #fff; font-weight: 700; }
+.seo-landing strong { color: var(--site-ink, #211A12); font-weight: 700; }
 .seo-landing blockquote {
   margin: 12px 0 0;
   padding: 14px 16px;
-  border-left: 3px solid #ccff00;
+  border-left: 3px solid var(--site-accent, #A63A2B);
   border-radius: 0 12px 12px 0;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.78);
+  background: var(--site-surface, #FBF7EE);
+  color: var(--site-ink-2, #4A4136);
   font-size: 16px;
   line-height: 1.8;
 }
 .seo-landing .seo-landing-lead {
   margin-top: 18px;
   padding: 16px 18px;
-  border-left: 3px solid #ccff00;
+  border-left: 3px solid var(--site-accent, #A63A2B);
   border-radius: 0 16px 16px 0;
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  background: var(--site-surface, #FBF7EE);
+  color: var(--site-ink, #211A12);
   font-size: 17px;
 }
 .seo-landing-cta { margin-top: 22px; }
@@ -68,9 +68,9 @@
   position: relative;
   margin-top: 12px;
   padding: 14px 16px 14px 58px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--site-line, rgba(33, 26, 18, 0.16));
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--site-surface, #FBF7EE);
 }
 .seo-landing-steps > li::before {
   counter-increment: step;
@@ -81,8 +81,8 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: #ccff00;
-  color: #000;
+  background: var(--site-accent, #A63A2B);
+  color: var(--site-accent-ink, #F3ECDD);
   font-size: 14px;
   font-weight: 700;
   line-height: 28px;
@@ -93,9 +93,9 @@
 .seo-landing-table-wrap {
   margin-top: 16px;
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--site-line, rgba(33, 26, 18, 0.16));
   border-radius: 16px;
-  background: #0d0d0d;
+  background: var(--site-surface, #FBF7EE);
 }
 .seo-landing table {
   width: 100%;
@@ -106,40 +106,40 @@
 .seo-landing th,
 .seo-landing td {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--site-hairline, rgba(33, 26, 18, 0.08));
   text-align: left;
   vertical-align: top;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--site-ink-2, #4A4136);
   font-weight: 400;
 }
 .seo-landing thead th {
-  color: #fff;
+  color: var(--site-ink, #211A12);
   font-size: 13px;
   font-weight: 700;
-  background: #141414;
+  background: var(--site-soft, #EDE5D4);
 }
 .seo-landing tbody th {
-  color: #fff;
+  color: var(--site-ink, #211A12);
   font-weight: 650;
   white-space: nowrap;
 }
 .seo-landing tr:last-child th,
 .seo-landing tr:last-child td { border-bottom: 0; }
-.seo-landing td { background: #0d0d0d; }
-.seo-landing thead th:nth-child(2) { background: #1c260c; }
-.seo-landing td:nth-child(2) { background: #161c0c; }
+.seo-landing td { background: var(--site-surface, #FBF7EE); }
+.seo-landing thead th:nth-child(2) { background: color-mix(in srgb, var(--site-accent, #A63A2B) 16%, var(--site-soft, #EDE5D4)); }
+.seo-landing td:nth-child(2) { background: color-mix(in srgb, var(--site-accent, #A63A2B) 8%, var(--site-surface, #FBF7EE)); }
 .seo-landing thead th:first-child,
 .seo-landing tbody th {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: #111;
+  background: var(--site-surface, #FBF7EE);
 }
-.seo-landing thead th:first-child { z-index: 2; background: #141414; }
+.seo-landing thead th:first-child { z-index: 2; background: var(--site-soft, #EDE5D4); }
 .seo-landing .seo-landing-end { margin-top: 36px; }
 .seo-landing .seo-landing-updated {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--site-muted, #6E6353);
   font-size: 13px;
   letter-spacing: 0.04em;
 }
@@ -153,7 +153,7 @@
 }
 .seo-landing figcaption {
   margin-top: 10px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--site-muted, #6E6353);
   font-size: 13px;
   line-height: 1.6;
 }

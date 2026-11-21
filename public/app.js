@@ -172,6 +172,7 @@ let blockStylePanel = null;
 let markPick = null;
 let stylePanelHold = 0;
 let stylePointerInPanel = false;
+let styleSliderDrag = false;
 let lastAiResult = null;
 // 点「用示例文章试一下」后，右侧先用站内静态 HTML，不走优化接口。
 let sampleStaticActive = false;
@@ -4151,6 +4152,8 @@ function blockStyleAnchorRect() {
 }
 
 function placeBlockStylePanel() {
+  const track = globalThis.YoocoBlockStyle?.selectionPopupTracksSelection;
+  if (typeof track === "function" && !track(styleSliderDrag)) return;
   if (!blockStylePanel || blockStylePanel.hidden) return;
   const rect = blockStyleAnchorRect();
   const margin = 8;
@@ -4189,7 +4192,7 @@ function syncBlockStylePanel(el, pick) {
     node.hidden = !visible;
   });
   const sizeInput = blockStylePanel.querySelector("[data-block-style='fontSize']");
-  if (sizeInput) sizeInput.value = String(fontSize);
+  if (sizeInput && !styleSliderDrag) sizeInput.value = String(fontSize);
   const sizeOut = blockStylePanel.querySelector("[data-block-style-out='fontSize']");
   if (sizeOut) sizeOut.textContent = `${fontSize} px`;
   const savedColor = String(saved.color || "");
@@ -4388,9 +4391,13 @@ function setupBlockStyleUi() {
     const inside = Boolean(blockStylePanel && event.target instanceof Element && blockStylePanel.contains(event.target));
     stylePointerInPanel = inside;
     if (inside) stylePanelHold += 1;
+    if (inside && event.target instanceof Element && event.target.closest("input[type='range']")) styleSliderDrag = true;
   }, true);
   const releaseStylePanelHold = () => {
     if (stylePanelHold) stylePanelHold -= 1;
+    if (!styleSliderDrag) return;
+    styleSliderDrag = false;
+    placeBlockStylePanel();
   };
   document.addEventListener("pointerup", releaseStylePanelHold, true);
   document.addEventListener("pointercancel", releaseStylePanelHold, true);
@@ -5693,6 +5700,8 @@ async function copyPreviewHighlight() {
 
 function paintSelectionStyle() {
   ensureBlockStylePanel();
+  const track = globalThis.YoocoBlockStyle?.selectionPopupTracksSelection;
+  if (typeof track === "function" && !track(styleSliderDrag)) return;
   if (humanizeDialogOpen() || activeEditorKind() !== "preview") {
     hideBlockStylePanel(true);
     return;

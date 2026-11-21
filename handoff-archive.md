@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-11 粘贴的图片和链接留在预览和复制稿
+
+- 想做什么：用户把图片或链接粘进工作台后，排版预览要能看见图、点开链接。复制排版贴到公众号时，图和链接不要丢。只开 PR，不合 master。
+- 做成了什么：粘贴时留下 http(s) 图片和链接。预览里，图片地址显示成图，普通网址和 Markdown 链接显示成可点链接。复制稿仍带 img 和 a。优化结果如果丢掉这些，按原文补回。行内 svg、blob、超过 2MB 的 data 图不收。
+- 改了哪些文件：`public/app.js`、`public/source-media.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-source-media.js`、`CONTEXT.md`、`docs/previews/paste-media-preview.png`、`docs/previews/paste-media-link.png`、`docs/previews/paste-media-copy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-source-media.js`、`check-highlight-marks.js`、`check-emoji-theme.js`、`check-normalize-timeout.js`、`check-slash-cards.js`、`check-block-style.js` 通过。本地 8765 打开工作台，贴了一篇带两张 picsum 图、一个「小市笔记」链接和裸网址 https://yoooco.com 的中文短文。预览里两张图都画出来了，两个链接都能点，点「小市笔记」会打开对应地址。复制稿里有两张 img，以及这两条 a。截图在 `docs/previews/paste-media-*.png`。没有公众号后台登录，微信真机未验。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/92 已开，没有自己合并。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。
+
 ### 2026-11-06 工作台插入图文栅格
 
 - 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。

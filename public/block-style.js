@@ -73,6 +73,11 @@
     highlight: "重点",
   };
 
+  // 拖字号时选区盒子会变。弹窗若跟着挪，滑块轨道离开指针，字号会来回跳。
+  function selectionPopupTracksSelection(sliderDragging) {
+    return !sliderDragging;
+  }
+
   root.YoocoBlockStyle = {
     clampBlockStyle,
     safeBlockColor,
@@ -80,5 +85,6 @@
     blockStyleCss,
     paintBlockStyleHtml,
     BLOCK_STYLE_KINDS,
+    selectionPopupTracksSelection,
   };
 })(globalThis);

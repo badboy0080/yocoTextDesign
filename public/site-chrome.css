@@ -323,6 +323,12 @@ html[data-site] .block-style-panel {
 html[data-site] .block-style-panel,
 html[data-site] .block-style-panel button,
 html[data-site] .block-style-panel strong { color: #211A12; }
+html[data-site] .block-style-panel button[data-mark-action="add"]:not(:disabled),
+html[data-site] .block-style-panel button[data-mark-action="add"]:not(:disabled):hover,
+html[data-site] .block-style-panel .block-style-actions button.is-active,
+html[data-site] .block-style-panel .block-style-actions button.is-active:hover,
+html[data-site] .block-style-panel .block-style-levels button.is-active,
+html[data-site] .block-style-panel .block-style-levels button.is-active:hover { color: #fff; }
 html[data-site] .toggle-control input:checked + i { background: var(--site-accent); }
 html[data-site] .toggle-control input:checked + i::before { background: var(--site-accent-ink); }
 html[data-site] .preview-tool-toggle input,

@@ -3,29 +3,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import "@/app/works.css";
-import { BrandLogo } from "@/components/brand-logo";
 import { InviteModal } from "@/components/invite-modal";
+import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import { WorksGallery } from "@/components/works-gallery";
-
-function IconStudio() {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M3 12.5 8.2 3.8 13 12.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M5.2 9.2h5.6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconWorks() {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden="true">
-      <rect x="2.2" y="2.2" width="4.8" height="4.8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="9" y="2.2" width="4.8" height="4.8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="2.2" y="9" width="4.8" height="4.8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <rect x="9" y="9" width="4.8" height="4.8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-}
 
 function IconFold({ collapsed }: { collapsed: boolean }) {
   return (
@@ -124,22 +104,20 @@ export function WorksFrame() {
     <div className={`works-app${collapsed ? " is-side-collapsed" : ""}`}>
       <aside className="works-side">
         <div className="works-brand-row">
-          <a className="works-logo" href="/" aria-label="Yooco 首页">
-            <BrandLogo onDark />
+          <a className="works-logo studio-logo" href="/" aria-label="Yooco 首页">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="works-mark" src="/yooco-mark-lime.svg" width="36" height="29" alt="" />
+            <img className="yooco-brand-bubble" src="/yooco-mark-lime.svg" width="40" height="32" alt="" />
+            <span className="yooco-brand-word">Yooco</span>
           </a>
           <button className="works-fold" type="button" aria-pressed={collapsed} aria-label={collapsed ? "展开侧边栏" : "折叠侧边栏"} onClick={toggleSide}>
             <IconFold collapsed={collapsed} />
           </button>
         </div>
         <nav className="works-nav" aria-label="页面">
-          <a href="/studio.html" aria-label="工作台">
-            <IconStudio />
+          <a href="/studio.html">
             <span>工作台</span>
           </a>
-          <a href="/works" aria-label="精品模板" className="is-active" aria-current="page">
-            <IconWorks />
+          <a href="/works" className="is-active" aria-current="page">
             <span>精品模板</span>
           </a>
         </nav>
@@ -198,8 +176,13 @@ export function WorksFrame() {
             </div>
           </div>
         ) : null}
+        <a className="works-home-link" href="/" aria-label="返回首页"><span>返回首页</span></a>
       </aside>
       <div className="works-main">
+        <header className="works-topbar">
+          <p className="works-topbar-title">精品模板</p>
+          <SiteThemeSwitch />
+        </header>
         <div className="works-view">
           <WorksGallery />
         </div>

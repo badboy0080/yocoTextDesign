@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+精品模板外壳对齐工作台（2026-11-21，未合并、未部署）：`/works` 日夜改成和工作台同一套暖米 / 暖黑。筛选、卡片、详情弹窗跟着这套。登录、注册、常见问题、公众号答案页和 404 也换了外壳。首页和工作台内部没动。筛选里没有「杂志编辑部」。`npm run check`（13 项）通过。截图在 `docs/previews/works-shell/`。没登录，没调 DeepSeek，正式站没动。
+
 主题书架配图和拿掉杂志编辑部（2026-11-21，未合并、未部署）：书架《西游记》左页换成范宽《溪山行旅图》，主题改素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题改静山。Sonnet 18 仍是梵高杏花、静山。卖火柴的小女孩仍是勃鲁盖尔雪中猎人、表情。工作台风格列表和精品模板不再出现「杂志编辑部」。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图在 `docs/previews/shelf-themes/`。没登录，没调 DeepSeek，正式站没动。
 
 首页视差和单页翻页（2026-11-20，未合并、未部署）：桌面滚动时，背景、大字和书的速度分开了。书架左右按钮翻的是单独一页，能看到纸立起来，底下是下一页。没有加翻页库。手机上内容不再互相挤。减少动效时直接换页。画和样稿没换。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图和短视频在 `docs/previews/home-parallax/`。没登录，没调 DeepSeek，正式站没动。
@@ -211,6 +213,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-21 精品模板外壳对齐工作台
+
+- 想做什么：精品模板还是旧的黑底石灰风格。按工作台已经改好的暖米 / 暖黑改外壳，能走到的旧页面一起换。筛选、打开和模板内容不变。不要把「杂志编辑部」加回筛选。只开 PR，不合并不部署。
+- 做成了什么：`/works` 侧栏、顶栏、日夜开关、筛选胶囊、卡片框和详情弹窗改用站点外壳。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和找不到页面也换成同一套。窄屏导航不再把「精品模板」拆成两行。
+- 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
+- 待办/风险：PR 已开，没有合并，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
+
 ### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
 
 - 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。
@@ -242,11 +252,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/preview-outline.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-preview-outline.js`、`CONTEXT.md`、`docs/previews/outline-desktop-open.png`、`docs/previews/outline-jump.png`、`docs/previews/outline-collapsed.png`、`docs/previews/outline-mobile.png`、`docs/previews/outline-mobile-open.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-preview-outline.js` 通过，连带跑了划词、粘贴图、斜杠、重点、表情、超时、人味空结果这些检查。无头 Chrome 打开工作台，贴了一篇带多层标题、两个同名小标题、一张图、一个链接和长正文的稿。大纲 7 条，缩进按层级。点两个同名标题，滚到的位置不一样。点「后段收束」，预览滚到后段，这一条高亮。改成「先看灯火」、删掉一个重复标题后，旧字消失，没有多出来的行。换到清氧绿，大纲条数不变，文内原来的「本文脉络」不进大纲。划词仍出字号，点整块不出面板。复制 HTML 有图和链接，没有大纲这几个字，也没有大纲的类名。空稿和无标题的两句状态都出现。切到原文时大纲藏起来。截图在 `docs/previews/outline-*.png`。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/93 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。
-
-### 2026-11-11 粘贴的图片和链接留在预览和复制稿
-
-- 想做什么：用户把图片或链接粘进工作台后，排版预览要能看见图、点开链接。复制排版贴到公众号时，图和链接不要丢。只开 PR，不合 master。
-- 做成了什么：粘贴时留下 http(s) 图片和链接。预览里，图片地址显示成图，普通网址和 Markdown 链接显示成可点链接。复制稿仍带 img 和 a。优化结果如果丢掉这些，按原文补回。行内 svg、blob、超过 2MB 的 data 图不收。
-- 改了哪些文件：`public/app.js`、`public/source-media.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-source-media.js`、`CONTEXT.md`、`docs/previews/paste-media-preview.png`、`docs/previews/paste-media-link.png`、`docs/previews/paste-media-copy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-source-media.js`、`check-highlight-marks.js`、`check-emoji-theme.js`、`check-normalize-timeout.js`、`check-slash-cards.js`、`check-block-style.js` 通过。本地 8765 打开工作台，贴了一篇带两张 picsum 图、一个「小市笔记」链接和裸网址 https://yoooco.com 的中文短文。预览里两张图都画出来了，两个链接都能点，点「小市笔记」会打开对应地址。复制稿里有两张 img，以及这两条 a。截图在 `docs/previews/paste-media-*.png`。没有公众号后台登录，微信真机未验。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/92 已开，没有自己合并。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。

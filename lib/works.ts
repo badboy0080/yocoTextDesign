@@ -11,7 +11,7 @@ export type WorkPiece = {
   themeId: string;
   /** mood：气质，存盘时 theme 仍是 classic，并带上默认皮肤。theme：精选主题。 */
   bind: "mood" | "theme";
-  /** 预览卡片样式，避免「杂志编辑部」和「手札橙」都叫 editorial 时撞样式。 */
+  /** 预览卡片样式。手札橙不用 editorial 这个旧气质的卡片名。 */
   sheet: string;
   themeLabel: string;
   fit: string;
@@ -50,25 +50,6 @@ const minimalParams = {
   headingStyle: "line",
   cardStyle: "outline",
   listStyle: "dot",
-  cardRadius: 2,
-  imageRadius: 2,
-  showDivider: true,
-};
-
-const magazineParams = {
-  textColor: "#20302a",
-  accentColor: "#2f5d4f",
-  highlightColor: "#d8e6d4",
-  highlightTextColor: "#20302a",
-  cardColor: "#edf2e8",
-  quoteColor: "#f3f6ee",
-  cardTitleColor: "#2f5d4f",
-  pageColor: "#fffef9",
-  linkColor: "#35604e",
-  dividerColor: "#2f5d4f",
-  headingStyle: "index",
-  cardStyle: "band",
-  listStyle: "circle",
   cardRadius: 2,
   imageRadius: 2,
   showDivider: true,
@@ -367,22 +348,6 @@ const quietPlain = [
   "颜色少，句子才站得住。",
 ].join("\n");
 
-const magazinePlain = [
-  "本期目录",
-  "",
-  "栏目 · 编号 / 先给编号，再给解释",
-  "",
-  "这一期只做三栏。目录先把顺序排好，读者才知道从哪一栏读起。",
-  "",
-  "封面故事",
-  "",
-  "封面只留一句",
-  "目录用编号",
-  "栏目标题对齐",
-  "",
-  "编号是给眼睛的路标。",
-].join("\n");
-
 const livelyPlain = [
   "周末去哪儿",
   "",
@@ -613,30 +578,6 @@ export const WORKS: WorkPiece[] = [
       { type: "quote", text: "颜色少，句子才站得住。" },
     ],
     params: minimalParams,
-  }),
-  piece({
-    id: "magazine-contents",
-    title: "本期目录",
-    themeId: "editorial",
-    bind: "mood",
-    sheet: "magazine",
-    themeLabel: "杂志编辑部",
-    fit: "栏目 · 编号",
-    deck: "先给编号，再给解释",
-    primary: "#2f5d4f",
-    pageColor: "#fffef9",
-    titleColor: "#20302a",
-    textColor: "#20302a",
-    accentColor: "#2f5d4f",
-    sheetNo: "09",
-    plain: magazinePlain,
-    blocks: [
-      { type: "p", text: "这一期只做三栏。目录先把顺序排好，读者才知道从哪一栏读起。" },
-      { type: "h2", text: "封面故事" },
-      { type: "list", items: ["封面只留一句", "目录用编号", "栏目标题对齐"] },
-      { type: "quote", text: "编号是给眼睛的路标。" },
-    ],
-    params: magazineParams,
   }),
   piece({
     id: "lively-weekend",

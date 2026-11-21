@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-06 工作台插入图文栅格
+
+- 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。
+- 做成了什么：空行敲 `/`，菜单在原来四项后面多一组「图文栅格」，里面是双栏图文、三列要点。插进去是空的虚线格。双栏点图格可以放当前主题色的占位图、从本机选一张，或清空。文字点一下就能改。三列是小标题加一句说明，空着是虚线，写上字就用主题的卡片底和边。复制稿用表格保住两栏和三列。不调用优化，不扣积分。
+- 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/smart-grid-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-slash-cards.js` 通过。本地看过菜单、双栏、三列、换主题和复制稿。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/88 已开。不能拖图进格子。公众号后台还没真贴。
+
 ### 2026-11-04 划词才改字号、字体颜色和重点
 
 - 想做什么：预览里点块打开的参数面板改成划词才出现。段落是字号、字体颜色、重点样式。标题只出标题自己的项。原来的「标重点」并进这个面板。只开 PR，不合 master。

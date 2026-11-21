@@ -26,7 +26,7 @@ if (!book.includes("rotateY(calc(var(--turn, 0) * -180deg))")) fail("往后翻�
 if (!book.includes("var(--bend")) fail("翻页没有外缘卷曲");
 if (!flip.includes('--bend')) fail("翻页脚本没有把卷曲写进去");
 if (!showcase.includes("HomeFlipBook")) fail("书架没有用单页翻页");
-for (const kept of ["zhou-fang-court-ladies", "hokusai-great-wave", "wang-ximeng-thousand-li", "van-gogh-almond-blossom", "bruegel-hunters-in-the-snow", "guo-xi-early-spring"]) {
+for (const kept of ["zhou-fang-court-ladies", "fan-kuan-travelers", "song-renzong-portrait", "van-gogh-almond-blossom", "bruegel-hunters-in-the-snow", "guo-xi-early-spring"]) {
   if (!specimens.includes(kept)) fail(`首页画作丢了：${kept}`);
 }
 if (landing.includes("?raw") || showcase.includes("?raw") || flip.includes("?raw")) fail("首页动效又用了 ?raw");

@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+主题书架配图和拿掉杂志编辑部（2026-11-21，未合并、未部署）：书架《西游记》左页换成范宽《溪山行旅图》，主题改素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题改静山。Sonnet 18 仍是梵高杏花、静山。卖火柴的小女孩仍是勃鲁盖尔雪中猎人、表情。工作台风格列表和精品模板不再出现「杂志编辑部」。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图在 `docs/previews/shelf-themes/`。没登录，没调 DeepSeek，正式站没动。
+
 首页视差和单页翻页（2026-11-20，未合并、未部署）：桌面滚动时，背景、大字和书的速度分开了。书架左右按钮翻的是单独一页，能看到纸立起来，底下是下一页。没有加翻页库。手机上内容不再互相挤。减少动效时直接换页。画和样稿没换。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图和短视频在 `docs/previews/home-parallax/`。没登录，没调 DeepSeek，正式站没动。
 
 EdgeOne 构建（2026-11-20，PR #101 未合并、未部署）：PR #99 合进 master 后，正式站自动构建失败。首页用 Vite 的 `?raw` 读日夜启动脚本，Next.js 的 Turbopack 读不到。现在把同一份脚本正文写进页面头部，绘制前就标上日夜。Node 版本没改。`node scripts/check-site-chrome.js` 和 `npm run build:edgeone` 已通过。截图在 `docs/previews/theme-boot-day.png`、`theme-boot-night.png`、`theme-boot-night-mobile.png`、`theme-boot-studio-night.png`。没登录，没调 DeepSeek，正式站没动。
@@ -209,6 +211,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
+
+- 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。
+- 做成了什么：《西游记》左页换成范宽《溪山行旅图》，主题是素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题是静山。Sonnet 18 和卖火柴的小女孩原来的画能对上，留着。风格列表不再渲染「杂志编辑部」，精品模板里的「本期目录」也拿掉。示例文里那句点名改成了还在的「静山」。
+- 改了哪些文件：`lib/home-specimens.ts`、`lib/works.ts`、`public/app.js`、`public/samples/sample-try.js`、`public/art/`、`scripts/check-home-motion.js`、`CONTEXT.md`、`docs/previews/shelf-themes/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 13 项通过。`npm run build:edgeone` 通过。本地打开书架四本和黑夜第一本，以及工作台风格列表。列表里没有「杂志编辑部」。没登录，没调 DeepSeek。
+- 待办/风险：PR 已开，没有合并，没有部署。旧稿如果存过「杂志编辑部」，打开仍是那套，只是列表里点不到。经典优化仍可能落到这套。
+
 ### 2026-11-20 修好 EdgeOne 正式构建
 
 - 想做什么：PR #99 合进 master 后，EdgeOne 自动构建失败，正式站还停在上一次成功部署。修好让 `npm run build:edgeone` 能过。只开 PR，不合并不部署。
@@ -240,11 +250,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/app.js`、`public/source-media.js`、`public/styles.css`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-source-media.js`、`CONTEXT.md`、`docs/previews/paste-media-preview.png`、`docs/previews/paste-media-link.png`、`docs/previews/paste-media-copy.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`node scripts/check-source-media.js`、`check-highlight-marks.js`、`check-emoji-theme.js`、`check-normalize-timeout.js`、`check-slash-cards.js`、`check-block-style.js` 通过。本地 8765 打开工作台，贴了一篇带两张 picsum 图、一个「小市笔记」链接和裸网址 https://yoooco.com 的中文短文。预览里两张图都画出来了，两个链接都能点，点「小市笔记」会打开对应地址。复制稿里有两张 img，以及这两条 a。截图在 `docs/previews/paste-media-*.png`。没有公众号后台登录，微信真机未验。没有合并。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/92 已开，没有自己合并。合进 master 才会上正式站。公众号经常不直接显示外链图和 data 图，需要先上传素材库。没有扩展名、也不是微信图床的图片地址，会当成普通链接。指向 jpg 的文字链接仍是链接，不会收成图。本机剪贴板里的图片文件，2MB 以内的 png、jpg、gif、webp 会变成 data 图；blob 地址不留。
-
-### 2026-11-06 工作台插入图文栅格
-
-- 想做什么：按日扫 11-06 第 3 条，在工作台插入图文栅格。这版只做双栏图文和三列要点。只开 PR，不合 master。
-- 做成了什么：空行敲 `/`，菜单在原来四项后面多一组「图文栅格」，里面是双栏图文、三列要点。插进去是空的虚线格。双栏点图格可以放当前主题色的占位图、从本机选一张，或清空。文字点一下就能改。三列是小标题加一句说明，空着是虚线，写上字就用主题的卡片底和边。复制稿用表格保住两栏和三列。不调用优化，不扣积分。
-- 改了哪些文件：`public/slash-cards.js`、`public/app.js`、`public/styles.css`、`public/studio.html`、`scripts/check-slash-cards.js`、`CONTEXT.md`、`docs/previews/smart-grid-menu.png`、`docs/previews/smart-grid-empty.png`、`docs/previews/smart-grid-article.png`、`docs/previews/smart-grid-media.png`、`docs/previews/smart-grid-points.png`、`docs/previews/smart-grid-theme.png`、`docs/previews/smart-grid-theme-dark.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-slash-cards.js` 通过。本地 8765 打开工作台。预览空行敲 `/`，菜单里看见图文栅格、双栏图文、三列要点。插入双栏后是虚线空格，状态写着没有调用优化、也不计积分。点「用占位图」，标注改成「小市摊位」，说明改成小市那句。再插入三列，三格都是虚线，写上先列清单、货比三家、当天用完。复制稿里有这些字，并且有两张表。换到包豪，占位图变成黄块，卡片带硬投影。换到深空青，纸和格子一起变暗。从本机选了一张小图，原文里是 data 图片，状态仍写不计积分。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/88 已开，没有自己合并。合进 master 才会上正式站。不能把图片拖进格子，编辑器里本来也没有这条路。本机图片超过 2MB，或不是 png、jpg、gif、webp，会拒绝。公众号后台还没真贴，外链或 data 图可能要先上传素材库。没有做自由设行、列、间距。

@@ -10,7 +10,8 @@ export function WorksGallery() {
   const [filter, setFilter] = useState("全部");
   const [origin, setOrigin] = useState<HTMLButtonElement | null>(null);
   const grid = useRef<HTMLUListElement>(null);
-  const filters = ["全部", ...new Set(WORKS.map((work) => work.themeLabel))];
+  // 风格列表已去掉「杂志编辑部」。就算以后样张还带着这个名字，也不再做成可点的筛选。
+  const filters = ["全部", ...new Set(WORKS.map((work) => work.themeLabel).filter((label) => label !== "杂志编辑部"))];
   const visible = WORKS.filter((work) => filter === "全部" || work.themeLabel === filter);
   useLayoutEffect(() => {
     if (!grid.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -31,6 +32,7 @@ export function WorksGallery() {
         <div className="works-filters" role="group" aria-label="按排版风格筛选">{filters.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>
         <span className="works-count" aria-live="polite">{visible.length} 个精品模板</span>
       </div>
+      {visible.length === 0 ? <p className="works-empty">这一组还没有模板。</p> : null}
       <ul className="works-grid" ref={grid}>
         {visible.map((work) => (
           <li key={work.id}>

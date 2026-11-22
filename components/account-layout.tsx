@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AccountMenu } from "@/components/account-menu";
-import { BrandLogo } from "@/components/brand-logo";
+import { SiteThemeSwitch } from "@/components/site-theme-switch";
 import "@/app/account.css";
 
 export function AccountLayout({
@@ -19,13 +19,16 @@ export function AccountLayout({
     <div className={`account-app${obsidian ? " is-obsidian" : ""}`}>
       <header className="account-header">
         <div className="account-container account-header-inner">
-          <Link href="/" className="account-logo" aria-label="Yooco 首页">
-            <BrandLogo onDark={obsidian} />
+          <Link href="/" className="account-logo studio-logo" aria-label="Yooco 首页">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="yooco-brand-bubble" src="/yooco-mark-lime.svg" alt="" width="40" height="32" />
+            <span className="yooco-brand-word">Yooco</span>
           </Link>
           <nav className="account-nav" aria-label="页面导航">
             <Link href="/works">精品模板</Link>
-            <AccountMenu />
             <Link href="/studio.html">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
+            {obsidian ? <SiteThemeSwitch /> : null}
+            <AccountMenu />
           </nav>
         </div>
       </header>

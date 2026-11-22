@@ -1,5 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap");
-@import url("../public/obsidian-lime.css");
+@import url("../public/site-chrome.css");
 
 .account-app {
   --account-paper: var(--yooco-color-paper, #f8f9f4);
@@ -172,65 +171,80 @@
   .account-app *, .account-app *::before, .account-app *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
-/* Login / register only. Subscribe keeps the light account page. */
-body:has(.account-app.is-obsidian) { background: #000; }
+/* 登录、常见问题和答案页外壳。跟工作台同一套暖米 / 暖黑。订阅页不走这里。 */
+html[data-site] body:has(.account-app.is-obsidian) {
+  background: var(--site-canvas);
+  color: var(--site-ink);
+}
 .account-app.is-obsidian {
-  --account-paper: #000;
-  --account-ink: #ebebeb;
-  --account-muted: rgba(255,255,255,.6);
-  --account-line: rgba(255,255,255,.1);
-  --account-green: #ccff00;
-  --account-link: #ccff00;
+  --account-paper: var(--site-canvas);
+  --account-ink: var(--site-ink);
+  --account-muted: var(--site-muted);
+  --account-line: var(--site-line);
+  --account-green: var(--site-accent);
+  --account-link: var(--site-accent-text);
   min-height: 100dvh;
-  color: #ebebeb;
-  color-scheme: dark;
-  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
-  background:
-    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
-    #000;
-  background-size: 60px 60px, 60px 60px, auto;
+  color: var(--site-ink);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  background: var(--site-canvas);
+}
+html[data-site="day"] .account-app.is-obsidian { color-scheme: light; }
+html[data-site="night"] .account-app.is-obsidian { color-scheme: dark; }
+.account-app.is-obsidian .account-nav { flex-wrap: wrap; justify-content: flex-end; gap: 12px 16px; }
+.account-app.is-obsidian h1,
+.account-app.is-obsidian h2,
+.account-app.is-obsidian .faq-page h1 {
+  font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", serif;
+  color: var(--site-ink);
+  letter-spacing: -0.03em;
 }
 .account-app.is-obsidian .account-header,
-.account-app.is-obsidian .account-footer { border-color: rgba(255,255,255,.1); background: transparent; }
+.account-app.is-obsidian .account-footer { border-color: var(--site-hairline); background: var(--site-canvas); }
 .account-app.is-obsidian .account-nav a,
+.account-app.is-obsidian .account-menu-popover button { color: var(--site-ink); }
+.account-app.is-obsidian .account-nav a { white-space: nowrap; }
+@media (max-width: 823px) {
+  html[data-site] .account-header .site-theme-switch { order: 0; }
+}
 .account-app.is-obsidian .account-footer a,
 .account-app.is-obsidian .account-email,
 .account-app.is-obsidian .account-menu > button,
-.account-app.is-obsidian .account-logout { color: rgba(255,255,255,.7); }
-.account-app.is-obsidian .account-menu-popover { border-color: rgba(255,255,255,.12); background: rgba(12,12,12,.88); backdrop-filter: blur(16px); }
-.account-app.is-obsidian .account-menu-popover button { color: #ebebeb; }
-.account-app.is-obsidian .auth-field-hint { color: rgba(255,255,255,.55); }
-.account-app.is-obsidian .account-nav a:last-child { color: #ebebeb; }
+.account-app.is-obsidian .account-logout { color: var(--site-muted); }
+.account-app.is-obsidian .account-menu-popover {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+  backdrop-filter: none;
+}
+.account-app.is-obsidian .account-menu-popover button:hover { background: var(--site-soft); }
+.account-app.is-obsidian .auth-field-hint { color: var(--site-muted); }
 .account-app.is-obsidian .auth-grid { position: relative; align-items: start; }
 .account-app.is-obsidian .auth-editorial {
   justify-content: flex-start;
   min-height: 520px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 2.5rem;
-  background: rgba(255,255,255,.03);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--site-line);
+  border-radius: 16px;
+  background: var(--site-surface);
+  backdrop-filter: none;
 }
 .account-app.is-obsidian .auth-editorial-center { margin-top: 4px; }
 .account-app.is-obsidian .auth-editorial h1 { margin-top: 0; }
 .account-app.is-obsidian .auth-editorial-bottom { margin-top: auto; }
-.account-app.is-obsidian .auth-editorial::after { border-color: rgba(204,255,0,.25); }
-.account-app.is-obsidian .auth-editorial h1,
-.account-app.is-obsidian .auth-panel-heading h2 {
-  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
-  letter-spacing: -.06em;
-  color: #ebebeb;
-}
-.account-app.is-obsidian .auth-editorial h1 em { color: #ccff00; font-style: italic; }
+.account-app.is-obsidian .auth-editorial::after { border-color: color-mix(in srgb, var(--site-accent) 28%, transparent); }
+.account-app.is-obsidian .auth-editorial h1 em { color: var(--site-accent-text); font-style: italic; }
 .account-app.is-obsidian .auth-small-title,
-.account-app.is-obsidian .auth-eyebrow { color: #ccff00; font-family: "JetBrains Mono", monospace; letter-spacing: .16em; text-transform: uppercase; }
-.account-app.is-obsidian .auth-editorial-caption { border-top-color: rgba(255,255,255,.12); }
+.account-app.is-obsidian .auth-eyebrow {
+  color: var(--site-muted);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+.account-app.is-obsidian .auth-editorial-caption { border-top-color: var(--site-line); }
 .account-app.is-obsidian .auth-panel {
   padding: 28px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 2.5rem;
-  background: rgba(255,255,255,.03);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--site-line);
+  border-radius: 16px;
+  background: var(--site-surface);
+  backdrop-filter: none;
 }
 .account-app.is-obsidian .auth-page.is-register .auth-grid { min-height: 0; padding: 20px 0 24px; }
 .account-app.is-obsidian .auth-page.is-register .auth-editorial { min-height: 0; }
@@ -242,86 +256,73 @@ body:has(.account-app.is-obsidian) { background: #000; }
 .account-app.is-obsidian .auth-page.is-register .auth-otp [data-slot="input-otp-slot"] { height: 44px; min-height: 44px; }
 .account-app.is-obsidian .auth-field input {
   height: 52px;
-  border-color: rgba(255,255,255,.14);
-  border-radius: 1rem;
-  background: #111;
-  color: #ebebeb;
-  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+  border-color: var(--site-line);
+  border-radius: 12px;
+  background: var(--site-canvas);
+  color: var(--site-ink);
+  font-family: inherit;
 }
-.account-app.is-obsidian .auth-field input::placeholder { color: rgba(255,255,255,.3); }
-.account-app.is-obsidian .auth-field input:focus { border-color: #ccff00; box-shadow: 0 0 0 3px rgba(204,255,0,.18); }
-.account-app.is-obsidian .auth-code-button { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.04); color: #ebebeb; backdrop-filter: blur(12px); }
-.account-app.is-obsidian .auth-code-button:hover:not(:disabled) { border-color: #ccff00; color: #ccff00; }
-.account-app.is-obsidian .auth-field-error { color: #ffb4b4; }
-.account-app.is-obsidian .auth-field.is-invalid input { border-color: #ff8f8f; box-shadow: 0 0 0 3px rgba(255, 143, 143, .18); }
-.account-app.is-obsidian .auth-otp [data-slot="input-otp-slot"] { border-color: rgba(255,255,255,.2) !important; background: rgba(17,17,17,.72) !important; color: #ebebeb; backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08) !important; }
-.account-app.is-obsidian .auth-otp [data-slot="input-otp-slot"][data-active="true"] { border-color: #ccff00 !important; box-shadow: 0 0 0 3px rgba(204,255,0,.18), inset 0 1px 0 rgba(204,255,0,.25) !important; z-index: 1; }
+.account-app.is-obsidian .auth-field input::placeholder { color: var(--site-muted); }
+.account-app.is-obsidian .auth-field input:focus { border-color: var(--site-accent); box-shadow: 0 0 0 3px var(--site-focus); }
+.account-app.is-obsidian .auth-code-button { border-color: var(--site-line); background: var(--site-canvas); color: var(--site-ink); backdrop-filter: none; }
+.account-app.is-obsidian .auth-code-button:hover:not(:disabled) { border-color: var(--site-accent); color: var(--site-accent-text); }
+.account-app.is-obsidian .auth-field-error { color: #b42318; }
+html[data-site="night"] .account-app.is-obsidian .auth-field-error { color: #ffb4b4; }
+.account-app.is-obsidian .auth-field.is-invalid input { border-color: #b42318; box-shadow: 0 0 0 3px rgba(180, 35, 24, .16); }
+.account-app.is-obsidian .auth-otp [data-slot="input-otp-slot"] { border-color: var(--site-line) !important; background: var(--site-canvas) !important; color: var(--site-ink); backdrop-filter: none; box-shadow: none !important; }
+.account-app.is-obsidian .auth-otp [data-slot="input-otp-slot"][data-active="true"] { border-color: var(--site-accent) !important; box-shadow: 0 0 0 3px var(--site-focus) !important; z-index: 1; }
 .account-app.is-obsidian .auth-page.is-register .auth-otp [data-slot="input-otp-slot"] { height: 44px !important; }
-.account-app.is-obsidian .account-primary-button:disabled:hover { background: #ccff00; transform: none; }
+.account-app.is-obsidian .account-primary-button:disabled:hover { background: var(--site-accent); transform: none; }
 .account-app.is-obsidian .account-primary-button {
   border: 0;
   border-radius: 999px;
-  background: #ccff00;
-  color: #000;
-  box-shadow: 0 0 30px rgba(204,255,0,.3);
+  background: var(--site-accent);
+  color: var(--site-accent-ink);
+  box-shadow: none;
 }
-.account-app.is-obsidian .account-primary-button:hover { background: #d6ff4d; transform: scale(1.03); }
+.account-app.is-obsidian .account-primary-button:hover { background: var(--site-accent-hover); color: var(--site-accent-ink); transform: none; }
 .account-app.is-obsidian .account-secondary-button {
-  border-color: rgba(255,255,255,.14);
+  border-color: var(--site-line);
   border-radius: 999px;
   background: transparent;
-  color: #ebebeb;
+  color: var(--site-ink);
 }
-.account-app.is-obsidian .account-secondary-button:hover { border-color: #ccff00; }
-.account-app.is-obsidian .auth-panel-bottom { border-top-color: rgba(255,255,255,.1); }
-.account-app.is-obsidian .auth-panel-bottom p a { color: #ccff00; }
-.account-app.is-obsidian .auth-notice { border-left-color: #ccff00; background: rgba(204,255,0,.08); color: #ebebeb; }
+.account-app.is-obsidian .account-secondary-button:hover { border-color: var(--site-accent); color: var(--site-accent-text); }
+.account-app.is-obsidian .auth-panel-bottom { border-top-color: var(--site-hairline); }
+.account-app.is-obsidian .auth-panel-bottom p a { color: var(--site-accent-text); }
+.account-app.is-obsidian .auth-notice { border-left-color: var(--site-accent); background: color-mix(in srgb, var(--site-accent) 10%, var(--site-surface)); color: var(--site-ink); }
 .account-app.is-obsidian .account-index,
 .account-app.is-obsidian .account-tail,
 .account-app.is-obsidian .auth-editorial-top,
-.account-app.is-obsidian .auth-editorial-bottom { font-family: "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.account-app.is-obsidian .auth-editorial-bottom {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
 .account-app.is-obsidian .account-container { position: relative; }
 .account-app.is-obsidian main { position: relative; }
-.account-app.is-obsidian main::after {
-  content: "YOOCO";
-  position: absolute;
-  left: 4%;
-  bottom: 6%;
-  z-index: 0;
-  color: rgba(255,255,255,.05);
-  font-size: clamp(4rem, 10vw, 8rem);
-  font-weight: 700;
-  letter-spacing: -.08em;
-  pointer-events: none;
-}
 .account-app.is-obsidian .auth-grid { z-index: 1; }
 @media (max-width: 680px) {
   .account-app.is-obsidian .auth-grid { align-items: stretch; }
   .account-app.is-obsidian .auth-editorial-center { margin-top: 20px; }
 }
-.account-app.is-obsidian :focus-visible { outline-color: #ccff00; }
+.account-app.is-obsidian :focus-visible { outline: 2px solid var(--site-focus); outline-offset: 3px; }
 .account-app.is-obsidian .faq-page { position: relative; z-index: 1; }
-.account-app.is-obsidian .faq-page h1 {
-  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
-  letter-spacing: -.06em;
-  color: #ebebeb;
-}
 .account-app.is-obsidian .faq-card {
   margin-top: 28px;
   padding: 18px;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 26px;
-  background: rgba(12,12,12,.72);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 18px 50px rgba(0,0,0,.35);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--site-line);
+  border-radius: 16px;
+  background: var(--site-surface);
+  box-shadow: none;
 }
 .account-app.is-obsidian .faq-tablist {
   display: flex;
   gap: 4px;
   padding: 4px;
+  border: 1px solid var(--site-line);
   border-radius: 999px;
-  background: rgba(255,255,255,.06);
+  background: var(--site-canvas);
 }
 .account-app.is-obsidian .faq-tablist button {
   flex: 1 1 0;
@@ -331,23 +332,23 @@ body:has(.account-app.is-obsidian) { background: #000; }
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: rgba(255,255,255,.62);
-  font: 600 14px/1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  color: var(--site-muted);
+  font: 600 14px/1 "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   cursor: pointer;
 }
 .account-app.is-obsidian .faq-tablist button.is-active {
-  background: rgba(204,255,0,.16);
-  color: #ccff00;
-  box-shadow: inset 0 0 0 1px rgba(204,255,0,.4);
+  background: var(--site-accent);
+  color: var(--site-accent-ink);
+  box-shadow: none;
 }
 .account-app.is-obsidian .faq-accordion {
   margin-top: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 18px;
+  border: 1px solid var(--site-line);
+  border-radius: 12px;
 }
-.account-app.is-obsidian .faq-accordion > div + div { border-top: 1px solid rgba(255,255,255,.1); }
-.account-app.is-obsidian .faq-accordion > div.is-open { background: rgba(204,255,0,.06); }
+.account-app.is-obsidian .faq-accordion > div + div { border-top: 1px solid var(--site-hairline); }
+.account-app.is-obsidian .faq-accordion > div.is-open { background: color-mix(in srgb, var(--site-accent) 8%, var(--site-surface)); }
 .account-app.is-obsidian .faq-accordion button {
   display: flex;
   width: 100%;
@@ -358,8 +359,8 @@ body:has(.account-app.is-obsidian) { background: #000; }
   padding: 16px;
   border: 0;
   background: transparent;
-  color: #ebebeb;
-  font: 600 15px/1.45 "Space Grotesk", "Noto Sans SC", sans-serif;
+  color: var(--site-ink);
+  font: 600 15px/1.45 "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   text-align: left;
   cursor: pointer;
 }
@@ -371,12 +372,15 @@ body:has(.account-app.is-obsidian) { background: #000; }
 .account-app.is-obsidian .faq-answer p {
   margin: 0;
   padding: 0 16px 16px;
-  color: rgba(255,255,255,.72);
+  color: var(--site-ink-2, var(--site-muted));
   font-size: 14px;
   font-weight: 400;
   line-height: 1.75;
 }
-.account-app.is-obsidian .faq-answer strong { color: #ccff00; font-weight: 700; }
+.account-app.is-obsidian .faq-answer strong { color: var(--site-ink); font-weight: 700; }
+.account-missing { margin: 16px 0 0; color: var(--site-muted); font-size: 16px; line-height: 1.7; }
+.account-missing a { color: var(--site-accent-text); font-weight: 650; text-decoration: none; }
+.account-missing a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .faq-page { width: min(100% - 24px, 640px); margin: 20px auto 40px; }
   .account-app.is-obsidian .faq-card { padding: 12px; border-radius: 20px; }

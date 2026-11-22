@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-13 排版预览左侧可收起的大纲
+
+- 想做什么：工作台排版结果左边加一份大纲。按预览里的实际标题生成，点一下定位，滚动时标出当前章节，能收起。只开 PR，不合 master。
+- 做成了什么：大纲在预览左侧，不写进正文。文章标题和章节标题按层级缩进。重复标题各占一行。预览更新后整份重做。空稿和没有标题各有一句状态。窄屏默认收成小按钮，展开是浮层。复制稿不带这份大纲。
+- 改了哪些文件：`public/preview-outline.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-preview-outline.js`、`CONTEXT.md`、`docs/previews/outline-desktop-open.png`、`docs/previews/outline-jump.png`、`docs/previews/outline-collapsed.png`、`docs/previews/outline-mobile.png`、`docs/previews/outline-mobile-open.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`node scripts/check-preview-outline.js` 通过，连带跑了划词、粘贴图、斜杠、重点、表情、超时、人味空结果这些检查。无头 Chrome 打开工作台，贴了一篇带多层标题、两个同名小标题、一张图、一个链接和长正文的稿。大纲 7 条，缩进按层级。点两个同名标题，滚到的位置不一样。点「后段收束」，预览滚到后段，这一条高亮。改成「先看灯火」、删掉一个重复标题后，旧字消失，没有多出来的行。换到清氧绿，大纲条数不变，文内原来的「本文脉络」不进大纲。划词仍出字号，点整块不出面板。复制 HTML 有图和链接，没有大纲这几个字，也没有大纲的类名。空稿和无标题的两句状态都出现。切到原文时大纲藏起来。截图在 `docs/previews/outline-*.png`。没有合并。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/93 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。
+
 ### 2026-11-11 粘贴的图片和链接留在预览和复制稿
 
 - 想做什么：用户把图片或链接粘进工作台后，排版预览要能看见图、点开链接。复制排版贴到公众号时，图和链接不要丢。只开 PR，不合 master。

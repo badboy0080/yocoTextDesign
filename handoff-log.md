@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-划选弹窗（2026-11-21，PR #105，未合并、未部署）：「标重点」和选中的黑底按钮改成白字，浅底按钮仍是深字。拖字号滑块时弹窗不再跟着选区挪，所以不再来回跳。松手后按新位置摆一次。截图和短视频在 `docs/previews/selection-popup/`。没登录，没调 DeepSeek，正式站没动。
+划选弹窗（2026-11-21，PR #105，未合并、未部署）：「标重点」和选中的黑底按钮改成白字，浅底按钮仍是深字。拖字号滑块时弹窗不再跟着选区挪，所以不再来回跳。松手后按新位置摆一次。这条分支已接上含 #104 的 master。截图和短视频在 `docs/previews/selection-popup/`。没登录，没调 DeepSeek，正式站没动。
+
+精品模板外壳对齐工作台（2026-11-21，PR #104，已合进 master `d60153f`，未部署）：`/works` 日夜改成和工作台同一套暖米 / 暖黑。筛选、卡片、详情弹窗跟着这套。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和 404 也换了外壳。首页和工作台内部没动。筛选里没有「杂志编辑部」。截图在 `docs/previews/works-shell/`。没登录，没调 DeepSeek，正式站没动。
 
 主题书架配图和拿掉杂志编辑部（2026-11-21，未合并、未部署）：书架《西游记》左页换成范宽《溪山行旅图》，主题改素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题改静山。Sonnet 18 仍是梵高杏花、静山。卖火柴的小女孩仍是勃鲁盖尔雪中猎人、表情。工作台风格列表和精品模板不再出现「杂志编辑部」。`npm run check`（13 项）和 `npm run build:edgeone` 已通过。截图在 `docs/previews/shelf-themes/`。没登录，没调 DeepSeek，正式站没动。
 
@@ -218,8 +220,16 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 想做什么：划选弹窗里「标重点」黑底看不清字。拖字号滑块时弹窗一直闪。只开 PR，不合并不部署。
 - 做成了什么：黑底的「标重点」、选中的「取消重点」和选中的标题级别改成白字。白底按钮仍是深字。白天黑夜都这样，因为这个弹窗本来就是浅底。拖滑块时弹窗停在原地，字号仍实时变。松手后才按新选区摆一次。
 - 改了哪些文件：`public/site-chrome.css`、`public/app.js`、`public/block-style.js`、`public/studio.html`、`scripts/check-selection-popup.js`、`scripts/check-mobile-layout.js`、`docs/previews/selection-popup/`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npm run check` 通过。无头 Chrome 打开工作台，用示例文章，没登录，没调优化。白天和黑夜「标重点」都是白字黑底，「复制」仍是深字浅底。已经是重点时，「取消重点」是白字黑底，「标重点」变成浅底深字。拖滑块的 10 步里，弹窗上边和左边都没动，字号从 16 升到 48，没有来回跳，也没有消失。松手后弹窗还在，并按变大后的选区摆了一次。
+- 如何验证：`npm run check` 通过。无头 Chrome 打开工作台，用示例文章，没登录，没调优化。白天和黑夜「标重点」都是白字黑底，「复制」仍是深字浅底。已经是重点时，「取消重点」是白字黑底，「标重点」变成浅底深字。拖滑块的 10 步里，弹窗上边和左边都没动，字号从 16 升到 48，没有来回跳，也没有消失。松手后弹窗还在，并按变大后的选区摆了一次。接到含 #104 的 master 后，冲突只在交接日志，弹窗样式没再改。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/105 已开，没有合并，没有部署。字号仍改整块，不是只改划中的几个字。
+
+### 2026-11-21 精品模板外壳对齐工作台
+
+- 想做什么：精品模板还是旧的黑底石灰风格。按工作台已经改好的暖米 / 暖黑改外壳，能走到的旧页面一起换。筛选、打开和模板内容不变。不要把「杂志编辑部」加回筛选。只开 PR，不合并不部署。
+- 做成了什么：`/works` 侧栏、顶栏、日夜开关、筛选胶囊、卡片框和详情弹窗改用站点外壳。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和找不到页面也换成同一套。窄屏导航不再把「精品模板」拆成两行。
+- 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/104 已 squash 合进 master `d60153f`，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
 
 ### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
 
@@ -244,11 +254,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`scripts/check-mobile-layout.js`、`docs/previews/mobile-before-*.png`、`docs/previews/mobile-after-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：本地 5174。无头 Chrome 看了 320、375、390、430、1280、1440。窄屏页面可以滚到「质感」「表情」和「优化排版」，预览最后一句在屏幕里，原文长链接会换行，划词浮层、大纲和工具菜单都在屏内。文档宽度不再大于视口。`node scripts/check-mobile-layout.js` 以及大纲、质感、表情、划词、斜杠、粘贴图、重点、人味空结果、超时这些检查通过。没有调用优化接口。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/95 已开，没有自己合并。没上真机，没贴微信。软键盘只把视口高度收短做过代理。刘海安全区写了内边距，没有带刘海的机器可看。首页、登录、注册窄屏没有撑出屏幕，这次没改它们。质感大编号在 420px 以下的预览里本来就会缩小，复制稿仍是 92px，这次没动。
-
-### 2026-11-13 排版预览左侧可收起的大纲
-
-- 想做什么：工作台排版结果左边加一份大纲。按预览里的实际标题生成，点一下定位，滚动时标出当前章节，能收起。只开 PR，不合 master。
-- 做成了什么：大纲在预览左侧，不写进正文。文章标题和章节标题按层级缩进。重复标题各占一行。预览更新后整份重做。空稿和没有标题各有一句状态。窄屏默认收成小按钮，展开是浮层。复制稿不带这份大纲。
-- 改了哪些文件：`public/preview-outline.js`、`public/studio.html`、`public/studio-ui.css`、`scripts/check-preview-outline.js`、`CONTEXT.md`、`docs/previews/outline-desktop-open.png`、`docs/previews/outline-jump.png`、`docs/previews/outline-collapsed.png`、`docs/previews/outline-mobile.png`、`docs/previews/outline-mobile-open.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`node scripts/check-preview-outline.js` 通过，连带跑了划词、粘贴图、斜杠、重点、表情、超时、人味空结果这些检查。无头 Chrome 打开工作台，贴了一篇带多层标题、两个同名小标题、一张图、一个链接和长正文的稿。大纲 7 条，缩进按层级。点两个同名标题，滚到的位置不一样。点「后段收束」，预览滚到后段，这一条高亮。改成「先看灯火」、删掉一个重复标题后，旧字消失，没有多出来的行。换到清氧绿，大纲条数不变，文内原来的「本文脉络」不进大纲。划词仍出字号，点整块不出面板。复制 HTML 有图和链接，没有大纲这几个字，也没有大纲的类名。空稿和无标题的两句状态都出现。切到原文时大纲藏起来。截图在 `docs/previews/outline-*.png`。没有合并。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/93 已开，没有自己合并。合进 master 才会上正式站。没点「优化排版」，这台没有密钥；优化成功后也是重画预览，大纲走同一条更新。公众号后台没真贴。精选主题原有的「本文脉络」还在正文和复制稿里，那不是这次的大纲。

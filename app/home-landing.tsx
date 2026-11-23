@@ -208,6 +208,7 @@ export function HomeLanding() {
         </Link>
         <nav className="ol-nav" aria-label="页面">
           <a href="#theme-shelf">精品模板</a>
+          <Link href="/changelog">更新日志</Link>
           {SHOW_PRICING ? <a href="#yooco-pricing">价格</a> : null}
           <a href={STUDIO_URL}>工作室</a>
         </nav>

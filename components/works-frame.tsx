@@ -120,6 +120,9 @@ export function WorksFrame() {
           <a href="/works" className="is-active" aria-current="page">
             <span>精品模板</span>
           </a>
+          <a href="/changelog">
+            <span>更新日志</span>
+          </a>
         </nav>
         {account ? (
           <div className="works-account">

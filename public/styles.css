@@ -1933,3 +1933,67 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .article-page[data-theme="texture"] .texture-quote { padding-left: 16px; padding-right: 16px; }
   .article-page[data-theme="texture"] .texture-div-line { width: 42px; }
 }
+
+/* 动森：暖羊皮纸、棕色字、薄荷青胶囊。纸色不跟网站日夜变。数值对照 animal-island-ui 令牌。 */
+.article-page[data-theme="island"] {
+  color-scheme: light;
+  color: #794f27;
+  background-color: #f8f8f0;
+}
+.article-page[data-theme="island"] .section-title.level-2 {
+  display: inline-block;
+  max-width: 100%;
+  padding: 6px 16px;
+  border: 2px solid #19c8b9;
+  border-radius: 999px;
+  background: #e6f9f6;
+  color: #794f27;
+}
+.article-page[data-theme="island"] .section-title.level-3,
+.article-page[data-theme="island"] .section-title.level-4,
+.article-page[data-theme="island"] .section-title.level-5,
+.article-page[data-theme="island"] .section-title.level-6 {
+  border-bottom-color: #19c8b9;
+  color: #794f27;
+}
+.article-page[data-theme="island"] .lead,
+.article-page[data-theme="island"] .content-card,
+.article-page[data-theme="island"] .quote-card,
+.article-page[data-theme="island"] .steps-block {
+  border: 2px solid #e8e2d6;
+  border-radius: 24px;
+  box-shadow: 0 3px 10px 0 rgba(61, 52, 40, 0.1);
+  color: #794f27;
+}
+.article-page[data-theme="island"] .lead,
+.article-page[data-theme="island"] .content-card,
+.article-page[data-theme="island"] .steps-block { background: #f0e8d8; }
+.article-page[data-theme="island"] .quote-card { background: #f8f8f0; }
+.article-page[data-theme="island"] .inline-highlight {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f5c31c;
+  color: #794f27;
+}
+.article-page[data-theme="island"] .fake-image {
+  border: 2px solid #e8e2d6;
+  border-radius: 18px;
+  background: #e6f9f6;
+  box-shadow: 0 3px 10px 0 rgba(61, 52, 40, 0.1);
+  color: #794f27;
+}
+.article-page[data-theme="island"] .article-divider {
+  height: auto;
+  border: 0;
+  opacity: 1;
+  line-height: 0;
+  text-align: center;
+}
+.article-page[data-theme="island"] .article-divider::before {
+  content: "";
+  display: inline-block;
+  width: 72px;
+  height: 4px;
+  border-radius: 999px;
+  background: #19c8b9;
+}

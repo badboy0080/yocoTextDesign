@@ -13,7 +13,7 @@ const html = fs.readFileSync(new URL("../public/studio.html", import.meta.url), 
 const blockStyle = fs.readFileSync(new URL("../public/block-style.js", import.meta.url), "utf8");
 
 if (!html.includes("site-chrome.css?v=selection-popup-v1")) fail("划选弹窗样式缓存丢了");
-if (!html.includes("app.js?v=selection-popup-v1")) fail("划选弹窗脚本缓存丢了");
+if (!html.includes("app.js?v=island-v1")) fail("划选弹窗脚本缓存丢了");
 if (!html.includes("block-style.js?v=selection-popup-v1")) fail("划选弹窗位置脚本缓存丢了");
 
 const sandbox = {};

@@ -20,7 +20,7 @@ const ARTICLE_TYPES = {
   caseStudy: { label: "案例实战 / 复盘" },
 };
 
-/* 十四套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
+/* 十五套精选主题。classic 不在这里，沿用旧的 4 方向 11 皮肤体系。 */
 const THEMES = {
   // 清氧绿：教程测评，明亮高效，信息密度高
   fresh: {
@@ -504,9 +504,54 @@ const THEMES = {
       caseStudy: { core: ["paragraph", "quote", "list"], accent: ["divider"] },
     },
   },
+
+  /*
+   * 动森：配色、圆角和阴影对照 guokaigdg/animal-island-ui（MIT）。
+   * Copyright (c) 2026 guokaigdg
+   * https://github.com/guokaigdg/animal-island-ui/blob/main/LICENSE
+   * 只取令牌，不装组件库，不搬 Nunito。公众号复制稿用系统中文字体栈，样式写成内联。
+   * primary #19c8b9 / text #794f27 / secondary #9f927d
+   * bg #f8f8f0 / card #f0e8d8 / primary-bg #e6f9f6
+   * border #e8e2d6 / warning #f5c31c / radius 24 / shadow rgba(61, 52, 40, 0.1)
+   * 纸色固定浅羊皮纸，不跟网站日夜外壳变，也不铺炭黑。
+   */
+  island: {
+    label: "动森",
+    en: "ISLAND",
+    primary: "#19c8b9",
+    fit: "生活随笔 · 旅行手记 · 轻松分享",
+    params: {
+      styleVariant: "standard",
+      textColor: "#794f27", accentColor: "#19c8b9",
+      highlightColor: "#f5c31c", highlightTextColor: "#794f27",
+      cardColor: "#f0e8d8", quoteColor: "#f8f8f0", cardTitleColor: "#794f27",
+      pageColor: "#f8f8f0", linkColor: "#50b9ab",
+      codeBackground: "#f0e8d8", codeColor: "#794f27", dividerColor: "#dcd8d1",
+      mutedColor: "#9f927d", titleColor: "#794f27", borderColor: "#e8e2d6",
+      bodyFont: "system", headingFont: "system", textAlign: "left",
+      fontSize: 16, lineHeight: 1.75, letterSpacing: 0.3, paragraphSpacing: 20,
+      titleSize: 28, headingSize: 22, subheadingSize: 18, minorHeadingSize: 16,
+      headingWeight: 800, headingLineHeight: 1.45, headingLetterSpacing: 0,
+      headingSpacingBefore: 28, headingSpacingAfter: 12,
+      headingStyle: "line", cardStyle: "soft", listStyle: "dot",
+      highlightStyle: "marker", highlightRadius: 12, highlightPadding: 8,
+      cardRadius: 24, imageRadius: 18, cardPadding: 20,
+      cardBorderWidth: 2,
+      showDivider: true,
+    },
+    recipe: {
+      lifestyle: { core: ["paragraph", "quote"], accent: ["card", "highlight"] },
+      tutorial: { core: ["paragraph", "list"], accent: ["card", "highlight"] },
+      checklist: { core: ["list", "card"], accent: ["paragraph", "highlight"] },
+      opinion: { core: ["paragraph", "quote"], accent: ["card", "highlight"] },
+      interview: { core: ["paragraph", "quote"], accent: ["list"] },
+      dataReport: { core: ["paragraph", "list"], accent: ["card", "highlight"] },
+      caseStudy: { core: ["paragraph", "list"], accent: ["quote", "highlight"] },
+    },
+  },
 };
 
-const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "texture"];
+const THEME_ORDER = ["fresh", "mono", "serene", "stub", "editorial", "nocturne", "citrus", "playful", "grunge", "flat", "newsprint", "bauhaus", "emoji", "texture", "island"];
 const THEME_IDS = THEME_ORDER.concat(["classic"]);
 const ARTICLE_TYPE_IDS = Object.keys(ARTICLE_TYPES);
 

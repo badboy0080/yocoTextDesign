@@ -598,7 +598,7 @@ html[data-site] .work-modal :focus-visible { outline: 2px solid var(--site-focus
   html[data-site] .works-app.is-side-collapsed .yooco-brand-word,
   html[data-site] .works-app.is-side-collapsed .works-nav span,
   html[data-site] .works-app.is-side-collapsed .works-home-link span { display: inline; }
-  html[data-site] .works-nav { flex: none; margin-left: auto; }
+  html[data-site] .works-nav { flex: none; margin-left: auto; max-width: 100%; overflow-x: auto; }
   html[data-site] .works-nav :is(a, button) {
     width: auto;
     flex: none;

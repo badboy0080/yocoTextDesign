@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { normalizeWithDeepSeek } from "../lib/deepseek-normalizer.js";
 
 function fail(message) {
   console.error(message);
@@ -62,8 +63,115 @@ for (let index = 1; index < dates.length; index += 1) {
 for (const day of ["2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22", "2026-11-23"]) {
   if (!dates.includes(day)) fail(`日志缺了 ${day}`);
 }
-if (!changelog.includes("还没上正式站")) fail("本次更新要写明还没上正式站");
+if (!changelog.includes("尚未上线")) fail("本次更新要写明尚未上线");
+if (!app.includes("ac-title-ribbon") || !app.includes("ac-title-layer") || !app.includes("ac-title-tab")) fail("动森标题要有飘带、双层纸和折角便签");
+if (!app.includes("ac-divider-wave") || !app.includes("ac-divider-squiggle")) fail("动森分隔线要有波浪和曲线");
+if (!css.includes("ac-title-ribbon") || !css.includes("ac-tag-solid") || !css.includes("ac-divider-squiggle")) fail("预览要画出动森装饰");
+const islandShape = app.slice(app.indexOf("function islandShapeHtml"), app.indexOf("function islandDividerHtml"));
+if (/clip-path|text-align\s*:\s*(start|end)/i.test(islandShape)) fail("动森标题不要用 clip-path 或 start/end");
+if (!normalizer.includes("const ISLAND_BRIEF") || !normalizer.includes("ac-title ac-title-ribbon")) fail("动森配方要单独写标签");
+if (!normalizer.includes("其它主题不要输出这些标签")) fail("动森标签不能套到其它主题");
 if (!changelog.includes("暖米") || !changelog.includes("素墨") || !changelog.includes("标重点")) fail("已上线的几条要写进日志");
 if (/订阅|收费页|PR #|DeepSeek|EdgeOne|Nunito|动物森友会/.test(changelog)) fail("日志不要写内部词或没对上的内容");
+
+const recipeAt = normalizer.indexOf("const THEME_RECIPE_TEXT");
+const recipeEnd = normalizer.indexOf("function normalizeAssignment");
+if (normalizer.slice(recipeAt, recipeEnd).includes("ac-title-ribbon")) fail("总配方不要混进动森标签");
+
+function resultBody() {
+  return {
+    version: 2,
+    template: { type: "universal", name: "动森样稿", params: { theme: "fresh", articleType: "lifestyle" } },
+    document: {
+      title: "海岛上的十分钟",
+      decor: "ac-title ac-title-ribbon ac-purple",
+      blocks: [
+        { type: "heading", level: 2, class: "ac-title ac-title-ribbon ac-yellow", text: "沿着木栈道" },
+        { type: "heading", level: 3, class: "ac-title ac-title-ribbon ac-peach", text: "长椅旁边" },
+        { type: "heading", level: 3, class: "ac-title ac-title-tab ac-brown", text: "听海就好" },
+        {
+          type: "paragraph",
+          text: "出门前先看天。记得海风，也记得慢走。坐五分钟就够。",
+          tags: [
+            { text: "海风", face: "solid", color: "green" },
+            { text: "慢走", face: "outline", color: "brown" },
+            { text: "不存在", face: "solid", color: "yellow" },
+            { text: "海风", face: "solid", color: "red" },
+            { text: "坐五分钟", face: "outline", color: "peach" },
+            { text: "先看天", face: "solid", color: "green" },
+          ],
+          marks: [{ text: "坐五分钟", type: "highlight" }],
+        },
+        { type: "divider", class: "ac-divider ac-divider-wave" },
+        { type: "divider", class: "ac-divider ac-divider-squiggle" },
+        { type: "divider", class: "ac-divider ac-divider-dash" },
+        { type: "quote", title: "引用", class: "ac-card", text: "海风把声音放轻了。" },
+        { type: "card", title: "小提示", class: "ac-card", text: "回来前把沙子拍掉。" },
+      ],
+    },
+    summary: {},
+  };
+}
+
+function fetchReturning(body, seen) {
+  return async (_url, init) => {
+    seen.push(JSON.parse(init.body));
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ choices: [{ message: { content: JSON.stringify(body) } }] }),
+    };
+  };
+}
+
+const source = [
+  "海岛上的十分钟",
+  "",
+  "出门前先看天。记得海风，也记得慢走。坐五分钟就够。",
+  "",
+  "## 沿着木栈道",
+  "",
+  "### 长椅旁边",
+  "",
+  "听海就好。",
+  "",
+  "> 海风把声音放轻了。",
+  "",
+  "回来前把沙子拍掉。",
+].join("\n");
+
+const islandSeen = [];
+const islandResult = await normalizeWithDeepSeek(source, "test-key", "deepseek-flash", { mode: "fixed", theme: "island" }, {
+  fetchImpl: fetchReturning(resultBody(), islandSeen),
+});
+const islandSystem = islandSeen[0].messages[0].content;
+const islandUser = islandSeen[0].messages[1].content;
+if (!islandUser.includes("本次主题已指定为 island")) fail("请求里要带上 island");
+if (!islandSystem.includes("ac-title ac-title-ribbon") || !islandSystem.includes("ac-tag") || !islandSystem.includes("ac-divider-wave") || !islandSystem.includes("ac-card")) fail("指定动森时要输出这套标签");
+if (!islandSystem.includes("全文最多 1 个非绿色标题") || !islandSystem.includes("全文最多 4 个")) fail("动森配方要限制装饰密度");
+if (islandSystem.includes("<style")) fail("动森配方不能夹带样式表");
+if (islandResult.template.params.theme !== "island") fail("指定动森时主题仍是 island");
+if (islandResult.document.decor !== "ac-title ac-title-ribbon ac-green") fail("大标题要收成绿色飘带");
+const headings = islandResult.document.blocks.filter((block) => block.type === "heading");
+if (!headings[0].className.includes("ac-title-layer") || !headings[0].className.includes("ac-yellow")) fail("中标题要收成双层纸，并留下一个强调色");
+if (!headings[1].className.includes("ac-title-tab") || !headings[1].className.includes("ac-green")) fail("小节要收成折角便签，多出来的颜色改回绿");
+if (!headings[2].className.includes("ac-green")) fail("第二个小节不能再换色");
+const tags = islandResult.document.blocks.find((block) => block.type === "paragraph").tags || [];
+if (tags.length > 4) fail("标签最多 4 个");
+if (tags.some((tag) => tag.text === "不存在")) fail("原文没有的词不能当标签");
+if (!tags.some((tag) => tag.text === "海风" && tag.face === "solid")) fail("关键词标签要留下");
+if (tags.some((tag) => !["green", "yellow", "peach", "brown"].includes(tag.color))) fail("标签颜色只能是四种");
+const dividers = islandResult.document.blocks.filter((block) => block.type === "divider").map((block) => block.className);
+if (dividers[0] !== "ac-divider ac-divider-wave" || dividers[1] !== "ac-divider ac-divider-squiggle" || dividers[2] !== "ac-divider ac-divider-thin") fail("分隔线只留两条花式，其余改细线");
+if (!islandResult.document.blocks.some((block) => block.type === "quote" && block.className === "ac-card")) fail("引用要收成浅色纸块");
+if (!JSON.stringify(islandResult.document).includes("坐五分钟")) fail("动森重点标签要留下");
+
+const freshSeen = [];
+const freshResult = await normalizeWithDeepSeek(source, "test-key", "deepseek-flash", { mode: "fixed", theme: "fresh" }, {
+  fetchImpl: fetchReturning(resultBody(), freshSeen),
+});
+if (freshSeen[0].messages[0].content.includes("ac-title-ribbon")) fail("其它主题不能带上动森标签配方");
+if (freshResult.document.decor) fail("其它主题不要留下动森标题标签");
+if (freshResult.document.blocks.some((block) => block.className || block.tags)) fail("其它主题不要留下动森标签");
 
 console.log("island theme and changelog checks passed");

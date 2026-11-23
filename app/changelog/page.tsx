@@ -4,7 +4,7 @@ import { CHANGELOG } from "@/lib/changelog";
 import { absoluteUrl } from "@/lib/site-seo";
 
 const title = "更新日志 | Yooco";
-const description = "Yooco 最近改了什么。只记打开网站就能看见的变化，新的在前。";
+const description = "按日期记录产品变化，新的在前。";
 
 export const metadata: Metadata = {
   title: { absolute: title },
@@ -18,7 +18,7 @@ export default function ChangelogPage() {
       <article className="faq-page changelog-page">
         <p className="auth-eyebrow">YOOCO / 更新</p>
         <h1>更新日志</h1>
-        <p className="changelog-lead">这里记下你能看见的变化。新的在前。</p>
+        <p className="changelog-lead">按日期记录产品变化，新的在前。</p>
         <ol className="changelog-list">
           {CHANGELOG.map((item) => (
             <li key={item.date}>

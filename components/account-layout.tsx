@@ -9,10 +9,12 @@ export function AccountLayout({
   children,
   section,
   skin,
+  current,
 }: {
   children: ReactNode;
   section: string;
   skin?: "obsidian";
+  current?: "changelog";
 }) {
   const obsidian = skin === "obsidian";
   return (
@@ -26,6 +28,7 @@ export function AccountLayout({
           </Link>
           <nav className="account-nav" aria-label="页面导航">
             <Link href="/works">精品模板</Link>
+            <Link href="/changelog" aria-current={current === "changelog" ? "page" : undefined}>更新日志</Link>
             <Link href="/studio.html">工作台 <ArrowUpRight size={14} aria-hidden="true" /></Link>
             {obsidian ? <SiteThemeSwitch /> : null}
             <AccountMenu />

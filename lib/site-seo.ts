@@ -20,7 +20,7 @@ export const LANDING_DESCRIPTION =
   "Yooco 是公众号排版工具：粘贴或上传文章，点「优化排版」、换主题，复制到微信公众号就能发。免费试用。适合写完正文、不想手工调格式的人。";
 
 /** 允许搜索引擎收录的公开页。后台、统计和接口不放进来。 */
-export const INDEXABLE_PATHS = ["/", LANDING_PATH, "/works", "/faq", "/studio.html", "/login", "/register"] as const;
+export const INDEXABLE_PATHS = ["/", LANDING_PATH, "/works", "/faq", "/changelog", "/studio.html", "/login", "/register"] as const;
 
 /** robots.txt 里明确不抓的路径。订阅页会跳回首页，不在这里挡。 */
 export const ROBOTS_DISALLOW = ["/admin", "/metrics", "/api/"] as const;

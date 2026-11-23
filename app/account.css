@@ -56,6 +56,12 @@
 .auth-field-hint a { margin-left: 6px; color: var(--account-link); font-weight: 700; text-decoration: none; }
 .auth-field-hint a:hover { text-decoration: underline; }
 .faq-page { width: min(100% - 32px, 640px); margin: 36px auto 64px; }
+.changelog-lead { margin: 14px 0 0; color: var(--account-muted); font-size: 15px; line-height: 1.7; }
+.changelog-list { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
+.changelog-list li { padding: 16px 18px; border: 1px solid var(--account-line); border-radius: 16px; background: var(--yooco-color-surface, #fff); }
+.changelog-list time { display: block; color: var(--account-muted); font-size: 13px; font-weight: 700; }
+.changelog-list p { margin: 6px 0 0; font-size: 15px; line-height: 1.7; }
+.account-nav a[aria-current="page"] { color: var(--account-ink); }
 .faq-page h1 { margin: 12px 0 0; font-family: var(--yooco-font-display, Georgia, "Songti SC", serif); font-size: clamp(36px, 5vw, 56px); font-weight: 500; letter-spacing: -.05em; }
 .auth-email-row { display: flex; align-items: stretch; gap: 8px; min-width: 0; }
 .auth-field .auth-email-row input { flex: 1 1 auto; width: auto; min-width: 0; }
@@ -202,7 +208,11 @@ html[data-site="night"] .account-app.is-obsidian { color-scheme: dark; }
 .account-app.is-obsidian .account-footer { border-color: var(--site-hairline); background: var(--site-canvas); }
 .account-app.is-obsidian .account-nav a,
 .account-app.is-obsidian .account-menu-popover button { color: var(--site-ink); }
-.account-app.is-obsidian .account-nav a { white-space: nowrap; }
+.account-app.is-obsidian .account-nav a { align-items: center; gap: 4px; white-space: nowrap; }
+.account-app.is-obsidian .account-nav a[href="/studio.html"] { display: inline-flex; align-items: center; gap: 4px; }
+@media (max-width: 680px) {
+  .account-app.is-obsidian .account-nav a:first-child { display: none; }
+}
 @media (max-width: 823px) {
   html[data-site] .account-header .site-theme-switch { order: 0; }
 }
@@ -308,6 +318,14 @@ html[data-site="night"] .account-app.is-obsidian .auth-field-error { color: #ffb
 }
 .account-app.is-obsidian :focus-visible { outline: 2px solid var(--site-focus); outline-offset: 3px; }
 .account-app.is-obsidian .faq-page { position: relative; z-index: 1; }
+.account-app.is-obsidian .changelog-lead,
+.account-app.is-obsidian .changelog-list time { color: var(--site-muted); }
+.account-app.is-obsidian .changelog-list p { color: var(--site-ink); }
+.account-app.is-obsidian .changelog-list li {
+  border-color: var(--site-line);
+  background: var(--site-surface);
+}
+.account-app.is-obsidian .account-nav a[aria-current="page"] { color: var(--site-accent-text); }
 .account-app.is-obsidian .faq-card {
   margin-top: 28px;
   padding: 18px;

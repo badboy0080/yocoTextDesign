@@ -11,7 +11,8 @@ export function WorksGallery() {
   const [origin, setOrigin] = useState<HTMLButtonElement | null>(null);
   const grid = useRef<HTMLUListElement>(null);
   // 风格列表已去掉「杂志编辑部」。就算以后样张还带着这个名字，也不再做成可点的筛选。
-  const filters = ["全部", ...new Set(WORKS.map((work) => work.themeLabel).filter((label) => label !== "杂志编辑部"))];
+  // 动森已登记。还没有样张时，筛选里仍能点到，并沿用「这一组还没有模板」。
+  const filters = ["全部", ...new Set([...WORKS.map((work) => work.themeLabel), "动森"].filter((label) => label !== "杂志编辑部"))];
   const visible = WORKS.filter((work) => filter === "全部" || work.themeLabel === filter);
   useLayoutEffect(() => {
     if (!grid.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

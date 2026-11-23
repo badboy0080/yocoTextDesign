@@ -2,6 +2,12 @@
 
 ## 当前接手摘要
 
+动森纸面改纯白（2026-11-23，PR #106，未合并、未部署）：只把动森文章纸改成 #FFFFFF。预览和复制稿都是纯白。飘带、双层纸、折角、标签、分隔线、浅色纸块和黄色重点还在。外壳仍是暖米 / 暖黑。日志仍写「本次尚未上线」。`npm run check`（15 项）已通过。截图是 `docs/previews/island-decor/06-island-white-day.png`、`07-island-white-night.png`、`08-island-white-copy.png`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+
+动森装饰和日志文案（2026-11-23，PR #106，未合并、未部署）：更新日志改成短句。动森文章加上飘带、双层纸、折角便签、标签、分隔线和浅色纸块。外壳仍是暖米 / 暖黑。`npm run check`（15 项）已通过。截图在 `docs/previews/island-decor/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+
+动森主题和更新日志（2026-11-23，未合并、未部署）：文章主题新增「动森」，只改文章纸面，外壳仍是暖米 / 暖黑。顶栏新增「更新日志」，页面在 `/changelog`。`npm run check`（15 项）已通过。截图在 `docs/previews/island-changelog/`。没登录，没调 DeepSeek，没贴微信，正式站没动。
+
 划选弹窗（2026-11-21，PR #105，未合并、未部署）：「标重点」和选中的黑底按钮改成白字，浅底按钮仍是深字。拖字号滑块时弹窗不再跟着选区挪，所以不再来回跳。松手后按新位置摆一次。这条分支已接上含 #104 的 master。截图和短视频在 `docs/previews/selection-popup/`。没登录，没调 DeepSeek，正式站没动。
 
 精品模板外壳对齐工作台（2026-11-21，PR #104，已合进 master `d60153f`，未部署）：`/works` 日夜改成和工作台同一套暖米 / 暖黑。筛选、卡片、详情弹窗跟着这套。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和 404 也换了外壳。首页和工作台内部没动。筛选里没有「杂志编辑部」。截图在 `docs/previews/works-shell/`。没登录，没调 DeepSeek，正式站没动。
@@ -215,6 +221,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-23 动森文章纸面改成纯白
+
+- 想做什么：只把动森文章底下那张纸改成纯白 #FFFFFF。预览和复制到公众号都要白。外壳和装饰不动。不合并不部署。
+- 做成了什么：纸色从 #f8f8f0 改成 #ffffff。折角翻开露出的那一小块也改成同一张白纸。浅色纸块、飘带、双层纸、标签、分隔线和黄色重点留着。白天外壳仍是暖米，夜间外壳仍是暖黑。日志第一条仍是「本次尚未上线」。
+- 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`CONTEXT.md`、`docs/previews/island-decor/06-island-white-day.png`、`docs/previews/island-decor/07-island-white-night.png`、`docs/previews/island-decor/08-island-white-copy.png`、`handoff-log.md`、`workUp.md`。
+- 如何验证：`npm run check` 15 项通过。本地工作台贴了一篇带动森装饰的稿，没登录，没点优化。量到白天外壳 #F5EFE3、夜间外壳 #0F0C0A，纸面都是 #FFFFFF。点了「复制排版」，复制稿外层底也是 #FFFFFF。
+- 待办/风险：PR #106 还没合并，没部署，没贴微信，没真调 DeepSeek。
+
 ### 2026-11-21 划选弹窗字看清、拖字号不再闪
 
 - 想做什么：划选弹窗里「标重点」黑底看不清字。拖字号滑块时弹窗一直闪。只开 PR，不合并不部署。
@@ -247,10 +261,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 如何验证：仓库没有一条总检查命令。`node scripts/check-site-chrome.js` 通过。`npm run build:edgeone` 通过，18 个页面都生成了。构建出的首页源码里，日夜脚本在 head 里，没有外链。本地看了首页白天、黑夜、390 宽黑夜，以及工作台黑夜。白天是暖米，黑夜是暖黑，刷新还记得。工作台登录按钮仍是「登录」。没登录，没调 DeepSeek。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/101 已开，没有合并，没有部署。合进 master 才会触发 EdgeOne 自动部署。`lib/load-sample-try.ts` 还留着 `?raw`，目前只有类型引用，这次构建没编译到它。Node 仍是 22.11.0，安装警告不是这次失败原因。
 
-### 2026-11-14 工作台手机上能滚到主题和文末
-
-- 想做什么：按已合质感主题的 master，给工作台做手机适配。先用浏览器看真实问题，再小改。不合 master，不部署。
-- 做成了什么：823px 以下，工作台外壳不再锁死一屏。原文框和预览区按剩下的高度收，长文在预览里能看到最后一句。划词浮层贴回屏幕内。页面底部的合规说明不再横向撑出屏幕。桌面布局、主题和复制稿尺寸没改。
-- 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`scripts/check-mobile-layout.js`、`docs/previews/mobile-before-*.png`、`docs/previews/mobile-after-*.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：本地 5174。无头 Chrome 看了 320、375、390、430、1280、1440。窄屏页面可以滚到「质感」「表情」和「优化排版」，预览最后一句在屏幕里，原文长链接会换行，划词浮层、大纲和工具菜单都在屏内。文档宽度不再大于视口。`node scripts/check-mobile-layout.js` 以及大纲、质感、表情、划词、斜杠、粘贴图、重点、人味空结果、超时这些检查通过。没有调用优化接口。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/95 已开，没有自己合并。没上真机，没贴微信。软键盘只把视口高度收短做过代理。刘海安全区写了内边距，没有带刘海的机器可看。首页、登录、注册窄屏没有撑出屏幕，这次没改它们。质感大编号在 420px 以下的预览里本来就会缩小，复制稿仍是 92px，这次没动。

@@ -1934,11 +1934,11 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   .article-page[data-theme="texture"] .texture-div-line { width: 42px; }
 }
 
-/* 动森：暖羊皮纸、棕色字、薄荷青胶囊。纸色不跟网站日夜变。数值对照 animal-island-ui 令牌。 */
+/* 动森：纯白纸、棕色字、薄荷青胶囊。纸色不跟网站日夜变。数值对照 animal-island-ui 令牌。 */
 .article-page[data-theme="island"] {
   color-scheme: light;
   color: #794f27;
-  background-color: #f8f8f0;
+  background-color: #ffffff;
 }
 .article-page[data-theme="island"] .ac-green { --ac-fill: #6fba2c; --ac-edge: #4f8f1e; --ac-ink: #fffdf5; --ac-soft: #f3fbe8; }
 .article-page[data-theme="island"] .ac-yellow { --ac-fill: #f5c31c; --ac-edge: #c4920a; --ac-ink: #794f27; --ac-soft: #fff6d4; }
@@ -2021,7 +2021,7 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border: 2px s
   height: 0;
   border-style: solid;
   border-width: 0 14px 14px 0;
-  border-color: var(--ac-fill) #f8f8f0 var(--ac-fill) var(--ac-fill);
+  border-color: var(--ac-fill) #ffffff var(--ac-fill) var(--ac-fill);
   vertical-align: top;
 }
 .article-page[data-theme="island"] .ac-tab-label {

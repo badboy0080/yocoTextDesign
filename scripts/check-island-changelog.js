@@ -24,7 +24,7 @@ const islandEnd = themes.indexOf("const THEME_ORDER");
 if (islandStart < 0 || islandEnd < islandStart) fail("动森没有登记进主题表");
 const island = themes.slice(islandStart, islandEnd);
 if (!island.includes('label: "动森"')) fail("显示名要是动森");
-if (!island.includes('pageColor: "#f8f8f0"')) fail("动森纸色要用羊皮纸");
+if (!island.includes('pageColor: "#ffffff"')) fail("动森纸色要用纯白");
 if (!island.includes('textColor: "#794f27"')) fail("动森正文字色要用棕色");
 if (!island.includes('accentColor: "#19c8b9"')) fail("动森主色要用薄荷青");
 if (!island.includes('highlightColor: "#f5c31c"')) fail("动森重点要用库里的警示黄");
@@ -44,7 +44,9 @@ if (!app.includes("background-color:#f8f8f0") && !app.includes("pageColor")) fai
 const islandCopy = app.slice(app.indexOf("const islandHighlightCss"), app.indexOf("const highlightCss"));
 if (/text-align\s*:\s*(start|end)/i.test(islandCopy)) fail("动森复制样式不能用 start 或 end");
 if (!css.includes('.article-page[data-theme="island"]')) fail("预览要有动森纸面样式");
-if (!css.includes("background-color: #f8f8f0")) fail("预览纸色要写死羊皮纸");
+const islandCss = css.slice(css.indexOf('.article-page[data-theme="island"] {'));
+if (!islandCss.slice(0, 220).includes("background-color: #ffffff")) fail("预览纸色要写死纯白");
+if (!app.includes("#ffffff ${palette.fill} ${palette.fill}")) fail("折角露出的纸要是纯白");
 
 for (const file of [home, account, studio, works]) {
   if (!file.includes('href="/changelog"') && !file.includes("href=\"/changelog\"")) fail("导航要能进更新日志");

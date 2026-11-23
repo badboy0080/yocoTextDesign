@@ -511,9 +511,9 @@ const THEMES = {
    * https://github.com/guokaigdg/animal-island-ui/blob/main/LICENSE
    * 只取令牌，不装组件库，不搬 Nunito。公众号复制稿用系统中文字体栈，样式写成内联。
    * primary #19c8b9 / text #794f27 / secondary #9f927d
-   * bg #f8f8f0 / card #f0e8d8 / primary-bg #e6f9f6
+   * 库里的纸是 #f8f8f0。文章纸面改成 #ffffff。卡片仍是 #f0e8d8。
    * border #e8e2d6 / warning #f5c31c / radius 24 / shadow rgba(61, 52, 40, 0.1)
-   * 纸色固定浅羊皮纸，不跟网站日夜外壳变，也不铺炭黑。
+   * 纸色固定纯白，不跟网站日夜外壳变，也不铺炭黑。
    */
   island: {
     label: "动森",
@@ -525,7 +525,7 @@ const THEMES = {
       textColor: "#794f27", accentColor: "#19c8b9",
       highlightColor: "#f5c31c", highlightTextColor: "#794f27",
       cardColor: "#f0e8d8", quoteColor: "#f8f8f0", cardTitleColor: "#794f27",
-      pageColor: "#f8f8f0", linkColor: "#50b9ab",
+      pageColor: "#ffffff", linkColor: "#50b9ab",
       codeBackground: "#f0e8d8", codeColor: "#794f27", dividerColor: "#dcd8d1",
       mutedColor: "#9f927d", titleColor: "#794f27", borderColor: "#e8e2d6",
       bodyFont: "system", headingFont: "system", textAlign: "left",

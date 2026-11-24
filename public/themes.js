@@ -511,7 +511,8 @@ const THEMES = {
    * https://github.com/guokaigdg/animal-island-ui/blob/main/LICENSE
    * 只取令牌，不装组件库，不搬 Nunito。公众号复制稿用系统中文字体栈，样式写成内联。
    * primary #19c8b9 / text #794f27 / secondary #9f927d
-   * 库里的纸是 #f8f8f0。文章纸面改成 #ffffff。卡片仍是 #f0e8d8。
+   * 库里的纸是 #f8f8f0。文章纸面改成 #ffffff。引用仍是 #f8f8f0，要点卡仍是 #f0e8d8。
+   * 标签另有浅底和虚线。一篇最多一张浅色纸，提醒是静止色条。分隔线另有一条更淡的虚线。
    * border #e8e2d6 / warning #f5c31c / radius 24 / shadow rgba(61, 52, 40, 0.1)
    * 纸色固定纯白，不跟网站日夜外壳变，也不铺炭黑。
    */

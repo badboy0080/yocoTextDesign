@@ -6,6 +6,10 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-24",
+    summary: "动森补充浅底标签、虚线标签、浅色纸卡、提醒条，以及更淡的分隔线。本次尚未上线。",
+  },
+  {
     date: "2026-11-23",
     summary: "新增「动森」文章主题与更新日志。本次尚未上线。",
   },

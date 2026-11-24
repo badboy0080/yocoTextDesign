@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-20 修好 EdgeOne 正式构建
+
+- 想做什么：PR #99 合进 master 后，EdgeOne 自动构建失败，正式站还停在上一次成功部署。修好让 `npm run build:edgeone` 能过。只开 PR，不合并不部署。
+- 做成了什么：Turbopack 不认 `?raw`。日夜启动脚本改成把正文直接写进首页头部，绘制前设置日夜，避免闪色。工作台仍用原来的 `site-theme-boot.js`。类型检查还有两处会让构建停住，改成等价写法：用 `appendChild` 放入样稿节点，并把页面元素先收进常量再给内部函数用。
+- 改了哪些文件：`app/layout.tsx`、`lib/site-theme-boot-source.ts`、`scripts/check-site-chrome.js`、`components/home-showcase.tsx`、`components/home-story.tsx`、`docs/previews/theme-boot-day.png`、`docs/previews/theme-boot-night.png`、`docs/previews/theme-boot-night-mobile.png`、`docs/previews/theme-boot-studio-night.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：仓库没有一条总检查命令。`node scripts/check-site-chrome.js` 通过。`npm run build:edgeone` 通过，18 个页面都生成了。构建出的首页源码里，日夜脚本在 head 里，没有外链。本地看了首页白天、黑夜、390 宽黑夜，以及工作台黑夜。白天是暖米，黑夜是暖黑，刷新还记得。工作台登录按钮仍是「登录」。没登录，没调 DeepSeek。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/101 已开，没有合并，没有部署。合进 master 才会触发 EdgeOne 自动部署。`lib/load-sample-try.ts` 还留着 `?raw`，目前只有类型引用，这次构建没编译到它。Node 仍是 22.11.0，安装警告不是这次失败原因。
+
 ### 2026-11-14 工作台手机上能滚到主题和文末
 
 - 想做什么：按已合质感主题的 master，给工作台做手机适配。先用浏览器看真实问题，再小改。不合 master，不部署。

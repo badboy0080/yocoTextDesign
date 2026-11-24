@@ -1346,8 +1346,10 @@ function parseArticle(source) {
       const text = fenceLines.join("\n").trim();
       if (text) {
         const pulled = pullIslandTags(text);
-        const block = { type: "card", title: fenceTitle || "重点提示", text: pulled.text };
+        const titled = splitIslandFenceTitle(fenceTitle, "重点提示");
+        const block = { type: "card", title: titled.title, text: pulled.text };
         if (pulled.tags.length) block.tags = pulled.tags;
+        if (titled.className) block.className = titled.className;
         blocks.push(block);
       }
     } else if (fenceKind === "steps") {
@@ -1440,7 +1442,7 @@ function parseArticle(source) {
       blocks.push({ type: "image", alt: "文章配图", url: bareImage });
       continue;
     }
-    const divider = trimmed.match(/^(---+|\*\*\*+)(?:\s+(ac-divider-(?:thin|dash|wave|squiggle)))?$/);
+    const divider = trimmed.match(/^(---+|\*\*\*+)(?:\s+(ac-divider-(?:thin|hairline|dash|wave|squiggle)))?$/);
     if (divider) {
       flushParagraph();
       flushList();
@@ -1481,9 +1483,11 @@ function parseArticle(source) {
       flushParagraph();
       flushList();
       const quoteText = trimmed.replace(/^>\s?/, "");
-      const labeledQuote = quoteText.match(/^\*\*([^*\n]+)\*\*[：:]\s*(.+)$/);
-      const quoted = pullIslandTags(labeledQuote?.[2] || quoteText);
-      blocks.push({ type: "quote", title: labeledQuote?.[1] || "引用", text: quoted.text, tags: quoted.tags });
+      const labeledQuote = quoteText.match(/^\*\*([^*\n]+)\*\*(?:\s+\{(ac-[^{}\n]+)\})?[：:]\s*(.+)$/);
+      const quoted = pullIslandTags(labeledQuote?.[3] || quoteText);
+      const quoteBlock = { type: "quote", title: labeledQuote?.[1] || "引用", text: quoted.text, tags: quoted.tags };
+      if (labeledQuote?.[2]) quoteBlock.className = labeledQuote[2].trim();
+      blocks.push(quoteBlock);
       continue;
     }
     flushList();
@@ -1503,9 +1507,17 @@ function splitIslandHeading(text) {
   return { text: match[2], className: match[1] };
 }
 
+function splitIslandFenceTitle(raw, fallback) {
+  const text = String(raw || "").trim();
+  const match = text.match(/^(.*?)(?:\s+\{(ac-[^{}]+)\})?$/);
+  const title = (match?.[1] || "").trim() || fallback;
+  const className = String(match?.[2] || "").trim();
+  return { title, className };
+}
+
 function pullIslandTags(text) {
   const tags = [];
-  const clean = String(text || "").replace(/\[\[ac-tag (solid|outline) (green|yellow|peach|brown):([^\]\n]{1,12})\]\]/g, (_, face, color, word) => {
+  const clean = String(text || "").replace(/\[\[ac-tag (solid|outline|soft|dashed) (green|yellow|peach|brown):([^\]\n]{1,12})\]\]/g, (_, face, color, word) => {
     const label = String(word).trim();
     if (label) tags.push({ text: label, face, color });
     return label;
@@ -1524,7 +1536,7 @@ function embedIslandTags(text, tags) {
       left.push(tag);
       return;
     }
-    const face = tag.face === "outline" ? "outline" : "solid";
+    const face = ["outline", "soft", "dashed", "solid"].includes(tag.face) ? tag.face : "soft";
     const color = ["yellow", "peach", "brown"].includes(tag.color) ? tag.color : "green";
     output = `${output.slice(0, at)}[[ac-tag ${face} ${color}:${word}]]${output.slice(at + word.length)}`;
   });
@@ -1795,10 +1807,52 @@ function islandDecor(className, fallbackShape) {
 
 function islandDividerKind(className) {
   const value = String(className || "");
+  if (/ac-divider-hairline/.test(value)) return "hairline";
   if (/ac-divider-dash/.test(value)) return "dash";
   if (/ac-divider-wave/.test(value)) return "wave";
   if (/ac-divider-squiggle/.test(value)) return "squiggle";
   return "thin";
+}
+
+function islandTagFace(tag) {
+  if (tag?.face === "outline") return "outline";
+  if (tag?.face === "dashed") return "dashed";
+  if (tag?.face === "solid") return "solid";
+  return "soft";
+}
+
+function islandSurface(className) {
+  const value = ` ${String(className || "")} `;
+  if (value.includes(" ac-callout-warn ")) return { kind: "callout", tone: "warn" };
+  if (value.includes(" ac-callout-tip ")) return { kind: "callout", tone: "tip" };
+  if (value.includes(" ac-callout-ok ")) return { kind: "callout", tone: "ok" };
+  const dashed = value.includes(" ac-card-dash ");
+  let color = "";
+  if (value.includes(" ac-card-soft ")) {
+    if (value.includes(" ac-yellow ")) color = "yellow";
+    else if (value.includes(" ac-peach ")) color = "peach";
+    else if (value.includes(" ac-brown ")) color = "brown";
+    else if (value.includes(" ac-green ")) color = "green";
+  }
+  return { kind: "card", dashed, color };
+}
+
+function islandBlockClass(base, className) {
+  const surface = islandSurface(className);
+  if (surface.kind === "callout") return `ac-callout ac-callout-${surface.tone}`;
+  const names = [base, "ac-card"];
+  if (surface.dashed) names.push("ac-card-dash");
+  if (surface.color) names.push("ac-card-soft", `ac-${surface.color}`);
+  return names.join(" ");
+}
+
+function islandMarkdownClass(className) {
+  const surface = islandSurface(className);
+  if (surface.kind === "callout") return `ac-callout ac-callout-${surface.tone}`;
+  const names = [];
+  if (surface.dashed) names.push("ac-card", "ac-card-dash");
+  if (surface.color) names.push("ac-card", "ac-card-soft", `ac-${surface.color}`);
+  return [...new Set(names)].join(" ");
 }
 
 function islandHeadingDecor(item) {
@@ -1827,13 +1881,19 @@ function islandTagHtml(tag, inline) {
   const color = ISLAND_COLORS[tag?.color] ? tag.color : "green";
   const palette = islandPalette(color);
   const word = escapeHtml(tag?.text || "");
+  const face = islandTagFace(tag);
+  const faceClass = face === "outline" ? "ac-tag-outline" : face === "dashed" ? "ac-tag-dashed" : face === "solid" ? "ac-tag-solid" : "ac-tag-soft";
   if (!inline) {
-    const face = tag?.face === "outline" ? "ac-tag-outline" : "ac-tag-solid";
-    return `<span class="ac-tag ${face} ac-${color}">${word}</span>`;
+    return `<span class="ac-tag ${faceClass} ac-${color}">${word}</span>`;
   }
-  const style = tag?.face === "outline"
-    ? `display:inline-block;margin:0 6px 4px 0;padding:1px 10px;border:2px solid ${palette.fill};border-radius:999px;background-color:transparent;color:${palette.edge};font-size:13px;font-weight:700;line-height:1.6;text-align:center;`
-    : `display:inline-block;margin:0 6px 4px 0;padding:1px 10px;border-radius:999px;background-color:${palette.fill};color:${palette.ink};font-size:13px;font-weight:700;line-height:1.6;text-align:center;`;
+  const common = "display:inline-block;margin:0 6px 4px 0;padding:1px 10px;border-radius:999px;font-size:13px;font-weight:700;line-height:1.6;text-align:center;";
+  const style = face === "outline"
+    ? `${common}border:2px solid ${palette.fill};background-color:transparent;color:${palette.edge};`
+    : face === "dashed"
+      ? `${common}border:2px dashed ${palette.fill};background-color:transparent;color:${palette.edge};`
+      : face === "soft"
+        ? `${common}background-color:${palette.soft};color:${palette.edge};`
+        : `${common}background-color:${palette.fill};color:${palette.ink};`;
   return `<span style="${style}">${word}</span>`;
 }
 
@@ -1867,15 +1927,33 @@ function islandShapeHtml(shape, color, html, inline, editable) {
 
 function islandDividerHtml(kind, inline) {
   if (!inline) {
+    if (kind === "hairline") return `<span class="ac-divider-rule ac-divider-rule-hairline"></span>`;
     if (kind === "dash") return `<span class="ac-divider-rule ac-divider-rule-dash"></span>`;
     if (kind === "wave") return `<span class="ac-divider-wave">～～～～～～～～</span>`;
     if (kind === "squiggle") return `<span class="ac-divider-squiggle"></span>`;
     return `<span class="ac-divider-rule ac-divider-rule-thin"></span>`;
   }
+  if (kind === "hairline") return `<span style="display:block;height:0;border-top:1px dashed #e6dfd2;font-size:0;line-height:0;"></span>`;
   if (kind === "dash") return `<span style="display:block;height:0;border-top:2px dashed #9f927d;font-size:0;line-height:0;"></span>`;
   if (kind === "wave") return `<span style="display:block;color:#f5c31c;font-size:20px;font-weight:700;line-height:1;letter-spacing:2px;text-align:center;">～～～～～～～～</span>`;
   if (kind === "squiggle") return `<span style="display:block;width:120px;height:14px;margin:0 auto;border-bottom:3px solid #19c8b9;border-radius:0 0 80px 80px;font-size:0;line-height:0;"></span>`;
   return `<span style="display:block;height:0;border-top:1px solid #dcd8d1;font-size:0;line-height:0;"></span>`;
+}
+
+function islandCopySurfaceStyle(className, role) {
+  const surface = islandSurface(className);
+  const typeSize = `color:#794f27;font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:left;`;
+  if (surface.kind === "callout") {
+    const tone = surface.tone === "warn"
+      ? { edge: "#f5c31c", bg: "#fdf6d9" }
+      : surface.tone === "ok"
+        ? { edge: "#6fba2c", bg: "#f5fae9" }
+        : { edge: "#19c8b9", bg: "#ecf9f6" };
+    return `margin:18px 0 22px;padding:12px 16px 14px 14px;border:2px solid ${tone.edge};border-left-width:6px;border-radius:16px;background-color:${tone.bg};${typeSize}`;
+  }
+  const bg = surface.color ? islandPalette(surface.color).soft : (role === "quote" ? "#f8f8f0" : "#f0e8d8");
+  const borderStyle = surface.dashed ? "dashed" : "solid";
+  return `margin:18px 0 22px;padding:${state.cardPadding}px;border:2px ${borderStyle} #e8e2d6;border-radius:24px;background-color:${bg};box-shadow:0 3px 10px 0 rgba(61,52,40,0.1);${typeSize}`;
 }
 
 function renderHeadingBlock(item, index, editable, textureSection = 0) {
@@ -2098,7 +2176,7 @@ function renderBody() {
       const quotePool = (item.tags || []).map((tag) => ({ ...tag }));
       const quoteMarked = islandMarkedText(item.text, quotePool);
       const quoteHtml = islandFillTags(inlineMarkdown(quoteMarked.text), quoteMarked.slots, false);
-      const quoteClass = state.theme === "island" ? "quote-card ac-card" : "quote-card";
+      const quoteClass = state.theme === "island" ? islandBlockClass("quote-card", item.className) : "quote-card";
       if (state.showQuote) return `<aside class="${quoteClass}" data-type="quote" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "引用")}</strong>${quoteHtml}</aside>`;
       return `<p class="plain-quote" data-type="quote" ${idx} contenteditable="${editable}">${quoteHtml}</p>`;
     }
@@ -2106,7 +2184,7 @@ function renderBody() {
       const cardPool = (item.tags || []).map((tag) => ({ ...tag }));
       const cardMarked = islandMarkedText(item.text, cardPool);
       const cardHtml = islandFillTags(inlineMarkdown(cardMarked.text), cardMarked.slots, false);
-      const cardClass = state.theme === "island" ? "content-card ac-card" : "content-card";
+      const cardClass = state.theme === "island" ? islandBlockClass("content-card", item.className) : "content-card";
       return `<aside class="${cardClass}" data-type="card" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点提示")}</strong>${cardHtml}</aside>`;
     }
     if (item.type === "highlightBox") return `<aside class="content-card highlight-box" data-type="highlightBox" ${idx} contenteditable="${editable}"><strong>${escapeHtml(item.title || "重点")}</strong>${inlineMarkdown(item.text)}</aside>`;
@@ -2198,6 +2276,26 @@ function inlineNodeToMarkdown(node) {
   if (node.classList?.contains("inline-wavy")) return `~${inner}~`;
   if (tag === "CODE") return `\`${inner}\``;
   if (tag === "A") return `[${inner}](${node.getAttribute("href") || ""})`;
+  if (node.classList?.contains("ac-tag")) {
+    const face = node.classList.contains("ac-tag-outline")
+      ? "outline"
+      : node.classList.contains("ac-tag-dashed")
+        ? "dashed"
+        : node.classList.contains("ac-tag-solid")
+          ? "solid"
+          : node.classList.contains("ac-tag-soft")
+            ? "soft"
+            : "soft";
+    const color = node.classList.contains("ac-yellow")
+      ? "yellow"
+      : node.classList.contains("ac-peach")
+        ? "peach"
+        : node.classList.contains("ac-brown")
+          ? "brown"
+          : "green";
+    const word = inner.replace(/\s+/g, "");
+    return word ? `[[ac-tag ${face} ${color}:${word}]]` : "";
+  }
   return inner;
 }
 
@@ -2259,6 +2357,23 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
     if (type === "toc" || type === "signature") return;
     if (type === "heading") {
       const level = Math.min(6, Math.max(2, Number(el.dataset.level) || 2));
+      const islandLabel = el.querySelector(".ac-ribbon-label, .ac-layer-label, .ac-tab-label");
+      if (islandLabel) {
+        const shape = el.classList.contains("ac-title-tab")
+          ? "ac-title-tab"
+          : el.classList.contains("ac-title-ribbon")
+            ? "ac-title-ribbon"
+            : "ac-title-layer";
+        const color = el.classList.contains("ac-yellow")
+          ? "ac-yellow"
+          : el.classList.contains("ac-peach")
+            ? "ac-peach"
+            : el.classList.contains("ac-brown")
+              ? "ac-brown"
+              : "ac-green";
+        parts.push(`${"#".repeat(level)} {ac-title ${shape} ${color}} ${htmlToMd(islandLabel)}`);
+        return;
+      }
       const textureTitle = el.querySelector(".texture-title");
       if (textureTitle) {
         let text = htmlToMd(textureTitle);
@@ -2294,14 +2409,16 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
       const title = el.querySelector("strong")?.textContent.trim() || "引用";
       const clone = el.cloneNode(true);
       clone.querySelector("strong")?.remove();
-      parts.push(`> **${title}**：${htmlToMd(clone)}`);
+      const quoteMark = islandMarkdownClass(el.className);
+      parts.push(`> **${title}**${quoteMark ? ` {${quoteMark}}` : ""}：${htmlToMd(clone)}`);
       return;
     }
     if (type === "card") {
       const title = el.querySelector("strong")?.textContent.trim() || "重点提示";
       const clone = el.cloneNode(true);
       clone.querySelector("strong")?.remove();
-      parts.push(`:::card ${title}\n${htmlToMd(clone)}\n:::`);
+      const cardMark = islandMarkdownClass(el.className);
+      parts.push(`:::card ${title}${cardMark ? ` {${cardMark}}` : ""}\n${htmlToMd(clone)}\n:::`);
       return;
     }
     if (type === "highlightBox") {
@@ -2361,7 +2478,8 @@ function serializePreviewToMarkdown(replaceEl, replacement) {
         parts.push(emojiDividerText(text));
         return;
       }
-      parts.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : "---");
+      const kind = ["hairline", "dash", "wave", "squiggle"].find((name) => el.classList.contains(`ac-divider-${name}`));
+      parts.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : (kind ? `--- ac-divider-${kind}` : "---"));
       return;
     }
     if (type === "image") {
@@ -2518,7 +2636,7 @@ function structuredDocumentToMarkdown(document) {
         lines.push(emojiDividerText(text));
         return;
       }
-      const kind = String(block.className || "").match(/ac-divider-(dash|wave|squiggle)/);
+      const kind = String(block.className || "").match(/ac-divider-(hairline|dash|wave|squiggle)/);
       lines.push(typeof globalThis.isEmojiRuleLine === "function" && globalThis.isEmojiRuleLine(text) ? text : (kind ? `--- ac-divider-${kind[1]}` : "---"));
       return;
     }
@@ -2574,10 +2692,12 @@ function structuredDocumentToMarkdown(document) {
     } else if (type === "quote") {
       const quoteTitle = String(block.title || "").trim();
       const generic = !quoteTitle || quoteTitle === "引用" || quoteTitle === "金句";
+      const quoteMark = islandMarkdownClass(block.className);
       if (state.theme === "texture" && generic) lines.push(`> ${text}`);
-      else lines.push(`> **${quoteTitle || "引用"}**：${text}`);
+      else lines.push(`> **${quoteTitle || "引用"}**${quoteMark ? ` {${quoteMark}}` : ""}：${text}`);
     } else if (type === "card") {
-      lines.push(`:::card ${String(block.title || "重点提示").trim()}\n${text}\n:::`);
+      const cardMark = islandMarkdownClass(block.className);
+      lines.push(`:::card ${String(block.title || "重点提示").trim()}${cardMark ? ` {${cardMark}}` : ""}\n${text}\n:::`);
     } else if (type === "code") {
       lines.push(`\`\`\`${String(block.language || "").trim()}\n${block.text}\n\`\`\``);
     } else {
@@ -3176,16 +3296,18 @@ function buildCopyHtml() {
       const quoteTags = (item.tags || []).map((tag) => ({ ...tag }));
       const quoteMarked = islandMarkedText(item.text, quoteTags);
       const quoteHtml = islandFillTags(copyInlineMarkdown(quoteMarked.text), quoteMarked.slots, true);
-      const quoteClass = state.theme === "island" ? ` class="ac-card"` : "";
-      if (state.showQuote) return `<section${quoteClass} style="${quoteStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${quoteHtml}</p></section>`;
+      const quoteClass = state.theme === "island" ? ` class="${islandBlockClass("ac-card", item.className)}"` : "";
+      const quoteBox = state.theme === "island" ? islandCopySurfaceStyle(item.className, "quote") : quoteStyle;
+      if (state.showQuote) return `<section${quoteClass} style="${quoteBox}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${quoteTitleStyle}">${escapeHtml(item.title || "引用")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${quoteHtml}</p></section>`;
       return `<p style="${textStyle}font-style:italic;">${quoteHtml}</p>`;
     }
     if (item.type === "card") {
       const cardTags = (item.tags || []).map((tag) => ({ ...tag }));
       const cardMarked = islandMarkedText(item.text, cardTags);
       const cardHtml = islandFillTags(copyInlineMarkdown(cardMarked.text), cardMarked.slots, true);
-      const cardClass = state.theme === "island" ? ` class="ac-card"` : "";
-      return `<section${cardClass} style="${cardStyle}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${cardHtml}</p></section>`;
+      const cardClass = state.theme === "island" ? ` class="${islandBlockClass("ac-card", item.className)}"` : "";
+      const cardBox = state.theme === "island" ? islandCopySurfaceStyle(item.className, "card") : cardStyle;
+      return `<section${cardClass} style="${cardBox}"><p style="margin:0 0 7px;padding:0;text-align:${bodyAlign};${contentCardTitleStyle}">${escapeHtml(item.title || "重点提示")}</p><p style="margin:0;padding:${cardKind === "band" ? `0 ${state.cardPadding}px` : "0"};color:${state.textColor};text-align:${bodyAlign};">${cardHtml}</p></section>`;
     }
     if (item.type === "highlightBox") {
       const highlightBoxStyle = `margin:18px 0 22px;padding:${state.cardPadding}px;border-radius:${state.cardRadius}px;background-color:${highlightColor};color:${highlightTextColor};font-size:${Math.max(12, state.fontSize - 1)}px;line-height:${state.lineHeight};text-align:${bodyAlign};`;

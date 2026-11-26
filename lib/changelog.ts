@@ -6,6 +6,10 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-26",
+    summary: "优化排版失败时，会分开说明没返回内容、写到一半被截断，或夹了说明读不出来。本次尚未上线。",
+  },
+  {
     date: "2026-11-23",
     summary: "新增「动森」文章主题与更新日志。本次尚未上线。",
   },

@@ -36,6 +36,7 @@ assert(!seen?.messages?.[0]?.content?.includes("sk-"), "提示词里不能带密
 assert(timedOut instanceof AppError, "超时要是已知错误");
 assert(timedOut?.code === "DEEPSEEK_TIMEOUT", "超时仍是原来的错误码");
 assert(timedOut?.status === 503, "自己停下时用 503，不要再回 504");
-assert(String(timedOut?.message || "").includes("缩短文章"), "超时说明仍是中文");
+assert(timedOut?.message === "您的文章可能过长了，缩短一点再试一次吧！", "超时提示要说文章可能过长");
+assert(!String(timedOut?.message || "").includes("DEEPSEEK"), "超时提示里不要出现错误码");
 
 console.log("normalize timeout checks ok");

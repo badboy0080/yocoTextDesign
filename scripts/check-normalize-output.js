@@ -155,7 +155,7 @@ assert(nullThenOk.warnings[0].includes("len=0"), "没有正文字符串时长度
 const bothEmpty = await runScripted([completion(""), completion("   ")]);
 assert(bothEmpty.error instanceof AppError, "两次都空要是已知错误");
 assert(bothEmpty.error?.code === "DEEPSEEK_EMPTY_OUTPUT", "两次都空要报空内容");
-assert(bothEmpty.error?.message === "DeepSeek 这次没有返回内容，请重试。", "两次都空的提示要说没有返回内容");
+assert(bothEmpty.error?.message === "网络异常，请再试一次！", "两次都空的提示要说没有返回内容");
 assert(bothEmpty.error?.status === 502, "空内容仍是 502");
 assert(bothEmpty.calls.length === 2, "两次都空也只再请求一次");
 assert(bothEmpty.warnings.length === 2, "两次空内容各记一条");
@@ -168,7 +168,7 @@ const bothCut = await runScripted([
   completion("还是没写完", { finish_reason: "length", reasoning_content: "UNIQUE_REASONING_SENTINEL" }),
 ]);
 assert(bothCut.error?.code === "DEEPSEEK_OUTPUT_TRUNCATED", "截断要单独报");
-assert(bothCut.error?.message === "DeepSeek 输出被截断了，请缩短文章后重试。", "截断提示要让人知道是写到一半");
+assert(bothCut.error?.message === "您的文章可能过长了，缩短一点再试一次吧！", "截断提示要让人知道是写到一半");
 assert(bothCut.calls.length === 2, "截断也可以再请求一次");
 assert(bothCut.warnings[0].includes("kind=truncated"), "即使正文很短，finish_reason=length 也算截断");
 assert(bothCut.warnings[1].includes("reasoning=yes"), "第二次也要记有没有思考内容");
@@ -179,7 +179,7 @@ const bothWrapped = await runScripted([
   completion("说明在前 {还是坏的"),
 ]);
 assert(bothWrapped.error?.code === "DEEPSEEK_OUTPUT_WRAPPED", "围栏或多余文字要单独报");
-assert(bothWrapped.error?.message === "DeepSeek 返回夹了说明或代码块，没能读出排版，请重试。", "围栏提示要说没能读出排版");
+assert(bothWrapped.error?.message === "网络异常，请再试一次！", "围栏提示要说没能读出排版");
 assert(bothWrapped.calls.length === 2, "围栏解析失败要再请求一次");
 assert(bothWrapped.warnings[0].includes("kind=wrapped"), "代码围栏解析失败要记成 wrapped");
 assert(bothWrapped.warnings[1].includes("kind=wrapped"), "前后有说明却解析不了也记成 wrapped");
@@ -189,7 +189,7 @@ const bothInvalid = await runScripted([
   completion("[1,2,"),
 ]);
 assert(bothInvalid.error?.code === "DEEPSEEK_INVALID_OUTPUT", "其余解析失败仍用原来的错误码");
-assert(bothInvalid.error?.message === "DeepSeek 返回格式异常，请重试。", "其余解析失败仍是原来的那句");
+assert(bothInvalid.error?.message === "网络异常，请再试一次！", "其余解析失败仍是原来的那句");
 assert(bothInvalid.calls.length === 2, "其余格式失败也再请求一次");
 assert(bothInvalid.warnings[0].includes("kind=invalid"), "不像围栏、也不像截断时记成 invalid");
 
@@ -213,7 +213,7 @@ const skipped = await runScripted(
   { minRetryMs: Number.MAX_SAFE_INTEGER },
 );
 assert(skipped.error?.code === "DEEPSEEK_EMPTY_OUTPUT", "来不及再试时仍报空内容");
-assert(skipped.error?.message === "DeepSeek 这次没有返回内容，请重试。", "来不及再试时不要改成别的提示");
+assert(skipped.error?.message === "网络异常，请再试一次！", "来不及再试时不要改成别的提示");
 assert(skipped.calls.length === 1, "来不及再试时不要打第二次");
 assert(skipped.warnings[0].includes("retry=skipped-budget"), "跳过重试要写进日志");
 
@@ -267,24 +267,24 @@ async function expectOnce(response, code, message, options = {}) {
 await expectOnce(
   jsonResponse({}, 401),
   "DEEPSEEK_REQUEST_FAILED",
-  "DeepSeek API 密钥无效，请检查 DEEPSEEK_API_KEY。",
+  "网络异常，请再试一次！",
 );
 await expectOnce(
   jsonResponse({}, 429),
   "DEEPSEEK_RATE_LIMITED",
-  "DeepSeek 当前请求过多，请稍后重试。",
+  "网站处理业务过多，请再试一次！",
 );
 await expectOnce(
   jsonResponse({}, 500),
   "DEEPSEEK_REQUEST_FAILED",
-  "DeepSeek 暂时无法完成整理，请稍后重试。",
+  "网络异常，请再试一次！",
 );
 await expectOnce(
   () => {
     throw new Error("offline");
   },
   "DEEPSEEK_UNREACHABLE",
-  "暂时无法连接 DeepSeek，请检查网络后重试。",
+  "网络异常，请再试一次！",
 );
 await expectOnce(
   (_url, init) => new Promise((_resolve, reject) => {
@@ -295,7 +295,7 @@ await expectOnce(
     });
   }),
   "DEEPSEEK_TIMEOUT",
-  "DeepSeek 处理超时，请缩短文章后重试。",
+  "您的文章可能过长了，缩短一点再试一次吧！",
   { timeoutMs: 40 },
 );
 
@@ -313,7 +313,7 @@ try {
 }
 assert(documentCalls === 1, "文章结构不可用时不要再请求");
 assert(documentError?.code === "DEEPSEEK_INVALID_DOCUMENT", "结构不可用仍是原来的错误码");
-assert(documentError?.message === "DeepSeek 未返回可用的文章结构，请重试。", "结构不可用的提示不要混进格式异常");
+assert(documentError?.message === "网络异常，请再试一次！", "结构不可用给用户看的是网络异常");
 
 let missingCalls = 0;
 try {
@@ -326,6 +326,7 @@ try {
   throw new Error("没配密钥时不该成功");
 } catch (error) {
   assert(error.code === "DEEPSEEK_API_KEY_MISSING", "没配密钥仍是原来的错误");
+  assert(error.message === "网络异常，请再试一次！", "没配密钥时用户看到的也是网络异常");
 }
 assert(missingCalls === 0, "没配密钥时不要请求");
 
@@ -368,6 +369,15 @@ assert(normalizeAt > 0 && spendAt > normalizeAt, "先整次排版成功，再扣
 
 const changelog = readFileSync(new URL("../lib/changelog.ts", import.meta.url), "utf8");
 assert(changelog.includes("新增「动森」文章主题与更新日志。本次尚未上线。"), "2026-11-23 那句尚未上线不要改");
-assert(changelog.includes("优化排版失败时，会分开说明没返回内容、写到一半被截断，或夹了说明读不出来。本次尚未上线。"), "这次日志要写明尚未上线");
+assert(changelog.includes("优化排版失败时，会提示「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」或「网站处理业务过多，请再试一次！」。本次尚未上线。"), "这次日志要写明这三句，并标明尚未上线");
+
+const appJs = readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
+const formatStart = appJs.indexOf("function formatNormalizeError");
+const formatEnd = appJs.indexOf("let groundAiDocumentFn");
+const formatFn = appJs.slice(formatStart, formatEnd);
+assert(formatFn.includes("NORMALIZE_PLAIN_MESSAGES.has(message)"), "这三句在工作台原样显示");
+assert(formatFn.includes('code.startsWith("DEEPSEEK_")'), "排版错误不再把错误码拼到句子前面");
+assert(appJs.includes('throw new Error("您的文章可能过长了，缩短一点再试一次吧！")'), "网关 504 没有正文时，也用文章过长这句");
+assert(appJs.includes('const NORMALIZE_ERROR_FALLBACK = "网络异常，请再试一次！"'), "没有说明时用网络异常这句");
 
 console.log("normalize output checks ok");

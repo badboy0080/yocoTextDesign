@@ -2067,6 +2067,7 @@ function emojiDividerText(text) {
 }
 
 function renderBody() {
+  settleNormalizeRain();
   if (sampleStaticActive && isSampleTrySource()) {
     paintSampleTry();
     finishBlockStyles();
@@ -2704,6 +2705,290 @@ async function applyAiNormalization(data, assignment, source) {
   setFeedback("排版已更新");
 }
 
+const NORMALIZE_LOADING_PHRASES = [
+  "加载文字中...",
+  "正在查看精彩段落....",
+  "正在标注重点文字...",
+];
+const RAIN_BATCH_CHARS = 100;
+const RAIN_BATCH_GAP_MS = 1000;
+const RAIN_CHAR_STAGGER_MS = 6;
+const RAIN_FLY_MS = 420;
+const RAIN_DECOR_SELECTOR = [
+  ".texture-num",
+  ".texture-rule",
+  ".texture-quote-mark",
+  ".texture-div-line",
+  ".texture-div-sq",
+  ".heading-atlas-number",
+  ".heading-atlas-quote-mark",
+  ".heading-oval-badge",
+  ".steps-index",
+  ".toc-list b",
+  ".article-divider",
+  ".emoji-rule",
+  "hr",
+  ".ac-notch",
+  ".ac-ribbon-fold",
+  ".ac-layer-sheet",
+  ".ac-tab-fold",
+  "img",
+].join(",");
+const RAIN_WHOLE_SELECTOR = ".ac-tag, .fake-image";
+
+function rainDelayMs(charIndex) {
+  const batch = Math.floor(charIndex / RAIN_BATCH_CHARS);
+  const slot = charIndex - batch * RAIN_BATCH_CHARS;
+  return batch * RAIN_BATCH_GAP_MS + slot * RAIN_CHAR_STAGGER_MS;
+}
+
+function rainVector(index) {
+  const cursor = Math.abs(index);
+  const edge = cursor % 8;
+  const dist = 168 + (cursor % 7) * 28;
+  const slip = ((cursor * 13) % 48) - 24;
+  const table = [
+    [slip, -dist],
+    [dist, slip],
+    [slip, dist],
+    [-dist, slip],
+    [-dist, -Math.round(dist * 0.72)],
+    [dist, -Math.round(dist * 0.72)],
+    [-dist, Math.round(dist * 0.65)],
+    [dist, Math.round(dist * 0.65)],
+  ];
+  const pair = table[edge];
+  return [`${pair[0]}px`, `${pair[1]}px`];
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function visibleCharCount(text) {
+  let count = 0;
+  for (const ch of String(text || "")) {
+    if (!/\s/.test(ch)) count += 1;
+  }
+  return count;
+}
+
+let normalizeLoadingHome = null;
+let normalizePhraseTimer = 0;
+let normalizePhraseIndex = 0;
+let rainToken = 0;
+let rainTimer = 0;
+
+function normalizeLoadingEl() {
+  return document.querySelector("#normalizeLoading");
+}
+
+function stopNormalizeMotionTimers() {
+  if (normalizePhraseTimer) window.clearTimeout(normalizePhraseTimer);
+  normalizePhraseTimer = 0;
+}
+
+function paintNormalizePhrase(phrase, leaving) {
+  const box = document.querySelector("#normalizeLoadingPhrase");
+  const live = document.querySelector("#normalizeLoadingLive");
+  if (live && !leaving) live.textContent = phrase;
+  if (!box) return;
+  box.classList.toggle("is-leaving", Boolean(leaving));
+  if (leaving) return;
+  const chars = [...phrase];
+  if (prefersReducedMotion()) {
+    box.textContent = phrase;
+    return;
+  }
+  box.replaceChildren();
+  chars.forEach((ch, index) => {
+    const span = document.createElement("span");
+    span.className = "normalize-loading-char";
+    span.style.setProperty("--char-i", String(index));
+    span.textContent = ch;
+    box.append(span);
+  });
+  const shine = document.createElement("span");
+  shine.className = "normalize-loading-shine";
+  shine.setAttribute("aria-hidden", "true");
+  shine.style.setProperty("--shine-delay", `${chars.length * 25 + 200}ms`);
+  shine.textContent = phrase;
+  box.append(shine);
+}
+
+function startNormalizePhrases() {
+  normalizePhraseIndex = 0;
+  const show = () => {
+    const phrase = NORMALIZE_LOADING_PHRASES[normalizePhraseIndex % NORMALIZE_LOADING_PHRASES.length];
+    paintNormalizePhrase(phrase, false);
+  };
+  show();
+  const tick = () => {
+    if (prefersReducedMotion()) {
+      normalizePhraseIndex = (normalizePhraseIndex + 1) % NORMALIZE_LOADING_PHRASES.length;
+      show();
+      normalizePhraseTimer = window.setTimeout(tick, 1800);
+      return;
+    }
+    const phrase = NORMALIZE_LOADING_PHRASES[normalizePhraseIndex % NORMALIZE_LOADING_PHRASES.length];
+    paintNormalizePhrase(phrase, true);
+    normalizePhraseTimer = window.setTimeout(() => {
+      normalizePhraseIndex = (normalizePhraseIndex + 1) % NORMALIZE_LOADING_PHRASES.length;
+      show();
+      normalizePhraseTimer = window.setTimeout(tick, 1800);
+    }, 150);
+  };
+  normalizePhraseTimer = window.setTimeout(tick, 1800);
+}
+
+function beginNormalizeLoading() {
+  settleNormalizeRain();
+  const loading = normalizeLoadingEl();
+  const stage = previewStage;
+  if (!loading || !stage) return;
+  if (!normalizeLoadingHome) normalizeLoadingHome = loading.parentElement;
+  const host = stage.classList.contains("is-phone-preview") ? stage.querySelector(".web-preview") : stage;
+  if (host && loading.parentElement !== host) host.append(loading);
+  stage.classList.add("is-normalizing");
+  stage.setAttribute("aria-busy", "true");
+  loading.hidden = false;
+  stopNormalizeMotionTimers();
+  startNormalizePhrases();
+}
+
+function endNormalizeLoading() {
+  stopNormalizeMotionTimers();
+  const loading = normalizeLoadingEl();
+  const stage = previewStage;
+  stage?.classList.remove("is-normalizing");
+  stage?.removeAttribute("aria-busy");
+  if (!loading) return;
+  loading.hidden = true;
+  if (normalizeLoadingHome && loading.parentElement !== normalizeLoadingHome) normalizeLoadingHome.prepend(loading);
+}
+
+function paintRainPiece(el, index, salt) {
+  const pair = rainVector(index + salt * 5);
+  el.style.setProperty("--rain-x", pair[0]);
+  el.style.setProperty("--rain-y", pair[1]);
+  el.style.setProperty("--rain-delay", `${rainDelayMs(Math.max(0, index))}ms`);
+  el.classList.add("rain-piece");
+}
+
+function clearRainPaint(el) {
+  el.style.removeProperty("--rain-x");
+  el.style.removeProperty("--rain-y");
+  el.style.removeProperty("--rain-delay");
+  el.classList.remove("rain-piece", "rain-decor", "rain-mark");
+}
+
+function settleNormalizeRain() {
+  rainToken += 1;
+  if (rainTimer) {
+    window.clearTimeout(rainTimer);
+    rainTimer = 0;
+  }
+  if (!articlePage) return;
+  const raining = articlePage.classList.contains("is-raining")
+    || articlePage.classList.contains("is-rain-soft")
+    || articlePage.querySelector(".rain-char, .rain-piece, .rain-mark-chip, .rain-decor");
+  articlePage.classList.remove("is-raining", "is-rain-soft");
+  articlePage.style.removeProperty("--rain-fly");
+  if (!raining) return;
+  articlePage.querySelectorAll(".rain-mark-chip").forEach((chip) => chip.remove());
+  articlePage.querySelectorAll(".rain-char").forEach((span) => {
+    span.replaceWith(document.createTextNode(span.textContent || ""));
+  });
+  articlePage.querySelectorAll(".rain-piece, .rain-decor, .rain-mark").forEach(clearRainPaint);
+  articlePage.normalize();
+}
+
+function armNormalizeRain() {
+  if (!articlePage || previewStage?.hidden) return;
+  settleNormalizeRain();
+  if (prefersReducedMotion()) {
+    articlePage.classList.add("is-rain-soft");
+    rainTimer = window.setTimeout(() => {
+      articlePage?.classList.remove("is-rain-soft");
+      rainTimer = 0;
+    }, 240);
+    return;
+  }
+  const token = rainToken;
+  let charIndex = 0;
+
+  function walk(node) {
+    if (!node) return;
+    if (node.nodeType === 3) {
+      const text = node.textContent || "";
+      if (!text || !node.parentNode) return;
+      const frag = document.createDocumentFragment();
+      let changed = false;
+      for (const ch of text) {
+        if (/\s/.test(ch)) {
+          frag.append(document.createTextNode(ch));
+          continue;
+        }
+        const span = document.createElement("span");
+        span.className = "rain-char rain-piece";
+        span.textContent = ch;
+        paintRainPiece(span, charIndex, 0);
+        charIndex += 1;
+        frag.append(span);
+        changed = true;
+      }
+      if (changed) node.parentNode.replaceChild(frag, node);
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    if (node.matches("[data-slash-slot], .rain-mark-chip")) return;
+    if (node.matches(RAIN_DECOR_SELECTOR)) {
+      paintRainPiece(node, charIndex, 2);
+      return;
+    }
+    if (node.matches(RAIN_WHOLE_SELECTOR)) {
+      paintRainPiece(node, charIndex, 1);
+      charIndex += visibleCharCount(node.textContent);
+      return;
+    }
+    if (node.matches("mark.inline-highlight")) {
+      const style = window.getComputedStyle(node);
+      const bg = style.backgroundColor;
+      if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+        const chip = document.createElement("span");
+        chip.className = "rain-mark-chip rain-piece";
+        chip.setAttribute("aria-hidden", "true");
+        chip.style.backgroundColor = bg;
+        chip.style.borderRadius = style.borderRadius;
+        paintRainPiece(chip, charIndex, 4);
+        node.classList.add("rain-mark");
+        node.insertBefore(chip, node.firstChild);
+      }
+    }
+    if (node.matches(".section-title, #articleTitle")) {
+      const pair = rainVector(charIndex + 5);
+      node.style.setProperty("--rain-x", pair[0]);
+      node.style.setProperty("--rain-y", pair[1]);
+      node.style.setProperty("--rain-delay", `${rainDelayMs(charIndex)}ms`);
+      node.classList.add("rain-decor");
+    }
+    [...node.childNodes].forEach((kid) => {
+      if (kid.nodeType === 1 && kid.classList.contains("rain-mark-chip")) return;
+      walk(kid);
+    });
+  }
+
+  if (articleTitle && !articleTitle.hidden) walk(articleTitle);
+  if (articleBody) walk(articleBody);
+  articlePage.style.setProperty("--rain-fly", `${RAIN_FLY_MS}ms`);
+  articlePage.classList.add("is-raining");
+  const end = (charIndex > 0 ? rainDelayMs(charIndex - 1) : 0) + RAIN_FLY_MS + 80;
+  rainTimer = window.setTimeout(() => {
+    if (token !== rainToken) return;
+    settleNormalizeRain();
+  }, end);
+}
+
 async function normalizeWithDeepSeek() {
   const source = (articleInput ? articleInput.value : articleSource).trim();
   if (!source) {
@@ -2728,7 +3013,9 @@ async function normalizeWithDeepSeek() {
     persistArticleSource();
     render();
   }
+  let rainAfter = false;
   try {
+    beginNormalizeLoading();
     const assignment = nextNormalizeAssignment();
     const response = await fetch("/api/normalize", {
       method: "POST",
@@ -2767,6 +3054,7 @@ async function normalizeWithDeepSeek() {
       renderTrialMeter();
     }
     await applyAiNormalization(payload.data, assignment, source);
+    rainAfter = previewStage?.hidden !== true;
     awaitingContentPick = false;
     try {
       if (typeof window.yoocoTrack === "function") window.yoocoTrack("optimize_ok");
@@ -2775,9 +3063,15 @@ async function normalizeWithDeepSeek() {
     }
     void rememberLayoutHistory(source);
   } catch (error) {
+    rainAfter = false;
     setStatus("已套用本地排版");
     setFeedback(error instanceof Error && error.message ? error.message : NORMALIZE_ERROR_FALLBACK);
   } finally {
+    try {
+      if (rainAfter) armNormalizeRain();
+    } finally {
+      endNormalizeLoading();
+    }
     if (aiNormalizeButton) {
       delete aiNormalizeButton.dataset.busy;
       aiNormalizeButton.textContent = originalLabel;
@@ -3750,6 +4044,7 @@ articleInput?.addEventListener("keydown", (event) => {
 
 const editorViewTabs = [document.querySelector("#resultViewTab"), document.querySelector("#sourceViewTab")];
 function selectEditorView(index) {
+  if (index !== 0) settleNormalizeRain();
   flushPendingPreviewEdits();
   hideSlashMenu();
   hideMediaMenu();

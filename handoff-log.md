@@ -2,7 +2,11 @@
 
 ## 当前接手摘要
 
-动森 P0 样式（2026-11-24，未合并、未部署）：标签补了浅底和虚线，卡片可以虚线描边，一篇最多一张浅色纸。提醒是静止色条，最多两条。分隔线多了更淡的虚线，黄浪和薄荷浪仍最多两条。外壳仍是暖米 / 暖黑，纸面仍是纯白。`npm run check`（15 项）已通过。截图在 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+动森 P0 接到 master（2026-11-27，PR #107，未合并、未部署）：#108 合进 master 后，这条和失败提示撞在更新日志、检查脚本和交接记录上。两条日志都留下，动森纸面样式没改。`npm run check`（16 项）已通过。截图仍是 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+
+动森 P0 样式（2026-11-24，PR #107，未合并、未部署）：标签补了浅底和虚线，卡片可以虚线描边，一篇最多一张浅色纸。提醒是静止色条，最多两条。分隔线多了更淡的虚线，黄浪和薄荷浪仍最多两条。外壳仍是暖米 / 暖黑，纸面仍是纯白。已接上含 #108 的 master，样式没改。截图在 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+
+优化排版失败提示（2026-11-26，PR #108，已合进 master `b43d8f7`，未部署）：「复制排版」左边只出现三句原文：「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」「网站处理业务过多，请再试一次！」。错误码留在接口和日志里。解析、重试、扣积分没改。`npm run check`（16 项）已通过。截图在 `docs/previews/normalize-errors/`。没登录，没真调 DeepSeek，正式站没动。2026-11-23 那句「本次尚未上线」没改。
 
 动森纸面改纯白（2026-11-23，PR #106，未合并、未部署）：只把动森文章纸改成 #FFFFFF。预览和复制稿都是纯白。飘带、双层纸、折角、标签、分隔线、浅色纸块和黄色重点还在。外壳仍是暖米 / 暖黑。日志仍写「本次尚未上线」。`npm run check`（15 项）已通过。截图是 `docs/previews/island-decor/06-island-white-day.png`、`07-island-white-night.png`、`08-island-white-copy.png`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
 
@@ -223,6 +227,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-27 动森 P0 接到已含失败提示的 master
+
+- 想做什么：PR #107 和已合进 master 的 #108 冲突了。只解冲突，让 #107 能合。不合并不部署。
+- 做成了什么：更新日志两条都留，失败提示在前，动森样式在后。检查脚本认这个顺序。动森纸面的样式文件没再改。
+- 改了哪些文件：`lib/changelog.ts`、`scripts/check-island-changelog.js`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。另外接上了 master 里的失败提示代码和截图。
+- 如何验证：`npm run check` 16 项通过。动森样式代码相对这条分支原来的提交没有改动，所以没有新截图。
+- 待办/风险：PR #107 还没合并，没部署。没贴微信，没真调 DeepSeek。
+
 ### 2026-11-24 动森补浅底标签、浅色纸、提醒条和更淡分隔线
 
 - 想做什么：只补动森纸面上的 4 样：浅底和虚线标签、卡片分层、静止提醒条、更淡的虚线。不合并不部署。
@@ -254,11 +266,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/104 已 squash 合进 master `d60153f`，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
-
-### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
-
-- 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。
-- 做成了什么：《西游记》左页换成范宽《溪山行旅图》，主题是素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题是静山。Sonnet 18 和卖火柴的小女孩原来的画能对上，留着。风格列表不再渲染「杂志编辑部」，精品模板里的「本期目录」也拿掉。示例文里那句点名改成了还在的「静山」。
-- 改了哪些文件：`lib/home-specimens.ts`、`lib/works.ts`、`public/app.js`、`public/samples/sample-try.js`、`public/art/`、`scripts/check-home-motion.js`、`CONTEXT.md`、`docs/previews/shelf-themes/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npm run check` 13 项通过。`npm run build:edgeone` 通过。本地打开书架四本和黑夜第一本，以及工作台风格列表。列表里没有「杂志编辑部」。没登录，没调 DeepSeek。
-- 待办/风险：PR 已开，没有合并，没有部署。旧稿如果存过「杂志编辑部」，打开仍是那套，只是列表里点不到。经典优化仍可能落到这套。

@@ -2752,13 +2752,20 @@ function applyAiLook(aiParams, assignment) {
   restoreVibeAfterTheme(vibe);
 }
 
-const NORMALIZE_ERROR_FALLBACK = "暂时无法完成优化，请稍后重试。";
+const NORMALIZE_ERROR_FALLBACK = "网络异常，请再试一次！";
+const NORMALIZE_PLAIN_MESSAGES = new Set([
+  "网络异常，请再试一次！",
+  "您的文章可能过长了，缩短一点再试一次吧！",
+  "网站处理业务过多，请再试一次！",
+]);
 
 function formatNormalizeError(payload) {
   const code = typeof payload?.error?.code === "string" ? payload.error.code.trim() : "";
   const message = typeof payload?.error?.message === "string" ? payload.error.message.trim() : "";
+  if (message && (NORMALIZE_PLAIN_MESSAGES.has(message) || code.startsWith("DEEPSEEK_"))) return message;
   if (code && message) return `${code}：${message}`;
   if (message) return message;
+  if (code.startsWith("DEEPSEEK_")) return NORMALIZE_ERROR_FALLBACK;
   if (code) return `${code}：${NORMALIZE_ERROR_FALLBACK}`;
   return NORMALIZE_ERROR_FALLBACK;
 }
@@ -2851,7 +2858,7 @@ async function normalizeWithDeepSeek() {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || !payload?.ok) {
       if (response.status === 504 && !payload?.error?.message) {
-        throw new Error("排版超时了，请缩短文章后再试。");
+        throw new Error("您的文章可能过长了，缩短一点再试一次吧！");
       }
       const message = formatNormalizeError(payload);
       if (payload?.error?.code === "TRIAL_EXHAUSTED" || payload?.error?.remaining === 0) {

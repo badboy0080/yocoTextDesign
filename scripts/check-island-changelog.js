@@ -58,7 +58,10 @@ if (!seo.includes('"/changelog"')) fail("更新日志要进站点地图");
 if (!page.includes("CHANGELOG") || !page.includes('skin="obsidian"')) fail("日志页要用现有日夜外壳");
 
 const dates = [...changelog.matchAll(/date: "(\d{4}-\d{2}-\d{2})"/g)].map((match) => match[1]);
-if (dates[0] !== "2026-11-24") fail("最新一条要是本次更新");
+if (dates[0] !== "2026-11-26") fail("最新一条要是失败提示");
+if (dates[1] !== "2026-11-24") fail("动森样式那条要紧跟在后面");
+if (!changelog.includes("动森补充浅底标签、虚线标签、浅色纸卡、提醒条，以及更淡的分隔线。本次尚未上线。")) fail("动森样式日志要留下");
+if (!changelog.includes("新增「动森」文章主题与更新日志。本次尚未上线。")) fail("2026-11-23 那句尚未上线不要改");
 for (let index = 1; index < dates.length; index += 1) {
   if (dates[index] >= dates[index - 1]) fail("日志要新的在前");
 }

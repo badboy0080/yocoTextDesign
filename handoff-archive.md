@@ -1,5 +1,13 @@
 # 历史交接记录
 
+### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
+
+- 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。
+- 做成了什么：《西游记》左页换成范宽《溪山行旅图》，主题是素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题是静山。Sonnet 18 和卖火柴的小女孩原来的画能对上，留着。风格列表不再渲染「杂志编辑部」，精品模板里的「本期目录」也拿掉。示例文里那句点名改成了还在的「静山」。
+- 改了哪些文件：`lib/home-specimens.ts`、`lib/works.ts`、`public/app.js`、`public/samples/sample-try.js`、`public/art/`、`scripts/check-home-motion.js`、`CONTEXT.md`、`docs/previews/shelf-themes/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 13 项通过。`npm run build:edgeone` 通过。本地打开书架四本和黑夜第一本，以及工作台风格列表。列表里没有「杂志编辑部」。没登录，没调 DeepSeek。
+- 待办/风险：PR 已开，没有合并，没有部署。旧稿如果存过「杂志编辑部」，打开仍是那套，只是列表里点不到。经典优化仍可能落到这套。
+
 ### 2026-11-20 修好 EdgeOne 正式构建
 
 - 想做什么：PR #99 合进 master 后，EdgeOne 自动构建失败，正式站还停在上一次成功部署。修好让 `npm run build:edgeone` 能过。只开 PR，不合并不部署。

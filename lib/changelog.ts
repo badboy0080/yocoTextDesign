@@ -7,7 +7,7 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-11-27",
-    summary: "优化排版时，纸面先显示等待提示；排好后，文字和图案从四周落入位置。本次尚未上线。",
+    summary: "优化排版时，纸面先显示等待提示；排好后，文字和图案从下方一点喷出，再落到文中的位置。本次尚未上线。",
   },
   {
     date: "2026-11-26",

@@ -15,7 +15,7 @@ const bootSource = fs.readFileSync(new URL("../lib/site-theme-boot-source.ts", i
 for (const banned of [".article-content", "#articleBody", "#articlePage", ".inline-highlight", "buildCopyHtml"]) {
   if (chrome.includes(banned)) fail(`site-chrome.css 碰到了文章样式：${banned}`);
 }
-if (!studio.includes("studio-ui.css?v=normalize-motion-v1")) fail("工作台手机样式缓存丢了");
+if (!studio.includes("studio-ui.css?v=normalize-spray-v1")) fail("工作台手机样式缓存丢了");
 if (!studio.includes("site-theme-boot.js")) fail("工作台没有在样式前设置日夜");
 if (!studio.includes('data-site-value="day"') || !studio.includes('data-site-value="night"')) fail("工作台没有白天黑夜按钮");
 if (!studio.includes(">登录<")) fail("工作台登录按钮不是中文");

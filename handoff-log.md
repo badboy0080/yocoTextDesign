@@ -2,7 +2,7 @@
 
 ## 当前接手摘要
 
-优化排版动效（2026-11-27，未合并、未部署）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。失败立刻停掉加载，仍是原来的三句提示，不播入场。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-motion/`。没登录，没真调 DeepSeek，没扣积分，正式站没动。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。
+优化排版动效（2026-11-27，PR #109，未合并、未部署）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。失败立刻停掉加载，仍是原来的三句提示，不播入场。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-motion/`。没登录，没真调 DeepSeek，没扣积分，正式站没动。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。
 
 优化排版失败提示（2026-11-26，PR #108，未合并、未部署）：「复制排版」左边只出现三句原文：「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」「网站处理业务过多，请再试一次！」。错误码留在接口和日志里。解析、重试、扣积分没改。`npm run check`（16 项）已通过。截图在 `docs/previews/normalize-errors/`。没登录，没真调 DeepSeek，正式站没动。2026-11-23 那句「本次尚未上线」没改。
 
@@ -231,7 +231,7 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 做成了什么：等待时外壳仍是暖米或暖黑，纸面是白的，左侧条状加载，右侧三句原文逐字切换并扫过高亮。成功后大约每 100 字一批落入，下一批隔 1 秒。切到原文或失败会停掉动画。减少动效时不弹字、不飞入。
 - 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`lib/changelog.ts`、`scripts/check-normalize-motion.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`scripts/check-site-chrome.js`、`docs/previews/normalize-motion/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npm run check` 17 项通过。本地静态页用假接口看了等待、成功落入、失败三条。白天外壳 #F5EFE3，夜间外壳 #0F0C0A，等待时纸面 #FFFFFF。没登录，没真调 DeepSeek，没扣积分。
-- 待办/风险：PR 已开，没有合并，没有部署。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/109 已开，没有合并，没有部署。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
 
 ### 2026-11-23 动森文章纸面改成纯白
 

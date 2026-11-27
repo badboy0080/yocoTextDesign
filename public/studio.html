@@ -11,7 +11,7 @@
     <script src="./site-theme-boot.js?v=site-paper-v2"></script>
     <link rel="stylesheet" href="./design-tokens.css?v=dimensional-v11" />
     <link rel="stylesheet" href="./styles.css?v=island-v3" />
-    <link rel="stylesheet" href="./studio-ui.css?v=mobile-fit-v1" />
+    <link rel="stylesheet" href="./studio-ui.css?v=normalize-motion-v1" />
     <link rel="stylesheet" href="./site-chrome.css?v=selection-popup-v1" />
     <script>if (window.self !== window.top) document.documentElement.classList.add("studio-embedded");</script>
   </head>
@@ -134,6 +134,13 @@
             <textarea id="articleInput" rows="16" spellcheck="false" aria-describedby="sourceHelp" placeholder="在这里粘贴或编辑文章…"></textarea>
           </div>
           <div class="preview-stage is-source-empty" id="previewStage" role="tabpanel" aria-labelledby="resultViewTab">
+            <div class="normalize-loading" id="normalizeLoading" hidden>
+              <div class="normalize-loading-row">
+                <span class="normalize-loading-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <span class="normalize-loading-phrase" id="normalizeLoadingPhrase" aria-hidden="true"></span>
+              </div>
+              <span class="normalize-loading-live" id="normalizeLoadingLive" role="status"></span>
+            </div>
             <div class="preview-empty" id="previewEmpty">
               <div class="preview-empty-card">
                 <span class="preview-empty-icon" aria-hidden="true">
@@ -457,7 +464,7 @@
     <script src="./samples/sample-try.js?v=sample-yooco-article-v1"></script>
     <script src="./block-style.js?v=selection-popup-v1"></script>
     <script src="./slash-cards.js?v=smart-grid-v1"></script>
-    <script src="./app.js?v=island-v3"></script>
+    <script src="./app.js?v=normalize-motion-v1"></script>
     <script src="./preview-outline.js?v=outline-search-v1"></script>
   </body>
 </html>

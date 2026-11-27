@@ -2,6 +2,8 @@
 
 ## 当前接手摘要
 
+优化排版动效（2026-11-27，PR #109，未合并、未部署）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。失败立刻停掉加载，仍是原来的三句提示，不播入场。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-motion/`。没登录，没真调 DeepSeek，没扣积分，正式站没动。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。
+
 优化排版失败提示（2026-11-26，PR #108，未合并、未部署）：「复制排版」左边只出现三句原文：「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」「网站处理业务过多，请再试一次！」。错误码留在接口和日志里。解析、重试、扣积分没改。`npm run check`（16 项）已通过。截图在 `docs/previews/normalize-errors/`。没登录，没真调 DeepSeek，正式站没动。2026-11-23 那句「本次尚未上线」没改。
 
 动森纸面改纯白（2026-11-23，PR #106，未合并、未部署）：只把动森文章纸改成 #FFFFFF。预览和复制稿都是纯白。飘带、双层纸、折角、标签、分隔线、浅色纸块和黄色重点还在。外壳仍是暖米 / 暖黑。日志仍写「本次尚未上线」。`npm run check`（15 项）已通过。截图是 `docs/previews/island-decor/06-island-white-day.png`、`07-island-white-night.png`、`08-island-white-copy.png`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
@@ -223,6 +225,14 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-27 优化排版的等待和落入
+
+- 想做什么：点「优化排版」时，纸面先白底等待；成功后文字和图案从四周落到位置；失败不播入场，三句提示不改。
+- 做成了什么：等待时外壳仍是暖米或暖黑，纸面是白的，左侧条状加载，右侧三句原文逐字切换并扫过高亮。成功后大约每 100 字一批落入，下一批隔 1 秒。切到原文或失败会停掉动画。减少动效时不弹字、不飞入。
+- 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`lib/changelog.ts`、`scripts/check-normalize-motion.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`scripts/check-site-chrome.js`、`docs/previews/normalize-motion/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 17 项通过。本地静态页用假接口看了等待、成功落入、失败三条。白天外壳 #F5EFE3，夜间外壳 #0F0C0A，等待时纸面 #FFFFFF。没登录，没真调 DeepSeek，没扣积分。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/109 已开，没有合并，没有部署。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
+
 ### 2026-11-23 动森文章纸面改成纯白
 
 - 想做什么：只把动森文章底下那张纸改成纯白 #FFFFFF。预览和复制到公众号都要白。外壳和装饰不动。不合并不部署。
@@ -254,12 +264,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`lib/home-specimens.ts`、`lib/works.ts`、`public/app.js`、`public/samples/sample-try.js`、`public/art/`、`scripts/check-home-motion.js`、`CONTEXT.md`、`docs/previews/shelf-themes/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npm run check` 13 项通过。`npm run build:edgeone` 通过。本地打开书架四本和黑夜第一本，以及工作台风格列表。列表里没有「杂志编辑部」。没登录，没调 DeepSeek。
 - 待办/风险：PR 已开，没有合并，没有部署。旧稿如果存过「杂志编辑部」，打开仍是那套，只是列表里点不到。经典优化仍可能落到这套。
-
-### 2026-11-20 修好 EdgeOne 正式构建
-
-- 想做什么：PR #99 合进 master 后，EdgeOne 自动构建失败，正式站还停在上一次成功部署。修好让 `npm run build:edgeone` 能过。只开 PR，不合并不部署。
-- 做成了什么：Turbopack 不认 `?raw`。日夜启动脚本改成把正文直接写进首页头部，绘制前设置日夜，避免闪色。工作台仍用原来的 `site-theme-boot.js`。类型检查还有两处会让构建停住，改成等价写法：用 `appendChild` 放入样稿节点，并把页面元素先收进常量再给内部函数用。
-- 改了哪些文件：`app/layout.tsx`、`lib/site-theme-boot-source.ts`、`scripts/check-site-chrome.js`、`components/home-showcase.tsx`、`components/home-story.tsx`、`docs/previews/theme-boot-day.png`、`docs/previews/theme-boot-night.png`、`docs/previews/theme-boot-night-mobile.png`、`docs/previews/theme-boot-studio-night.png`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：仓库没有一条总检查命令。`node scripts/check-site-chrome.js` 通过。`npm run build:edgeone` 通过，18 个页面都生成了。构建出的首页源码里，日夜脚本在 head 里，没有外链。本地看了首页白天、黑夜、390 宽黑夜，以及工作台黑夜。白天是暖米，黑夜是暖黑，刷新还记得。工作台登录按钮仍是「登录」。没登录，没调 DeepSeek。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/101 已开，没有合并，没有部署。合进 master 才会触发 EdgeOne 自动部署。`lib/load-sample-try.ts` 还留着 `?raw`，目前只有类型引用，这次构建没编译到它。Node 仍是 22.11.0，安装警告不是这次失败原因。
 

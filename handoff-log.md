@@ -2,7 +2,9 @@
 
 ## 当前接手摘要
 
-优化排版动效（2026-11-27，PR #109，未合并、未部署）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。失败立刻停掉加载，仍是原来的三句提示，不播入场。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-motion/`。没登录，没真调 DeepSeek，没扣积分，正式站没动。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。
+优化排版入场（2026-11-27，未合并、未部署）：loading 没动。成功后文字和图案从结果区下方同一个点喷出，透明度从无到有，落到文中的位置。堆到哪里，结果区滚动条就跟到哪里；用户自己拖滚动条后不再抢。失败不播入场，三句提示没改。减少动效时直接显示。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-spray/`。没登录，没真调 DeepSeek，没扣积分。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。正式站没动。
+
+优化排版动效（2026-11-27，PR #109，已合进 master `f29d3f2`，正式站已是这一版）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。这一版的四周飞入已由上面这条改掉，还没合。失败立刻停掉加载，仍是原来的三句提示，不播入场。截图在 `docs/previews/normalize-motion/`。
 
 优化排版失败提示（2026-11-26，PR #108，未合并、未部署）：「复制排版」左边只出现三句原文：「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」「网站处理业务过多，请再试一次！」。错误码留在接口和日志里。解析、重试、扣积分没改。`npm run check`（16 项）已通过。截图在 `docs/previews/normalize-errors/`。没登录，没真调 DeepSeek，正式站没动。2026-11-23 那句「本次尚未上线」没改。
 
@@ -225,13 +227,21 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-27 入场改成从下方一点喷出，滚动跟着走
+
+- 想做什么：loading 不动。成功后不要再从四周飞入。文字从结果区下方同一个点喷出，透明度从无到有，落到自己的位置。图案跟所在批次一起入场。滚动条跟着最新在堆的内容走，堆完交给用户；用户自己拖了滚动条就不要抢。失败不播。减少动效直接显示。只开 PR，不合、不部署。
+- 做成了什么：批次还是大约 100 字、一批 1 到 2 秒、下一批隔 1 秒。喷发点是结果区底边中间。复制、切原文、自己滚动都还在。缓存号改成 `normalize-spray-v1`。日志 11 月 27 日那句改成从下方喷出，仍写「本次尚未上线」。11 月 23 日和 11 月 26 日没改。
+- 改了哪些文件：`public/app.js`、`public/studio-ui.css`、`public/studio.html`、`lib/changelog.ts`、`scripts/check-normalize-motion.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`scripts/check-site-chrome.js`、`docs/previews/normalize-spray/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 17 项通过。本地静态页用假接口走了等待、成功堆砌、失败。等待纸面 #FFFFFF，白天外壳 #F5EFE3，夜间外壳 #0F0C0A。堆砌中滚动条从 0 跟到大约 988，再把滚动条拖回 0 后停在 0。失败左侧是「网络异常，请再试一次！」，没有入场。减少动效没有逐字。没登录，没真调 DeepSeek，没扣积分。
+- 待办/风险：只开了预览 PR，没有合并，没有部署。合进 master 会自动上正式站。无头浏览器没有剪贴板权限，复制按钮在堆砌中仍可点。
+
 ### 2026-11-27 优化排版的等待和落入
 
 - 想做什么：点「优化排版」时，纸面先白底等待；成功后文字和图案从四周落到位置；失败不播入场，三句提示不改。
 - 做成了什么：等待时外壳仍是暖米或暖黑，纸面是白的，左侧条状加载，右侧三句原文逐字切换并扫过高亮。成功后大约每 100 字一批落入，下一批隔 1 秒。切到原文或失败会停掉动画。减少动效时不弹字、不飞入。
 - 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`lib/changelog.ts`、`scripts/check-normalize-motion.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`scripts/check-site-chrome.js`、`docs/previews/normalize-motion/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npm run check` 17 项通过。本地静态页用假接口看了等待、成功落入、失败三条。白天外壳 #F5EFE3，夜间外壳 #0F0C0A，等待时纸面 #FFFFFF。没登录，没真调 DeepSeek，没扣积分。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/109 已开，没有合并，没有部署。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/109 后来已合进 master `f29d3f2`，正式站已是这一版。四周飞入由上面那条改掉，那条还没合。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
 
 ### 2026-11-23 动森文章纸面改成纯白
 
@@ -256,12 +266,4 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
 - 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
 - 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/104 已 squash 合进 master `d60153f`，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
-
-### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
-
-- 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。
-- 做成了什么：《西游记》左页换成范宽《溪山行旅图》，主题是素墨。《水浒传》左页换成宋人《宋仁宗御容》，主题是静山。Sonnet 18 和卖火柴的小女孩原来的画能对上，留着。风格列表不再渲染「杂志编辑部」，精品模板里的「本期目录」也拿掉。示例文里那句点名改成了还在的「静山」。
-- 改了哪些文件：`lib/home-specimens.ts`、`lib/works.ts`、`public/app.js`、`public/samples/sample-try.js`、`public/art/`、`scripts/check-home-motion.js`、`CONTEXT.md`、`docs/previews/shelf-themes/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npm run check` 13 项通过。`npm run build:edgeone` 通过。本地打开书架四本和黑夜第一本，以及工作台风格列表。列表里没有「杂志编辑部」。没登录，没调 DeepSeek。
-- 待办/风险：PR 已开，没有合并，没有部署。旧稿如果存过「杂志编辑部」，打开仍是那套，只是列表里点不到。经典优化仍可能落到这套。
 

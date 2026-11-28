@@ -2742,23 +2742,20 @@ function rainDelayMs(charIndex) {
   return batch * RAIN_BATCH_GAP_MS + slot * RAIN_CHAR_STAGGER_MS;
 }
 
-function rainVector(index) {
-  const cursor = Math.abs(index);
-  const edge = cursor % 8;
-  const dist = 168 + (cursor % 7) * 28;
-  const slip = ((cursor * 13) % 48) - 24;
-  const table = [
-    [slip, -dist],
-    [dist, slip],
-    [slip, dist],
-    [-dist, slip],
-    [-dist, -Math.round(dist * 0.72)],
-    [dist, -Math.round(dist * 0.72)],
-    [-dist, Math.round(dist * 0.65)],
-    [dist, Math.round(dist * 0.65)],
-  ];
-  const pair = table[edge];
-  return [`${pair[0]}px`, `${pair[1]}px`];
+function sprayOrigin(scroller) {
+  const width = scroller.clientWidth;
+  const height = scroller.clientHeight;
+  return {
+    x: scroller.scrollLeft + width / 2,
+    y: scroller.scrollTop + Math.max(0, height - 28),
+  };
+}
+
+function rainScroller() {
+  if (previewStage?.classList.contains("is-phone-preview")) {
+    return previewStage.querySelector(".web-preview") || previewStage;
+  }
+  return previewStage;
 }
 
 function prefersReducedMotion() {
@@ -2778,6 +2775,15 @@ let normalizePhraseTimer = 0;
 let normalizePhraseIndex = 0;
 let rainToken = 0;
 let rainTimer = 0;
+const rainLayout = new WeakMap();
+let rainMotion = false;
+let rainFollow = false;
+let rainPlannedScroll = null;
+let rainAnchor = null;
+let rainOriginKey = "";
+let rainScrollUnbind = null;
+let rainFollowFrame = 0;
+let rainStartedAt = 0;
 
 function normalizeLoadingEl() {
   return document.querySelector("#normalizeLoading");
@@ -2867,32 +2873,162 @@ function endNormalizeLoading() {
   if (normalizeLoadingHome && loading.parentElement !== normalizeLoadingHome) normalizeLoadingHome.prepend(loading);
 }
 
-function paintRainPiece(el, index, salt) {
-  const pair = rainVector(index + salt * 5);
-  el.style.setProperty("--rain-x", pair[0]);
-  el.style.setProperty("--rain-y", pair[1]);
-  el.style.setProperty("--rain-delay", `${rainDelayMs(Math.max(0, index))}ms`);
-  el.classList.add("rain-piece");
+function tagRain(el, index, kind) {
+  const at = Math.max(0, index);
+  el.dataset.rainIndex = String(at);
+  el.style.setProperty("--rain-delay", `${rainDelayMs(at)}ms`);
+  el.classList.add(kind === "decor" ? "rain-decor" : "rain-piece");
+}
+
+function writeSpray(el, origin) {
+  const point = rainLayout.get(el);
+  if (!point) return;
+  el.style.setProperty("--rain-x", `${Math.round(origin.x - point.x)}px`);
+  el.style.setProperty("--rain-y", `${Math.round(origin.y - point.y)}px`);
+}
+
+function rememberSprayLayout(scroller) {
+  const host = scroller.getBoundingClientRect();
+  articlePage.querySelectorAll("[data-rain-index]").forEach((el) => {
+    const box = el.getBoundingClientRect();
+    if (box.width < 0.5 && box.height < 0.5) return;
+    rainLayout.set(el, {
+      x: box.left - host.left + scroller.scrollLeft + box.width / 2,
+      y: box.top - host.top + scroller.scrollTop + box.height / 2,
+    });
+  });
+}
+
+function releaseRainFollow() {
+  rainFollow = false;
+  rainPlannedScroll = null;
+  rainAnchor = null;
+  if (rainScrollUnbind) {
+    rainScrollUnbind();
+    rainScrollUnbind = null;
+  }
+}
+
+function stopRainMotion() {
+  rainMotion = false;
+  releaseRainFollow();
+  if (rainFollowFrame) {
+    window.cancelAnimationFrame(rainFollowFrame);
+    rainFollowFrame = 0;
+  }
+  if (rainTimer) {
+    window.clearTimeout(rainTimer);
+    rainTimer = 0;
+  }
+}
+
+function bindRainScroll(scroller) {
+  if (rainScrollUnbind) releaseRainFollow();
+  rainFollow = true;
+  const baseTop = scroller.scrollTop;
+  const onScroll = () => {
+    if (!rainFollow) return;
+    const expected = rainPlannedScroll != null ? rainPlannedScroll : rainAnchor;
+    if (expected != null && Math.abs(scroller.scrollTop - expected) <= 4) {
+      rainPlannedScroll = null;
+      return;
+    }
+    if (expected == null && Math.abs(scroller.scrollTop - baseTop) <= 4) return;
+    releaseRainFollow();
+  };
+  const onWheel = () => releaseRainFollow();
+  const onTouch = () => releaseRainFollow();
+  const onPointer = (event) => {
+    const gutter = scroller.offsetWidth - scroller.clientWidth;
+    if (gutter <= 2) return;
+    const rect = scroller.getBoundingClientRect();
+    if (event.clientX >= rect.right - gutter) releaseRainFollow();
+  };
+  const onKey = (event) => {
+    const keys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "];
+    if (!keys.includes(event.key)) return;
+    if (event.target && scroller.contains(event.target)) releaseRainFollow();
+  };
+  scroller.addEventListener("scroll", onScroll, { passive: true });
+  scroller.addEventListener("wheel", onWheel, { passive: true, capture: true });
+  scroller.addEventListener("touchmove", onTouch, { passive: true, capture: true });
+  scroller.addEventListener("pointerdown", onPointer, true);
+  scroller.addEventListener("keydown", onKey);
+  rainScrollUnbind = () => {
+    scroller.removeEventListener("scroll", onScroll);
+    scroller.removeEventListener("wheel", onWheel, { capture: true });
+    scroller.removeEventListener("touchmove", onTouch, { capture: true });
+    scroller.removeEventListener("pointerdown", onPointer, true);
+    scroller.removeEventListener("keydown", onKey);
+  };
+}
+
+function followNormalizeStack(token, scroller, total) {
+  if (!rainMotion || token !== rainToken || !articlePage) return;
+  if (rainFollow && rainAnchor != null && Math.abs(scroller.scrollTop - rainAnchor) > 4) {
+    releaseRainFollow();
+  }
+  const elapsed = performance.now() - rainStartedAt;
+  const motionEnd = (total > 0 ? rainDelayMs(Math.max(0, total - 1)) : 0) + RAIN_FLY_MS;
+  let leading = null;
+  const waiting = [];
+  articlePage.querySelectorAll("[data-rain-index]").forEach((el) => {
+    const index = Number(el.dataset.rainIndex);
+    if (!Number.isFinite(index)) return;
+    if (!rainLayout.has(el)) return;
+    if (rainDelayMs(index) > elapsed) {
+      waiting.push(el);
+      return;
+    }
+    if (!el.classList.contains("rain-piece")) return;
+    const point = rainLayout.get(el);
+    if (!leading || index >= leading.index) leading = { index, y: point.y };
+  });
+  if (rainFollow && leading) {
+    const viewH = scroller.clientHeight || 1;
+    const intoView = leading.y - scroller.scrollTop;
+    if (intoView < viewH * 0.16 || intoView > viewH * 0.58) {
+      const max = Math.max(0, scroller.scrollHeight - viewH);
+      const next = Math.max(0, Math.min(max, leading.y - viewH * 0.36));
+      if (Math.abs(scroller.scrollTop - next) >= 8) {
+        rainPlannedScroll = next;
+        rainAnchor = next;
+        scroller.scrollTop = next;
+      }
+    }
+  }
+  if (waiting.length) {
+    const origin = sprayOrigin(scroller);
+    const key = `${Math.round(origin.x)}:${Math.round(origin.y)}`;
+    if (key !== rainOriginKey) {
+      rainOriginKey = key;
+      waiting.forEach((el) => writeSpray(el, origin));
+    }
+  }
+  if (elapsed < motionEnd) {
+    rainFollowFrame = window.requestAnimationFrame(() => followNormalizeStack(token, scroller, total));
+    return;
+  }
+  releaseRainFollow();
 }
 
 function clearRainPaint(el) {
   el.style.removeProperty("--rain-x");
   el.style.removeProperty("--rain-y");
   el.style.removeProperty("--rain-delay");
+  delete el.dataset.rainIndex;
   el.classList.remove("rain-piece", "rain-decor", "rain-mark");
 }
 
 function settleNormalizeRain() {
   rainToken += 1;
-  if (rainTimer) {
-    window.clearTimeout(rainTimer);
-    rainTimer = 0;
-  }
+  stopRainMotion();
   if (!articlePage) return;
   const raining = articlePage.classList.contains("is-raining")
     || articlePage.classList.contains("is-rain-soft")
+    || articlePage.classList.contains("is-rain-measuring")
     || articlePage.querySelector(".rain-char, .rain-piece, .rain-mark-chip, .rain-decor");
-  articlePage.classList.remove("is-raining", "is-rain-soft");
+  articlePage.classList.remove("is-raining", "is-rain-soft", "is-rain-measuring");
   articlePage.style.removeProperty("--rain-fly");
   if (!raining) return;
   articlePage.querySelectorAll(".rain-mark-chip").forEach((chip) => chip.remove());
@@ -2906,14 +3042,9 @@ function settleNormalizeRain() {
 function armNormalizeRain() {
   if (!articlePage || previewStage?.hidden) return;
   settleNormalizeRain();
-  if (prefersReducedMotion()) {
-    articlePage.classList.add("is-rain-soft");
-    rainTimer = window.setTimeout(() => {
-      articlePage?.classList.remove("is-rain-soft");
-      rainTimer = 0;
-    }, 240);
-    return;
-  }
+  if (prefersReducedMotion()) return;
+  const scroller = rainScroller();
+  if (!scroller) return;
   const token = rainToken;
   let charIndex = 0;
 
@@ -2930,9 +3061,9 @@ function armNormalizeRain() {
           continue;
         }
         const span = document.createElement("span");
-        span.className = "rain-char rain-piece";
+        span.className = "rain-char";
         span.textContent = ch;
-        paintRainPiece(span, charIndex, 0);
+        tagRain(span, charIndex, "piece");
         charIndex += 1;
         frag.append(span);
         changed = true;
@@ -2943,11 +3074,11 @@ function armNormalizeRain() {
     if (node.nodeType !== 1) return;
     if (node.matches("[data-slash-slot], .rain-mark-chip")) return;
     if (node.matches(RAIN_DECOR_SELECTOR)) {
-      paintRainPiece(node, charIndex, 2);
+      tagRain(node, charIndex, "piece");
       return;
     }
     if (node.matches(RAIN_WHOLE_SELECTOR)) {
-      paintRainPiece(node, charIndex, 1);
+      tagRain(node, charIndex, "piece");
       charIndex += visibleCharCount(node.textContent);
       return;
     }
@@ -2956,22 +3087,16 @@ function armNormalizeRain() {
       const bg = style.backgroundColor;
       if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
         const chip = document.createElement("span");
-        chip.className = "rain-mark-chip rain-piece";
+        chip.className = "rain-mark-chip";
         chip.setAttribute("aria-hidden", "true");
         chip.style.backgroundColor = bg;
         chip.style.borderRadius = style.borderRadius;
-        paintRainPiece(chip, charIndex, 4);
+        tagRain(chip, charIndex, "piece");
         node.classList.add("rain-mark");
         node.insertBefore(chip, node.firstChild);
       }
     }
-    if (node.matches(".section-title, #articleTitle")) {
-      const pair = rainVector(charIndex + 5);
-      node.style.setProperty("--rain-x", pair[0]);
-      node.style.setProperty("--rain-y", pair[1]);
-      node.style.setProperty("--rain-delay", `${rainDelayMs(charIndex)}ms`);
-      node.classList.add("rain-decor");
-    }
+    if (node.matches(".section-title, #articleTitle")) tagRain(node, charIndex, "decor");
     [...node.childNodes].forEach((kid) => {
       if (kid.nodeType === 1 && kid.classList.contains("rain-mark-chip")) return;
       walk(kid);
@@ -2981,8 +3106,18 @@ function armNormalizeRain() {
   if (articleTitle && !articleTitle.hidden) walk(articleTitle);
   if (articleBody) walk(articleBody);
   articlePage.style.setProperty("--rain-fly", `${RAIN_FLY_MS}ms`);
-  articlePage.classList.add("is-raining");
-  const end = (charIndex > 0 ? rainDelayMs(charIndex - 1) : 0) + RAIN_FLY_MS + 80;
+  articlePage.classList.add("is-raining", "is-rain-measuring");
+  rememberSprayLayout(scroller);
+  const origin = sprayOrigin(scroller);
+  rainOriginKey = `${Math.round(origin.x)}:${Math.round(origin.y)}`;
+  articlePage.querySelectorAll("[data-rain-index]").forEach((el) => writeSpray(el, origin));
+  articlePage.classList.remove("is-rain-measuring");
+  rainStartedAt = performance.now();
+  rainMotion = true;
+  bindRainScroll(scroller);
+  const total = charIndex;
+  const end = (total > 0 ? rainDelayMs(total - 1) : 0) + RAIN_FLY_MS + 80;
+  rainFollowFrame = window.requestAnimationFrame(() => followNormalizeStack(token, scroller, total));
   rainTimer = window.setTimeout(() => {
     if (token !== rainToken) return;
     settleNormalizeRain();

@@ -58,7 +58,10 @@ if (!seo.includes('"/changelog"')) fail("更新日志要进站点地图");
 if (!page.includes("CHANGELOG") || !page.includes('skin="obsidian"')) fail("日志页要用现有日夜外壳");
 
 const dates = [...changelog.matchAll(/date: "(\d{4}-\d{2}-\d{2})"/g)].map((match) => match[1]);
-if (dates[0] !== "2026-11-27") fail("最新一条要是本次更新");
+if (dates[0] !== "2026-11-27") fail("最新一条要是等待和落入");
+if (dates[1] !== "2026-11-26") fail("失败提示那条要紧跟在后面");
+if (dates[2] !== "2026-11-24") fail("动森样式那条要留着");
+if (!changelog.includes("动森补充浅底标签、虚线标签、浅色纸卡、提醒条，以及更淡的分隔线。本次尚未上线。")) fail("动森样式日志要留下");
 if (!changelog.includes("新增「动森」文章主题与更新日志。本次尚未上线。")) fail("2026-11-23 那句尚未上线不要改");
 for (let index = 1; index < dates.length; index += 1) {
   if (dates[index] >= dates[index - 1]) fail("日志要新的在前");
@@ -69,7 +72,9 @@ for (const day of ["2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22", "2026
 if (!changelog.includes("尚未上线")) fail("本次更新要写明尚未上线");
 if (!app.includes("ac-title-ribbon") || !app.includes("ac-title-layer") || !app.includes("ac-title-tab")) fail("动森标题要有飘带、双层纸和折角便签");
 if (!app.includes("ac-divider-wave") || !app.includes("ac-divider-squiggle")) fail("动森分隔线要有波浪和曲线");
-if (!css.includes("ac-title-ribbon") || !css.includes("ac-tag-solid") || !css.includes("ac-divider-squiggle")) fail("预览要画出动森装饰");
+if (!css.includes("ac-title-ribbon") || !css.includes("ac-tag-solid") || !css.includes("ac-tag-soft") || !css.includes("ac-tag-dashed") || !css.includes("ac-divider-squiggle")) fail("预览要画出动森装饰");
+if (!css.includes("ac-divider-rule-hairline") || !css.includes("ac-card-soft") || !css.includes("ac-callout-tip") || !css.includes("ac-callout-warn") || !css.includes("ac-callout-ok")) fail("预览要有更淡虚线、浅色纸和提醒条");
+if (!app.includes("ac-tag-soft") || !app.includes("ac-callout-tip") || !app.includes("ac-divider-hairline")) fail("复制稿要带上浅底标签、提醒条和更淡虚线");
 const islandShape = app.slice(app.indexOf("function islandShapeHtml"), app.indexOf("function islandDividerHtml"));
 if (/clip-path|text-align\s*:\s*(start|end)/i.test(islandShape)) fail("动森标题不要用 clip-path 或 start/end");
 if (!normalizer.includes("const ISLAND_BRIEF") || !normalizer.includes("ac-title ac-title-ribbon")) fail("动森配方要单独写标签");
@@ -97,19 +102,27 @@ function resultBody() {
           text: "出门前先看天。记得海风，也记得慢走。坐五分钟就够。",
           tags: [
             { text: "海风", face: "solid", color: "green" },
-            { text: "慢走", face: "outline", color: "brown" },
+            { text: "慢走", face: "soft", color: "brown" },
             { text: "不存在", face: "solid", color: "yellow" },
-            { text: "海风", face: "solid", color: "red" },
+            { text: "出门", face: "dashed", color: "red" },
+            { text: "先看天", face: "button", color: "purple" },
             { text: "坐五分钟", face: "outline", color: "peach" },
-            { text: "先看天", face: "solid", color: "green" },
           ],
           marks: [{ text: "坐五分钟", type: "highlight" }],
         },
         { type: "divider", class: "ac-divider ac-divider-wave" },
         { type: "divider", class: "ac-divider ac-divider-squiggle" },
         { type: "divider", class: "ac-divider ac-divider-dash" },
+        { type: "divider", class: "ac-divider ac-divider-wave" },
+        { type: "divider", class: "ac-divider ac-divider-hairline" },
+        { type: "divider", class: "ac-divider ac-divider-purple" },
         { type: "quote", title: "引用", class: "ac-card", text: "海风把声音放轻了。" },
-        { type: "card", title: "小提示", class: "ac-card", text: "回来前把沙子拍掉。" },
+        { type: "card", title: "小提示", class: "ac-card ac-card-dash", text: "回来前把沙子拍掉。" },
+        { type: "card", title: "浅纸", class: "ac-card ac-card-soft ac-peach ac-red", text: "午后的桃子最甜。" },
+        { type: "card", title: "第二张", class: "ac-card ac-card-soft ac-yellow", text: "这张不该再上色。" },
+        { type: "card", title: "带现金", class: "ac-callout ac-callout-warn ac-purple", text: "记得带现金。" },
+        { type: "card", title: "防晒", class: "ac-callout ac-callout-tip", text: "中午记得防晒。" },
+        { type: "card", title: "成功", class: "ac-callout ac-callout-ok", text: "船票已经买好。" },
       ],
     },
     summary: {},
@@ -152,6 +165,10 @@ const islandUser = islandSeen[0].messages[1].content;
 if (!islandUser.includes("本次主题已指定为 island")) fail("请求里要带上 island");
 if (!islandSystem.includes("ac-title ac-title-ribbon") || !islandSystem.includes("ac-tag") || !islandSystem.includes("ac-divider-wave") || !islandSystem.includes("ac-card")) fail("指定动森时要输出这套标签");
 if (!islandSystem.includes("全文最多 1 个非绿色标题") || !islandSystem.includes("全文最多 4 个")) fail("动森配方要限制装饰密度");
+if (!islandSystem.includes("ac-tag-soft") || !islandSystem.includes("ac-tag-dashed") || !islandSystem.includes("默认 soft")) fail("动森配方要补浅底和虚线标签");
+if (!islandSystem.includes("ac-divider-hairline") || !islandSystem.includes("黄浪和薄荷浪全文最多 2 条")) fail("动森配方要补更淡虚线，并守住花线");
+if (!islandSystem.includes("ac-card-dash") || !islandSystem.includes("ac-card-soft") || !islandSystem.includes("一篇最多 1 张")) fail("动森配方要补虚线纸和浅色纸上限");
+if (!islandSystem.includes("ac-callout-tip") || !islandSystem.includes("ac-callout-warn") || !islandSystem.includes("ac-callout-ok") || !islandSystem.includes("全文最多 2 条")) fail("动森配方要补静态提醒条");
 if (islandSystem.includes("<style")) fail("动森配方不能夹带样式表");
 if (islandResult.template.params.theme !== "island") fail("指定动森时主题仍是 island");
 if (islandResult.document.decor !== "ac-title ac-title-ribbon ac-green") fail("大标题要收成绿色飘带");
@@ -163,10 +180,24 @@ const tags = islandResult.document.blocks.find((block) => block.type === "paragr
 if (tags.length > 4) fail("标签最多 4 个");
 if (tags.some((tag) => tag.text === "不存在")) fail("原文没有的词不能当标签");
 if (!tags.some((tag) => tag.text === "海风" && tag.face === "solid")) fail("关键词标签要留下");
+if (!tags.some((tag) => tag.text === "慢走" && tag.face === "soft" && tag.color === "brown")) fail("浅底标签要留下");
+if (!tags.some((tag) => tag.text === "出门" && tag.face === "dashed" && tag.color === "green")) fail("虚线标签要留下，非四色改回绿");
+if (!tags.some((tag) => tag.text === "先看天" && tag.face === "soft" && tag.color === "green")) fail("没写明的标签脸默认浅底，非四色丢掉");
+if (tags.some((tag) => tag.text === "坐五分钟")) fail("第 5 个标签要丢掉");
 if (tags.some((tag) => !["green", "yellow", "peach", "brown"].includes(tag.color))) fail("标签颜色只能是四种");
+if (tags.some((tag) => !["solid", "outline", "soft", "dashed"].includes(tag.face))) fail("标签脸只能是四种");
 const dividers = islandResult.document.blocks.filter((block) => block.type === "divider").map((block) => block.className);
-if (dividers[0] !== "ac-divider ac-divider-wave" || dividers[1] !== "ac-divider ac-divider-squiggle" || dividers[2] !== "ac-divider ac-divider-thin") fail("分隔线只留两条花式，其余改细线");
-if (!islandResult.document.blocks.some((block) => block.type === "quote" && block.className === "ac-card")) fail("引用要收成浅色纸块");
+if (dividers[0] !== "ac-divider ac-divider-wave" || dividers[1] !== "ac-divider ac-divider-squiggle" || dividers[2] !== "ac-divider ac-divider-dash") fail("虚线不是花线，要留下");
+if (dividers[3] !== "ac-divider ac-divider-thin" || dividers[4] !== "ac-divider ac-divider-hairline" || dividers[5] !== "ac-divider ac-divider-thin") fail("花线最多两条，更淡虚线留下，不认识的线改成细线");
+const cards = islandResult.document.blocks.filter((block) => block.type === "card" || block.type === "quote");
+if (!cards.some((block) => block.type === "quote" && block.className === "ac-card")) fail("引用要收成浅色纸块");
+if (!cards.some((block) => block.className === "ac-card ac-card-dash")) fail("虚线纸要留下");
+if (!cards.some((block) => block.className === "ac-card ac-card-soft ac-peach")) fail("第一张浅色纸要留下，非四色丢掉");
+if (cards.filter((block) => /ac-card-soft/.test(block.className || "")).length !== 1) fail("带色浅卡最多 1 张");
+if (!cards.some((block) => block.className === "ac-callout ac-callout-warn")) fail("黄边提醒要留下，非四色丢掉");
+if (!cards.some((block) => block.className === "ac-callout ac-callout-tip")) fail("薄荷提醒要留下");
+if (cards.filter((block) => /ac-callout/.test(block.className || "")).length !== 2) fail("提醒条最多 2 条");
+if (cards.some((block) => /ac-red|ac-purple|ac-blue|ac-pink/.test(block.className || ""))) fail("四色以外的 class 要丢掉");
 if (!JSON.stringify(islandResult.document).includes("坐五分钟")) fail("动森重点标签要留下");
 
 const freshSeen = [];

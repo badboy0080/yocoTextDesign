@@ -27,8 +27,8 @@ const base = css.slice(0, css.indexOf("@media"));
 if (!base.includes("overflow:hidden")) fail("desktop studio shell lost its clipped frame");
 
 if (!html.includes("viewport-fit=cover")) fail("studio viewport does not cover the safe area");
-if (!html.includes('studio-ui.css?v=mobile-fit-v1')) fail("studio style cache was not bumped");
-if (!html.includes('app.js?v=island-v4')) fail("studio script cache was not bumped");
+if (!html.includes('studio-ui.css?v=normalize-motion-v1')) fail("studio style cache was not bumped");
+if (!html.includes('app.js?v=island-motion-v1')) fail("studio script cache was not bumped");
 
 if (!app.includes("function fitMobileStudio()")) fail("mobile fit helper missing");
 if (!app.includes('matchMedia("(max-width: 823px)")')) fail("mobile fit is not limited to the phone breakpoint");

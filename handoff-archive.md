@@ -1,5 +1,21 @@
 # 历史交接记录
 
+### 2026-11-21 划选弹窗字看清、拖字号不再闪
+
+- 想做什么：划选弹窗里「标重点」黑底看不清字。拖字号滑块时弹窗一直闪。只开 PR，不合并不部署。
+- 做成了什么：黑底的「标重点」、选中的「取消重点」和选中的标题级别改成白字。白底按钮仍是深字。白天黑夜都这样，因为这个弹窗本来就是浅底。拖滑块时弹窗停在原地，字号仍实时变。松手后才按新选区摆一次。
+- 改了哪些文件：`public/site-chrome.css`、`public/app.js`、`public/block-style.js`、`public/studio.html`、`scripts/check-selection-popup.js`、`scripts/check-mobile-layout.js`、`docs/previews/selection-popup/`、`handoff-log.md`、`handoff-archive.md`。
+- 如何验证：`npm run check` 通过。无头 Chrome 打开工作台，用示例文章，没登录，没调优化。白天和黑夜「标重点」都是白字黑底，「复制」仍是深字浅底。已经是重点时，「取消重点」是白字黑底，「标重点」变成浅底深字。拖滑块的 10 步里，弹窗上边和左边都没动，字号从 16 升到 48，没有来回跳，也没有消失。松手后弹窗还在，并按变大后的选区摆了一次。接到含 #104 的 master 后，冲突只在交接日志，弹窗样式没再改。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/105 已开，没有合并，没有部署。字号仍改整块，不是只改划中的几个字。
+
+### 2026-11-21 精品模板外壳对齐工作台
+
+- 想做什么：精品模板还是旧的黑底石灰风格。按工作台已经改好的暖米 / 暖黑改外壳，能走到的旧页面一起换。筛选、打开和模板内容不变。不要把「杂志编辑部」加回筛选。只开 PR，不合并不部署。
+- 做成了什么：`/works` 侧栏、顶栏、日夜开关、筛选胶囊、卡片框和详情弹窗改用站点外壳。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和找不到页面也换成同一套。窄屏导航不再把「精品模板」拆成两行。
+- 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
+- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/104 已 squash 合进 master `d60153f`，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
+
 ### 2026-11-21 书架配图对准文案，并拿掉杂志编辑部
 
 - 想做什么：主题书架左页要和右页同一主题。《西游记》用素墨，《水浒传》用静山。工作台风格列表去掉「杂志编辑部」。只开 PR，不合并不部署。

@@ -6,6 +6,10 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-27",
+    summary: "优化排版时，纸面先显示等待提示；排好后，文字和图案从四周落入位置。本次尚未上线。",
+  },
+  {
     date: "2026-11-26",
     summary: "优化排版失败时，会提示「网络异常，请再试一次！」「您的文章可能过长了，缩短一点再试一次吧！」或「网站处理业务过多，请再试一次！」。本次尚未上线。",
   },

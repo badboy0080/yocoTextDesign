@@ -2,6 +2,10 @@
 
 ## 当前接手摘要
 
+动森 P0 接到排版动效（2026-11-28，PR #107，未合并、未部署）：#109 合进 master 后，这条又脏了。缓存号、更新日志和交接记录撞在一起。动森样式和等待落入都留下。`npm run check`（17 项）已通过。截图仍是 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
+
+优化排版动效（2026-11-27，PR #109，已合进 master `f29d3f2`，未部署）：点「优化排版」后，纸面改成白底，中间是条状加载和三句原文轮换。成功后文字和图案从四周落入。失败立刻停掉加载，仍是原来的三句提示，不播入场。`npm run check`（17 项）已通过。截图在 `docs/previews/normalize-motion/`。没登录，没真调 DeepSeek，没扣积分，正式站没动。11 月 23 日和 11 月 26 日那两句「本次尚未上线」没改。
+
 动森 P0 接到 master（2026-11-27，PR #107，未合并、未部署）：#108 合进 master 后，这条和失败提示撞在更新日志、检查脚本和交接记录上。两条日志都留下，动森纸面样式没改。`npm run check`（16 项）已通过。截图仍是 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
 
 动森 P0 样式（2026-11-24，PR #107，未合并、未部署）：标签补了浅底和虚线，卡片可以虚线描边，一篇最多一张浅色纸。提醒是静止色条，最多两条。分隔线多了更淡的虚线，黄浪和薄荷浪仍最多两条。外壳仍是暖米 / 暖黑，纸面仍是纯白。已接上含 #108 的 master，样式没改。截图在 `docs/previews/island-p0/`。没登录，没真调 DeepSeek，没贴微信，正式站没动。
@@ -227,6 +231,22 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 
 ## 最近 5 次工作记录
 
+### 2026-11-28 动森 P0 接到已含排版动效的 master
+
+- 想做什么：PR #107 和已合进 master 的 #109 冲突了。只解冲突，动森样式和等待落入都留。不合并不部署。
+- 做成了什么：样式缓存留动森那档，工作台样式缓存留等待落入那档，脚本缓存合成一档。更新日志三条都在：等待落入、失败提示、动森样式。
+- 改了哪些文件：`public/studio.html`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。动森纸面样式和落入动画的代码是自动合上的。
+- 如何验证：`npm run check` 17 项通过。动森样式文件相对上次解冲突没有改，落入动画是 master 原样合进来的，所以没有新截图。
+- 待办/风险：PR #107 还没合并，没部署。没贴微信，没真调 DeepSeek。
+
+### 2026-11-27 优化排版的等待和落入
+
+- 想做什么：点「优化排版」时，纸面先白底等待；成功后文字和图案从四周落到位置；失败不播入场，三句提示不改。
+- 做成了什么：等待时外壳仍是暖米或暖黑，纸面是白的，左侧条状加载，右侧三句原文逐字切换并扫过高亮。成功后大约每 100 字一批落入，下一批隔 1 秒。切到原文或失败会停掉动画。减少动效时不弹字、不飞入。
+- 改了哪些文件：`public/studio.html`、`public/studio-ui.css`、`public/app.js`、`lib/changelog.ts`、`scripts/check-normalize-motion.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`scripts/check-site-chrome.js`、`docs/previews/normalize-motion/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
+- 如何验证：`npm run check` 17 项通过。本地静态页用假接口看了等待、成功落入、失败三条。白天外壳 #F5EFE3，夜间外壳 #0F0C0A，等待时纸面 #FFFFFF。没登录，没真调 DeepSeek，没扣积分。
+- 待办/风险：PR #109 已合进 master `f29d3f2`，没有部署。无头浏览器没有剪贴板权限，复制按钮能点，但剪贴板写不进去。
+
 ### 2026-11-27 动森 P0 接到已含失败提示的 master
 
 - 想做什么：PR #107 和已合进 master 的 #108 冲突了。只解冲突，让 #107 能合。不合并不部署。
@@ -250,19 +270,3 @@ Logo（2026-09-23，本地待部署）：折页 Y 图形与 Georgia 书刊字标
 - 改了哪些文件：`public/themes.js`、`public/styles.css`、`public/app.js`、`public/studio.html`、`lib/deepseek-normalizer.js`、`scripts/check-island-changelog.js`、`scripts/check-mobile-layout.js`、`scripts/check-selection-popup.js`、`CONTEXT.md`、`docs/previews/island-decor/06-island-white-day.png`、`docs/previews/island-decor/07-island-white-night.png`、`docs/previews/island-decor/08-island-white-copy.png`、`handoff-log.md`、`workUp.md`。
 - 如何验证：`npm run check` 15 项通过。本地工作台贴了一篇带动森装饰的稿，没登录，没点优化。量到白天外壳 #F5EFE3、夜间外壳 #0F0C0A，纸面都是 #FFFFFF。点了「复制排版」，复制稿外层底也是 #FFFFFF。
 - 待办/风险：PR #106 还没合并，没部署，没贴微信，没真调 DeepSeek。
-
-### 2026-11-21 划选弹窗字看清、拖字号不再闪
-
-- 想做什么：划选弹窗里「标重点」黑底看不清字。拖字号滑块时弹窗一直闪。只开 PR，不合并不部署。
-- 做成了什么：黑底的「标重点」、选中的「取消重点」和选中的标题级别改成白字。白底按钮仍是深字。白天黑夜都这样，因为这个弹窗本来就是浅底。拖滑块时弹窗停在原地，字号仍实时变。松手后才按新选区摆一次。
-- 改了哪些文件：`public/site-chrome.css`、`public/app.js`、`public/block-style.js`、`public/studio.html`、`scripts/check-selection-popup.js`、`scripts/check-mobile-layout.js`、`docs/previews/selection-popup/`、`handoff-log.md`、`handoff-archive.md`。
-- 如何验证：`npm run check` 通过。无头 Chrome 打开工作台，用示例文章，没登录，没调优化。白天和黑夜「标重点」都是白字黑底，「复制」仍是深字浅底。已经是重点时，「取消重点」是白字黑底，「标重点」变成浅底深字。拖滑块的 10 步里，弹窗上边和左边都没动，字号从 16 升到 48，没有来回跳，也没有消失。松手后弹窗还在，并按变大后的选区摆了一次。接到含 #104 的 master 后，冲突只在交接日志，弹窗样式没再改。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/105 已开，没有合并，没有部署。字号仍改整块，不是只改划中的几个字。
-
-### 2026-11-21 精品模板外壳对齐工作台
-
-- 想做什么：精品模板还是旧的黑底石灰风格。按工作台已经改好的暖米 / 暖黑改外壳，能走到的旧页面一起换。筛选、打开和模板内容不变。不要把「杂志编辑部」加回筛选。只开 PR，不合并不部署。
-- 做成了什么：`/works` 侧栏、顶栏、日夜开关、筛选胶囊、卡片框和详情弹窗改用站点外壳。模板纸色不跟日夜变。登录、注册、常见问题、公众号答案页和找不到页面也换成同一套。窄屏导航不再把「精品模板」拆成两行。
-- 改了哪些文件：`app/works.css`、`components/works-frame.tsx`、`components/works-gallery.tsx`、`app/account.css`、`components/account-layout.tsx`、`app/gongzhonghao-paiban/landing.css`、`app/not-found.tsx`、`docs/previews/works-shell/`、`handoff-log.md`、`handoff-archive.md`、`workUp.md`。
-- 如何验证：`npm run check` 13 项通过。本地打开精品模板白天、黑夜、390 宽、点「清氧绿」、点开第一张详情。筛选没有「杂志编辑部」。对照了工作台白天 1440 和黑夜 1280。登录日夜、注册、常见问题、答案页、404 也看过。没登录，没点优化排版，没调 DeepSeek。
-- 待办/风险：PR https://github.com/badboy0080/yocoTextDesign/pull/104 已 squash 合进 master `d60153f`，没有部署。首页、工作台内部、后台、漏斗、订阅跳转和邀请弹窗没改。这台没有宋体，截图标题会落到文泉驿，和工作台是同一台对照。
